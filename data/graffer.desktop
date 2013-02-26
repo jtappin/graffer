@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=graffer
+Exec=graffer
+GenericName=Scientific data plotting tool
+Terminal=false
+Type=Application
+X-KDE-StartupNotify=true
+Categories=Education;Science;

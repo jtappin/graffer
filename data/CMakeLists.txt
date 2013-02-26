@@ -1,0 +1,9 @@
+install(FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/c_tables.info"
+  "${CMAKE_CURRENT_SOURCE_DIR}/c_tables.tab"
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/graffer
+)
+install(FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/graffer.desktop"
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
+
