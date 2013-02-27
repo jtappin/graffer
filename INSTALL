@@ -1,0 +1,36 @@
+INSTALLATION
+============
+
+To install graffer you must first install gtk-fortran (gtk2 or gtk3)
+and plplot (5.9.9 is currently the only version that works as there are
+some API changes in SVN).
+
+Build
+-----
+
+Create a build directory (e.g. as a subdirectory of the distribution
+-- this will be assumed hereafter). 
+
+Change directory to it.
+
+   cmake ..    # To configure the build
+
+If you want to specify which gtk version to use then use
+
+   cmake -DGTK=2 .. 
+or
+   cmake -DGTK=3 ..
+
+In addition the usual cmake options to select installation paths
+etc. are available.
+
+Then:
+
+   make 
+
+to build graffer, and:
+
+   sudo make install
+
+to install it. This will also install some gdl/idl utilities to allow
+creation of graffer files from within that environment.

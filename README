@@ -1,0 +1,11 @@
+GRAFFER
+=======
+
+Graffer is an interactive tool for generating plots of data and/or
+functions. 
+
+The original graffer was an IDL program. This version provides most of
+the same functionality in a Fortran program using gtk-fortran and
+plplot for the GUI and plotting respectively.
+
+To display functions gdl (gnudatalanguage) or IDL is required.

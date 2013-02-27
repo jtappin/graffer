@@ -1,3 +1,14 @@
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/init.sh.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/graffer_gdl_init.sh"
+  @ONLY
+  )
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/init.csh.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/graffer_gdl_init.csh"
+  @ONLY
+  )
+
 install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_as_xa.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_as_xr.pro"
@@ -47,6 +58,11 @@ install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_xydata__define.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_zdata__define.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_zfunct__define.pro"
-  DESTINATION ${CMAKE_INSTALL_DATADIR}/graffer/lib
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/graffer/lib
 )
 
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/graffer_gdl_init.sh"
+  "${CMAKE_CURRENT_BINARY_DIR}/graffer_gdl_init.csh"
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/graffer
+)

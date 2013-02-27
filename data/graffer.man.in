@@ -1,0 +1,64 @@
+.TH "GRAFFER" "1" "2 6February 2013" "Data and function plotting tool"
+.SH NAME
+graffer \- Data and function plotting tool.
+.SH SYNOPSIS
+.B graffer
+.I [OPTION] ... [FILE]
+
+.SH DESCRIPTION
+
+graffer is a program to generate high quality plots of data and/or
+functions. A graphical interface allows the selection and adjustment of
+many settings, and previews the plot. 
+.PP
+Data can be displayed as XY plots with numerous options, or as
+contoured or colour plots of two-dimensional data. Functions can be of
+four forms:
+.I y = f(x), x = f(y), x=f(t) and y = g(t)
+or
+.I z = f(x,y)
+.PP
+Output may be to PostScript, Encapsulated PostScript or PDF formats, or
+screen dumps to popular raster formats.
+
+.SH OPTIONS
+.IP \-\-help \-h
+Display a summary of the options and exit.
+.IP \-\-[no]mouse \-[no]m
+Enable [disable] the editing of data with the mouse by default (default
+disabled). Can be changed for individual datasets.
+.IP \-\-[no]suppress-2d \-[no]s2
+Suppress [display] 2D (contour or colour) datasets (default
+display). Can be useful on slow computers.
+.IP \-\-[no]delete \-[no]d 
+Delete [keep] files produced when computing functions (default keep).
+.IP \-\-pdf=<viewer> \-p <viewer>
+Specify a viewer for the PDF help files.
+.IP \-\-geometry <x>x<y> \-g <x>x<y>
+Set the geometry of the drawing window (default 600x600).
+
+.SH INPUTS
+A graffer file is a tagged file that contains all the data and display
+options for the plot. There are two formats, binary and ASCII. Binary
+files are stored in little-endian format (though big-endian files can
+be read). The default extension is 
+.B .grf.
+
+.SH FILES
+.IP @CMAKE_INSTALL_FULL_DOCDIR@/Graffer.pdf 
+User's guide.
+.IP @CMAKE_INSTALL_FULL_DOCDIR@/Format.pdf
+Description of the file format.
+.IP @CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/graffer_gdl_init.sh
+Sh, bash or ksh initialization file.
+.IP @CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/graffer_gdl_init.csh
+Csh or tcsh initialization file.
+.IP @CMAKE_INSTALL_FULL_SYSCONFDIR@/graffer.rc
+Systemwide resource file
+.IP ${HOME}/.grafferrc
+User's own resource file
+.SH AUTHORS
+James Tappin (jtappin at gmail dot com). 
+.SH LICENCE
+graffer is free software and may be modified and redistributed under
+the terms of the GNU General Public Licence Version 3.

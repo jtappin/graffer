@@ -1,0 +1,16 @@
+# GRAFFER GDL/IDL initialization. This file should be sourced to add the
+# gdl/idl routines from graffer to the search path. 
+# This version for sh or bash.
+
+if [ -z ${GDL_PATH} ]; then
+    export GDL_PATH=@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib;
+else
+    export GDL_PATH=${GDL_PATH}:@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib;
+fi
+
+if [ -z ${IDL_PATH} ]; then
+    export IDL_PATH=@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib;
+else
+    export IDL_PATH=${IDL_PATH}:@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib;
+fi
+
