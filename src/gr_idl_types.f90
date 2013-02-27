@@ -3,6 +3,8 @@ module gr_idl_types
 
   implicit none
 
+  ! Translation of IDL type codes to equivalent Fortran types.
+
   integer(kind=int32), parameter :: idl_nocode = -1  ! Not set
 
   integer(kind=int32), parameter :: idl_undefined = 0   ! Undefined

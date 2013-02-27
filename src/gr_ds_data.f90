@@ -19,6 +19,8 @@ contains
   function gr_ds_data_new() result(base)
     type(c_ptr) :: base
 
+    ! Define the dataset data modification panel
+
     type(c_ptr) :: mnu, smnu, jmnu, junk
     integer(kind=int16), dimension(4), target :: ftypes = &
          & [-1_int16, -2_int16, -3_int16, -4_int16]
@@ -96,7 +98,6 @@ contains
          & activate=c_funloc(gr_ds_fit), &
          & tooltip="Make a fit to a dataset."//c_null_char)
 
-
     ! Axis selection
 
     junk = gtk_label_new("Y-axis:"//c_null_char)
@@ -113,6 +114,8 @@ contains
 
   subroutine gr_ds_file(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
+
+    ! Read 1-D data from a file
 
     character(len=256), dimension(:), allocatable :: files
     type(graff_data), pointer :: data
@@ -150,6 +153,8 @@ contains
   subroutine gr_ds_edit(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
 
+    ! Edit the data in the editor
+
     type(graff_data), pointer :: data
     integer(kind=c_int) :: iresp
 
@@ -179,6 +184,8 @@ contains
   subroutine gr_ds_copy_from(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
 
+    ! Copy data from another dataset.
+
     type(graff_data), pointer :: data
     integer(kind=c_int) :: iresp
 
@@ -206,6 +213,8 @@ contains
 
   subroutine gr_ds_file_2d(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
+
+    ! Read 2-D data from a file.
 
     character(len=256), dimension(:), allocatable :: files
     type(graff_data), pointer :: data
@@ -242,6 +251,8 @@ contains
   subroutine gr_ds_copy_from_2d(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
 
+    ! Copy data from a 2-D dataset
+
     type(graff_data), pointer :: data
     integer(kind=c_int) :: iresp
 
@@ -270,12 +281,16 @@ contains
   subroutine gr_ds_rescale_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Scale/shift data.
+
     call gr_ds_rescale
 
   end subroutine gr_ds_rescale_cb
 
   subroutine gr_ds_fun(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
+
+    ! Edit a function
 
     integer(kind=int16), pointer :: ftype
     type(graff_data), pointer :: data
@@ -307,6 +322,8 @@ contains
 
   subroutine gr_ds_file_fn(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
+
+    ! Read a function from a file.
 
     type(graff_data), pointer :: data
     integer(kind=c_int) :: iresp
@@ -346,6 +363,8 @@ contains
   subroutine gr_ds_copy_from_fn(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
 
+    ! Copy from another function dataset.
+
     type(graff_data), pointer :: data
     integer(kind=c_int) :: iresp
 
@@ -373,6 +392,8 @@ contains
   subroutine gr_ds_fit(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
 
+    ! Do a fit to another dataset
+
     type(graff_data), pointer :: data
     integer(kind=c_int) :: iresp
 
@@ -399,6 +420,8 @@ contains
 
   subroutine gr_ds_pick_y(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Select Y axis.
 
     if (.not. gui_active) return
 

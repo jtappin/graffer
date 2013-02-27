@@ -15,6 +15,8 @@ module gr_general_comment_widgets
 contains
   subroutine gr_comment_menu
 
+    ! Add comments to the file.
+
     type(c_ptr) :: base, junk, jb, sbox
     logical, dimension(2), target :: iapply = [.false., .true.]
 
@@ -48,6 +50,8 @@ contains
 
   recursive subroutine gr_comment_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Quit adding comments.
 
     logical, pointer :: apply
     integer(kind=c_int) :: nch

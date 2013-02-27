@@ -31,6 +31,8 @@ contains
   function gr_drawing_new() result(area)
     type(c_ptr) :: area
 
+    ! Create the drawing area and attach the needed events.
+
     area = hl_gtk_drawing_area_new(size=pdefs%opts%geometry, &
          & has_alpha=FALSE,  &
          & button_press_event=c_funloc(gr_draw_button), &
@@ -47,6 +49,8 @@ contains
   subroutine gr_draw_resize(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Actions on resizing
+
     call gr_plot_close()
     call hl_gtk_drawing_area_resize(widget)
     call hl_gtk_drawing_area_get_size(widget, width=nx, height=ny)
@@ -59,6 +63,8 @@ contains
   function gr_draw_button(widget, event, gdata) bind(c) result(rv)
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, gdata
+
+    ! Actions on a button click
 
     type(gdkeventbutton), pointer :: fevent
     call c_f_pointer(event, fevent)
@@ -75,6 +81,8 @@ contains
   function gr_draw_motion(widget, event, data) bind(c) result(rv)
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data
+
+    ! Actions on cursor motion
 
     type(gdkeventmotion), pointer :: fevent
     real(kind=c_double) :: xw, yw
@@ -137,6 +145,8 @@ contains
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data
 
+    ! Actions on keyboard
+
     integer(kind=c_int) :: key_f, key_esc, key_f11, wstate
     type(c_ptr) :: gdk_win
     type(gdkeventkey), pointer :: fevent
@@ -177,6 +187,8 @@ contains
   function gr_draw_enter(widget, event, data) bind(c) result(rv)
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data
+
+    ! Actions on cursor enter/exit.
 
     type(gdkeventcrossing), pointer :: fevent
 

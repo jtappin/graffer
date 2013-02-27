@@ -244,6 +244,8 @@ contains
     logical(kind=int8), intent(in), optional :: full
     logical, intent(in), optional :: noupdate
 
+    ! Set/select plot transform
+
     integer :: ds_index, widx
     logical :: iupdate, all
     real(kind=plflt) :: x0, x1, y0, y1
@@ -299,6 +301,8 @@ contains
 
   subroutine gr_plot_viewport
 
+    ! Set up viewport.
+
     if (pdefs%transform%viewport(1) == pdefs%transform%viewport(2)) then
        call plvasp(pdefs%transform%vp_aspect)
     else if (pdefs%transform%vp_aspect == 0.) then
@@ -322,6 +326,8 @@ contains
     real(kind=plflt), intent(in), dimension(:) :: x, y
     integer(kind=int16) :: index
     real(kind=real32) :: symsize
+
+    ! Plot symbols at data points
 
     real(kind=plflt) :: dx, dy
     real(kind=plflt) :: x0, x1, y0, y1
@@ -442,6 +448,8 @@ contains
   subroutine gr_plot_linesty(index, scale)
     integer(kind=int16), intent(in) :: index
     integer, intent(in), optional :: scale
+
+    ! Define the linestyle.
 
     integer, dimension(:), allocatable :: ld, lg
     integer :: nseg

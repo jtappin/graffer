@@ -70,7 +70,7 @@ contains
     integer, intent(in), optional :: index
 
     ! Heapsort, based loosely on the numerical recipes routine, 
-    ! but returns to a new array. 
+    ! but returns to a new array. Sort a 2-D array on a column.
 
     integer :: idx
     integer :: l, ir, i, j, n

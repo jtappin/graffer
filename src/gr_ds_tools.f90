@@ -22,6 +22,8 @@ contains
   subroutine gr_ds_xy_read(file)
     character(len=*), intent(in) :: file
 
+    ! Read an XY dataset from a file
+
     type(graff_data), pointer :: data
     integer :: unit, ios, nlines, ntags, idx
     character(len=120) :: iom
@@ -143,6 +145,8 @@ contains
   subroutine gr_ds_z_read(file)
     character(len=*), intent(in) :: file
 
+    ! Read a 2D dataset from a file.
+
     integer :: nx, ny
     integer :: unit, ios
     character(len=120) :: iom
@@ -235,6 +239,8 @@ contains
 
   subroutine gr_ds_fun_read(file)
     character(len=*), intent(in) :: file
+
+    ! Read a function dataset from a file.
 
     character(len=40) :: code
     integer(kind=int16) :: type
@@ -360,6 +366,8 @@ contains
     integer, intent(out) :: nlines, nfields
     logical, intent(out) :: ok
 
+    ! Decode an XY dataset.
+
     integer :: i, j, ios
     character(len=120) :: iom
     character(len=32), dimension(:), allocatable :: fields 
@@ -405,6 +413,8 @@ contains
   subroutine gr_ds_write(file, as_data)
     character(len=*), intent(in) :: file
     logical, intent(in), optional :: as_data
+
+    ! Write a dataset to a file.
 
     integer :: unit, ios, i
     character(len=120) :: iom
@@ -512,6 +522,8 @@ contains
   subroutine gr_ds_new(make_current)
     logical, intent(in) :: make_current
 
+    ! Create a new dataset
+
     type(graff_data), dimension(:), allocatable :: datas
 
     allocate(datas(pdefs%nsets+1))
@@ -535,6 +547,8 @@ contains
     type(graff_data), target, intent(inout), optional :: source
     type(graff_data), target, intent(out), optional :: destination
     logical, intent(in), optional :: copy_format, move
+
+    ! Make a copy of a dataset
 
     integer(kind=int16) :: dest
     type(graff_data), pointer :: data_from, data_to
@@ -747,6 +761,8 @@ contains
     integer(kind=int16), intent(in) :: index
     integer(kind=int16), intent(in), optional :: append_to
 
+    ! Append one dataset to another.
+
     integer(kind=int16) :: dest
     integer, dimension(2) :: xyshape1, xyshape2
     real(kind=real64), allocatable, dimension(:,:) :: xyvals
@@ -793,6 +809,8 @@ contains
   subroutine gr_ds_erase(index)
     integer(kind=int16), intent(in), optional :: index
 
+    ! Erase the contents of a dataset
+
     integer(kind=int16) :: idx
 
     if (present(index)) then
@@ -807,6 +825,8 @@ contains
 
   subroutine gr_ds_delete(index)
     integer(kind=int16), intent(in), optional :: index
+
+    ! Delete a dataset.
 
     integer(kind=int16) :: idx
     type(graff_data), dimension(:), allocatable :: datasets
@@ -856,6 +876,8 @@ contains
 
   subroutine gr_ds_move(index, after)
     integer(kind=int16), intent(in) :: index, after
+
+    ! Reorder datasets
 
     type(graff_data) :: tmpdata
     integer(kind=int16) :: i, j

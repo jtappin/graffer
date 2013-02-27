@@ -29,6 +29,8 @@ contains
     integer, intent(in), target :: axis
     logical(kind=int8), intent(in), optional :: sensitive
 
+    ! Define an Axis settings panel
+
     type(c_ptr) :: junk, t, menu, jmnu, smnu
     integer, dimension(2), target :: minmax=[1, 2]
     logical, dimension(2), target :: ishrink=[.false., .true.]
@@ -218,6 +220,8 @@ contains
   subroutine gr_set_label(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set the axis label
+
     integer, pointer :: axis
     character(len=120) :: title
 
@@ -242,6 +246,8 @@ contains
   subroutine gr_set_log(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set log/linear scaling
+
     integer, pointer :: axis
 
     if (.not. gui_active) return
@@ -254,6 +260,8 @@ contains
 
   subroutine gr_set_exact(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set exact/rounded scaling
 
     integer, pointer :: axis
 
@@ -272,6 +280,8 @@ contains
   subroutine gr_set_extend(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set extended axis range
+
     integer, pointer :: axis
 
     if (.not. gui_active) return
@@ -288,6 +298,8 @@ contains
 
   subroutine gr_set_ax_draw(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set drawing of axis
 
     integer, pointer :: axis
 
@@ -306,6 +318,8 @@ contains
   subroutine gr_set_bax_draw(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set drawing of box axis.
+
     integer, pointer :: axis
 
     if (.not. gui_active) return
@@ -322,6 +336,8 @@ contains
 
   subroutine gr_set_minor(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+   
+    ! Enable/disable minor ticks
 
     integer, pointer :: axis
 
@@ -336,6 +352,8 @@ contains
 
   subroutine gr_set_annot(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Enable/disable annotations.
 
     integer, pointer :: axis
 
@@ -354,6 +372,8 @@ contains
   subroutine gr_set_time(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set time labelling
+
     integer, pointer :: axis
 
     if (.not. gui_active) return
@@ -371,6 +391,8 @@ contains
 
   subroutine gr_set_origin(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set origin axis drawing
 
     integer, pointer :: axis
     integer(kind=c_int) :: idx
@@ -398,6 +420,8 @@ contains
   subroutine gr_set_grid(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set grid line style.
+
     integer, pointer :: axis
 
     if (.not. gui_active) return
@@ -412,6 +436,8 @@ contains
 
   subroutine gr_auto_e(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Autoscale axis.
 
     integer, pointer :: axis
     logical, pointer :: ishrink
@@ -431,6 +457,8 @@ contains
   subroutine gr_axis_adv(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Advanced options.
+
     integer, pointer :: axis
 
     call c_f_pointer(data, axis)
@@ -441,6 +469,8 @@ contains
 
   subroutine gr_set_range(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set axis range
 
     type(c_ptr) :: cmm
     integer, pointer :: axis, mm

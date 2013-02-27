@@ -87,6 +87,8 @@ contains
     integer, intent(in) :: unit
     logical, intent(in), optional :: swap
 
+    ! Read a data record from a binary Graffer file.
+
     logical :: isopen, swap_end
     integer :: ios
     character(len=120) :: iomsg
@@ -346,6 +348,8 @@ contains
     integer(kind=int16), intent(out) :: ival
     integer, intent(out) :: status
 
+    ! Get an int(2) value from a record.
+
     status = 0
 
     if (this%ndims /= 0) then
@@ -380,6 +384,8 @@ contains
     integer(kind=int32), intent(out) :: lval
     integer, intent(out) :: status
 
+    ! get a long(4) value from a record.
+
     status = 0
 
     if (this%ndims /= 0) then
@@ -412,6 +418,8 @@ contains
     class(graffer_record), intent(in) :: this
     real(kind=real32), intent(out) :: rval
     integer, intent(out) :: status
+
+    ! Get a float(4) value from a record
 
     status = 0
 
@@ -446,6 +454,8 @@ contains
     real(kind=real64), intent(out) :: dval
     integer, intent(out) :: status
 
+    ! get a double(8) value from a record
+
     status = 0
 
     if (this%ndims /= 0) then
@@ -477,6 +487,8 @@ contains
     character(len=*), intent(out) :: sval
     integer, intent(out) :: status
 
+    ! Get a string value from a record.
+
     integer :: i
 
     status = 0
@@ -507,6 +519,8 @@ contains
     class(graffer_record), intent(in) :: this
     logical(kind=int8), intent(out) :: tval
     integer, intent(out) :: status
+
+    ! get a logical(1) value from a record.
 
     status = 0
 
@@ -543,6 +557,8 @@ contains
     integer(kind=int8), intent(out) :: bval
     integer, intent(out) :: status
 
+    ! get a byte value from a record.
+
     status = 0
 
     if (this%ndims /= 0) then
@@ -578,6 +594,8 @@ contains
     class(graffer_record), intent(in) :: this
     integer(kind=int16), dimension(:), intent(out) :: ival
     integer, intent(out) :: status
+
+    ! get an int(2) array from a record.
 
     integer(kind=int16) :: sival
     integer :: mxi, sz
@@ -628,6 +646,8 @@ contains
     integer(kind=int32), dimension(:), intent(out) :: lval
     integer, intent(out) :: status
 
+    ! Get a long(4) array from a record.
+
     integer(kind=int32) :: slval
     integer :: mxi, sz
 
@@ -675,6 +695,8 @@ contains
     class(graffer_record), intent(in) :: this
     real(kind=real32), dimension(:), intent(out) :: rval
     integer, intent(out) :: status
+
+    ! get a float(4) array from a record
 
     real(kind=real32) :: srval
     integer :: mxi, sz
@@ -724,6 +746,8 @@ contains
     real(kind=real64), dimension(:), intent(out) :: dval
     integer, intent(out) :: status
 
+    ! Get a double(8) array from a record
+
     real(kind=real64) :: sdval
     integer :: mxi, sz
 
@@ -771,6 +795,8 @@ contains
     character(len=*), intent(out), dimension(:) :: sval
     integer, intent(out) :: status
 
+    ! Get a string array from a record.
+
     integer :: i, j
     integer :: mxi, sz
     character(len=len(sval)) :: ssval
@@ -813,6 +839,8 @@ contains
     class(graffer_record), intent(in) :: this
     real(kind=real64), dimension(:,:), intent(out) :: dval
     integer, intent(out) :: status
+
+    ! Get a 2D double(8) array from a record.
 
     real(kind=real64) :: sdval
     integer :: mxi, mxj
@@ -862,6 +890,8 @@ contains
     class(graffer_record), intent(in) :: this
     integer(kind=int32), dimension(:), allocatable, intent(out) :: dims
 
+    ! Get the number of dimensions of a record.
+
     ndims = this%ndims
     if (ndims /= 0) then
        allocate(dims(ndims))
@@ -873,12 +903,17 @@ contains
     character(len=3) :: tag
     class(graffer_record), intent(in) :: this
 
+    ! Get the record's tag.
+
     tag = this%tag
   end function gr_get_tag
 
   subroutine gr_set_null(this, tag)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
+
+    ! Set a record to type null
+
     ! N.B. No bundled write, otherwise  it cannot be distinguished from
     ! a long without a write.
 
@@ -892,6 +927,8 @@ contains
     character(len=3), intent(in) :: tag
     integer(kind=int16), intent(in) :: ival
     integer, intent(in), optional :: unit
+
+    ! Set an int(2) value for a record/
 
     integer :: status
 
@@ -908,6 +945,8 @@ contains
     integer(kind=int32), intent(in) :: lval
     integer, intent(in), optional :: unit
 
+    ! Set a long(4) value for a record.
+
     integer :: status
 
     this%tcode = idl_long
@@ -922,6 +961,8 @@ contains
     character(len=3), intent(in) :: tag
     real(kind=real32), intent(in) :: rval
     integer, intent(in), optional :: unit
+
+    ! Set a float(4) value for a record
 
     integer :: status
 
@@ -938,6 +979,8 @@ contains
     real(kind=real64), intent(in) :: dval
     integer, intent(in), optional :: unit
 
+    ! Set a double(8) value for a record.
+
     integer :: status
 
     this%tcode = idl_double
@@ -952,6 +995,8 @@ contains
     character(len=3), intent(in) :: tag
     logical(kind=int8), intent(in) :: tval
     integer, intent(in), optional :: unit
+
+    ! Set a logical(1) value for a record.
 
     integer :: status
 
@@ -968,6 +1013,8 @@ contains
     integer(kind=int8), intent(in) :: bval
     integer, intent(in), optional :: unit
 
+    ! Set a byte value for a record.
+
     integer :: status
 
     this%tcode = idl_byte
@@ -982,6 +1029,8 @@ contains
     character(len=3), intent(in) :: tag
     character(len=*), intent(in) :: sval
     integer, intent(in), optional :: unit
+
+    ! Set a string value for a record.
 
     integer :: i
     integer :: status
@@ -1006,6 +1055,8 @@ contains
     integer(kind=int16), intent(in), dimension(:) :: ival
     integer, intent(in), optional :: unit
 
+    ! Set an int(2) array for a record.
+
     integer :: status
 
     this%tcode = idl_int
@@ -1023,6 +1074,8 @@ contains
     character(len=3), intent(in) :: tag
     integer(kind=int32), intent(in), dimension(:) :: lval
     integer, intent(in), optional :: unit
+
+    ! Set a long(4) array for a record.
 
     integer :: status
 
@@ -1042,6 +1095,8 @@ contains
     real(kind=real32), intent(in), dimension(:) :: rval
     integer, intent(in), optional :: unit
 
+    ! Set a float(4) array for a record.
+
     integer :: status
 
     this%tcode = idl_float
@@ -1060,6 +1115,8 @@ contains
     real(kind=real64), intent(in), dimension(:) :: dval
     integer, intent(in), optional :: unit
 
+    ! Set a double(8) array for a record.
+
     integer :: status
 
     this%tcode = idl_double
@@ -1077,6 +1134,8 @@ contains
     character(len=3), intent(in) :: tag
     character(len=*), intent(in), dimension(:) :: sval
     integer, intent(in), optional :: unit
+
+    ! Set a string array for a record.
 
     integer :: i, j, lmax
     integer :: status
@@ -1105,6 +1164,8 @@ contains
     real(kind=real64), intent(in), dimension(:,:) :: dval
     integer, intent(in), optional :: unit
 
+    ! Set a double(8) 2D array for a record.
+
     integer :: status
 
     this%tcode = idl_double
@@ -1123,6 +1184,8 @@ contains
     class(graffer_record), intent(in) :: this
     integer, intent(in) :: unit
     integer, intent(out) :: status
+
+    ! write a record to a binary Graffer file.
 
     logical :: isopen
     integer :: ios, i

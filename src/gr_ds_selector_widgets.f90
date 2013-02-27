@@ -22,6 +22,8 @@ contains
 
   subroutine gr_ds_select
 
+    ! Select a DS as current.
+
     type(c_ptr) :: base, sbox, jb, junk
     logical, target, dimension(2) :: iapply = [.false., .true.]
     integer(kind=c_int) :: i
@@ -74,6 +76,8 @@ contains
 
   recursive subroutine gr_ds_sel_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Quit selector
 
     logical, pointer :: apply
     integer(kind=c_int) :: nsel

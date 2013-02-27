@@ -26,6 +26,8 @@ module gr_ds_fit_widgets
 contains
   subroutine gr_fit_menu
 
+    ! Configure fitting of datasets
+
     type(c_ptr) :: base, junk, jb, sbox, b1
     integer :: nxy
     integer(kind=c_int) :: i, j
@@ -174,11 +176,15 @@ contains
   recursive subroutine gr_fit_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Quit fitting menu
+
     call gtk_widget_destroy(fit_window)
   end subroutine gr_fit_quit
 
   subroutine gr_fit_select(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
+
+    ! Select DS to be fitted
 
     integer(kind=c_int), dimension(:), allocatable :: isel
     integer(kind=c_int) :: nsel, idx, iyax, iftype, idir
@@ -212,6 +218,8 @@ contains
   subroutine gr_fit_dir_ch(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Select X->Y or Y->X
+
     integer(kind=c_int) :: itype, idir
 
     idir =  gtk_combo_box_get_active(widget)
@@ -227,6 +235,8 @@ contains
   subroutine gr_fit_clear(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Cancel changes
+
     if (oldtype < 0) then
        pdefs%data(pdefs%cset)%funct = oldfun
        pdefs%data(pdefs%cset)%type = oldtype
@@ -237,6 +247,8 @@ contains
 
   subroutine gr_fit_update(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
+
+    ! Compute the fit.
 
     real(kind=real64), dimension(:), allocatable :: coeffs
     real(kind=real64), dimension(:), allocatable, target :: xr, yr

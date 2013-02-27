@@ -22,6 +22,8 @@ contains
   subroutine gr_axis_menu(axis)
     integer, intent(in) :: axis
 
+    ! Advanced axis settings.
+
     type(c_ptr) :: base, jb, junk
     character(len=2), dimension(3), parameter :: axnames = ['X ','Y ','Yr']
     logical, dimension(2), target :: iapply = [.false., .true.]
@@ -108,6 +110,8 @@ contains
 
   recursive subroutine gr_adv_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Quit advanced axis settings.
 
     logical, pointer :: apply
     type(graff_style), pointer :: axstyle

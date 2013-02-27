@@ -12,6 +12,8 @@ contains
     real(kind=real64), intent(out), dimension(:), optional :: ycalc
     logical, intent(out), optional :: status
 
+    ! Polynomial fit to supplied data. (Derived from PDL)
+
     real(kind=real64), dimension(size(x), 0:order) :: xx
     real(kind=real64), dimension(size(x)) :: yy
     real(kind=real64) :: xbar, ybar
@@ -87,6 +89,8 @@ contains
     real(kind=real64), intent(in), dimension(:,:) :: x
     real(kind=real64), dimension(size(x,1),size(x,2)) :: xi
 
+    ! Invert a matrix
+
     real(kind=real64), dimension(size(x,1),size(x,2)) :: a
     real(kind=real64), dimension(size(x,2)) :: e
     integer :: i, n
@@ -114,6 +118,8 @@ contains
   function lu_fact(x) result(p)
     real(kind=real64), dimension(:,:), intent(inout) :: x
     integer, dimension(size(x,2)) :: p
+
+    ! Decompose a matrix
 
     real(kind=real64) :: tmp, tmp1
     real(kind=real64), dimension(size(x,2)) :: s
@@ -158,6 +164,8 @@ contains
     real(kind=real64), dimension(:,:), intent(in) :: a
     integer, dimension(:), intent(in) :: p
     real(kind=real64), dimension(:), intent(inout) :: b
+
+    ! LU substitution.
 
     real(kind=real64), dimension(size(a,2)) :: x
     integer :: i, j, k, n

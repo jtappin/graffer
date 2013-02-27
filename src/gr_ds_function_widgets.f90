@@ -26,6 +26,8 @@ contains
   subroutine gr_ds_fun_menu(type)
     integer(kind=int16), intent(in) :: type
 
+    ! Input / edit a function dataset
+
     logical, dimension(2), target :: iapply = [.false., .true.]
     type(c_ptr) :: base, jb, junk
     type(graff_data), pointer :: data
@@ -135,6 +137,8 @@ contains
 
   recursive subroutine gr_ds_fun_quit(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
+
+    ! Quit function editor
 
     logical, pointer :: apply
     type(graff_data), pointer :: data

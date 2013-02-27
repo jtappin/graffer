@@ -25,6 +25,8 @@ contains
   subroutine gr_ds_copy_from_menu(class)
     integer, intent(in) :: class
 
+    ! Menu for dataset copying
+
     logical, dimension(2), target :: iapply = [.false., .true.]
     type(c_ptr) :: base, jb, junk, sbox
     integer(kind=c_int) :: i, j
@@ -92,6 +94,8 @@ contains
   subroutine gr_ds_cf_pick(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Callback to select source
+
     integer(kind=c_int), dimension(:), allocatable :: isel
     integer(kind=c_int) :: nsel, ifrom
 
@@ -111,6 +115,8 @@ contains
 
   recursive subroutine gr_ds_cf_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Quit copying menus
 
     logical, pointer :: apply
 

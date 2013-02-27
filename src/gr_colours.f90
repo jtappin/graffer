@@ -15,6 +15,8 @@ contains
   subroutine gr_ct_init(basename)
     character(len=*), intent(in) :: basename
 
+    ! Initialize the colour table system.
+
     character(len=len(basename)+5) :: header
     character(len=len(basename)+4) :: datafile
     integer :: unit, ios, i
@@ -78,6 +80,9 @@ contains
   end subroutine gr_ct_init
 
   subroutine gr_ct_close
+
+    ! Close the colour table files.
+
     if (ct_is_open) close(ct_unit)
     ct_is_open = .false.
     if (allocated(table_names)) deallocate(table_names, red, green, blue)
@@ -90,6 +95,8 @@ contains
     integer, dimension(:), intent(out), optional :: r, g, b
     logical(kind=int8), intent(in), optional :: invert
     real(kind=real32), intent(in), optional :: gamma
+
+    ! Select, and load or return a colour table.
 
     integer, dimension(:), allocatable :: map, rr, gg, bb
     integer :: ios, i
@@ -185,17 +192,23 @@ contains
   function gr_ct_get_ntables()
     integer :: gr_ct_get_ntables
 
+    ! Return how many tables are defined
+
     gr_ct_get_ntables = ntables
   end function gr_ct_get_ntables
 
   function gr_ct_get_ncolours()
     integer :: gr_ct_get_ncolours
 
+    ! Return the size of the colour tables
+
     gr_ct_get_ncolours = ncolours
   end function gr_ct_get_ncolours
 
   function gr_ct_get_table()
     integer :: gr_ct_get_table
+
+    ! Return the index of the current table.
 
     gr_ct_get_table = ct_index
   end function gr_ct_get_table

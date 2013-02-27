@@ -27,6 +27,8 @@ module gr_general_corner_widgets
 contains
   subroutine gr_corner_menu
 
+    ! Set viewport for plotting
+
     type(c_ptr) :: base, jb, junk
     logical, dimension(2), target :: iapply = [.false., .true.]
 
@@ -163,6 +165,8 @@ contains
   recursive subroutine gr_corn_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Quit viewport setting
+
     logical, pointer :: apply
     integer :: i
     call c_f_pointer(data, apply)
@@ -202,6 +206,8 @@ contains
   subroutine gr_corn_method(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Select method to define viewport
+
     corn_method = gtk_combo_box_get_active(widget)
 
     call gtk_widget_set_sensitive(corn_c_frame, &
@@ -213,6 +219,8 @@ contains
 
   subroutine gr_corn_iso(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Toggle isotropic axes.
 
     iso_flag = c_f_logical(gtk_toggle_button_get_active(widget))
 

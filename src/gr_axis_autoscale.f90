@@ -16,6 +16,8 @@ contains
     integer :: axis
     logical, optional :: shrink
 
+    ! Auto scale an Axis
+
     real(kind=real64) :: axmin, axmax
     type(graff_data), pointer :: data
     integer :: i, status
@@ -92,6 +94,8 @@ contains
     type(graff_data), intent(in) :: data
     real(kind=real64), intent(inout) :: axmin, axmax
 
+    ! Auto scale the X axis for a rectangular coordinate DS
+
     select case (data%type)
     case(0:2)
        axmin = min(axmin, minval(data%xydata(1,:)))
@@ -119,6 +123,8 @@ contains
   subroutine gr_autoscale_y_rect(data, axmin, axmax)
     type(graff_data), intent(in) :: data
     real(kind=real64), intent(inout) :: axmin, axmax
+
+    ! Auto scale the Y axis for a rectangular coordinate DS
 
     select case (data%type)
     case(0,3,4)
@@ -164,6 +170,8 @@ contains
   subroutine gr_autoscale_x_polar(data, axmin, axmax)
     type(graff_data), intent(in), target :: data
     real(kind=real64), intent(inout) :: axmin, axmax
+
+    ! Autoscale the X axis for a polar dataset.
 
     real(kind=real64) :: scale
     real(kind=real64), dimension(:), allocatable :: r, th, x
@@ -304,6 +312,8 @@ contains
   subroutine gr_autoscale_y_polar(data, axmin, axmax)
     type(graff_data), intent(in), target :: data
     real(kind=real64), intent(inout) :: axmin, axmax
+
+    ! Autoscale the Y axis for a polar dataset.
 
     real(kind=real64) :: scale
     real(kind=real64), dimension(:), allocatable :: r, th, y

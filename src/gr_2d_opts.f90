@@ -21,6 +21,8 @@ contains
 
   function gr_2d_opts_new() result(fr)
     type(c_ptr) :: fr
+   
+    ! Display options for 2-D datasets.
 
     type(c_ptr) :: table, junk, sbox, jb, jbb
     integer(kind=c_int) :: nbi
@@ -258,6 +260,8 @@ contains
     type(c_ptr), value :: book, page, data
     integer(kind=c_int), value :: number
 
+    ! Set display style. Contour/colour/none
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%zdata%format = int(number, int16)
@@ -269,6 +273,8 @@ contains
 
   subroutine gr_2d_set_ct_rule(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Automatic / explicit contour levels.
 
     if (.not. gui_active) return
 
@@ -286,6 +292,8 @@ contains
   subroutine gr_2d_set_ct_fmt(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Contour format (open/filled)
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%zdata%fill = &
@@ -297,6 +305,8 @@ contains
   function gr_2d_set_clevels(widget, event, data) bind(c) result(rv)
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data
+
+    ! Contour levels.
 
     character(len=32), dimension(:), allocatable :: text
     real(kind=real64), dimension(:), allocatable :: levels
@@ -345,6 +355,8 @@ contains
   function gr_2d_set_ccols(widget, event, data) bind(c) result(rv)
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data
+
+    ! Contour colours
 
     character(len=32), dimension(:), allocatable :: text
     integer(kind=int16), dimension(:), allocatable :: colours
@@ -395,6 +407,8 @@ contains
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data
 
+    ! Contour linestyles
+
     character(len=32), dimension(:), allocatable :: text
     integer(kind=int16), dimension(:), allocatable :: styles
     integer :: nsty, ios, i, j
@@ -443,6 +457,8 @@ contains
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data
 
+    ! Contour thicknesses
+
     character(len=32), dimension(:), allocatable :: text
     real(kind=real64), dimension(:), allocatable :: thick
     integer :: nthick, ios, i, j
@@ -490,6 +506,8 @@ contains
   subroutine gr_2d_set_cnlevels(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Number of contours
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%zdata%n_levels = &
@@ -501,6 +519,8 @@ contains
   subroutine gr_2d_set_clabel(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Contour labelling frequency
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%zdata%label = &
@@ -511,6 +531,8 @@ contains
 
   subroutine gr_2d_set_csize(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Label character size
 
     if (.not. gui_active) return
 
@@ -524,6 +546,8 @@ contains
 
   subroutine gr_2d_set_table(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Select colour table.
 
     integer(kind=c_int), dimension(:), allocatable :: selected
     integer(kind=c_int) :: nsel
@@ -540,6 +564,8 @@ contains
 
   subroutine gr_2d_set_range(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set range for colour display
 
     integer, pointer :: idx
     character(len=32) :: text
@@ -575,6 +601,8 @@ contains
   subroutine gr_2d_set_missing(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Missing data values.
+
     character(len=32) :: text
     real(kind=real64) :: value
     integer :: ios
@@ -608,6 +636,8 @@ contains
   subroutine gr_2d_set_gamma(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Colour table gamma setting
+
     character(len=32) :: text
     real(kind=real32) :: value
     integer :: ios
@@ -631,6 +661,8 @@ contains
   subroutine gr_2d_set_log(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set log colour mapping
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%zdata%ilog = &
@@ -641,6 +673,8 @@ contains
 
   subroutine gr_2d_set_invert(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set inverted colour table
 
     if (.not. gui_active) return
 

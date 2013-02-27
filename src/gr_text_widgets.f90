@@ -37,6 +37,8 @@ contains
     integer, intent(in), optional :: index
     real(kind=c_double), intent(in), optional :: x, y
 
+    ! Editor for text annotations
+
     type(c_ptr) :: base, jb, junk, jbb
     logical, dimension(2), target :: iapply = [.false., .true.]
     real(kind=c_double), target, dimension(3) :: align=[0._c_double, &
@@ -257,6 +259,8 @@ contains
     logical, intent(in) :: preview
     logical, intent(in), optional :: update
 
+    ! Select which plot window
+
     logical :: changed
     
     call gr_plot_close()
@@ -279,6 +283,8 @@ contains
 
   recursive subroutine gr_text_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Quit the annotation editor.
 
     logical, pointer :: apply
 
@@ -317,6 +323,8 @@ contains
   subroutine gr_text_update(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Update the preview.
+
     integer :: icol, ffamily, font
     real(kind=plflt) :: cs
     character(len=265) :: txt
@@ -344,6 +352,8 @@ contains
 
   subroutine gr_text_csys(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Select annotation's coordinate system.
 
     integer :: newsys
     real(kind=c_double) :: xcmin, xcmax, xcstep,  ycmin, ycmax, ycstep
@@ -409,6 +419,8 @@ contains
   subroutine gr_text_yax(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Select Y axis for world coordinates.
+
     real(kind=c_double) :: x,y, xv, yv
     integer :: oldax, newax
 
@@ -432,6 +444,8 @@ contains
 
   subroutine gr_text_align(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set text alignment, common options.
 
     real(kind=c_double), pointer :: align
 

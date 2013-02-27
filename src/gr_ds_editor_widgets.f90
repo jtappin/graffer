@@ -24,6 +24,8 @@ contains
 
   subroutine gr_ds_editor
 
+    ! Editor for X-Y datasets
+
     type(graff_data), pointer :: data
     character(len=40) :: title
     logical, dimension(2), target :: iupdate = [.false., .true.]
@@ -112,6 +114,8 @@ contains
     integer, intent(in) :: nfields
     logical, intent(in) :: init
 
+    ! Set valid error options for no of cols.
+
     integer(kind=c_int), dimension(9) :: smask
     integer :: i
     integer(kind=c_int) :: isel
@@ -157,6 +161,8 @@ contains
   subroutine gr_edit_update(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Callback when contents changed.
+
     integer :: nfields, i
     character(len=200), dimension(:), allocatable :: cvals
     character(len=32), dimension(:), allocatable :: fields
@@ -174,6 +180,8 @@ contains
 
   recursive subroutine gr_editor_quit(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
+
+    ! Quit the editor.
 
     logical, pointer :: iupdate
     character(len=200), dimension(:), allocatable :: cvals

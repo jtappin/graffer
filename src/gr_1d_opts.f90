@@ -20,6 +20,8 @@ contains
   function gr_1d_opts_new() result(fr)
     type(c_ptr) :: fr
 
+    ! Define the options panel for 1-D datasets.
+
     type(c_ptr) :: junk, mnu, table, smnu
     character(len=15), dimension(29) :: col_list = [character(len=15) :: &
          & 'Omit', 'White (bg)', 'Black', 'Red', 'Green', 'Blue', 'Cyan', &
@@ -136,6 +138,8 @@ contains
   subroutine gr_1d_set_colour(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set the colour for the trace
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%colour = &
@@ -146,6 +150,8 @@ contains
 
   subroutine gr_1d_set_symbol(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set the symbol for the points
 
     if (.not. gui_active) return
 
@@ -158,6 +164,8 @@ contains
   subroutine gr_1d_set_linestyle(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set the linestyle for the trace
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%line = &
@@ -168,6 +176,8 @@ contains
 
   subroutine gr_1d_set_join(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set the joining option
 
     if (.not. gui_active) return
 
@@ -180,6 +190,8 @@ contains
   subroutine gr_1d_set_coord(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Select rectangular or polar coordinates.
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%mode = &
@@ -190,6 +202,8 @@ contains
 
   subroutine gr_1d_set_thick(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set the line thickness
 
     if (.not. gui_active) return
 
@@ -202,6 +216,8 @@ contains
   subroutine gr_1d_set_size(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set the symbol size
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%symsize = &
@@ -212,6 +228,8 @@ contains
 
   subroutine gr_1d_set_sort(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set whether to sort the X axis
 
     if (.not. gui_active) return
 
@@ -224,6 +242,8 @@ contains
   subroutine gr_1d_set_clip(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set clipping to viewport
+
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%noclip = &
@@ -234,6 +254,8 @@ contains
 
   subroutine gr_1d_set_mouse(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Set mouse editing.
 
     if (.not. gui_active) return
 

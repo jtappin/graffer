@@ -18,6 +18,8 @@ contains
     integer, intent(in) :: axis
     real(kind=plflt), intent(out) :: a0, a1
 
+    ! Determine axis range given request and options.
+
     integer :: ilog
     real(kind=plflt) :: diff, scale, s0, s1
 
@@ -78,6 +80,8 @@ contains
     character(len=*), intent(out) :: options
     real(kind=plflt), intent(out) :: spacing
     integer, intent(out) :: nminor
+
+    ! Create the plbox axis codes based on the requested options.
 
     type(graff_style), pointer :: axsty
     integer :: other_axis
@@ -141,6 +145,8 @@ contains
     real(kind=plflt), dimension(4), intent(out) :: corners
     real(kind=plflt), intent(out) :: aspect
 
+    ! Define the viewport.
+
     real(kind=plflt) :: dx, dy, xoff, yoff, roff
 
     if (pdefs%isotropic) then
@@ -178,6 +184,8 @@ contains
     real(kind=plflt) :: value
     character(len=length) :: label
 
+    ! Format specification for axis labels.
+
     ! NOTE: No intent() settings as otherwise it won't match the
     ! interface required.
 
@@ -208,6 +216,8 @@ contains
     integer, intent(in) :: axis
     real(kind=plflt), intent(in) :: value
     character(len=*), intent(out) :: label
+
+    ! Define time formatting options
 
     integer(kind=int16) :: unit, munit
     type(graff_style), pointer :: axstyle

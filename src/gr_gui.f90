@@ -32,6 +32,8 @@ contains
   subroutine gr_make_gui(version, infile)
     character(len=*), intent(in) :: version, infile
 
+    ! Overall gui setup
+
     type(c_ptr) :: base, lh, junk, jb, gaccel, g_d_notebook, &
          & global_base, ds_base, ynb
 

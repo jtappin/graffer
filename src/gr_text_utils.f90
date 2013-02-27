@@ -9,6 +9,8 @@ module gr_text_utils
 
   implicit none
 
+  ! Font defintions
+
   integer, parameter, dimension(*) :: font_list = [PL_FCI_SANS, PL_FCI_SERIF, &
        & PL_FCI_MONO, PL_FCI_SCRIPT, PL_FCI_SYMBOL]
   integer, dimension(*), parameter :: font_weight = [PL_FCI_MEDIUM, &
@@ -26,6 +28,8 @@ module gr_text_utils
 contains
   subroutine gr_add_text(text)
     type(graff_text), intent(in) :: text
+
+    ! Add a text annotation to a file
 
     type(graff_text), dimension(:), allocatable :: tmp_text
 
@@ -45,6 +49,8 @@ contains
 
   subroutine gr_delete_text(index)
     integer, intent(in) :: index
+
+    ! Delete a text annotation
 
     integer :: i, j
     type(graff_text), dimension(:), allocatable :: tmp_text

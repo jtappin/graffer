@@ -31,6 +31,8 @@ module gr_general_key_widgets
 contains
   subroutine gr_key_menu
 
+    ! Set up a key or legend.
+
     logical, dimension(2), target :: iapply = [.false., .true.]
     type(c_ptr) :: base, junk, jb, cbase, stab
     real(kind=c_double) :: xcmin, xcmax, xcstep,  ycmin, ycmax, ycstep
@@ -251,6 +253,8 @@ contains
   recursive subroutine gr_key_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Quit setting up key
+
     logical, pointer :: apply
     integer :: nuse, i, j
 
@@ -309,6 +313,8 @@ contains
   subroutine gr_key_enable(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Switch key on / off
+
     call gtk_widget_set_sensitive(key_base, &
          & gtk_toggle_button_get_active(widget))
 
@@ -316,6 +322,8 @@ contains
 
   subroutine gr_key_norm(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Select coordinate system to position key
 
     integer(kind=int16) :: lnorm
     real(kind=c_double) :: xcmin, xcmax, xcstep,  ycmin, ycmax, ycstep
@@ -400,6 +408,8 @@ contains
   subroutine gr_key_add(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Add a DS to the key
+
     integer, pointer :: dsno
 
     call c_f_pointer(data, dsno)
@@ -409,6 +419,8 @@ contains
 
   subroutine gr_key_all(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Add all suitable datasets to the key.
 
     integer :: i
 

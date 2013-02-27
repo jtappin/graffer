@@ -23,6 +23,8 @@ contains
   function gr_ds_selector_new() result(fr)
     type(c_ptr) :: fr
 
+    ! Define the dataset selection panel
+
     type(c_ptr) :: jb, mnu, smnu, junk
     integer(kind=int16), dimension(2), target :: direct = [-1_int16, 1_int16]
 
@@ -121,6 +123,8 @@ contains
   recursive subroutine gr_ds_advance(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Make a different dataset current
+
     integer(kind=int16), pointer :: direct
     integer(kind=int16) :: cnew
 
@@ -145,6 +149,8 @@ contains
   subroutine gr_ds_new_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Create a new dataset
+
     call gr_ds_new(.true.)
     call gr_plot_draw(.true.)
 
@@ -152,7 +158,8 @@ contains
 
   subroutine gr_ds_select_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
-
+    
+    ! Select a new current dataset
 
     call gr_ds_select
 
@@ -161,6 +168,7 @@ contains
   subroutine gr_ds_merge_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Append one datset to another
 
     call gr_ds_merge
   end subroutine gr_ds_merge_cb
@@ -169,6 +177,8 @@ contains
   subroutine gr_ds_sort(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Reorder datasets.
+
     call gr_ds_sort_menu
 
   end subroutine gr_ds_sort
@@ -176,6 +186,8 @@ contains
 
   subroutine gr_ds_erase_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Erase the current dataset
 
     integer(kind=c_int) :: iresp
 
@@ -196,6 +208,8 @@ contains
   subroutine gr_ds_delete_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Delete the current dataset.
+
     integer(kind=c_int) :: iresp
 
     iresp = hl_gtk_message_dialog_show(&
@@ -214,6 +228,8 @@ contains
 
   subroutine gr_ds_write_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Write the current dataset
 
     integer(kind=c_int) :: iresp
     character(len=256), dimension(:), allocatable :: files
@@ -238,6 +254,7 @@ contains
   subroutine gr_ds_write_data_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Write the current (function) dataset as data values.
     integer(kind=c_int) :: iresp
     character(len=256), dimension(:), allocatable :: files
     character(len=150) :: deffile
@@ -248,7 +265,6 @@ contains
     if (idx == 0) idx = len_trim(deffile)+1
 
     write(deffile(idx:), "('_',I0,'.dat')") pdefs%cset-1
-
 
     iresp = hl_gtk_file_chooser_show(files, &
          & filter=['*.dat'], all=TRUE, edit_filters=TRUE, &
@@ -261,6 +277,8 @@ contains
   subroutine gr_ds_copy_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Copy the current dataset to a new one.
+
     integer(kind=int16) current_ds
 
     current_ds = pdefs%cset
@@ -272,6 +290,8 @@ contains
 
   subroutine gr_ds_rename(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Change the name of the current dataset.
 
     call hl_gtk_entry_get_text(widget, pdefs%data(pdefs%cset)%descript)
     call gr_plot_draw(.true.)
@@ -287,6 +307,8 @@ contains
 
   subroutine gr_ds_current_only(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Toggle display of current dataset only.
 
     if (.not. gui_active) return
 

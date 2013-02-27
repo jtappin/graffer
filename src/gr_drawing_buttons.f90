@@ -24,6 +24,8 @@ contains
   subroutine gr_drawing_plot(fevent)
     type(gdkeventbutton), pointer :: fevent
 
+    ! Actions on button press in drawing mode
+
     type(graff_data), pointer :: data
 
     data => pdefs%data(pdefs%cset)
@@ -45,6 +47,9 @@ contains
   subroutine gr_drawing_left(fevent, data)
     type(gdkeventbutton), pointer :: fevent
     type(graff_data) :: data
+
+    ! Actions on Left button press/release
+
     real(kind=real64) :: dr0, dr1
     real(kind=real64), dimension(:), allocatable :: drc
 
@@ -102,6 +107,8 @@ contains
     type(gdkeventbutton), pointer :: fevent
     type(graff_data) :: data
 
+    ! Actions on middle button press/release
+
     real(kind=real64), dimension(:), allocatable :: dr
     real(kind=real64) :: xnew, ynew, scale
 
@@ -143,6 +150,8 @@ contains
     type(gdkeventbutton), pointer :: fevent
     type(graff_data) :: data
 
+    ! Actions on right button press/release
+
     real(kind=real64), dimension(:), allocatable :: dr
     integer(kind=c_int) :: iresp
 
@@ -178,6 +187,9 @@ contains
 
   subroutine gr_point_add(data)
     type(graff_data) :: data
+
+    ! Add a point to a dataset
+
     real(kind=real64), dimension(:,:), allocatable :: xytmp
     integer :: n1, i, j
     real(kind=real64) :: scale
@@ -226,6 +238,9 @@ contains
 
   subroutine gr_point_delete(data)
     type(graff_data) :: data
+
+    ! Delete a point from a dataset
+
     real(kind=real64), dimension(:,:), allocatable :: xytmp
     integer :: n1, i, j
 
@@ -262,6 +277,8 @@ contains
 
   subroutine gr_drawing_text(fevent)
     type(gdkeventbutton), pointer :: fevent
+
+    ! Actions on a button event in text mode
 
     real(kind=real64) ::  dr, dr1, xd, yd
     integer :: i, iclose

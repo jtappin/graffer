@@ -23,6 +23,8 @@ module gr_ds_merge_widgets
 contains
   subroutine gr_ds_merge
 
+    ! Dataset merging selector.
+
     type(c_ptr) :: base, hbase, junk, jb, sbox
     logical, target, dimension(2) :: iapply = [.false., .true.]
     integer(kind=c_int) :: i, j
@@ -101,6 +103,8 @@ contains
   subroutine gr_ds_merge_set_t(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Actions on selecting Target DS
+
     integer(kind=c_int) :: nsel
     integer(kind=c_int), dimension(:), allocatable :: isel
     integer(kind=c_int) :: type, i, j
@@ -132,6 +136,8 @@ contains
   subroutine gr_ds_merge_set_s(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Actions on selecting source.
+
     integer(kind=c_int) :: nsel
     integer(kind=c_int), dimension(:), allocatable :: isel
 
@@ -143,6 +149,8 @@ contains
 
   recursive subroutine gr_ds_merge_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Quit dataset merge
 
     logical, pointer :: apply
 

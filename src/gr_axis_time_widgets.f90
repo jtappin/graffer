@@ -18,6 +18,8 @@ contains
   subroutine gr_time_menu(axis)
     integer, intent(in) :: axis
 
+    ! Configure time labelling options.
+
     type(graff_style), pointer :: axstyle
     integer(int16) :: unit, munit
     logical, target, dimension(2) :: iapply = [.false., .true.]
@@ -87,6 +89,8 @@ contains
 
   recursive subroutine gr_time_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Quit time configuration.
 
     logical, pointer :: apply
     type(graff_style), pointer :: axstyle

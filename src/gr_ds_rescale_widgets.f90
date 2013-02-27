@@ -24,6 +24,8 @@ module gr_ds_rescale_widgets
 contains
   subroutine gr_ds_rescale
 
+    ! Shift/scale a dataset.
+
     logical, dimension(2), target :: iapply = [.false., .true.]
     type(c_ptr) :: base, junk, jb
     integer(kind=c_int) :: iresp
@@ -99,6 +101,8 @@ contains
 
   recursive subroutine gr_ds_rs_quit(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata
+
+    ! Quit DS scaling tool
 
     logical, pointer :: apply
     type(graff_data), pointer :: data

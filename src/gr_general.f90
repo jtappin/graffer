@@ -22,6 +22,8 @@ contains
   function gr_general_new() result(fr)
     type(c_ptr) :: fr
 
+    ! Define the general options panel
+
     type(c_ptr) :: junk, t, jb
 
     fr = hl_gtk_box_new()
@@ -39,7 +41,8 @@ contains
          & focus_out_event=c_funloc(gr_set_title_e), &
          & value = trim(pdefs%title)//c_null_char, &
          & tooltip="Set a title for the plot"//c_null_char)
-    call hl_gtk_table_attach(t, title_box, 1_c_int, 0_c_int, xspan=3_c_int, yopts=0)
+    call hl_gtk_table_attach(t, title_box, 1_c_int, 0_c_int, xspan=3_c_int, &
+         & yopts=0)
 
     junk = gtk_label_new("Subtitle:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 0_c_int, 1_c_int, yopts=0)
@@ -49,7 +52,8 @@ contains
          & focus_out_event=c_funloc(gr_set_stitle_e), &
          & value = trim(pdefs%subtitle)//c_null_char, &
          & tooltip="Set a subtitle for the plot"//c_null_char)
-    call hl_gtk_table_attach(t, subtitle_box, 1_c_int, 1_c_int, xspan=3_c_int, yopts=0)
+    call hl_gtk_table_attach(t, subtitle_box, 1_c_int, 1_c_int, xspan=3_c_int,&
+         & yopts=0)
 
     junk = gtk_label_new("Charsize:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 0_c_int, 2_c_int, yopts=0)
@@ -91,6 +95,8 @@ contains
 
   subroutine gr_general_set()
 
+    ! Set widgets programmatically
+
     if (.not. c_associated(title_box)) return
 
     gui_active = .false.
@@ -110,6 +116,8 @@ contains
   subroutine gr_set_title(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Change plot title
+
     if (.not. gui_active) return
 
     call hl_gtk_entry_get_text(widget, pdefs%title)
@@ -126,6 +134,8 @@ contains
 
   subroutine gr_set_stitle(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Change plot subtitle
 
     if (.not. gui_active) return
 
@@ -144,6 +154,8 @@ contains
   subroutine gr_set_csize(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set character size
+
     if (.not. gui_active) return
 
     pdefs%charsize = real(gtk_spin_button_get_value(widget), real32)
@@ -154,6 +166,8 @@ contains
   subroutine gr_set_axthick(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set thickness for axes.
+
     if (.not. gui_active) return
 
     pdefs%axthick = real(gtk_spin_button_get_value(widget), real32)
@@ -163,6 +177,8 @@ contains
   subroutine gr_set_corners(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set up viewport
+
     call gr_corner_menu
 
   end subroutine gr_set_corners
@@ -170,12 +186,16 @@ contains
   subroutine gr_set_key(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Set up key.
+
     call gr_key_menu
 
   end subroutine gr_set_key
 
   subroutine gr_set_comment(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Add comments.
 
     call gr_comment_menu
 

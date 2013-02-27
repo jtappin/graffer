@@ -24,6 +24,8 @@ module  gr_ds_reorder_widgets
 contains
   subroutine gr_ds_sort_menu
     
+    ! DS sorter menu
+
     type(c_ptr) :: base, junk, jb, sbox
     logical, target, dimension(2) :: iapply = [.false., .true.]
     integer :: i
@@ -92,13 +94,16 @@ contains
   recursive subroutine gr_ds_sort_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    ! Quit sorter
+
     call gtk_widget_destroy(sort_window)
-!    call gr_plot_draw
 
   end subroutine gr_ds_sort_quit
 
   recursive subroutine gr_ds_sort_pick(widget, data) bind(c)
     type(c_ptr), value :: widget, data
+
+    ! Actions on selecting DS to move
 
     integer(kind=c_int), dimension(:), allocatable :: isel
     integer(kind=c_int) :: nsel, index
@@ -134,6 +139,8 @@ contains
   subroutine gr_ds_sort_do(widget, data) bind(c)
     type(c_ptr), value :: widget, data
     
+    ! Apply the change.
+
     logical, pointer :: apply
     integer(kind=c_int) :: i
 
