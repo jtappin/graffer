@@ -254,6 +254,16 @@ contains
     call hl_gtk_table_attach(table, cg_smooth_but, 0_c_int, 5_c_int, &
          & xspan=2_c_int)
 
+    junk = gtk_label_new("Levels"//c_null_char)
+    call hl_gtk_table_attach(table, junk, 2_c_int, 5_c_int)
+
+    gc_smooth_l_sb = hl_gtk_spin_button_new(3_c_int, 256_c_int, &
+         & initial_value=int(zdata%shade_levels, c_int), &
+         & value_changed=c_funloc(gr_2d_set_sm_levels), tooltip=&
+         & "Set how many levels for smooth colour display"//c_null_char, &
+         & sensitive=f_c_logical(zdata%invert))
+    call hl_gtk_table_attach(table, gc_smooth_l_sb, 3_c_int, 5_c_int)
+
     ! Hidden dataset
 
     junk = hl_gtk_box_new()
@@ -701,8 +711,20 @@ contains
 
     pdefs%data(pdefs%cset)%zdata%smooth = &
          & c_f_logical(gtk_toggle_button_get_active(widget))
-
+    call gtk_widget_set_sensitive(gc_smooth_l_sb, &
+         & gtk_toggle_button_get_active(widget))
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_smooth
 
+  subroutine gr_2d_set_sm_levels(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Set how many levels to use for plshades display.
+
+    pdefs%data(pdefs%cset)%zdata%shade_levels = &
+         & int(hl_gtk_spin_button_get_value(widget), int32)
+
+    call gr_plot_draw(.true.)
+
+  end subroutine gr_2d_set_sm_levels
 end module gr_2d_opts

@@ -205,7 +205,8 @@ for j = 0, (pdefs.nsets-1) > 0 do begin
         graff_put_rec, ilu, 'ZIL', zopts.ilog
         graff_put_rec, ilu, 'ZIN', zopts.invert
         graff_put_rec, ilu, 'ZM ', zopts.missing
-
+        graff_put_rec, ilu, 'ZSM', zopts.smooth
+        graff_put_rec, ilu, 'ZSN', zopts.shade_levels
     endif
     
     graff_put_rec, ilu, 'DE '

@@ -42,7 +42,9 @@ Zopts = {graff_2d, $
          Gamma:       0., $
          Fill:        0b, $
          ilog:        0b, $
-         invert:      0b $
+         invert:      0b, $
+         smooth:      0b, $
+         shade_levels: 0l $
         }
 
 end

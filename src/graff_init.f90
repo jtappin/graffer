@@ -35,8 +35,9 @@ contains
        pdefs%axsty(i)%grid = 0_int16
        pdefs%axsty(i)%time = 0_int16
        pdefs%axsty(i)%tzero = 0_int32
-       pdefs%axsty(i)%minor = 1_int16
+       pdefs%axsty(i)%minor = 0_int16
        pdefs%axsty(i)%major = 0_int16
+       pdefs%axsty(i)%xmajor = 0._real64
        pdefs%axsty(i)%format = ""
     end do
 
@@ -172,6 +173,7 @@ contains
     data%zdata%ilog = .false.
     data%zdata%invert = .false.
     data%zdata%smooth = .false.
+    data%zdata%shade_levels = 256
 
     if (allocated(data%xydata)) deallocate(data%xydata)
 

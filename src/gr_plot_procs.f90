@@ -828,7 +828,7 @@ contains
 
     type(graff_data), pointer :: data
     real(kind=real64), dimension(:,:), allocatable :: z
-    real(kind=real64), dimension(256) ::  clevels
+    real(kind=real64), dimension(:), allocatable ::  clevels
     real(kind=real64), dimension(:,:), allocatable ::  x2, y2
     real(kind=real64), dimension(:), allocatable :: x1, y1
     logical :: c2d
@@ -874,6 +874,8 @@ contains
     end if
     where(.not. finite(z)) z = data%zdata%missing
 
+    if (data%zdata%shade_levels == 0) data%zdata%shade_levels = 256
+    allocate(clevels(data%zdata%shade_levels))
 
     do i = 1, size(clevels)
        clevels(i) = zmin + real(i-1)*(zmax - zmin)/real(size(clevels)-1)

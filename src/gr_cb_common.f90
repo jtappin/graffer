@@ -52,7 +52,8 @@ module gr_cb_common
        & clevels_entry, cthick_view, clabel_entry, cchsize_entry
 
   type(c_ptr) :: cg_table_pick, cg_missing_entry, & 
-       & cg_gamma_entry, cg_log_but, cg_invert_but, cg_smooth_but
+       & cg_gamma_entry, cg_log_but, cg_invert_but, cg_smooth_but, &
+       & gc_smooth_l_sb
 
   type(c_ptr), dimension(2) :: cg_range_entry
 
@@ -406,6 +407,10 @@ contains
          & f_c_logical(data%zdata%invert))
     call gtk_toggle_button_set_active(cg_smooth_but, &
          & f_c_logical(data%zdata%smooth))
+    call gtk_widget_set_sensitive(gc_smooth_l_sb, &
+         &  f_c_logical(data%zdata%smooth))
+    call hl_gtk_spin_button_set_value(gc_smooth_l_sb, &
+         &  int(data%zdata%shade_levels, c_int))
 
     do i = 1, 2
        write(stext, "(g0.5)") data%zdata%range(i)

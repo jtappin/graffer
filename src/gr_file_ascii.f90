@@ -841,6 +841,8 @@ contains
              data%zdata%invert = gr_log_val(tag_val(itag+1))
           case('ZSM')
              data%zdata%smooth = gr_log_val(tag_val(itag+1))
+          case('ZSN')
+             data%zdata%shade_levels = gr_lon_val(tag_val(itag+1))
           case('ZM')
              data%zdata%missing = gr_dbl_val(tag_val(itag+1))
 
@@ -1335,10 +1337,11 @@ contains
 
              write(unit, "(a,2(g0,1x),a,g0)") "ZR:", data%zdata%range, &
                   & ":ZM:", data%zdata%missing
-             write(unit, "(a,f7.3, 3(a,i0))") "ZP:", data%zdata%pxsize, &
+             write(unit, "(a,f7.3, 4(a,i0))") "ZP:", data%zdata%pxsize, &
                   & ":ZIL:", f_c_logical(data%zdata%ilog), ":ZIN:", &
                   & f_c_logical(data%zdata%invert), ':ZSM:', &
-                  & f_c_logical(data%zdata%smooth)
+                  & f_c_logical(data%zdata%smooth), ':ZSN:', &
+                  & data%zdata%shade_levels
           end if
        end if
        write(unit, "(a)") "DE:"

@@ -145,6 +145,8 @@ while (not eof(ilu)) do begin
         
         'ZIL': data[nset].zopts.ilog = value
         'ZIN': data[nset].zopts.invert = value
+        'ZSM': data[nset].zopts.smooth = value
+        'ZSN': data[nset].zopts.shade_levels = value
         'ZM': data[nset].zopts.missing = value
 
         'R': xydata.range = value

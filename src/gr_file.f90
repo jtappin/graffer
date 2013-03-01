@@ -912,6 +912,8 @@ contains
           call rec%get_value(ds%zdata%invert, status)
        case('ZSM')
           call rec%get_value(ds%zdata%smooth, status)
+       case('ZSN')
+          call rec%get_value(ds%zdata%shade_levels, status)
        case ('ZM')
           call rec%get_value(ds%zdata%missing, status)
 
@@ -1177,6 +1179,7 @@ contains
           call rec%set_value('ZIL', gdata%zdata%ilog, unit)
           call rec%set_value('ZIN', gdata%zdata%invert, unit)
           call rec%set_value('ZSM', gdata%zdata%smooth, unit)
+          call rec%set_value('ZSN', gdata%zdata%shade_levels, unit)
           call rec%set_value('ZM ', gdata%zdata%missing, unit)
        end if
        call rec%set_value('DE ')
