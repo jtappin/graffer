@@ -420,6 +420,7 @@ contains
           ctflag = .true.
        case ('ZG ')
           call rec%get_value(pdefs%gamma, status)
+          if (pdefs%gamma == 0.) pdefs%gamma = 1.
 
           ! DN - total number of datasets in the
           !      file. This MUST come before any
@@ -869,6 +870,7 @@ contains
 
        case ('ZCG')
           call rec%get_value(ds%zdata%gamma, status)
+          if (ds%zdata%gamma == 0.) ds%zdata%gamma = 1.
 
        case('ZS')
           if (allocated(ds%zdata%style)) deallocate(ds%zdata%style)
@@ -908,6 +910,8 @@ contains
           call rec%get_value(ds%zdata%ilog, status)
        case ('ZIN')
           call rec%get_value(ds%zdata%invert, status)
+       case('ZSM')
+          call rec%get_value(ds%zdata%smooth, status)
        case ('ZM')
           call rec%get_value(ds%zdata%missing, status)
 
@@ -935,7 +939,7 @@ contains
              ds%zdata%x_is_2d = .false.
              allocate(ds%zdata%x(dims(1),1))
           else
-             ds%zdata%x_is_2d = .true.
+             ds%zdata%x_is_2d = dims(2) > 1
              allocate(ds%zdata%x(dims(1),dims(2)))
           end if
           call rec%get_value(ds%zdata%x, status)
@@ -946,7 +950,7 @@ contains
              ds%zdata%y_is_2d = .false.
              allocate(ds%zdata%y(1,dims(1)))
           else
-             ds%zdata%y_is_2d = .true.
+             ds%zdata%y_is_2d = dims(1) > 1
              allocate(ds%zdata%y(dims(1),dims(2)))
           end if
           call rec%get_value(ds%zdata%y, status)
@@ -1088,7 +1092,7 @@ contains
     call rec%set_value('RMN', pdefs%axsty(3)%minor, unit)
     if (allocated(pdefs%axsty(3)%values)) &
          & call rec%set_value('RVL', pdefs%axsty(3)%values, unit)
-    call rec%set_value('RT ', pdefs%axtitle(2), unit)
+    call rec%set_value('RT ', pdefs%axtitle(3), unit)
 
     ! Colour table for displayed Z data
     call rec%set_value('ZT ', pdefs%ctable, unit)
@@ -1172,6 +1176,7 @@ contains
           call rec%set_value('ZP ', gdata%zdata%pxsize, unit)
           call rec%set_value('ZIL', gdata%zdata%ilog, unit)
           call rec%set_value('ZIN', gdata%zdata%invert, unit)
+          call rec%set_value('ZSM', gdata%zdata%smooth, unit)
           call rec%set_value('ZM ', gdata%zdata%missing, unit)
        end if
        call rec%set_value('DE ')

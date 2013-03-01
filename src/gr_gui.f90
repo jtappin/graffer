@@ -35,10 +35,10 @@ contains
     ! Overall gui setup
 
     type(c_ptr) :: base, lh, junk, jb, gaccel, g_d_notebook, &
-         & global_base, ds_base, ynb
+         & global_base, ds_base, ynb, topbase
 
     integer(kind=c_int) :: nbi, tid, iseconds
-    integer(kind=int16) :: zformat
+!!$    integer(kind=int16) :: zformat
 
     gui_active = .false.
 
@@ -46,8 +46,11 @@ contains
          & ": "//trim(infile)//c_null_char, destroy=c_funloc(gr_exit), &
          & resizable=FALSE, accel_group=gaccel)
 
+    topbase = hl_gtk_box_new()
+    call gtk_container_add(gr_window, topbase)
+
     base = hl_gtk_box_new(horizontal = TRUE)
-    call gtk_container_add(gr_window, base)
+    call hl_gtk_box_pack(topbase, base)
 
     ! The Left Hand column has all the top-level controls.
     lh = hl_gtk_box_new()
@@ -134,9 +137,16 @@ contains
     gr_drawing_area = gr_drawing_new()
     call hl_gtk_box_pack(base, gr_drawing_area)
 
-    zformat = pdefs%data(pdefs%cset)%zdata%format
+    ! And a message box
+
+    gr_infobar = hl_gtk_info_bar_new(["OK"], &
+         & response=c_funloc(gr_infobar_clr), &
+         & type=GTK_MESSAGE_WARNING)
+    call hl_gtk_box_pack(topbase, gr_infobar)
+
+!    zformat = pdefs%data(pdefs%cset)%zdata%format
     call gtk_widget_show_all(gr_window)
-    pdefs%data(pdefs%cset)%zdata%format = zformat
+!    pdefs%data(pdefs%cset)%zdata%format = zformat
 
     ! Showing the right page(s) must follow showing the widgets
     select case (pdefs%data(pdefs%cset)%type)

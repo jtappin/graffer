@@ -3,13 +3,13 @@
 # This version for csh or tcsh.
 
 if ($?GDL_PATH) then
-    setenv GDL_PATH ${GDL_PATH}:@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib
+    setenv GDL_PATH ${GDL_PATH}:@CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/lib
 else
-    setenv GDL_PATH @CMAKE_INSTALL_DATAROOTDIR@/graffer/lib
+    setenv GDL_PATH @CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/lib
 endif
 
 if ($?IDL_PATH) then
-    setenv IDL_PATH ${IDL_PATH}:@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib
+    setenv IDL_PATH ${IDL_PATH}:@CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/lib
 else
-    setenv IDL_PATH @CMAKE_INSTALL_DATAROOTDIR@/graffer/lib
+    setenv IDL_PATH @CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/lib
 endif

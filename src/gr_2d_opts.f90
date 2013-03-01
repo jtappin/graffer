@@ -246,6 +246,14 @@ contains
     call hl_gtk_table_attach(table, cg_invert_but, 2_c_int, 4_c_int,&
          & xspan=2_c_int)
 
+    cg_smooth_but = hl_gtk_check_button_new("Smooth display?"//c_null_char, &
+         & toggled=c_funloc(gr_2d_set_smooth), &
+         & initial_state=f_c_logical(zdata%smooth), &
+         & tooltip="Select smooth display of colour image (slower)"&
+         & //c_null_char)
+    call hl_gtk_table_attach(table, cg_smooth_but, 0_c_int, 5_c_int, &
+         & xspan=2_c_int)
+
     ! Hidden dataset
 
     junk = hl_gtk_box_new()
@@ -683,5 +691,18 @@ contains
 
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_invert
+
+  subroutine gr_2d_set_smooth(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Set smooth (plshades) or blocky (plimage) display
+
+    if (.not. gui_active) return
+
+    pdefs%data(pdefs%cset)%zdata%smooth = &
+         & c_f_logical(gtk_toggle_button_get_active(widget))
+
+    call gr_plot_draw(.true.)
+  end subroutine gr_2d_set_smooth
 
 end module gr_2d_opts

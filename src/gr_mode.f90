@@ -67,6 +67,7 @@ contains
 
     pdefs%transient%mode = int(gtk_combo_box_get_active(widget), int16)
     call gr_draw_tips
+    call gr_plot_draw(.false.)
 
   end subroutine gr_text_mode
 

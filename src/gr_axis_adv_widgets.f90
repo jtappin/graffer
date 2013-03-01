@@ -79,7 +79,7 @@ contains
     adv_minor_sb = hl_gtk_spin_button_new(0_c_int, 50_c_int, &
          & initial_value = int(axstyle%minor, c_int), &
          & tooltip="Set the number of minor intervals between major ticks"&
-         & //c_new_line//"1 = default, 0 = no minor ticks"//c_null_char)
+         & //c_new_line//"0 = default, 1 = no minor ticks"//c_null_char)
     call hl_gtk_table_attach(jb, adv_minor_sb, 1_c_int, 1_c_int)
 
     junk = gtk_label_new("Label format:"//c_null_char)

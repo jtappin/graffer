@@ -103,7 +103,7 @@ contains
     minor_chb(axis) = hl_gtk_check_menu_item_new(jmnu, &
          & "Minor ticks"//c_null_char, toggled=c_funloc(gr_set_minor), &
          & data = c_loc(axis), &
-         & initial_state=f_c_logical(pdefs%axsty(axis)%minor /= 0), &
+         & initial_state=f_c_logical(pdefs%axsty(axis)%minor /= 1), &
          & tooltip = "Toggle display of minor tick marks"//c_null_char)
 
     ann_chb(axis) = hl_gtk_check_menu_item_new(jmnu, &
@@ -112,6 +112,16 @@ contains
          & initial_state=f_c_logical(btest(pdefs%axsty(axis)%extra, &
          & annot_bit)), &
          &  tooltip="Switch axis labelling on/off"//c_null_char)
+
+    if (axis /= 1) then
+       rot_chb(axis) = hl_gtk_check_menu_item_new(jmnu, &
+            & "Label along axis"//c_null_char, &
+            & toggled=c_funloc(gr_set_ax_rot), &
+            & data = c_loc(axis), initial_state=&
+            & f_c_logical(btest(pdefs%axsty(axis)%extra, yrot_bit)), &
+            & tooltip="Switch putting Y labels parallel to the axis"//&
+            & c_null_char)
+    end if
 
     time_chb(axis) = hl_gtk_check_menu_item_new(jmnu, &
          & "Time labels"//c_null_char, toggled=c_funloc(gr_set_time), &
@@ -210,7 +220,7 @@ contains
          & activate=c_funloc(gr_set_range), data=c_loc(axis), &  ! Needs tweak
          & focus_out_event=c_funloc(gr_set_range_e), &
          & data_focus_out=c_loc(axis), value=trim(rtext)//c_null_char, &
-         & size=75_c_int, tooltip="Set lower limit for axis"//c_null_char)
+         & size=75_c_int, tooltip="Set upper limit for axis"//c_null_char)
     call g_object_set_data(rbox(2, axis), "minmax"//c_null_char, &
          & c_loc(minmax(2)))
     call hl_gtk_table_attach(t, rbox(2,axis), 3,2, yopts=0)
@@ -254,7 +264,8 @@ contains
 
     call c_f_pointer(data, axis)
     pdefs%axtype(axis) = int(gtk_check_menu_item_get_active(widget), int16)
-
+    if (minval(pdefs%axrange(:,axis)) <= 0.) &
+         & call gtk_widget_set_sensitive(widget, FALSE)
     call gr_plot_draw(.true.)
  end subroutine gr_set_log
 
@@ -344,9 +355,11 @@ contains
     if (.not. gui_active) return
 
     call c_f_pointer(data, axis)
-
-    pdefs%axsty(axis)%minor = &
-         & int(gtk_check_menu_item_get_active(widget), int16)
+    if (c_f_logical(gtk_check_menu_item_get_active(widget))) then
+       pdefs%axsty(axis)%minor = 0
+    else
+       pdefs%axsty(axis)%minor = 1
+    end if
     call gr_plot_draw(.true.)
   end subroutine gr_set_minor
 
@@ -368,6 +381,25 @@ contains
     end if
     call gr_plot_draw(.true.)
   end subroutine gr_set_annot
+
+  subroutine gr_set_ax_rot(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Y-axis annotation orientation.
+
+    integer, pointer :: axis
+
+    if (.not. gui_active) return
+
+    call c_f_pointer(data, axis)
+
+    if (c_f_logical(gtk_check_menu_item_get_active(widget))) then
+       pdefs%axsty(axis)%extra = ibset(pdefs%axsty(axis)%extra, yrot_bit)
+    else
+       pdefs%axsty(axis)%extra = ibclr(pdefs%axsty(axis)%extra, yrot_bit)
+    end if
+    call gr_plot_draw(.true.)
+  end subroutine gr_set_ax_rot
 
   subroutine gr_set_time(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -492,9 +524,16 @@ contains
     else
        pdefs%axrange(mm,axis) = val
     end if
-    call gtk_widget_set_sensitive(log_chb(axis), &
-         & f_c_logical(minval(pdefs%axrange(:,axis)) > 0.))
+    if (minval(pdefs%axrange(:,axis)) > 0.) then
+       call gtk_widget_set_sensitive(log_chb(axis), TRUE)
+    else if (pdefs%axtype(axis) == 1) then
+       call hl_gtk_info_bar_message(gr_infobar, &
+            &"Setting a zero or negative limit for a log axis"//c_null_char)
 
+       return
+    else
+       call gtk_widget_set_sensitive(log_chb(axis), FALSE)
+    end if
     call gr_plot_draw(.true.)
   end subroutine gr_set_range
   function gr_set_range_e(widget, event, data) bind(c) result(rv)

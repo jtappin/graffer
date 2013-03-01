@@ -171,6 +171,7 @@ contains
     data%zdata%fill = 0_int8
     data%zdata%ilog = .false.
     data%zdata%invert = .false.
+    data%zdata%smooth = .false.
 
     if (allocated(data%xydata)) deallocate(data%xydata)
 

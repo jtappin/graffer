@@ -41,7 +41,7 @@ module graff_types
      real(kind=real32) :: pxsize=0._real32, charsize=0._real32, gamma=0._real32
      integer(kind=int16) :: label=0_int16, ctable=0_int16
      integer(kind=int8) :: fill=0_int8
-     logical(kind=int8) :: ilog=.false., invert=.false.
+     logical(kind=int8) :: ilog=.false., invert=.false., smooth=.false.
   end type graff_zdata
 
   ! Function specific stuff

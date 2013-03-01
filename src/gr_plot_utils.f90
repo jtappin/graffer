@@ -2,30 +2,41 @@ module gr_plot_utils
   ! Utilities to compute plot parameters (no actual plotting)
 
   use iso_fortran_env
+  use iso_c_binding
 
   use plplot, only: plflt
+  use gtk_hl
 
   use graff_globals
   use gr_utils
-
+  
   implicit none
 
   integer, private, dimension(3) :: tick_index
   real, private, dimension(3) :: top_last
 
 contains
-  subroutine gr_axis_range(axis, a0, a1)
+  subroutine gr_axis_range(axis, a0, a1, ok)
     integer, intent(in) :: axis
     real(kind=plflt), intent(out) :: a0, a1
+    logical, intent(inout) :: ok
 
     ! Determine axis range given request and options.
 
     integer :: ilog
     real(kind=plflt) :: diff, scale, s0, s1
-
+    character(len=200) :: err_buffer
     a0 = pdefs%axrange(1, axis)
     a1 = pdefs%axrange(2, axis)
     diff = abs(a1-a0)
+    if (pdefs%axtype(axis) == 1 .and. min(a0,a1) <= 0.) then
+       ok = .false.
+       write(err_buffer, "(a,i0)") &
+            & "gr_plot_draw: Zero or negative limit for log axis ",axis
+       call hl_gtk_info_bar_message(gr_infobar, &
+            & trim(err_buffer)//c_null_char)
+       return
+    end if
 
     if (.not. btest(pdefs%axsty(axis)%idl, exact_bit)) then
        if (pdefs%axtype(axis) == 1) then
@@ -109,16 +120,8 @@ contains
          & pdefs%axrange(1,other_axis)*pdefs%axrange(2,other_axis) < 0) &
          & options = trim(options)//'a'
 
-    if (axsty%minor /= 0) then
-       options = trim(options)//'s'
-       if (axsty%minor > 1) then
-          nminor = axsty%minor
-       else
-          nminor = 0
-       end if
-    else
-       nminor = 0
-    end if
+    if (axsty%minor /= 1)  options = trim(options)//'s'
+    nminor = axsty%minor
 
     spacing = axsty%xmajor
 
@@ -130,7 +133,9 @@ contains
        else
           options = trim(options)//'n'
        end if
-       if (axis /= 1)  options = trim(options)//'v'
+       if (axis /= 1 .and. &
+            & .not. btest(pdefs%axsty(axis)%extra, yrot_bit)) &
+            & options = trim(options)//'v'
     end if
 
     if (axsty%format /= '' .or. btest(axsty%time, time_bit)) then

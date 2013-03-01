@@ -46,7 +46,10 @@ module gr_utils
   integer, parameter :: exact_bit = 0, extend_bit = 1, axis_bit = 2, &
        & box_bit = 3
   integer, parameter :: origin_bit = 1, full_bit = 3, annot_bit = 2, &
-       & time_bit = 0
+       & yrot_bit=4, time_bit = 0
+
+  ! NaN value
+  real(kind=real64), parameter :: d_nan=transfer(z'7ff8000000000000',1._real64)
 
 contains
 
@@ -558,4 +561,11 @@ contains
     end function mdays
   end subroutine gr_date
 
+  elemental function finite(x)
+    logical :: finite
+    real(kind=real64), intent(in) :: x
+
+    finite = .not. (isnan(x) .or. x > huge(x) .or. x < -huge(x))
+  end function finite
+    
 end module gr_utils

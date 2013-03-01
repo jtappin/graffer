@@ -3,6 +3,7 @@ module gr_eval
   use iso_c_binding
 
   use gtk_sup
+  use gtk_hl
 
   use g, only: g_find_program_in_path
 
@@ -87,6 +88,7 @@ contains
     real(kind=real64), dimension(2) :: xr, yr
     integer :: status
     type(graff_data), pointer :: data
+    character(len=120) :: err_buffer
 
     if (present(dataset)) then
        data => dataset
@@ -146,9 +148,17 @@ contains
     gr_evaluate = status
 
     if (status /= 0) then
-       write(error_unit, "(a,i0)") &
-            & "gr_1df_plot: Failed to evaluate function for dataset #", &
-            & dsidx
+       if (c_associated(gr_infobar)) then
+          write(err_buffer, "(a,i0)") &
+               & "gr_evaluate: Failed to evaluate function for dataset #", &
+               & dsidx
+          call hl_gtk_info_bar_message(gr_infobar, &
+               & trim(err_buffer)//c_null_char)
+       else
+          write(error_unit, "(a,i0)") &
+               & "gr_evaluate: Failed to evaluate function for dataset #", &
+               & dsidx
+       end if
        return
     end if
 
@@ -387,7 +397,7 @@ contains
     write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y1 = ',yr(1), &
          & '+dindgen(1,',ny,')*',yr(2)-yr(1), &
          & '/double(',ny-1,')'
-    write(punit, "(a,i0,a)") 'y = y1[intarr(',ny,'),*]'
+    write(punit, "(a,i0,a)") 'y = y1[intarr(',nx,'),*]'
     write(punit, "(2a)") 'z = ', trim(fun)
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x1, y1, z'

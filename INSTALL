@@ -34,3 +34,10 @@ to build graffer, and:
 
 to install it. This will also install some gdl/idl utilities to allow
 creation of graffer files from within that environment.
+
+Setting up
+----------
+
+In order to use the gdl/idl tools, you need to add their directory to
+GDL_PATH (or IDL_PATH). Shell scripts that can be 'source'ed to do this
+are installed in ${PREFIX}/share/graffer. 

@@ -14,5 +14,6 @@ module graff_globals
 
   type(c_ptr) :: gr_window = c_null_ptr		! The top level window
   type(c_ptr) :: gr_drawing_area = c_null_ptr	! The main plotting surface
+  type(c_ptr) :: gr_infobar = c_null_ptr	! Messages window
 
 end module graff_globals

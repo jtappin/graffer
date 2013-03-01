@@ -195,6 +195,7 @@ contains
 
     real(kind=plflt) :: x0, x1, y0, y1, r0, r1
     integer :: i
+    logical :: ok
 
     if (.not. gr_plot_is_open) call gr_plot_open
     if (.not. gr_plot_is_open) return
@@ -214,12 +215,19 @@ contains
     call plsfont(font_list(pdefs%hardset%font_family), &
          & font_shape(pdefs%hardset%font_wg_sl), &
          & font_weight(pdefs%hardset%font_wg_sl))
-    call gr_axis_range(1, x0, x1)
-    call gr_axis_range(2, y0, y1)
+
+    ok = .true.
+    call gr_axis_range(1, x0, x1, ok)
+    call gr_axis_range(2, y0, y1, ok)
     pdefs%transform%world(:,1) = [x0, x1, y0, y1]
     if (pdefs%y_right) then
-       call gr_axis_range(3, r0, r1)
+       call gr_axis_range(3, r0, r1, ok)
        pdefs%transform%world(:,2) = [x0, x1, r0, r1]
+    end if
+
+    if (.not. ok) then
+       write(error_unit, "(a)") "gr_plot_draw: Invalid axis ranges"
+       return
     end if
 
     call gr_viewport(pdefs%transform%viewport, pdefs%transform%vp_aspect)
@@ -233,7 +241,8 @@ contains
     ! First the datasets
 
     do i = 1, pdefs%nsets
-       if (pdefs%transient%current_only .and. i /= pdefs%cset) cycle
+       if (pdefs%transient%current_only .and. &
+            & (i /= pdefs%cset .or. pdefs%transient%mode == 1)) cycle
 
        select case (pdefs%data(i)%type)
        case(0:8)
@@ -252,9 +261,11 @@ contains
 
     ! The text annotations
 
-    do i = 1, pdefs%ntext
-       call gr_text_draw(i, anchor=gr_is_widget)
-    end do
+    if (.not. pdefs%transient%current_only .or. pdefs%transient%mode == 1) then
+       do i = 1, pdefs%ntext
+          call gr_text_draw(i, anchor=gr_is_widget)
+       end do
+    end if
 
     ! Draw the axes last
 
@@ -457,7 +468,11 @@ contains
     case(0)
        call gr_contour(index)
     case(1)
-       call gr_shade(index)
+       if (pdefs%data(index)%zdata%smooth) then
+          call gr_shade_smooth(index)
+       else
+          call gr_shade(index)
+       end if
     case(2)
     case default
        write(error_unit, "(A,i0)") "gr_2dd_plot: Invalid format setting: ",&

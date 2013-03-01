@@ -3,14 +3,14 @@
 # This version for sh or bash.
 
 if [ -z ${GDL_PATH} ]; then
-    export GDL_PATH=@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib;
+    export GDL_PATH=@CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/lib;
 else
-    export GDL_PATH=${GDL_PATH}:@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib;
+    export GDL_PATH=${GDL_PATH}:@CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/lib;
 fi
 
 if [ -z ${IDL_PATH} ]; then
-    export IDL_PATH=@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib;
+    export IDL_PATH=@CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/lib;
 else
-    export IDL_PATH=${IDL_PATH}:@CMAKE_INSTALL_DATAROOTDIR@/graffer/lib;
+    export IDL_PATH=${IDL_PATH}:@CMAKE_INSTALL_FULL_DATAROOTDIR@/graffer/lib;
 fi
 

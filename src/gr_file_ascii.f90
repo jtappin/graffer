@@ -496,6 +496,7 @@ contains
              pdefs%ctable = gr_int_val(tag_val(itag+1))
           case('ZG')
              pdefs%gamma = gr_flt_val(tag_val(itag+1))
+             if (pdefs%gamma == 0.) pdefs%gamma = 1.0
 
           case('DN')
              if (dflag) write(error_unit, "(a)") &
@@ -771,6 +772,7 @@ contains
 
           case('ZCG')
              data%zdata%gamma = gr_flt_val(tag_val(itag+1))
+             if (data%zdata%gamma == 0.) data%zdata%gamma = 1.0
 
           case('ZNS')
              data%zdata%n_sty = gr_int_val(tag_val(itag+1))
@@ -836,8 +838,9 @@ contains
           case('ZIL')
              data%zdata%ilog = gr_log_val(tag_val(itag+1))
           case('ZIN')
-             data%zdata%invert =  gr_log_val(tag_val(itag+1))
-
+             data%zdata%invert = gr_log_val(tag_val(itag+1))
+          case('ZSM')
+             data%zdata%smooth = gr_log_val(tag_val(itag+1))
           case('ZM')
              data%zdata%missing = gr_dbl_val(tag_val(itag+1))
 
@@ -1332,9 +1335,10 @@ contains
 
              write(unit, "(a,2(g0,1x),a,g0)") "ZR:", data%zdata%range, &
                   & ":ZM:", data%zdata%missing
-             write(unit, "(a,f7.3, 2(a,i0))") "ZP:", data%zdata%pxsize, &
+             write(unit, "(a,f7.3, 3(a,i0))") "ZP:", data%zdata%pxsize, &
                   & ":ZIL:", f_c_logical(data%zdata%ilog), ":ZIN:", &
-                  & f_c_logical(data%zdata%invert)
+                  & f_c_logical(data%zdata%invert), ':ZSM:', &
+                  & f_c_logical(data%zdata%smooth)
           end if
        end if
        write(unit, "(a)") "DE:"

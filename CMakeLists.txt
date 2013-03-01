@@ -76,3 +76,4 @@ link_directories(/usr/local/lib)
 
 add_subdirectory(src)
 add_subdirectory(data)
+add_subdirectory(gdl)

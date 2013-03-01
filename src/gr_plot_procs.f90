@@ -3,6 +3,7 @@ module gr_plot_procs
   use iso_c_binding
 
   use plplot
+  use gtk_hl
 
   use graff_types
   use graff_globals
@@ -296,6 +297,7 @@ contains
     real(kind=plflt), dimension(3) :: xa, ya, xav, yav
     real(kind=plflt) :: xd, yd, dxw, dyw
     integer :: i
+    character(len=120) :: err_buffer
 
     text => pdefs%text(index)
 
@@ -329,9 +331,10 @@ contains
        call gr_plot_coords_v_w(text%x, text%y, x, y, nolog=.true.)
        call gr_plot_transform(full=.true._int8, noupdate=.true.)
     case default
-       write(error_unit, "(A,i0)") &
+       write(err_buffer, "(A,i0)") &
             & "gr_text_add: Invalid coordinate system: ", &
             & text%norm
+       call hl_gtk_info_bar_message(gr_infobar, trim(err_buffer)//c_null_char)
        call gr_plot_transform(full=.false._int8)
        return
     end select
@@ -612,8 +615,8 @@ contains
     call plwid(1)
     call gr_plot_linesty(0_int16)
 
-    if (data%zdata%fill == 2_int8) write(error_unit, "(A)") &
-         & "gr_contour: Contour ticks not (yet) supported"
+    if (data%zdata%fill == 2_int8) call hl_gtk_info_bar_message(gr_infobar, &
+         & "gr_contour: Contour ticks not (yet) supported"//c_null_char)
 
     do i = 1, data%zdata%n_levels
        if (data%zdata%label /= 0 .and. mod(i, data%zdata%label) == 0) then
@@ -695,7 +698,25 @@ contains
 
     allocate(z(nx, ny))
     z = data%zdata%z
-    if (data%zdata%ilog) z = log10(z)
+
+    if (data%zdata%range(1) == data%zdata%range(2)) then
+       zmin = minval(z)
+       zmax = maxval(z)
+    else
+       zmin = data%zdata%range(1)
+       zmax = data%zdata%range(2)
+    end if
+    if (data%zdata%ilog) then
+       if (min(zmin, zmax) > 0.) then
+          z = log10(z)
+          zmin = log10(zmin)
+          zmax = log10(zmax)
+       else
+          call hl_gtk_info_bar_message(gr_infobar, &
+            & "Setting a zero or negative limit for a log mapping, "//&
+            & "using linear"//c_null_char)
+       end if
+    end if
 
     allocate(x1(nx+1), y1(ny+1))
     if (data%zdata%x_is_2d .or. data%zdata%y_is_2d) then
@@ -785,18 +806,6 @@ contains
        ymax = log10(ymax)
     end if
 
-    if (data%zdata%range(1) == data%zdata%range(2)) then
-       zmin = minval(z)
-       zmax = maxval(z)
-    else
-       zmin = data%zdata%range(1)
-       zmax = data%zdata%range(2)
-       if (data%zdata%ilog) then
-          zmin = log10(zmin)
-          zmax = log10(zmax)
-       end if
-    end if
-
     call gr_ct_get(int(data%zdata%ctable), .true., invert=data%zdata%invert, &
          & gamma=data%zdata%gamma)
 
@@ -810,6 +819,135 @@ contains
 
 
   end subroutine gr_shade
+
+  subroutine gr_shade_smooth(index)
+    integer, intent(in) :: index
+
+    ! Display data as a colour image.
+    ! using plshades (slower but better looking)
+
+    type(graff_data), pointer :: data
+    real(kind=real64), dimension(:,:), allocatable :: z
+    real(kind=real64), dimension(256) ::  clevels
+    real(kind=real64), dimension(:,:), allocatable ::  x2, y2
+    real(kind=real64), dimension(:), allocatable :: x1, y1
+    logical :: c2d
+    integer :: i
+    real(kind=real64) :: zmin, zmax, xmin, xmax, ymin, ymax, z0, z1
+    logical :: xlog, ylog, zflag
+
+    data => pdefs%data(index)
+    if (.not. allocated(data%zdata%z)) return
+    call gr_plot_transform(dataset=index, full=data%noclip)
+
+    xlog = pdefs%axtype(1) == 1
+    if (pdefs%y_right .and. pdefs%data(index)%y_axis == 1) then
+       ylog = pdefs%axtype(3) == 1
+    else
+       ylog = pdefs%axtype(2) == 1
+    end if
+
+    allocate(z(data%ndata, data%ndata2))
+    z = data%zdata%z
+
+    z0 = minval(z)
+    z1 = maxval(z)
+    if (data%zdata%range(1) == data%zdata%range(2)) then
+       zmin = z0
+       zmax = z1
+    else
+       zmin = data%zdata%range(1)
+       zmax = data%zdata%range(2)
+    end if
+
+    zflag = .false.
+    if (data%zdata%ilog) then
+       if (min(zmin, zmax) > 0.) then
+          zmin = log10(zmin)
+          zmax = log10(zmax)
+       else
+          call hl_gtk_info_bar_message(gr_infobar, &
+            & "Setting a zero or negative limit for a log mapping, "//&
+            & "using linear"//c_null_char)
+          zflag = .true.
+       end if
+    end if
+    where(.not. finite(z)) z = data%zdata%missing
+
+
+    do i = 1, size(clevels)
+       clevels(i) = zmin + real(i-1)*(zmax - zmin)/real(size(clevels)-1)
+    end do
+    if (.not. zflag .and. data%zdata%ilog) clevels = 10.**clevels
+    clevels(1) = min(clevels(1), z0)
+    clevels(size(clevels)) = max(clevels(size(clevels)), z1)
+
+    if (data%zdata%x_is_2d .or. data%zdata%y_is_2d) then
+       allocate(x2(data%ndata, data%ndata2), y2(data%ndata, data%ndata2))
+       c2d = .true.
+    else
+       allocate(x1(data%ndata), y1(data%ndata2))
+       c2d = .false.
+    end if
+
+    if (data%zdata%x_is_2d) then
+       if (data%zdata%y_is_2d) then
+          x2 = data%zdata%x
+          y2 = data%zdata%y
+       else
+          x2 = data%zdata%x
+          do i = 1, data%ndata
+             y2(i,:) = data%zdata%y(1,:)
+          end do
+       end if
+    else
+       if (data%zdata%y_is_2d) then
+          do i = 1, data%ndata2
+             x2(:,i) = data%zdata%x(:,1)
+          end do
+          y2 = data%zdata%y
+       else
+          x1 = data%zdata%x(:,1)
+          y1 = data%zdata%y(1,:)
+       end if
+    end if
+
+    if (c2d) then
+       if (xlog) x2 = log10(x2)
+       if (ylog) y2 = log10(y2)
+    else
+       if (xlog) x1 = log10(x1)
+       if (ylog) y1 = log10(y1)
+    end if
+
+    xmin = pdefs%axrange(1,1)
+    xmax = pdefs%axrange(2,1)
+    if (xlog) then
+       xmin = log10(xmin)
+       xmax = log10(xmax)
+    end if
+
+    if (pdefs%y_right .and. data%y_axis == 1) then
+       ymin = pdefs%axrange(1,3)
+       ymax = pdefs%axrange(2,3)
+    else
+       ymin = pdefs%axrange(1,2)
+       ymax = pdefs%axrange(2,2)
+    end if
+    if (ylog) then
+       ymin = log10(ymin)
+       ymax = log10(ymax)
+    end if
+
+    call gr_ct_get(int(data%zdata%ctable), .true., invert=data%zdata%invert, &
+         & gamma=data%zdata%gamma)
+
+    if (c2d) then
+       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0, 0, 0, x2, y2)
+    else
+       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0, 0, 0, x1, y1)
+    end if
+  end subroutine gr_shade_smooth
 
   subroutine gr_stamp(xn, yn, just)
     real(kind=plflt), intent(in), optional :: xn, yn, just

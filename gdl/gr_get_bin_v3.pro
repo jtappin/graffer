@@ -1,15 +1,16 @@
-pro gr_get_bin, pdefs, ilu, no_set = no_set
+pro gr_get_bin_v3, pdefs, ilu, file_v, no_set = no_set
 
 ;+
-; GR_GET_BIN
-;	Get an BINARY graffer dataset from a file (V4)
+; GR_GET_BIN_V3
+;	Get an BINARY graffer dataset from a file (Version 3 format)
 ;
 ; Usage:
-;	gr_get_bin, pdefs, ilu
+;	gr_get_bin_v3, pdefs, ilu, file_v
 ;
 ; Argument:
 ;	pdefs	struct	in/out	The graffer data structure.
 ;	ilu	long	input	The file unit to read.
+;	file_v	int	input	The version of the file.
 ;
 ; Keywords:
 ;	no_set	input	If set, then don't try to set up the widget
@@ -24,22 +25,24 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
 ;	Add "GI" for isotropic: 25/6/08; SJT
 ;	Add key charsize: 29/4/09; SJT
 ;	Add support for a second Y-scale: 22/12/11; SJT
-;	V4 version: 6/1/12; SJT
+;	Converted to procedure, for Graffer V4: 6/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
 ;-
 
 
-  dflag = 0b
-  tflag = 0b
+single = file_v[0] eq 2 
 
-  tag = '   '
-  ctflag = 0b
+dflag = 0b
+tflag = 0b
 
-  while (not eof(ilu)) do begin
-     
-     graff_get_rec, ilu, tag, value, tcode
+tag = '   '
+ctflag = 0b
 
-     case (tag) of
+while (not eof(ilu)) do begin
+    
+    readu, ilu, tag
+
+    case (tag) of
         
                                 ; The G keys are general graffer keys
                                 ; GT - plot title
@@ -50,14 +53,13 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ; GR - Aspect of plot.
                                 ; GI - Is plot isotropic?
 
-        'GT ': pdefs.title = value
-        'GS ': pdefs.subtitle = value
-        'GC ': pdefs.charsize = value
-        'GA ': pdefs.axthick = value
-        'GP ': pdefs.position = value
-        'GR ': pdefs.aspect = value
-        'GI ': pdefs.isotropic = value
-        'GHA': pdefs.match = value
+        'GT ': pdefs.title = gr_str_rd(ilu)
+        'GS ': pdefs.subtitle = gr_str_rd(ilu)
+        'GC ': pdefs.charsize = gr_flt_rd(ilu, 1)
+        'GA ': pdefs.axthick = gr_int_rd(ilu, 1)
+        'GP ': pdefs.position = gr_flt_rd(ilu, 4)
+        'GR ': pdefs.aspect = gr_flt_rd(ilu, 2)
+        'GI ': pdefs.isotropic = gr_byt_rd(ilu, 1)
 
                                 ; The X, Y and R keys are items relating
                                 ; to the X, Y and right-hand Y axes
@@ -74,79 +76,45 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ; XT, YT, RT - Axis label.
                                 ; YIR - There is a right-hand y-axis
 
-        'XR ': pdefs.xrange = value
-        'XL ': pdefs.xtype = value
-        'XSI': pdefs.xsty.idl = value
+        'XR ': pdefs.xrange = gr_dbl_rd(ilu, 2, single = single)
+        'XL ': pdefs.xtype = gr_int_rd(ilu, 1)
+        'XSI': pdefs.xsty.idl = gr_int_rd(ilu, 1)
         'XSE': begin
-           pdefs.xsty.extra = value
-           if (pdefs.xsty.extra and 1) then begin
-              pdefs.xsty.minor = 1
-              pdefs.xsty.extra and= (not 1)
-           endif
+           pdefs.xsty.extra = gr_int_rd(ilu, 1)
+           pdefs.xsty.minor = pdefs.xsty.extra and 1
+           pdefs.xsty.extra and= (not 1)
         end
-        'XMN': pdefs.xsty.minor = value
-        'XMJ': pdefs.xsty.major = value
-        'XMS': pdefs.xsty.xmajor = value
-        'XFM': pdefs.xsty.format = value
-
-        'XVL': begin
-           if ptr_valid(pdefs.xsty.values) then $
-              ptr_free, pdefs.xsty.values 
-           pdefs.xsty.values = ptr_new(value)
-        end
-        'XSG': pdefs.xsty.grid = value
-        'XST': pdefs.xsty.time = value
-        'XSZ': pdefs.xsty.tzero = value
-        'XT ': pdefs.xtitle = value
+        'XSG': pdefs.xsty.grid = gr_int_rd(ilu, 1)
+        'XST': pdefs.xsty.time = gr_int_rd(ilu, 1)
+        'XSZ': pdefs.xsty.tzero = gr_int_rd(ilu, 1)
+        'XT ': pdefs.xtitle = gr_str_rd(ilu)
         
-        'YR ': pdefs.yrange = value
-        'YL ': pdefs.ytype = value
-        'YSI': pdefs.ysty.idl = value
+        'YR ': pdefs.yrange = gr_dbl_rd(ilu, 2, single = single)
+        'YL ': pdefs.ytype = gr_int_rd(ilu, 1)
+        'YSI': pdefs.ysty.idl = gr_int_rd(ilu, 1)
         'YSE': begin
-           pdefs.ysty.extra = value
-           if (pdefs.ysty.extra and 1) then begin
-              pdefs.ysty.minor = 1
-              pdefs.ysty.extra and= (not 1)
-           endif
+           pdefs.ysty.extra = gr_int_rd(ilu, 1)
+           pdefs.ysty.minor = pdefs.ysty.extra and 1
+           pdefs.ysty.extra and= (not 1)
         end
-        'YMN': pdefs.ysty.minor = value
-        'YMJ': pdefs.ysty.major = value
-        'YMS': pdefs.ysty.xmajor = value
-        'YFM': pdefs.ysty.format = value
-        'YVL': begin
-           if ptr_valid(pdefs.ysty.values) then $
-              ptr_free, pdefs.ysty.values 
-           pdefs.ysty.values = ptr_new(value)
-        end
-        'YSG': pdefs.ysty.grid = value
-        'YST': pdefs.ysty.time = value
-        'YSZ': pdefs.ysty.tzero = value
-        'YT ': pdefs.ytitle = value
-        'YIR': pdefs.y_right = value
+        'YSG': pdefs.ysty.grid = gr_int_rd(ilu, 1)
+        'YST': pdefs.ysty.time = gr_int_rd(ilu, 1)
+        'YSZ': pdefs.ysty.tzero = gr_int_rd(ilu, 1)
+        'YT ': pdefs.ytitle = gr_str_rd(ilu)
+        'YIR': pdefs.y_right = gr_byt_rd(ilu, 1)
 
-        'RR ': pdefs.yrange_r = value
-        'RL ': pdefs.ytype_r = value
-        'RSI': pdefs.ysty_r.idl = value
+        'RR ': pdefs.yrange_r = gr_dbl_rd(ilu, 2, single = single)
+        'RL ': pdefs.ytype_r = gr_int_rd(ilu, 1)
+        'RSI': pdefs.ysty_r.idl = gr_int_rd(ilu, 1)
         'RSE': begin
-           pdefs.ysty_r.extra = value
-           if (pdefs.ysty_r.extra and 1) then begin
-              pdefs.ysty_r.minor = 1
-              pdefs.ysty_r.extra and= (not 1)
-           endif
+           pdefs.ysty_r.extra = gr_int_rd(ilu, 1)
+           pdefs.ysty_r.minor = pdefs.ysty_r.extra and 1
+           pdefs.ysty_r.extra and= (not 1)
         end
-        'RMN': pdefs.ysty_r.minor = value
-        'RMJ': pdefs.ysty_r.major = value
-        'RMS': pdefs.ysty_r.xmajor = value
-        'RFM': pdefs.ysty_r.format = value
-        'RVL': begin
-           if ptr_valid(pdefs.ysty_r.values) then $
-              ptr_free, pdefs.ysty_r.values 
-           pdefs.ysty_r.values = ptr_new(value)
-        end
-        'RSG': pdefs.ysty_r.grid = value
-        'RST': pdefs.ysty_r.time = value
-        'RSZ': pdefs.ysty_r.tzero = value
-        'RT ': pdefs.ytitle_r = value
+        'RSG': pdefs.ysty_r.grid = gr_int_rd(ilu, 1)
+        'RST': pdefs.ysty_r.time = gr_int_rd(ilu, 1)
+        'RSZ': pdefs.ysty_r.tzero = gr_int_rd(ilu, 1)
+        'RT ': pdefs.ytitle_r = gr_str_rd(ilu)
 
                                 ; ZT - specifies the colour table to
                                 ;      be used by the image format for
@@ -154,10 +122,10 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ; ZG - The gamma value for same.
         
         'ZT ': begin
-           pdefs.ctable = value
-           ctflag = 1b
+            pdefs.ctable = gr_int_rd(ilu, 1)
+            ctflag = 1b
         end
-        'ZG ': pdefs.gamma = value
+        'ZG ': pdefs.gamma = gr_flt_rd(ilu, 1)
         
                                 ; DN - total number of datasets in the
                                 ;      file. This MUST come before any
@@ -169,12 +137,12 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ;      ONE-based)
         
         'DN ': begin
-           pdefs.nsets = value
-           nds = pdefs.nsets > 1
-           data = replicate({graff_data}, nds)
-           dflag = 1b
+            pdefs.nsets = gr_int_rd(ilu, 1)
+            nds = pdefs.nsets > 1
+            data = replicate({graff_data}, nds)
+            dflag = 1b
         end
-        'DC ': pdefs.cset = value
+        'DC ': pdefs.cset = gr_int_rd(ilu, 1)
         
                                 ; TN - The total number of text
                                 ;      strings in the file. This must
@@ -182,18 +150,18 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ;      actually defined.
         
         'TN ': begin
-           pdefs.ntext = value
-           ntext = pdefs.ntext > 1
-           text = replicate({graff_text}, ntext)
-           tflag = 1b
+            pdefs.ntext = gr_int_rd(ilu, 1)
+            ntext = pdefs.ntext > 1
+            text = replicate({graff_text}, ntext)
+            tflag = 1b
         end
         
                                 ; DS - Start the definition of a
                                 ;      dataset.
         
         'DS ': begin
-           rset = value
-           gr_bin_ds, data, rset, ilu, pdefs.ids.message
+            rset = gr_int_rd(ilu, 1)
+            gr_bin_ds_v3, data, rset, ilu, pdefs.ids.message, file_v
         end
         
                                 ; TS - start the definition of a text
@@ -203,14 +171,15 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ;       text options).
         
         'TS ': begin
-           tset = value
-           gr_bin_txt, text, tset, ilu, pdefs.ids.message
+            tset = gr_int_rd(ilu, 1)
+            gr_bin_txt_v3, text, tset, ilu, pdefs.ids.message, file_v
         end
         
         'TTS': begin
-           topts = {graff_text}
-           gr_bin_txt, topts, 0, ilu, pdefs.ids.message, /template
-           pdefs.text_options = topts
+            topts = {graff_text}
+            gr_bin_txt_v3, topts, 0, ilu, pdefs.ids.message, file_v, $
+              /template
+            pdefs.text_options = topts
         end
         
                                 ; The H options refer to the options
@@ -231,35 +200,28 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ; HAA - Any part of the spooling
                                 ;       command which follows the
                                 ;       filename. 
-                                ; HVB - The view command (up to
-                                ;       the filename)
-                                ; HVA - Any part of the view
-                                ;       command which follows the
-                                ;       filename. 
                                 ; HF - Font family.
                                 ; HWS - Font weight and slant (bit 0 is
                                 ;       on for bold, bit 1 for
-                                ;       oblique/italic)
-                                ; HFN - Plot file name      
+                                ;       oblique/italic) 
         
-        'HC ': pdefs.hardset.colour = value
-        'HE ': pdefs.hardset.eps = value
-        'HO ': pdefs.hardset.orient = value
-        'HY ': pdefs.hardset.cmyk = value
-        'HP ': pdefs.hardset.psize = value
-        'HT ': pdefs.hardset.timestamp = value
-        'HS ': pdefs.hardset.size = value
-        'HD ': pdefs.hardset.off = value
+        'HC ': pdefs.hardset.colour = gr_byt_rd(ilu, 1)
+        'HE ': pdefs.hardset.eps = gr_byt_rd(ilu, 1)
+        'HO ': pdefs.hardset.orient = gr_byt_rd(ilu, 1)
+        'HY ': pdefs.hardset.cmyk = gr_byt_rd(ilu, 1)
+        'HP ': pdefs.hardset.psize = gr_byt_rd(ilu, 1)
+        'HT ': pdefs.hardset.timestamp = gr_byt_rd(ilu, 1)
+        'HS ': pdefs.hardset.size = gr_flt_rd(ilu, 2)
+        'HD ': pdefs.hardset.off = gr_flt_rd(ilu, 2)
 
-        'HAB': pdefs.hardset.action[0] = value
-        'HAA': pdefs.hardset.action[1] = value
-        'HVB': pdefs.hardset.viewer[0] = value
-        'HVA': pdefs.hardset.viewer[1] = value
+        'HAB': pdefs.hardset.action(0) = gr_str_rd(ilu)
+        'HAA': pdefs.hardset.action(1) = gr_str_rd(ilu)
+ 
+        'HF ': pdefs.hardset.font.family = $
+          gr_int_rd(ilu, 1)
+        'HWS': pdefs.hardset.font.wg_sl = $
+          gr_int_rd(ilu, 1)
         
-        'HF ': pdefs.hardset.font.family = value
-        'HWS': pdefs.hardset.font.wg_sl = value
-        'HFN': pdefs.hardset.name = value
-
                                 ; The K tags relate to the plotting of
                                 ; a key on the plot.
                                 ; KU - Plot a key
@@ -276,51 +238,68 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ;      display
                                 ; KP - Whether to plot 1 or 2 points.
         
-        'KU ': pdefs.key.use = value
-        'KX ': pdefs.key.x = value
-        'KY ': pdefs.key.y = value
-        'KS ': pdefs.key.csize = value
-        'KN ': pdefs.key.norm = value
-        'KC ': pdefs.key.cols = value
-        'KF ': pdefs.key.frame = value
-        'KP ': pdefs.key.one_point = value
-        'KT ': pdefs.key.title = value
+        'KU ': pdefs.key.use = gr_byt_rd(ilu, 1)
+        'KX ': pdefs.key.x = gr_dbl_rd(ilu, 2, single = single)
+        'KY ': pdefs.key.y = gr_dbl_rd(ilu, 2, single = single)
+        'KS ': pdefs.key.csize = gr_dbl_rd(ilu, 1)
+        'KN ': pdefs.key.norm = gr_int_rd(ilu, 1)
+        'KC ': pdefs.key.cols = gr_int_rd(ilu, 1)
+        'KF ': pdefs.key.frame = gr_byt_rd(ilu, 1)
+        'KP ': pdefs.key.one_point = gr_byt_rd(ilu, 1)
+        'KT ': pdefs.key.title = gr_str_rd(ilu)
         'KL ': begin
-           list = long(value)   ; Make sure the type is right
-           pdefs.key.list = ptr_new(list)
+            nl = gr_lon_rd(ilu, 1)
+            list = gr_lon_rd(ilu, nl)
+            pdefs.key.list = ptr_new(list)
         end
         
                                 ; REM - Remarks attached to the file
         
         'REM': begin
-           remarks = string(value) ; Make sure the type is right
-           pdefs.remarks = ptr_new(remarks)
+            remarks = gr_str_rd(ilu)
+            pdefs.remarks = ptr_new(remarks)
         end
         
                                 ; This probably means that the file is
                                 ; corrupted. 
         
         Else: begin
-           graff_msg, "Unknown tag: " + $
-                      tag + " Ignoring."
+            graff_msg, pdefs.ids.message, "Unknown tag: " + $
+              tag + "Ignoring."
+;            stop
+            point_lun, -ilu, ipos 
+            point_lun, ilu, ipos-2 ; Move back 2 bytes
         end
-     endcase
-     
+    endcase
+    
 New_line:
-     
-  endwhile
+    
+endwhile
 
-  ptr_free, pdefs.data, pdefs.text
+ptr_free, pdefs.data, pdefs.text
 
-  pdefs.data = ptr_new(data)
-  pdefs.text = ptr_new(text)
-  pdefs.is_ascii = 0b
-
-
-  free_lun, ilu
-
-  pdefs.chflag = 0              ; Clear changes flag
+pdefs.data = ptr_new(data)
+pdefs.text = ptr_new(text)
+pdefs.is_ascii = 0b
 
 
+free_lun, ilu
+
+pdefs.chflag = 0                ; Clear changes flag
+
+if (not keyword_set(no_set)) then begin
+    graff_set_vals, pdefs
+    vm = total(file_v ne pdefs.version)
+    if (vm ne 0.) then graff_msg, pdefs.ids.message, $
+      ['File and program versions differ', $
+       'File: '+string(file_v, format = "(I2,'.',I2.2)")+ $
+       '  Program: '+string(pdefs.version, format = "(I2,'.',I2.2)")]
+endif
+
+if (keyword_set(resave)) then begin
+    gr_bin_save, pdefs
+    graff_msg, pdefs.ids.message, "Resaving"
+endif
 
 end
+

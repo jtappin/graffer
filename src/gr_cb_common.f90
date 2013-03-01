@@ -14,7 +14,8 @@ module gr_cb_common
        & gtk_main_quit, gtk_notebook_set_current_page, &
        & gtk_toggle_button_get_active, gtk_toggle_button_set_active, &
        & gtk_widget_destroy, gtk_widget_set_sensitive, &
-       & gtk_widget_set_tooltip_text, gtk_widget_show_all, TRUE, &
+       & gtk_widget_set_tooltip_text, gtk_widget_show_all, gtk_widget_hide, &
+       & TRUE, &
        & GTK_RESPONSE_DELETE_EVENT, GTK_RESPONSE_CANCEL, GTK_RESPONSE_YES, &
        & GTK_RESPONSE_NO, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE
 
@@ -51,7 +52,7 @@ module gr_cb_common
        & clevels_entry, cthick_view, clabel_entry, cchsize_entry
 
   type(c_ptr) :: cg_table_pick, cg_missing_entry, & 
-       & cg_gamma_entry, cg_log_but, cg_invert_but
+       & cg_gamma_entry, cg_log_but, cg_invert_but, cg_smooth_but
 
   type(c_ptr), dimension(2) :: cg_range_entry
 
@@ -59,7 +60,7 @@ module gr_cb_common
 
   type(c_ptr), dimension(3) :: lbox, log_chb, &
        & exact_chb, ext_chb, ax_chb, bax_chb, minor_chb, ann_chb, time_chb, &
-       & origin_grp, grid_grp
+       & origin_grp, grid_grp, rot_chb
 
   type(c_ptr), dimension(2,3) :: rbox
 
@@ -276,6 +277,9 @@ contains
 
        call gtk_check_menu_item_set_active(ann_chb(i), &
             & f_c_logical(btest(pdefs%axsty(i)%extra, annot_bit)))
+       if (i /= 1) call gtk_check_menu_item_set_active(rot_chb(i), &
+            & f_c_logical(btest(pdefs%axsty(i)%extra, yrot_bit)))
+
        call gtk_check_menu_item_set_active(time_chb(i), &
             & f_c_logical(btest(pdefs%axsty(i)%time, time_bit)))
 
@@ -400,6 +404,8 @@ contains
     call gtk_toggle_button_set_active(cg_log_but, f_c_logical(data%zdata%ilog))
     call gtk_toggle_button_set_active(cg_invert_but, &
          & f_c_logical(data%zdata%invert))
+    call gtk_toggle_button_set_active(cg_smooth_but, &
+         & f_c_logical(data%zdata%smooth))
 
     do i = 1, 2
        write(stext, "(g0.5)") data%zdata%range(i)
@@ -510,4 +516,11 @@ contains
     end if
   end subroutine gr_draw_tips
 
+  subroutine gr_infobar_clr(widget, id, data) bind(c)
+    type(c_ptr), value :: widget, data
+    integer(kind=c_int), value :: id
+
+    call gtk_widget_hide(widget)
+
+  end subroutine gr_infobar_clr
 end module gr_cb_common
