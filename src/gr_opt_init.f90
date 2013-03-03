@@ -216,8 +216,9 @@ contains
                & "-d --delete           : Delete files generated to evaluate functions", &
                & "-nod --nodelete       : Keep files generated to evaluate functions", &
                & "                        Default behaviour", &
-               & " -p --pdf <cmd>       : Specify a PDF viewer for the help files",&
-               & " -g --geometry <x>x<y>: Specify the drawing window geometry", &
+               & "-p --pdf <cmd>        : Specify a PDF viewer for the help files",&
+               & "-g --geometry <x>x<y> : Specify the drawing window geometry", &
+               & "-a --autosave <time>  : Specify the delay between autosaves (s)", &
                & "", &
                & "<file>                : The graffer file to open or a directory to search"
 

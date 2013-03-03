@@ -305,6 +305,10 @@ contains
 
     if (pdefs%transform%viewport(1) == pdefs%transform%viewport(2)) then
        call plvasp(pdefs%transform%vp_aspect)
+       call plgvpd(pdefs%transform%viewport(1), &
+            & pdefs%transform%viewport(2), &
+            & pdefs%transform%viewport(3), &
+            & pdefs%transform%viewport(4))
     else if (pdefs%transform%vp_aspect == 0.) then
        call plvpor(pdefs%transform%viewport(1), &
             & pdefs%transform%viewport(2), &

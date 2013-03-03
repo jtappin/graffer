@@ -52,6 +52,7 @@ set(sources
   "graff_init.f90"
   "gr_sort.f90"
   "gr_text_widgets.f90"
+  "gr_text_pick_widgets.f90"
   "gr_text_utils.f90"
   )
 

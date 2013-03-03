@@ -12,6 +12,8 @@ module gr_drawing_buttons
   use graff_globals
   use gr_plot_tools
   use gr_text_widgets
+  use gr_text_pick_widgets
+
   use gr_cb_common
 
   implicit none
@@ -51,11 +53,10 @@ contains
     ! Actions on Left button press/release
 
     real(kind=real64) :: dr0, dr1
-    real(kind=real64), dimension(:), allocatable :: drc
+    integer :: closest
 
     if (fevent%type ==  GDK_BUTTON_PRESS) then
        call gr_ds_device
-       call gr_plot_coords_d_w(fevent%x, fevent%y, point_x, point_y)
        if (data%ndata == 0) then
           point_after = 0
        else if (fevent%state == GDK_SHIFT_MASK) then
@@ -69,24 +70,12 @@ contains
              point_after = data%ndata
           end if
        else if (fevent%state == GDK_CONTROL_MASK) then
-          dr0 = sqrt((fevent%x-pdefs%transient%x_dev(1))**2 + &
-               & (fevent%y-pdefs%transient%y_dev(1))**2)
-          dr1 = sqrt((fevent%x-pdefs%transient%x_dev(data%ndata))**2 + &
-               & (fevent%y-pdefs%transient%y_dev(data%ndata))**2)
-          if (dr0 <= dr1) then
-             point_after = 0
+          dr0 = gr_dist_seg(pdefs%transient%x_dev, pdefs%transient%y_dev, &
+               & fevent%x, fevent%y, closest)
+          if (dr0 > 5.) then
+             point_after = -1
           else
-             point_after = data%ndata
-          end if
-          if (data%ndata >= 2) then
-             allocate(drc(data%ndata-1))
-             drc =  sqrt((fevent%x - &
-                  & (pdefs%transient%x_dev(:data%ndata-1) + &
-                  & pdefs%transient%x_dev(2:))/2._real64)**2 + &
-                  & (fevent%y - &
-                  & (pdefs%transient%y_dev(:data%ndata-1) + &
-                  &  pdefs%transient%y_dev(2:))/2._real64)**2)
-             if (minval(drc) < min(dr0, dr1)) point_after = minloc(drc,1)
+             point_after = closest
           end if
        else if (fevent%state == 0) then
           point_after = data%ndata
@@ -96,12 +85,70 @@ contains
     else if (fevent%type ==  GDK_BUTTON_RELEASE .and. point_after >= 0) then
        if (iand(fevent%state, &
             & ior(GDK_CONTROL_MASK, GDK_SHIFT_MASK)) == 0) then
+          call gr_plot_coords_d_w(fevent%x, fevent%y, point_x, point_y)
           call gr_point_add(data)
           call gr_plot_draw(.true.)
        end if
        point_after = -1
     end if
   end subroutine gr_drawing_left
+
+  function gr_dist_seg(x_dev, y_dev, x, y, imin) result(dr)
+    real(kind=c_double) :: dr
+    real(kind=c_double), intent(in), dimension(:) :: x_dev, y_dev
+    real(kind=c_double), intent(in) :: x, y
+    integer, intent(out) :: imin
+
+    ! Distance in device coordinates between a point and the nearest
+    ! line segment
+
+    real(kind=c_double) :: xl, xu, yl, yu, tmp, grad, yint, xp, yp, dx, dy
+    real(kind=c_double), dimension(:), allocatable :: off
+
+    integer :: i
+    integer :: npts
+
+    npts = size(x_dev)
+    allocate(off(npts-1))
+
+    do i = 1, npts-1
+       xl = min(x_dev(i), x_dev(i+1))
+       xu = max(x_dev(i), x_dev(i+1))
+       if (xu-xl < 10.0) then
+          tmp = (xl+xu)/2.0
+          xl = tmp - 5.0
+          xu = tmp + 5.0
+       end if
+       yl = min(y_dev(i), y_dev(i+1))
+       yu = max(y_dev(i), y_dev(i+1))
+       if (yu - yl < 10.0) then
+          tmp = (yl+yu)/2.0
+          yl = tmp - 5.0
+          yu = tmp + 5.0
+       end if
+       if (x >= xl .and. x <= xu .and. y >= yl .and. y <= yu) then
+          if (y_dev(i) == y_dev(i+1)) then
+             off(i) = abs(y_dev(i) - y)
+          else if (x_dev(i) == x_dev(i+1)) then
+             off(i) = abs(x_dev(i) - x)
+
+          else
+             grad = (y_dev(i+1)-y_dev(i))/(x_dev(i+1)-x_dev(i))
+             yint = y_dev(i) - grad*x_dev(i)
+             yp = x*grad + yint
+             xp = (y-yint)/grad
+             dy = yp - y
+             dx = xp - x
+             off(i) = abs(dx*dy)/sqrt(dx**2+dy**2)
+          end if
+       else
+          off(i) = huge(1._c_double)
+       end if
+    end do
+
+    imin = minloc(off,1)
+    dr = minval(off)
+  end function gr_dist_seg
 
   subroutine gr_drawing_centre(fevent, data)
     type(gdkeventbutton), pointer :: fevent
@@ -310,20 +357,27 @@ contains
           end if
        end do
 
-       if (fevent%type == GDK_BUTTON_PRESS .and. dr <= 5.) then
+       if (fevent%type == GDK_BUTTON_PRESS) then
           select case  (fevent%button)
           case(2)
-             call gr_text_menu(index=iclose)
+             if (dr <= 5.) then
+                call gr_text_menu(index=iclose)
+             else
+                iclose = gr_text_pick()
+                if (iclose >= 1) call gr_text_menu(index=iclose)
+             end if
           case(3)
-             iresp = hl_gtk_message_dialog_show( &
-                  & ["DELETE TEXT STRING         ", &
-                  &  "This will delete the string", &
-                  &  "Do you wish to proceed?    "], &
-                  & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION, &
-                  & parent=gr_window)
-             if (iresp == GTK_RESPONSE_YES) then
-                call gr_delete_text(iclose)
-                call gr_plot_draw(.true.)
+             if (dr <= 5.) then
+                iresp = hl_gtk_message_dialog_show( &
+                     & ["DELETE TEXT STRING         ", &
+                     &  "This will delete the string", &
+                     &  "Do you wish to proceed?    "], &
+                     & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION, &
+                     & parent=gr_window)
+                if (iresp == GTK_RESPONSE_YES) then
+                   call gr_delete_text(iclose)
+                   call gr_plot_draw(.true.)
+                end if
              end if
           end select
        end if
