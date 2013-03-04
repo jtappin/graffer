@@ -298,8 +298,10 @@ contains
     character(len=3), pointer :: type
     character(len=120), dimension(:), allocatable :: pdflist
     integer(kind=c_int) :: iresp
-    character(len=*), parameter :: docdir = &
-         & '/data/software/graffer-dev/Docs'
+    character(len=*), parameter, dimension(2) :: docdir = &
+         & ['/usr/local/share/doc/graffer', &
+         &  '/usr/share/doc/graffer      ']
+    integer :: i
 
     call c_f_pointer(data, type)
 
@@ -318,12 +320,31 @@ contains
     end if
 
     if (type == 'ug') then
-       call execute_command_line(pdefs%opts%pdfviewer//' '//&
-            & docdir//'/Graffer.pdf', wait=.false.)
+       do i = 1, size(docdir)
+          if (file_exists(trim(docdir(i))//"/Graffer.pdf")) then
+             call execute_command_line(pdefs%opts%pdfviewer//' '//&
+                  & trim(docdir(i))//'/Graffer.pdf', wait=.false.)
+             return
+          end if
+       end do
     else
-       call execute_command_line(pdefs%opts%pdfviewer//' '//&
-            & docdir//'/Format.pdf', wait=.false.)
+       do i = 1, size(docdir)
+          if (file_exists(trim(docdir(i))//"/Format.pdf")) then
+             call execute_command_line(pdefs%opts%pdfviewer//' '//&
+                  & trim(docdir(i))//'/Format.pdf', wait=.false.)
+             return
+          end if
+       end do
     end if
+
+    iresp = hl_gtk_message_dialog_show(&
+         & ["File not found                        ",&
+         &  "Failed to find the requested help file", &
+         &  "in any expected places, please check  ", &
+         &  "your installation                     "], &
+         & GTK_BUTTONS_OK, type=GTK_MESSAGE_ERROR, &
+         & parent=gr_window)
+
   end subroutine gr_help
   subroutine gr_help_abt(widget, data) bind(c)
     type(c_ptr), value :: widget, data
