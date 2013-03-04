@@ -9,3 +9,6 @@ the same functionality in a Fortran program using gtk-fortran and
 plplot for the GUI and plotting respectively.
 
 To display functions gdl (gnudatalanguage) or IDL is required.
+
+As well as the main Fortran program, a number of gdl/idl procedures are
+included that allow the programmatic generation of graffer plot files.

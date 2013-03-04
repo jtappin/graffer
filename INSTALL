@@ -3,7 +3,8 @@ INSTALLATION
 
 To install graffer you must first install gtk-fortran (gtk2 or gtk3)
 and plplot (5.9.9 is currently the only version that works as there are
-some API changes in SVN).
+some API changes in SVN). To build the documentation, pdflatex is also
+needed.
 
 Build
 -----
