@@ -41,14 +41,20 @@ program graffer
   integer(kind=c_int) :: ipick
   logical :: ok, isdir
   character(len=8) :: gr_sversion
+  character(len=*), dimension(2), parameter :: ctdirs = &
+       & ['/usr/local/share/graffer',&
+       &  '/usr/share/graffer      ']
+  integer :: i
 
   call graffer_version%set(4, 7)
   call graffer_version%string(gr_sversion)
 
-  !! TEMPORARY
-  !!  call gr_ct_init('/home/jtappin/idl/graffer-dev/f-graffer/data/c_tables')
-  call gr_ct_init('/data/software/graffer-dev/f-graffer/data/c_tables')
-  !!  call gr_ct_init('/home/james/Dev/Graffer/f-graffer/data/c_tables')
+  do i = 1, size(ctdirs)
+     if (file_exists(trim(ctdirs(i))//'/c_tables.tab')) then
+        call gr_ct_init(trim(ctdirs(i))//'/c_tables')
+        exit
+     end if
+  end do
 
   ! Get the file to open/create and determine which.
 
