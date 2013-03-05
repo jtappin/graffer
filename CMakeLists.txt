@@ -25,7 +25,7 @@ include(GNUInstallDirs)
 set(CMAKE_INSTALL_LIBDIR lib)
 
 # Uncomment this to debug or use "cmake -D CMAKE_BUILD_TYPE=debug .."
-set(CMAKE_BUILD_TYPE debug)
+# set(CMAKE_BUILD_TYPE debug)
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE release)
 endif()
