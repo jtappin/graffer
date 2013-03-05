@@ -1,0 +1,22 @@
+# Specimen GRAFFER resource file.
+
+# Copy to /etc or /usr/local/etc for a systemwide resource.
+# Copy to ${HOME} and rename as .grafferrc for single user.
+
+# Autosave interval in seconds
+# Autosave: 300
+
+# Suppression of 2D datasets
+# Supp2d: 0
+
+# Allow/disable mouse editing
+# MouseEdit: 0
+
+# Delete temporary function evaluation files
+# Delete: 0
+
+# PDF help viewer
+# PDFView: acroread
+
+# Drawing window geometry
+# Geometry: 600x600
