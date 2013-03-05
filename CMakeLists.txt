@@ -1,3 +1,20 @@
+# Copyright (C) 2013
+# James Tappin
+
+# This is free software# you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License along with
+# this program; see the files COPYING3 and COPYING.RUNTIME respectively.
+# If not, see <http://www.gnu.org/licenses/>.
+
  
 cmake_minimum_required(VERSION 2.8.5)
 project(graffer Fortran)
@@ -31,8 +48,8 @@ configure_file(
 add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P
 ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
-# Find Gtk-Fortran, if Gtk2 is preferred, then switch the order of
-# the scans below.
+# Find Gtk-Fortran, if Gtk3 is preferred, then switch the order of
+# the scans below, or to use only one version use -DGTK=2 or -DGTK=3
 
 if (GTK EQUAL 2)
   find_package(Gtk2Fortran)
@@ -45,12 +62,12 @@ elseif (GTK EQUAL 3)
     message (FATAL_ERROR "Gtk3Fortran not found, aborting")
   endif()
 else ()
-  find_package(Gtk3Fortran)
+  find_package(Gtk2Fortran)
   if (NOT GTK3FORTRAN_FOUND)
-    message(STATUS "Gtk3Fortran not found trying Gtk3Fortran")
-    find_package(Gtk2Fortran)
+    message(STATUS "Gtk2Fortran not found, trying Gtk3Fortran")
+    find_package(Gtk3Fortran)
     if (NOT GTK2FORTRAN_FOUND)
-      message (FATAL_ERROR "Gtk2Fortran not found either, aborting")
+      message (FATAL_ERROR "Gtk3Fortran not found either, aborting")
     endif()
   endif()
 endif()
@@ -63,13 +80,13 @@ find_program(GDL "gdl")
 if (NOT GDL)
   find_program(GDL "idl")
   if (NOT GDL)
-    message("Neither 'gdl' not 'idl' was found, graffer will not be able to evaluate functions")
+    message("Neither 'gdl' nor 'idl' was found, graffer will not be able to evaluate functions")
   endif()
 endif()
 
 find_program(PDFLATEX "pdflatex")
 if (NOT PDFLATEX)
-  message(WARNING "pdflatex not found cannot generate PDF manuals")
+  message(WARNING "pdflatex, not found cannot generate PDF manuals")
 endif()
 
 include_directories(${GTKFORTRAN_MODULE_DIR})
