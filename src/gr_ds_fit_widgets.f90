@@ -160,7 +160,7 @@ contains
     fit_soln_entry = hl_gtk_entry_new(editable=FALSE)
     call hl_gtk_table_attach(jb, fit_soln_entry, 1_c_int, 0_c_int)
 
-    junk = gtk_label_new("Prob chance:"//c_null_char)
+    junk = gtk_label_new("Chi**2/DF:"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int, xopts=0_c_int)
     fit_prob_entry = hl_gtk_entry_new(editable=FALSE)
     call hl_gtk_table_attach(jb, fit_prob_entry, 1_c_int, 1_c_int)
@@ -271,7 +271,7 @@ contains
     real(kind=real64), dimension(:), allocatable, target :: xr, yr
     real(kind=real64), dimension(:), allocatable :: wt
     real(kind=real64), dimension(:), pointer :: x, y
-    real(kind=real64) :: xbar, ybar
+    real(kind=real64) :: xbar, ybar, chi2
 
     integer :: order, neval,i,ipos
     integer(kind=int16) :: oftype
@@ -305,32 +305,29 @@ contains
     yr = fit_ds%xydata(2,:)
 
     if (use_wt) then
-       xbar = sum(abs(xr))/real(size(xr), real64)
-       ybar = sum(abs(yr))/real(size(yr), real64)
-
        allocate(wt(fit_ds%ndata))
 
        select case (fit_ds%type)
        case(1)
-          wt = ybar/fit_ds%xydata(3,:)
+          wt = 1._real64/fit_ds%xydata(3,:)
        case(2)
-          wt = 2.*ybar / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
+          wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
        case(3)
-          wt = xbar/fit_ds%xydata(3,:)
+          wt = 1._real64/fit_ds%xydata(3,:)
        case(4)
-          wt = 2.*xbar / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
+          wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
        case(5)
-          wt = sqrt((xbar/fit_ds%xydata(3,:))**2 + &
-               & (ybar/fit_ds%xydata(4,:))**2)
+          wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
+               & (1._real64/fit_ds%xydata(4,:))**2)
        case(6)
-          wt = sqrt((xbar/fit_ds%xydata(3,:))**2 + &
-               & (2.*ybar/(fit_ds%xydata(4,:)+fit_ds%xydata(5,:)))**2)
+          wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
+               & (2._real64/(fit_ds%xydata(4,:)+fit_ds%xydata(5,:)))**2)
        case(7)
-          wt = sqrt((2.*xbar/(fit_ds%xydata(3,:)+fit_ds%xydata(4,:)))**2 + &
-               & (ybar/fit_ds%xydata(5,:))**2)
+          wt = sqrt((2._real64/(fit_ds%xydata(3,:)+fit_ds%xydata(4,:)))**2 + &
+               & (1._real64/fit_ds%xydata(5,:))**2)
        case(8)
-          wt = sqrt((2.*xbar/(fit_ds%xydata(3,:)+fit_ds%xydata(4,:)))**2 + &
-              & (2.*ybar/(fit_ds%xydata(5,:)+fit_ds%xydata(5,:)))**2)
+          wt = sqrt((2._real64/(fit_ds%xydata(3,:)+fit_ds%xydata(4,:)))**2 + &
+              & (2._real64/(fit_ds%xydata(5,:)+fit_ds%xydata(5,:)))**2)
        end select
     end if
 
@@ -369,9 +366,9 @@ contains
     end select
 
     if (use_wt) then
-       coeffs = poly_fit(x, y, order, weights=wt)
+       coeffs = poly_fit(x, y, order, weights=wt, chi2=chi2)
     else
-       coeffs = poly_fit(x, y, order)
+       coeffs = poly_fit(x, y, order, chi2=chi2)
     end if
 
     fstring = wrap0
@@ -396,6 +393,9 @@ contains
     fstring = trim(fstring)//wrap1
 
     call gtk_entry_set_text(fit_soln_entry, trim(fstring)//c_null_char)
+
+    write(termstr, "(g0)") chi2/(size(x)-1)
+    call gtk_entry_set_text(fit_prob_entry, trim(termstr)//c_null_char)
 
     curr_ds%type = oftype
     curr_ds%ndata = neval

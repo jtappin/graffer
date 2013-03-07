@@ -21,18 +21,19 @@ module gr_fitting
   implicit none
 
 contains
-  function poly_fit(x, y, order, weights, ycalc, status) result(coeff)
+  function poly_fit(x, y, order, weights, ycalc, status, chi2) result(coeff)
     integer, intent(in) :: order
     real(kind=real64), dimension(0:order) :: coeff
     real(kind=real64), intent(in), dimension(:) :: x, y
     real(kind=real64), intent(in), dimension(:), optional, target :: weights
     real(kind=real64), intent(out), dimension(:), optional :: ycalc
+    real(kind=real64), intent(out), optional :: chi2
     logical, intent(out), optional :: status
 
-    ! Polynomial fit to supplied data. (Derived from PDL)
+    ! Polynomial fit to supplied data. (Derived from PDL), Chi**2 isn't
 
     real(kind=real64), dimension(size(x), 0:order) :: xx
-    real(kind=real64), dimension(size(x)) :: yy
+    real(kind=real64), dimension(size(x)) :: yy, yfit
     real(kind=real64) :: xbar, ybar
     real(kind=real64), dimension(:), pointer :: wt
     real(kind=real64), dimension(0:order,0:order) :: ccc, yyy, aaa, tmp
@@ -91,11 +92,13 @@ contains
        coeff(i) = coeff(i)/xbar**i
     end do
 
-    if (present(ycalc)) then
-       ycalc = coeff(0)
+    if (present(ycalc) .or. present(chi2)) then
+       yfit = coeff(0)
        do i = 1, order
-          ycalc = ycalc + x**i * coeff(i)
+          yfit = yfit + x**i * coeff(i)
        end do
+       if (present(ycalc)) ycalc = yfit
+       if (present(chi2)) chi2 = sum((y-yfit)**2 * wt**2)
     end if
 
     if (present(status)) status = .true.
