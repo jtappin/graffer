@@ -22,9 +22,9 @@ module gr_2d_opts
   use gtk_hl
   use gtk_sup
 
-  use gtk, only: gtk_combo_box_get_active, gtk_container_add, &
-       & gtk_entry_set_text, gtk_label_new, gtk_notebook_set_current_page, &
-       & gtk_toggle_button_get_active, TRUE, FALSE, GTK_POLICY_NEVER
+  use gtk, only: gtk_combo_box_get_active, gtk_entry_set_text, gtk_label_new, &
+       & gtk_toggle_button_get_active, gtk_widget_set_sensitive, TRUE, FALSE, &
+       & GTK_POLICY_NEVER
 
   use graff_types
   use graff_globals
@@ -38,7 +38,7 @@ contains
 
   function gr_2d_opts_new() result(fr)
     type(c_ptr) :: fr
-   
+
     ! Display options for 2-D datasets.
 
     type(c_ptr) :: table, junk, sbox, jb, jbb
@@ -320,7 +320,7 @@ contains
          &f_c_logical(pdefs%data(pdefs%cset)%zdata%set_levels))
     call gtk_widget_set_sensitive(clevels_entry, &
          &f_c_logical(.not. pdefs%data(pdefs%cset)%zdata%set_levels))
-    
+
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_ct_rule
 

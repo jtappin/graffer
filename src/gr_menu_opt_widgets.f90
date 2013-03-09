@@ -24,9 +24,9 @@ module gr_menu_opt_widgets
 
   use g, only: g_find_program_in_path
 
-  use gtk, only: gtk_combo_box_set_active, gtk_container_add, gtk_label_new, &
-       & gtk_toggle_button_get_active, gtk_widget_destroy, &
-       & gtk_widget_show_all, TRUE, FALSE
+  use gtk, only: gtk_combo_box_get_active, gtk_combo_box_set_active, &
+       & gtk_container_add, gtk_label_new, gtk_toggle_button_get_active, &
+       & gtk_widget_destroy, gtk_widget_show_all, TRUE, FALSE
 
   use graff_types
   use graff_globals

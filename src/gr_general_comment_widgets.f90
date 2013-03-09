@@ -21,6 +21,8 @@ module gr_general_comment_widgets
 
   use gtk_hl
   use gtk_sup
+  use gtk, only: gtk_container_add, gtk_widget_destroy, gtk_widget_show_all, &
+       & TRUE, FALSE
 
   use graff_types
   use graff_globals

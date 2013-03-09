@@ -21,9 +21,9 @@ module gr_drawing_buttons
 
   use gdk_events
 
-  use gtk, only: GDK_BUTTON_PRESS, GDK_BUTTON_RELEASE, GTK_MESSAGE_QUESTION, &
-       & GTK_BUTTONS_YES_NO, GTK_RESPONSE_YES, GDK_SHIFT_MASK, GDK_CONTROL_MASK
-
+  use gtk, only: GDK_BUTTON_PRESS, GDK_BUTTON_RELEASE, GDK_SHIFT_MASK, &
+       & GDK_CONTROL_MASK, GTK_RESPONSE_YES, GTK_MESSAGE_QUESTION, &
+       & GTK_BUTTONS_YES_NO
 
   use graff_types
   use graff_globals

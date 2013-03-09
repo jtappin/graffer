@@ -23,8 +23,7 @@ module gr_axis
 
   use g, only: g_object_set_data, g_object_get_data
 
-  use gtk, only: gtk_check_menu_item_get_active, gtk_container_add, &
-       & gtk_entry_set_text, &
+  use gtk, only: gtk_check_menu_item_get_active, gtk_entry_set_text, &
        & gtk_label_new, gtk_widget_set_sensitive, TRUE, FALSE
 
   use graff_types
@@ -284,7 +283,7 @@ contains
     if (minval(pdefs%axrange(:,axis)) <= 0.) &
          & call gtk_widget_set_sensitive(widget, FALSE)
     call gr_plot_draw(.true.)
- end subroutine gr_set_log
+  end subroutine gr_set_log
 
   subroutine gr_set_exact(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -364,7 +363,7 @@ contains
 
   subroutine gr_set_minor(widget, data) bind(c)
     type(c_ptr), value :: widget, data
-   
+
     ! Enable/disable minor ticks
 
     integer, pointer :: axis

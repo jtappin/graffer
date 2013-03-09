@@ -20,9 +20,9 @@ module gr_ds_function_widgets
   use iso_c_binding
 
   use gtk_hl
-  use gtk, only: gtk_container_add, gtk_label_new, gtk_widget_destroy, &
-       & gtk_widget_set_sensitive, gtk_widget_show_all, TRUE, FALSE, &
-       & GTK_POLICY_NEVER
+  use gtk, only: gtk_container_add, gtk_label_new, &
+       & gtk_notebook_set_current_page, gtk_widget_destroy, &
+       & gtk_widget_show_all, TRUE, FALSE
 
   use graff_types
   use graff_globals

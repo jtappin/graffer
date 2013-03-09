@@ -28,8 +28,9 @@ module gr_menubar
        & gtk_widget_set_tooltip_text, gtk_widget_show_all, TRUE, &
        & GDK_SHIFT_MASK, GDK_CONTROL_MASK, GDK_MOD1_MASK, &
        & GTK_RESPONSE_DELETE_EVENT, GTK_RESPONSE_CANCEL, GTK_RESPONSE_YES, &
-       & GTK_RESPONSE_NO, GTK_MESSAGE_QUESTION, GTK_PACK_DIRECTION_LTR, &
-       & GTK_BUTTONS_NONE
+       & GTK_RESPONSE_NO, GTK_MESSAGE_WARNING, GTK_MESSAGE_QUESTION, &
+       & GTK_MESSAGE_ERROR, GTK_PACK_DIRECTION_LTR, GTK_BUTTONS_NONE, &
+       & GTK_BUTTONS_OK
 
   use graff_types
   use graff_globals

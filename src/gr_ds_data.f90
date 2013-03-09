@@ -21,7 +21,8 @@ module gr_ds_data
 
   use gtk_hl
   use gtk_sup
-  use gtk, only: gtk_combo_box_set_active, gtk_label_new, TRUE
+  use gtk, only: gtk_combo_box_get_active, gtk_label_new, TRUE, FALSE, &
+       & GTK_RESPONSE_YES, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO
 
   use graff_types
   use graff_globals
@@ -137,11 +138,11 @@ contains
     character(len=256), dimension(:), allocatable :: files
     type(graff_data), pointer :: data
     integer(kind=c_int) :: iresp
- 
+
     data => pdefs%data(pdefs%cset)
 
     if ((data%type < 0 .or. data%type == 9) .and. data%ndata > 0) then
-       
+
        iresp = hl_gtk_message_dialog_show(&
             & ['TYPE CHANGE                       ', &
             &  'Current data set is a function    ', &
@@ -178,7 +179,7 @@ contains
     data => pdefs%data(pdefs%cset)
 
     if ((data%type < 0 .or. data%type == 9) .and. data%ndata > 0) then
-       
+
        iresp = hl_gtk_message_dialog_show(&
             & ['TYPE CHANGE                       ', &
             &  'Current data set is a function    ', &
@@ -209,7 +210,7 @@ contains
     data => pdefs%data(pdefs%cset)
 
     if ((data%type < 0 .or. data%type == 9) .and. data%ndata > 0) then
-       
+
        iresp = hl_gtk_message_dialog_show(&
             & ['TYPE CHANGE                       ', &
             &  'Current data set is a function    ', &
@@ -240,7 +241,7 @@ contains
     data => pdefs%data(pdefs%cset)
 
     if (data%type /= 9 .and. data%ndata > 0) then
-       
+
        iresp = hl_gtk_message_dialog_show(&
             & ['TYPE CHANGE                       ', &
             &  'Current data set is a function    ', &
@@ -276,7 +277,7 @@ contains
     data => pdefs%data(pdefs%cset)
 
     if (data%type /= 9 .and. data%ndata > 0) then
-       
+
        iresp = hl_gtk_message_dialog_show(&
             & ['TYPE CHANGE                       ', &
             &  'Current data set is a function    ', &
@@ -317,7 +318,7 @@ contains
     data => pdefs%data(pdefs%cset)
 
     if (data%type >= 0 .and. data%ndata > 0) then
-       
+
        iresp = hl_gtk_message_dialog_show(&
             & ['TYPE CHANGE                       ', &
             &  'Current data set is not a function', &
@@ -349,7 +350,7 @@ contains
     data => pdefs%data(pdefs%cset)
 
     if (data%type >= 0 .and. data%ndata > 0) then
-       
+
        iresp = hl_gtk_message_dialog_show(&
             & ['TYPE CHANGE                       ', &
             &  'Current data set is not a function', &
@@ -388,7 +389,7 @@ contains
     data => pdefs%data(pdefs%cset)
 
     if (data%type >= 0 .and. data%ndata > 0) then
-       
+
        iresp = hl_gtk_message_dialog_show(&
             & ['TYPE CHANGE                         ', &
             &  'Current data set is not a function  ', &

@@ -22,10 +22,10 @@ module gr_gui
   use gtk_hl
   use gtk_sup
 
-  use gtk, only: gtk_container_add, gtk_frame_new, gtk_label_new, gtk_main, &
-       & gtk_widget_show_all, gtk_notebook_set_current_page, TRUE, FALSE
-
   use g, only: g_timeout_add_seconds
+  use gtk, only: gtk_container_add, gtk_label_new, gtk_main, &
+       & gtk_notebook_set_current_page, gtk_widget_show_all, TRUE, FALSE, &
+       & GTK_MESSAGE_WARNING
 
   use graff_globals
   use graff_types
@@ -161,9 +161,9 @@ contains
          & type=GTK_MESSAGE_WARNING)
     call hl_gtk_box_pack(topbase, gr_infobar)
 
-!    zformat = pdefs%data(pdefs%cset)%zdata%format
+    !    zformat = pdefs%data(pdefs%cset)%zdata%format
     call gtk_widget_show_all(gr_window)
-!    pdefs%data(pdefs%cset)%zdata%format = zformat
+    !    pdefs%data(pdefs%cset)%zdata%format = zformat
 
     ! Showing the right page(s) must follow showing the widgets
     select case (pdefs%data(pdefs%cset)%type)

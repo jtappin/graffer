@@ -29,8 +29,9 @@ module gr_drawing
   use gdk, only: gdk_keyval_from_name, gdk_window_fullscreen, &
        & gdk_window_get_state, gdk_window_unfullscreen
 
-  use gtk, only: gtk_widget_get_window, gtk_widget_grab_focus, FALSE, &
-       & GDK_ENTER_NOTIFY, GDK_WINDOW_STATE_FULLSCREEN, gtk_entry_set_text
+  use gtk, only: gtk_entry_set_text, gtk_widget_get_window, &
+       & gtk_widget_grab_focus, gtk_widget_queue_draw, FALSE, &
+       & GDK_ENTER_NOTIFY, GDK_WINDOW_STATE_FULLSCREEN
 
   use graff_types
   use graff_globals
@@ -86,14 +87,14 @@ contains
 
     type(gdkeventbutton), pointer :: fevent
     call c_f_pointer(event, fevent)
-   
+
     if (pdefs%transient%mode == 0) then
        call gr_drawing_plot(fevent)
     else
        call gr_drawing_text(fevent)
     end if
 
-     rv = FALSE
+    rv = FALSE
   end function gr_draw_button
 
   function gr_draw_motion(widget, event, data) bind(c) result(rv)
@@ -123,7 +124,7 @@ contains
           if (pdefs%transient%mode == 1) then
              call gr_plot_linesty(2_int16)
              call gr_plot_transform(full=.true._int8)
-             
+
              call gr_plot_coords_n_w(0._plflt, 0._plflt, xmin, ymin, &
                   & nolog=.true.)
              call gr_plot_coords_n_w(1._plflt, 1._plflt, xmax, ymax, &
@@ -132,25 +133,25 @@ contains
           else
              call gr_plot_linesty(0_int16)
              call gr_plot_transform(full=.false._int8)
-             
+
              call gr_plot_coords_v_w(0._plflt, 0._plflt, xmin, ymin, &
                   & nolog=.true.)
              call gr_plot_coords_v_w(1._plflt, 1._plflt, xmax, ymax, &
                   & nolog=.true.)
           end if
-          
+
           if (xprev > 0. .or. yprev > 0.) then
              call gr_plot_coords_n_w(xprev, yprev, xh, yh, nolog=.true.)
              call pljoin(xh, ymin, xh, ymax)
              call pljoin(xmin, yh, xmax, yh)
           end if
-       
+
           call gr_plot_coords_d_w(fevent%x, fevent%y, xh, yh, nolog=.true.)
           call pljoin(xh, ymin, xh, ymax)
           call pljoin(xmin, yh, xmax, yh)
-          
+
           call gr_plot_coords_d_n(fevent%x, fevent%y, xprev, yprev)
-          
+
           call plxormod(.false., xstatus)
           call gtk_widget_queue_draw(widget)
        end if
@@ -168,7 +169,7 @@ contains
     integer(kind=c_int) :: key_f, key_esc, key_f11, wstate
     type(c_ptr) :: gdk_win
     type(gdkeventkey), pointer :: fevent
-    
+
     rv = FALSE
 
     key_f = gdk_keyval_from_name("f"//c_null_char)
@@ -178,8 +179,8 @@ contains
     gdk_win = gtk_widget_get_window(gr_window)
 
     if (.not. c_associated(gdk_win)) then
-      call gr_message(&
-           & "gr_draw_key: No GDK window associated with top level GTK window")
+       call gr_message(&
+            & "gr_draw_key: No GDK window associated with top level GTK window")
        return
     end if
 
@@ -198,7 +199,7 @@ contains
          & iand(wstate, GDK_WINDOW_STATE_FULLSCREEN) /= 0) then
        call gdk_window_unfullscreen(gdk_win)
        call gr_plot_draw(.false.)
-     end if
+    end if
 
   end function gr_draw_key
 

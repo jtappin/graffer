@@ -30,11 +30,11 @@ module gr_cb_common
        & gtk_dialog_add_button, gtk_dialog_run, gtk_entry_set_text, &
        & gtk_main_quit, gtk_notebook_set_current_page, &
        & gtk_toggle_button_get_active, gtk_toggle_button_set_active, &
-       & gtk_widget_destroy, gtk_widget_set_sensitive, &
-       & gtk_widget_set_tooltip_text, gtk_widget_show_all, gtk_widget_hide, &
-       & TRUE, &
-       & GTK_RESPONSE_DELETE_EVENT, GTK_RESPONSE_CANCEL, GTK_RESPONSE_YES, &
-       & GTK_RESPONSE_NO, GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE
+       & gtk_widget_destroy, gtk_widget_hide, gtk_widget_set_sensitive, &
+       & gtk_widget_set_tooltip_text, gtk_widget_show_all, &
+       & gtk_window_set_title, TRUE, GTK_RESPONSE_DELETE_EVENT, &
+       & GTK_RESPONSE_CANCEL, GTK_RESPONSE_YES, GTK_RESPONSE_NO, &
+       & GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE
 
   use graff_types
   use graff_globals
@@ -512,7 +512,7 @@ contains
   subroutine gr_draw_tips
 
     ! Adjust the tooltips on the drawing area
- 
+
     type(graff_data), pointer :: data
 
     if (.not. c_associated(gr_drawing_area)) return

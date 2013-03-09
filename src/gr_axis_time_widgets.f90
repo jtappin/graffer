@@ -22,6 +22,9 @@ module gr_axis_time_widgets
   use gtk_hl
   use gtk_sup
 
+  use gtk, only: gtk_combo_box_get_active, gtk_container_add, gtk_label_new, &
+       & gtk_widget_destroy, gtk_widget_show_all, TRUE
+
   use graff_types
   use graff_globals
   use gr_utils

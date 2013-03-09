@@ -23,8 +23,8 @@ module gr_text_widgets
   use gtk_sup
 
   use gtk, only: gtk_combo_box_get_active, gtk_container_add, gtk_label_new, &
-       & gtk_widget_destroy, gtk_widget_show_all, gtk_widget_queue_draw, &
-       & TRUE, FALSE
+       & gtk_widget_destroy, gtk_widget_queue_draw, gtk_widget_show_all, TRUE, &
+       & FALSE
 
   use plplot
 
@@ -279,7 +279,7 @@ contains
     ! Select which plot window
 
     logical :: changed
-    
+
     call gr_plot_close()
     if (preview) then
        call gr_plot_open(area=text_draw)
@@ -327,7 +327,7 @@ contains
             & 1_int16
 
        if (is_new) call gr_add_text(text)
-   end if
+    end if
 
     call gtk_widget_destroy(text_window)
     text_ready = .false.
@@ -432,7 +432,7 @@ contains
     csys = int(newsys, int16)
     call gr_set_plw(.true.)
   end subroutine gr_text_csys
-  
+
   subroutine gr_text_yax(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 

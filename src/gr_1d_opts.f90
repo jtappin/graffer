@@ -23,8 +23,7 @@ module gr_1d_opts
   use gtk_sup
 
   use gtk, only: gtk_check_menu_item_get_active, gtk_combo_box_get_active, &
-       & gtk_container_add, gtk_frame_new, gtk_label_new, &
-       & gtk_spin_button_get_value, FALSE
+       & gtk_label_new, gtk_spin_button_get_value, FALSE
 
   use graff_types
   use graff_globals

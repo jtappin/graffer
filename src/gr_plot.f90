@@ -26,6 +26,7 @@ module gr_plot
   use gtk_draw_hl
   use gtk_sup
 
+  use gtk, only: gtk_widget_queue_draw
 
   use graff_types
   use graff_globals

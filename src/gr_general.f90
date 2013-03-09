@@ -21,9 +21,8 @@ module gr_general
   use gtk_hl
   use gtk_sup
 
-  use gtk, only: gtk_container_add, gtk_entry_set_text, gtk_label_new, &
-       & gtk_spin_button_get_value, &
-       & TRUE, FALSE
+  use gtk, only: gtk_entry_set_text, gtk_label_new, &
+       & gtk_spin_button_get_value, TRUE, FALSE
 
   use graff_globals
   use graff_types

@@ -22,9 +22,11 @@ module gr_ds_fit_widgets
   use gtk_hl
   use gtk_sup
 
-  use gtk, only: gtk_container_add, gtk_label_new, gtk_widget_destroy, &
-       & gtk_widget_show_all, TRUE, FALSE, GTK_POLICY_NEVER
-
+  use gtk, only: gtk_combo_box_get_active, gtk_combo_box_set_active, &
+       & gtk_container_add, gtk_entry_set_text, gtk_label_new, &
+       & gtk_notebook_set_current_page, gtk_toggle_button_get_active, &
+       & gtk_widget_destroy, gtk_widget_set_sensitive, gtk_widget_show_all, &
+       & TRUE, FALSE, GTK_POLICY_NEVER
 
   use graff_types
   use graff_globals
@@ -234,7 +236,7 @@ contains
        iftype = (pdefs%axtype(1) + 2*pdefs%axtype(iyax))
     end if
     call gtk_combo_box_set_active(fit_type_cbo, iftype)
-       
+
     call gtk_widget_set_sensitive(fit_wt_but, f_c_logical(data%type > 0))
   end subroutine gr_fit_select
 
@@ -333,7 +335,7 @@ contains
                & (1._real64/fit_ds%xydata(5,:))**2)
        case(8)
           wt = sqrt((2._real64/(fit_ds%xydata(3,:)+fit_ds%xydata(4,:)))**2 + &
-              & (2._real64/(fit_ds%xydata(5,:)+fit_ds%xydata(5,:)))**2)
+               & (2._real64/(fit_ds%xydata(5,:)+fit_ds%xydata(5,:)))**2)
        end select
     end if
 

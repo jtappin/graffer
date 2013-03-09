@@ -20,17 +20,15 @@ module gr_ds_rescale_widgets
   use iso_c_binding
 
   use gtk_hl
-  use gtk, only: gtk_container_add, &
-       & gtk_entry_set_text, gtk_label_new, gtk_widget_destroy, &
-       & gtk_widget_show_all, TRUE, FALSE, GTK_MESSAGE_WARNING, &
-       & GTK_BUTTONS_OK
+  use gtk, only: gtk_container_add, gtk_entry_set_text, gtk_label_new, &
+       & gtk_widget_destroy, gtk_widget_show_all, TRUE, FALSE, &
+       & GTK_MESSAGE_WARNING, GTK_BUTTONS_OK
 
   use graff_types
   use graff_globals
   use gr_utils
 
   use gr_plot
-!  use gr_cb_common
   use gr_ds_tools
   use gr_msg
 

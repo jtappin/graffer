@@ -19,6 +19,8 @@ module gr_axis_autoscale
   use iso_c_binding
   use iso_fortran_env
 
+  use gtk, only: gtk_entry_set_text, gtk_widget_set_sensitive
+
   use graff_types
   use graff_globals
   use gr_eval
