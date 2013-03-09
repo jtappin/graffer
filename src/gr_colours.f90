@@ -19,7 +19,9 @@ module gr_colours
   use iso_fortran_env
   use plplot
 
+  use graff_globals
   use gr_msg
+  use gr_utils
 
   implicit none
 
@@ -30,22 +32,46 @@ module gr_colours
   logical, private :: ct_is_open
   character(len=20), private :: ct_fmt
 
+  character(len=*), dimension(2), parameter, private :: ctdirs = &
+       & ['/usr/local/share/graffer/',&
+       &  '/usr/share/graffer/      ']
+
 contains
   subroutine gr_ct_init(basename)
-    character(len=*), intent(in) :: basename
+    character(len=*), intent(in), optional :: basename
 
     ! Initialize the colour table system.
 
-    character(len=len(basename)+5) :: header
-    character(len=len(basename)+4) :: datafile
+    character(len=300) :: header, datafile
     integer :: unit, ios, i
     character(len=120) :: iom
     character(len=160), dimension(2) :: err_string
 
-    if (basename /= '') then
+    if (present(basename)) then
        header = trim(basename)//".info"
        datafile = trim(basename)//".tab"
-       
+    else 
+       if (pdefs%opts%colour_stem == '') pdefs%opts%colour_stem = 'c_tables'
+       if (pdefs%opts%colour_dir == '') then
+          do i = 1, size(ctdirs)
+             if (file_exists(trim(ctdirs(i))//trim(pdefs%opts%colour_stem)// &
+                  & ".tab")) then
+                pdefs%opts%colour_dir=ctdirs(i)
+                exit
+             end if
+          end do
+       else if (index(pdefs%opts%colour_dir, '/', back=.true.) /= &
+            & len_trim(pdefs%opts%colour_dir)) then
+          pdefs%opts%colour_dir = trim(pdefs%opts%colour_dir)//'/'
+       end if
+
+       header = trim(pdefs%opts%colour_dir)//trim(pdefs%opts%colour_stem)//&
+            & ".info"
+       datafile = trim(pdefs%opts%colour_dir)//trim(pdefs%opts%colour_stem)//&
+            & ".tab"
+    end if
+
+    if (file_exists(header) .and. file_exists(datafile)) then
        open(newunit=unit, file=header, form='formatted', status='old', &
             & action='read', iostat=ios, iomsg=iom)
        if (ios /= 0) then
@@ -53,22 +79,23 @@ contains
                & "gr_ct_init: Failed to open header file: ", &
                & trim(header), trim(iom)
           call gr_message(err_string)
+          call gr_ct_simple
           return
        end if
-       
+
        call gr_ct_close
-       
+
        read(unit, *) ntables, ncolours
-       
+
        allocate(table_names(ntables), red(ncolours), green(ncolours), &
             & blue(ncolours))
-       
+
        do i = 1, ntables
           read(unit,"(A)") table_names(i)
        end do
 
        close(unit)
-       
+
        open(newunit=ct_unit, file=datafile, form='formatted', action='read', &
             & status='old', access='direct', recl=ncolours*6, iostat=ios, &
             & iomsg=iom)
@@ -77,30 +104,38 @@ contains
                & "gr_ct_init: Failed to open table file: ", &
                & trim(datafile), trim(iom)
           call gr_message(err_string)
-          ct_unit=-1
-          ct_is_open=.false.
+          call gr_ct_simple
           return
        end if
        ct_is_open = .true.
-       
+
        write(ct_fmt, "('(',i0,'z2)')") 3*ncolours
     else
-       call gr_ct_close
-       ntables = 1
-       ncolours = 256
-       allocate(table_names(ntables), red(ncolours), green(ncolours), &
-            & blue(ncolours))
-       table_names(1) = "Simple Greyscale"
-       do i = 1, 256
-          red(i) = i-1
-          green(i) = i-1
-          blue(i) = i-1
-       end do
-       ct_unit=-1
-       ct_is_open = .true.
+       call gr_message("gr_colours: header or data file not found")
+       call gr_ct_simple
     end if
   end subroutine gr_ct_init
 
+  subroutine gr_ct_simple
+
+    ! Simple greyscale table if the colour table files are not opened
+
+    integer :: i
+
+    call gr_ct_close
+    ntables = 1
+    ncolours = 256
+    allocate(table_names(ntables), red(ncolours), green(ncolours), &
+         & blue(ncolours))
+    table_names(1) = "Simple Greyscale"
+    do i = 1, 256
+       red(i) = i-1
+       green(i) = i-1
+       blue(i) = i-1
+    end do
+    ct_unit=-1
+    ct_is_open = .true.
+  end subroutine gr_ct_simple
   subroutine gr_ct_close
 
     ! Close the colour table files.
@@ -140,18 +175,20 @@ contains
     end if
 
     if (.not. ct_is_open .or. ct_unit==-1) then
-       if (.not. ct_is_open) call gr_ct_init('')
+       if (.not. ct_is_open) call gr_ct_init()
        ct_index = -1
     end if
     if (index /= ct_index) then
        ct_index = min(max(index,0), ntables-1)
-       read(ct_unit, ct_fmt, rec=ct_index+1, iostat=ios, iomsg=iom) red, &
-            & green, blue
-       if (ios /= 0) then
-          write(err_string, "(A,i0/t10,a)") "gr_ct_get: Read failed: #", &
-               & ct_index, trim(iom)
-          call gr_message(err_string)
-          return
+       if (ct_unit /= -1) then
+          read(ct_unit, ct_fmt, rec=ct_index+1, iostat=ios, iomsg=iom) red, &
+               & green, blue
+          if (ios /= 0) then
+             write(err_string, "(A,i0/t10,a)") "gr_ct_get: Read failed: #", &
+                  & ct_index, trim(iom)
+             call gr_message(err_string)
+             return
+          end if
        end if
     end if
 

@@ -20,3 +20,9 @@
 
 # Drawing window geometry
 # Geometry: 600x600
+
+# Colour table directory
+# ColourDir: /usr/local/share/graffer/
+
+# Colour table stem
+# ColourName: c_tables

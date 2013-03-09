@@ -161,6 +161,11 @@ contains
              default_options%delete_function_files = c_f_logical(ival)
           end if
 
+       case("colourdir")
+          default_options%colour_dir = trim(adjustl(keyval))
+       case("colourname")
+          default_options%colour_stem = trim(adjustl(keyval))
+
        case('pdfview')
           default_options%pdfviewer=trim(adjustl(keyval))
        case('geometry')
@@ -236,6 +241,10 @@ contains
                & "-p --pdf <cmd>        : Specify a PDF viewer for the help files",&
                & "-g --geometry <x>x<y> : Specify the drawing window geometry", &
                & "-a --autosave <time>  : Specify the delay between autosaves (s)", &
+               & "-ct --colour_table <name>: Specify the filename stem for the colour", &
+               & "                        table files (default 'c_tables')", &
+               & "-cd --colour_dir <dir>: Specify where the colour tables are installed", &
+               & "                        default ${PREFIX}/share/graffer.", &
                & "", &
                & "<file>                : The graffer file to open or a directory to search"
 
@@ -302,6 +311,40 @@ contains
              else 
                 default_options%pdfviewer =trim(keyval)
              end if
+          end if
+
+       case('-ct', '--colour_table')
+          if (keyval == '') then
+             call  get_command_argument(i+1, keyval, &
+                  & status=status)
+             arg_plus = .true.
+          else
+             status = 0
+          end if
+          if (status /= 0) then
+             write(error_unit, "(a/t10,a)") &
+                  & "gr_parse_command: Failed to get a value for key: ",&
+                  &  trim(key)
+          else
+             if (arg_plus) i = i+1
+             default_options%colour_stem =trim(keyval)
+          end if
+
+       case('-cd', '--colour_dir')
+          if (keyval == '') then
+             call  get_command_argument(i+1, keyval, &
+                  & status=status)
+             arg_plus = .true.
+          else
+             status = 0
+          end if
+          if (status /= 0) then
+             write(error_unit, "(a/t10,a)") &
+                  & "gr_parse_command: Failed to get a value for key: ",&
+                  &  trim(key)
+          else
+             if (arg_plus) i = i+1
+             default_options%colour_dir =trim(keyval)
           end if
 
        case('-g', '--geometry')

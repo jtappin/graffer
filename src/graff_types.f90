@@ -135,6 +135,8 @@ module graff_types
      logical(kind=int8) :: s2d=.false., mouse=.false., colour_menu=.false., &
           & delete_function_files=.false.
      character(len=120) :: pdfviewer=''
+     character(len=256) :: colour_dir=''
+     character(len=80) :: colour_stem=''
      integer(kind=c_int), dimension(2) :: geometry = [600, 600]
   end type graff_opts
 

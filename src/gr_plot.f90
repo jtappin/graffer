@@ -281,7 +281,8 @@ contains
 
     if (.not. pdefs%transient%current_only .or. pdefs%transient%mode == 1) then
        do i = 1, pdefs%ntext
-          call gr_text_draw(i, anchor=gr_is_widget)
+          call gr_text_draw(i, anchor=gr_is_widget .and. &
+               & pdefs%transient%mode == 1)
        end do
     end if
 

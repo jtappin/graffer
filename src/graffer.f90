@@ -41,22 +41,13 @@ program graffer
   integer(kind=c_int) :: ipick
   logical :: ok, isdir
   character(len=8) :: gr_sversion
-  character(len=*), dimension(2), parameter :: ctdirs = &
-       & ['/usr/local/share/graffer',&
-       &  '/usr/share/graffer      ']
-  integer :: i
 
   call gtk_init()
 
   call graffer_version%set(4, 7)
   call graffer_version%string(gr_sversion)
 
-  do i = 1, size(ctdirs)
-     if (file_exists(trim(ctdirs(i))//'/c_tables.tab')) then
-        call gr_ct_init(trim(ctdirs(i))//'/c_tables')
-        exit
-     end if
-  end do
+  call gr_read_rc
 
   ! Get the file to open/create and determine which.
 
@@ -83,6 +74,8 @@ program graffer
   end if
 
   call gr_pdefs_init(pdefs)
+  call gr_ct_init()
+
   if (file_exists(input)) then 
      call gr_read(pdefs, input, ok)
      if (.not. ok) stop
