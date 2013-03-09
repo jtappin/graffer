@@ -204,11 +204,13 @@ contains
     type(c_ptr) :: gpath_find
     integer :: ios
     character(len=120) :: iom
+    logical :: helped
 
     nargs = command_argument_count()
 
     file = ''
     isdir=.false.
+    helped = .false.
 
     i = 1
     do 
@@ -224,30 +226,7 @@ contains
 
        select case (key)
        case('-h', '--help')
-          print "(A)", &
-               & "Usage:",&
-               & "         graffer [<opts>] [<file>]",&
-               & "",&
-               & "-h, --help            : Print this help text and exit",&
-               & "-m, --mouse           : Enable editing data with the mouse by default", &
-               & "-nom --nomouse        : Disable editing data with the mouse by default", &
-               & "                        Default behaviour", &
-               & "-s2 --suppress-2d     : Suppress display of 2-D datasets", &
-               & "-nos2 --nosuppress-2d : Enable display of 2-D datasets", &
-               & "                        Default behaviour", &
-               & "-d --delete           : Delete files generated to evaluate functions", &
-               & "-nod --nodelete       : Keep files generated to evaluate functions", &
-               & "                        Default behaviour", &
-               & "-p --pdf <cmd>        : Specify a PDF viewer for the help files",&
-               & "-g --geometry <x>x<y> : Specify the drawing window geometry", &
-               & "-a --autosave <time>  : Specify the delay between autosaves (s)", &
-               & "-ct --colour_table <name>: Specify the filename stem for the colour", &
-               & "                        table files (default 'c_tables')", &
-               & "-cd --colour_dir <dir>: Specify where the colour tables are installed", &
-               & "                        default ${PREFIX}/share/graffer.", &
-               & "", &
-               & "<file>                : The graffer file to open or a directory to search"
-
+          call gr_cmd_help
           stop
 
        case('-a','--autosave')
@@ -313,7 +292,7 @@ contains
              end if
           end if
 
-       case('-ct', '--colour_table')
+       case('-ct', '--colour-table')
           if (keyval == '') then
              call  get_command_argument(i+1, keyval, &
                   & status=status)
@@ -330,7 +309,7 @@ contains
              default_options%colour_stem =trim(keyval)
           end if
 
-       case('-cd', '--colour_dir')
+       case('-cd', '--colour-dir')
           if (keyval == '') then
              call  get_command_argument(i+1, keyval, &
                   & status=status)
@@ -389,8 +368,12 @@ contains
 
        case default
           if (i /= nargs) then
-             write(error_unit, "(a)") &
-                  & "gr_parse_command: Unknown option:", trim(key)
+             write(error_unit, "(2a)") &
+                  & "gr_parse_command: Unknown option: ", trim(key)
+             if (.not. helped) then
+                call gr_cmd_help
+                helped = .true.
+             end if
           else
              file = trim(argv)
              isdir = c_f_logical(g_file_test(trim(file), G_FILE_TEST_IS_DIR))
@@ -402,4 +385,30 @@ contains
        if (i > nargs) exit
     end do
   end subroutine gr_parse_command
+
+  subroutine gr_cmd_help
+    print "(A)", &
+         & "Usage:",&
+         & "         graffer [<opts>] [<file>]",&
+         & "",&
+         & "-h, --help            : Print this help text and exit",&
+         & "-m, --mouse           : Enable editing data with the mouse by default", &
+         & "-nom --nomouse        : Disable editing data with the mouse by default", &
+         & "                        Default behaviour", &
+         & "-s2 --suppress-2d     : Suppress display of 2-D datasets", &
+         & "-nos2 --nosuppress-2d : Enable display of 2-D datasets", &
+         & "                        Default behaviour", &
+         & "-d --delete           : Delete files generated to evaluate functions", &
+         & "-nod --nodelete       : Keep files generated to evaluate functions", &
+         & "                        Default behaviour", &
+         & "-p --pdf <cmd>        : Specify a PDF viewer for the help files",&
+         & "-g --geometry <x>x<y> : Specify the drawing window geometry", &
+         & "-a --autosave <time>  : Specify the delay between autosaves (s)", &
+         & "-ct --colour-table <name>: Specify the filename stem for the colour", &
+         & "                        table files (default 'c_tables')", &
+         & "-cd --colour-dir <dir>: Specify where the colour tables are installed", &
+         & "                        default ${PREFIX}/share/graffer.", &
+         & "", &
+         & "<file>                : The graffer file to open or a directory to search"
+  end subroutine gr_cmd_help
 end module gr_opt_init

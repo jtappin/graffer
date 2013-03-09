@@ -203,6 +203,13 @@ GRAFFER can accept a number of keywords to control its operation:
   files (e.g. \texttt{-{}-pdf okular}).
 \item[\texttt{-{}-autosave} or \texttt{-a}:] Set the delay between
   autosaves in seconds (e.g. \texttt{--autosave 180}) Default is 300.
+\item[\texttt{-{}-colour-table} or \texttt{-ct}:] Specify the name stem
+  of the colour table files (e.g. \texttt{-{}-colour-table my\_tables})
+  Default is \texttt{c\_tables}.
+\item[\texttt{-{}-colour-dir} or \texttt{-cd}:] Specify the directory
+  with the colour table files (e.g. \texttt{-{}-colour-dir ./data}
+  Default is to check in \texttt{/usr/local/share/graffer} and
+  \texttt{/usr/share/graffer}. 
 \end{description}
 
 \subsection{A quick tour of the main window}
@@ -2171,23 +2178,28 @@ that made the Fortran version possible.
 
 The resource file provides a very limited range of control
 over the default settings for GRAFFER. It is a colon-separated text
-file with just six options.
+file with a few options.
 \begin{description}
 \item[\texttt{Autosave:} \textit{float}] The time between autosave
-  operations in seconds. (300.)
+  operations in seconds. (300)
 \item[\texttt{Supp2D:} \textit{bool}] Whether to suppress display of
   2-D datasets (for slow machines, really a legacy of the
   mid-90's when GRAFFER was first developed). (0)
 \item[\texttt{MouseEdit:} \textit{bool}] Whether to enable mouse
   editing of data by default. (0)
 \item[\texttt{Delete:} \textit{bool}] Whether to delete temporary files
-  produced to evaluate functions.
+  produced to evaluate functions. (0)
 \item[\texttt{PDFView:} \textit{string}] The program to use to view the
   PDF help files. (searches for the first of \texttt{acroread},
   \texttt{kpdf}, \texttt{xpdf}, \texttt{kghostview}, \texttt{gv},
   \texttt{okular} and \texttt{evince} to be installed)
 \item[\texttt{Geometry:} \textit{int}\texttt{x}\textit{int}] Set the
   geometry of the drawing window. (600x600).
+\item[\texttt{ColourDir:}] The directory in which the colour tables are
+  installed. (\texttt{/usr/local/share/graffer} or
+  \texttt{/usr/share/graffer})
+\item[\texttt{ColourName:}] The name stem of the colour table
+  files. (\texttt{c\_tables})
 \end{description}
 
 GRAFFER first reads any resource file \texttt{graffer.rc} in
