@@ -303,7 +303,7 @@ contains
   end function gr_dbl_val_a
 
   function gr_open_asc(file, unit, version, name, dir, date)
-    logical :: gr_open_asc
+    integer :: gr_open_asc
     character(len=*), intent(in) :: file
     integer, intent(out) :: unit
     integer(kind=int16), intent(out), dimension(2) :: version
@@ -321,7 +321,7 @@ contains
     if (ios /= 0) then
        write(error_str, "(A)") "GR_OPEN_ASC: Failed to open file", trim(iom)
        call gr_message(error_str(:2))
-       gr_open_asc = .false.
+       gr_open_asc = 0
        return
     end if
 
@@ -346,7 +346,7 @@ contains
        date = adjustl(inln(pos+1:))
     end if
 
-    gr_open_asc = .true.
+    gr_open_asc = 1
   end function gr_open_asc
     
   subroutine gr_get_asc(pdefs, unit)

@@ -40,7 +40,7 @@ module gr_file
 contains
 
   function gr_open(file, version, ascii, name, dir, date)
-    logical :: gr_open
+    integer :: gr_open
     character(len=*), intent(in) :: file
     integer(kind=int16), intent(out), dimension(2) :: version
     logical, intent(out) :: ascii
@@ -97,7 +97,7 @@ contains
        write(error_str, "(2A/a)") "GR_OPEN: Failed to open file: ", file, &
             & trim(iom)
        call gr_message(error_str)
-       gr_open = .false.
+       gr_open = 0
        return
     end if
 
@@ -106,7 +106,7 @@ contains
        write(error_str, "(2A/a)") "GR_OPEN: Failed to read file", file, &
             & trim(iom)
        call gr_message(error_str)
-       gr_open = .false.
+       gr_open = 0
        return
     end if
 
@@ -121,7 +121,7 @@ contains
 
     if (rs /= 'GRAFFER') then
        call gr_message("GR_OPEN: Not a Graffer file.")
-       gr_open = .false.
+       gr_open = 0
        call gr_close
        return
     end if
@@ -131,7 +131,7 @@ contains
        call byte_swap(version)
        if (version(1) > 255) then
           call gr_message("GR_OPEN: Invalid version data")
-          gr_open = .false.
+          gr_open = 0
           call gr_close
           return
        end if
@@ -145,14 +145,14 @@ contains
             & "GR_OPEN: Only V4 (and above) files are supported, found:", &
             & version
        call gr_message(error_str(1))
-       gr_open = .false.
+       gr_open = 0
        call gr_close
        return
     end if
 
     call gr_str_read(ldir, status)
     if (status == 1) then
-       gr_open = .false.
+       gr_open = 0
        call gr_close
        return
     end if
@@ -160,7 +160,7 @@ contains
 
     call gr_str_read(lname, status)
     if (status == 1) then
-       gr_open = .false.
+       gr_open = 0
        call gr_close
        return
     end if
@@ -168,13 +168,17 @@ contains
 
     call gr_str_read(ltime, status)
     if (status == 1) then
-       gr_open = .false.
+       gr_open = 0
        call gr_close
        return
     end if
     if (present(date)) date = ltime
 
-    gr_open = .true.
+    if (autoflag) then
+       gr_open = -1
+    else
+       gr_open = 1
+    end if
 
   end function gr_open
 
@@ -259,14 +263,16 @@ contains
 
     ok = .true.
 
-    if (.not. gr_open(file, pdefs%version, is_ascii, name=pdefs%name,&
-         & dir=pdefs%dir)) then
+    status = gr_open(file, pdefs%version, is_ascii, name=pdefs%name,&
+         & dir=pdefs%dir)
+    if (status == 0) then
        ok = .false.
        return
     end if
 
     call gr_pdefs_init(pdefs)
     call split_fname(file, pdefs%name, pdefs%dir)
+    if (status < 0) pdefs%chflag = .true.
 
     if (is_ascii) then
        call gr_get_asc(pdefs, gr_unit)
@@ -278,8 +284,7 @@ contains
        status = rec%read(gr_unit, swap_end)
        if (status == -1) exit
        if (status == 1) then
-         call gr_message("GR_READ: Failed to read a tag "//rec%tag)
-!!$          ok = .false.
+          call gr_message("GR_READ: Failed to read a tag "//rec%tag)
           exit
        end if
 
@@ -620,7 +625,7 @@ contains
           ! corrupted. 
 
        case default
-         call gr_message("GR_READ: unknown tag: "// &
+          call gr_message("GR_READ: unknown tag: "// &
                & rec%get_tag()//" Aborting")
           status = 2
 
@@ -648,7 +653,7 @@ contains
     pdefs%transient%backup = .false.
     pdefs%is_ascii = .false.
 
-!    if (ctflag) call gr_colours(pdefs)
+    !    if (ctflag) call gr_colours(pdefs)
 
   end subroutine gr_read
 
