@@ -30,8 +30,9 @@ module gr_ds_rescale_widgets
   use gr_utils
 
   use gr_plot
-  use gr_cb_common
+!  use gr_cb_common
   use gr_ds_tools
+  use gr_msg
 
   implicit none
 
@@ -128,6 +129,7 @@ contains
     integer :: i, ios
     character(len=40) :: text
     character(len=120) :: iom
+    character(len=160), dimension(2) :: err_string
 
     call c_f_pointer(gdata, apply)
 
@@ -144,9 +146,10 @@ contains
           if (len_trim(text) > 0) then
              read(text, *, iostat=ios, iomsg=iom) scales(i)
              if (ios /= 0) then
-                write(error_unit, "(A,i0/t10,a)") &
+                write(err_string, "(A,i0/t10,a)") &
                      & "gr_ds_rs_quit: Error reading scale #", &
                      & i, trim(iom)
+                call gr_message(err_string)
                 ok = .false.
                 call gtk_entry_set_text(rs_scales(i), "Invalid"//c_null_char)
              end if
@@ -155,9 +158,10 @@ contains
           if (len_trim(text) > 0) then
              read(text, *, iostat=ios, iomsg=iom) shifts(i)
              if (ios /= 0) then
-                write(error_unit, "(A,i0/t10,a)") &
+                write(err_string, "(A,i0/t10,a)") &
                      & "gr_ds_rs_quit: Error reading scale #", &
                      & i, trim(iom)
+                call gr_message(err_string)
                 ok = .false.
                 call gtk_entry_set_text(rs_shifts(i), "Invalid"//c_null_char)
              end if

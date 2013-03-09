@@ -18,7 +18,13 @@
 module gr_fitting
   use iso_fortran_env
 
+  use gr_msg
+
   implicit none
+
+  private :: gser, gcf
+
+  character(len=160), private :: error_str
 
 contains
   function poly_fit(x, y, order, weights, ycalc, status, chi2) result(coeff)
@@ -43,9 +49,10 @@ contains
     npts = size(x)
 
     if (size(y) /= npts) then
-       write(error_unit, "(a,i0,a,i0,a)") &
+       write(error_str, "(a,i0,a,i0,a)") &
             & "gr_polyfit: Sizes of x & y must be equal, X(",&
             & npts,"), Y(",size(y),")"
+       call gr_message(error_str)
        if (present(status)) status = .false.
        coeff = 0._real64
        return
@@ -53,10 +60,11 @@ contains
 
     if (present(weights)) then
        if (size(weights) /= npts) then
-          write(error_unit, "(a,i0,a,i0,a)") &
+          write(error_str, "(a,i0,a,i0,a)") &
                & "gr_polyfit: Sizes of x, y & weights must be equal, X, Y(",&
                & npts,"), WEIGHTS(",size(weights),")"
-          if (present(status)) status = .false.
+          call gr_message(error_str)
+           if (present(status)) status = .false.
           return
        end if
        wt => weights
@@ -118,7 +126,7 @@ contains
 
     n = size(x,2)
     if (size(x,1) /= n) then
-       write(error_unit, "(a)") "invert: Non square input"
+       call gr_message("invert: Non square input")
        xi = 0.
        return
     end if
@@ -149,8 +157,9 @@ contains
 
     n = size(x,2)
     if (size(x,1) /= n) then
-       write(error_unit, "(A,i0,'x',i0)") &
+       write(error_str, "(A,i0,'x',i0)") &
             & "lu_fact:: input matrix not square: ", shape(x)
+       call gr_message(error_str)
        return
     end if
 
@@ -193,7 +202,7 @@ contains
 
     n = size(a,2)
     if (size(a,1) /= n .or. size(b) /= n .or. size(p) /= n) then
-       write(error_unit, "(a)") "lu_subst: Sizes do not match"
+       call gr_message("lu_subst: Sizes do not match")
        return
     end if
 
@@ -214,4 +223,123 @@ contains
     b(:) = x(:)
 
   end subroutine lu_subst
+
+  function gammap(a, x, itmax, eps, gln)
+    real(kind=real64) :: gammap
+    real(kind=real64), intent(in) :: a, x
+    integer, intent(in), optional :: itmax
+    real(kind=real64), intent(in), optional :: eps
+    real(kind=real64), intent(out), optional :: gln
+
+    if (x < 0. .or. a <= 0.) then
+       call gr_message("gammap: invalid input arguments")
+       gammap = -huge(x)
+    end if
+
+    if (x < a+1.) then
+       gammap = gser(a, x, itmax, eps, gln)
+    else
+       gammap = gcf(a, x, itmax, eps, gln)
+    end if
+  end function gammap
+
+  function gser(a, x, itmax, eps, gln)
+    real(kind=real64) :: gser
+    real(kind=real64), intent(in) :: a, x
+    integer, intent(in), optional :: itmax
+    real(kind=real64), intent(in), optional :: eps
+    real(kind=real64), intent(out), optional :: gln
+
+    integer :: nimax, i
+    real(kind=real64) :: tol, lng, ap, del, sum
+
+    if (present(itmax)) then
+       nimax = itmax
+    else
+       nimax = 100
+    end if
+    if (present(eps)) then
+       tol = eps
+    else
+       tol = 3e-10
+    end if
+
+    lng = log(gamma(a))
+
+    if (x < 0.) then
+       call gr_message("gammap (gser): invalid input arguments")
+       gser = -huge(x)
+    else if (x == 0.) then
+       gser = 0._real64
+    else
+       ap = a
+       sum = 1./a
+       del = sum
+       do i = 1, nimax
+          ap = ap+1.
+          del = del*x/ap
+          sum = sum+del
+          if (abs(del) < abs(sum)*tol) exit
+       end do
+       if (i == nimax+1) &
+            & call gr_message("gammap (gser): ITMAX too small")
+       gser = sum + exp(-x + a*log(x)-lng)
+    end if
+
+    if (present(gln)) gln = lng
+  end function gser
+
+  function gcf(a, x, itmax, eps, gln)
+    real(kind=real64) :: gcf
+    real(kind=real64), intent(in) :: a, x
+    integer, intent(in), optional :: itmax
+    real(kind=real64), intent(in), optional :: eps
+    real(kind=real64), intent(out), optional :: gln
+
+    integer :: nimax, i
+    real(kind=real64) :: tol, lng, a0, a1, gold, b0, b1, fac
+    real(kind=real64) :: an, ana, anf, g
+
+    if (present(itmax)) then
+       nimax = itmax
+    else
+       nimax = 100
+    end if
+    if (present(eps)) then
+       tol = eps
+    else
+       tol = 3e-10
+    end if
+
+    gold = 0.
+    a0 = 1.
+    a1 = x
+    b0 = 0.
+    b1 = 1.
+    fac = 1.
+
+    lng = log(gamma(a))
+
+    do i = 1, nimax
+       an = real(i, real64)
+       ana = an - a
+       a0 = (a1 + a0*ana)*fac
+       b0 = (b1 + b0*ana)*fac
+       anf = an * fac
+       a1 = x*a0 + anf*a1
+       b1 = x*b0 + anf*b1
+
+       if (a1 == 0.) cycle
+
+       fac = 1./a1
+       g = b1*fac
+       if (abs(g-gold)/g < tol) exit
+       gold = g
+    end do
+    if (i == nimax+1) &
+         & call gr_message("gammap (gcf): ITMAX too small")
+
+    gcf = exp(-x + a*log(x)-lng)*g
+    if (present(gln)) gln = lng
+  end function gcf
 end module gr_fitting

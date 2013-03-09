@@ -42,11 +42,11 @@ module gr_cb_common
   use gr_file
   use gr_plot
   use graff_version
+  use gr_msg
 
   use plplot, only: pi => pl_pi
 
   implicit none
-
 
   ! Widgets (N.B. The top-level window and the drawing area are in globals)
 
@@ -201,7 +201,7 @@ contains
        case(GTK_RESPONSE_NO)
           pdefs%chflag = .false.
        case default
-          write(error_unit, "(A)") "gr_exit: Invalid response code"
+          call gr_message("gr_exit: Invalid response code")
           return
        end select
     end if
@@ -545,4 +545,5 @@ contains
     call gtk_widget_hide(widget)
 
   end subroutine gr_infobar_clr
+
 end module gr_cb_common

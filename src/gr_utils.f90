@@ -27,6 +27,8 @@ module gr_utils
 
   use g, only: g_get_current_dir, g_find_program_in_path
 
+  use gr_msg
+  
   implicit none
 
   interface byte_swap
@@ -477,7 +479,7 @@ contains
     end do
 
     if (count(found) == 0) then
-       write(error_unit, "(A)") "gr_find_viewers: No suitable viewers found"
+       call gr_message("gr_find_viewers: No suitable viewers found")
        return
     end if
 

@@ -46,6 +46,8 @@ program graffer
        &  '/usr/share/graffer      ']
   integer :: i
 
+  call gtk_init()
+
   call graffer_version%set(4, 7)
   call graffer_version%string(gr_sversion)
 
@@ -57,8 +59,6 @@ program graffer
   end do
 
   ! Get the file to open/create and determine which.
-
-  call gtk_init()
 
   call gr_parse_command(input, isdir)
 

@@ -32,9 +32,11 @@ module gr_ds_tools
 
   use gr_cb_common
   use graff_init
+  use gr_msg
 
   implicit none
 
+  character(len=160), dimension(2), private :: err_string
 contains
   subroutine gr_ds_xy_read(file)
     character(len=*), intent(in) :: file
@@ -55,8 +57,9 @@ contains
     open(newunit=unit, file=file, action='read', status='old', &
          & form='formatted', iostat=ios, iomsg=iom)
     if (ios /= 0) then
-       write(error_unit, "(2a/t10,a)") "gr_ds_xy_read: Failed to open file: ", &
+       write(err_string, "(2a/t10,a)") "gr_ds_xy_read: Failed to open file: ", &
             & trim(file), trim(iom)
+       call gr_message(err_string)
        return
     end if
 
@@ -67,9 +70,10 @@ contains
     do i = 1, nlines
        read(unit,"(a)", iostat=ios, iomsg=iom) inln(i)
        if (ios /= 0) then
-          write(error_unit, "(2a/t10,a)") &
+          write(err_string, "(2a/t10,a)") &
                & "gr_ds_xy_read: Error reading file: ", &
                & trim(file), trim(iom)
+          call gr_message(err_string)
           return
        end if
     end do
@@ -134,15 +138,17 @@ contains
           tp = 8
        end select
     case default
-       write(error_unit, "(2A)") "gr_ds_xy_read: Invalid errors code: ", &
+       write(err_string, "(2A)") "gr_ds_xy_read: Invalid errors code: ", &
             & trim(errtag)
+       call gr_message(err_string)
        return
     end select
 
     if (nt /= nte) then
-       write(error_unit, "(A,I0,A/3a,i0,a)") &
+       write(err_string, "(A,I0,A/3a,i0,a)") &
             & "gr_ds_xy_read: number of columns(", nt, ") does not match", &
             & "that for error code ", trim(errtag), " (", nte,")"
+       call gr_message(err_string)
        return
     end if
 
@@ -177,16 +183,18 @@ contains
     open(newunit=unit, file=file, status='old', action='read', &
          & form='formatted', iostat=ios, iomsg=iom)
     if (ios /= 0) then
-       write(error_unit, "(2a/t10,a)") "gr_ds_z_read: Failed to open file: ", &
+       write(err_string, "(2a/t10,a)") "gr_ds_z_read: Failed to open file: ", &
             & trim(file), trim(iom)
+       call gr_message(err_string)
        return
     end if
 
     read(unit, *, iostat=ios, iomsg=iom) nx, ny
     if (ios /= 0) then
-       write(error_unit, "(2a/t10,a)") &
+       write(err_string, "(2a/t10,a)") &
             & "gr_ds_z_read: Failed to read size from: ", &
             & trim(file), trim(iom)
+       call gr_message(err_string)
        close(unit)
        return
     end if
@@ -213,25 +221,28 @@ contains
 
     read(unit, *, iostat=ios, iomsg=iom) x
     if (ios /= 0) then
-       write(error_unit, "(2a/t10,a)") &
+       write(err_string, "(2a/t10,a)") &
             & "gr_ds_z_read: Failed to read X values from: ", &
             & trim(file), trim(iom)
+       call gr_message(err_string)
        close(unit)
        return
     end if
     read(unit, *, iostat=ios, iomsg=iom) y
     if (ios /= 0) then
-       write(error_unit, "(2a/t10,a)") &
+       write(err_string, "(2a/t10,a)") &
             & "gr_ds_z_read: Failed to read Y values from: ", &
             & trim(file), trim(iom)
+       call gr_message(err_string)
        close(unit)
        return
     end if
     read(unit, *, iostat=ios, iomsg=iom) z
     if (ios /= 0) then
-       write(error_unit, "(2a/t10,a)") &
+       write(err_string, "(2a/t10,a)") &
             & "gr_ds_z_read: Failed to read Z values from: ", &
             & trim(file), trim(iom)
+       call gr_message(err_string)
        close(unit)
        return
     end if
@@ -271,17 +282,19 @@ contains
     open(newunit=unit, file=file, status='old', action='read', &
          & form='formatted', iostat=ios, iomsg=iom)
     if (ios /= 0) then
-       write(error_unit, "(2a/t10,a)") &
+       write(err_string, "(2a/t10,a)") &
             & "gr_ds_fun_read: Failed to open file: ", &
             & trim(file), trim(iom)
+       call gr_message(err_string)
        return
     end if
 
     read(unit, "(A)", iostat=ios, iomsg=iom) code
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a)") &
+       write(err_string, "(a/t10,a)") &
             & "gr_ds_fun_read: Failed to read type code: ", &
             &  trim(iom)
+       call gr_message(err_string)
        return
     end if
     code = upcase(adjustl(code))
@@ -295,40 +308,45 @@ contains
     case('Z')
        type = -4
     case default
-       write(error_unit, "(2a)") "gr_ds_fun_read: invalid type code ", &
+       write(err_string, "(2a)") "gr_ds_fun_read: invalid type code ", &
             & trim(code)
+       call gr_message(err_string(1))
        return
     end select
 
     if (type == -4) then
        read(unit, *, iostat=ios, iomsg=iom) range
        if (ios /= 0) then
-          write(error_unit, "(a/t10,a)") &
+          write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: failed to read range", &
                &  trim(iom)
+          call gr_message(err_string)
           return
        end if
        read(unit, *, iostat=ios, iomsg=iom) neval, neval2
        if (ios /= 0) then
-          write(error_unit, "(a/t10,a)") &
+          write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: Failed to read evaluation counts", &
                & trim(iom)
+          call gr_message(err_string)
           return
        end if
     else
        read(unit, *, iostat=ios, iomsg=iom) range(:,1)
        if (ios /= 0) then
-          write(error_unit, "(a/t10,a)") &
+          write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: failed to read range", &
                &  trim(iom)
+          call gr_message(err_string)
           return
        end if
        range(:,2) = 0._real64
        read(unit, *, iostat=ios, iomsg=iom) neval
        if (ios /= 0) then
-          write(error_unit, "(a/t10,a)") &
+          write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: Failed to read evaluation count", &
                & trim(iom)
+          call gr_message(err_string)
           return
        end if
        neval2 = 0_int32
@@ -336,17 +354,19 @@ contains
 
     read(unit, "(A)", iostat=ios, iomsg=iom) funct(1)
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a)") &
+       write(err_string, "(a/t10,a)") &
             & "gr_ds_fun_read: Failed to read function definition", &
             & trim(iom)
+       call gr_message(err_string)
        return
     end if
     if (type == -3) then
        read(unit, "(A)", iostat=ios, iomsg=iom) funct(2)
        if (ios /= 0) then
-          write(error_unit, "(a/t10,a)") &
+          write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: Failed to read function definition", &
                & trim(iom)
+          call gr_message(err_string)
           return
        end if
     else
@@ -393,7 +413,7 @@ contains
     nlines = count(lines /= '')
 
     if (nlines == 0) then
-       write(error_unit, "(A)") "gr_xy_decode: No non-empty lines."
+       call gr_message("gr_xy_decode: No non-empty lines.")
        ok = .false.
        return
     end if
@@ -415,9 +435,10 @@ contains
           read(lines(i), *, iostat=ios, iomsg=iom) xyvals(:,j)
        end if
        if (ios /= 0) then
-          write(error_unit, "(a,i0/a)") &
+          write(err_string, "(a,i0/a)") &
                & "gr_xy_decode: Failed to read line ",i, &
                & trim(iom)
+          call gr_message(err_string)
           ok  = .false.
           return
        end if
@@ -450,8 +471,8 @@ contains
           end if
           status = gr_evaluate(dataset=data)
           if (status /= 0) then
-             write(error_unit, "(a)") &
-                  & "gr_ds_write: Failed to evaluate function to write as data"
+            call gr_message(&
+                 & "gr_ds_write: Failed to evaluate function to write as data")
              return
           end if
        end if
@@ -460,9 +481,10 @@ contains
     open(newunit=unit, file=file, action='write', form='formatted', &
          & iostat=ios, iomsg=iom)
     if (ios /= 0) then
-       write(error_unit, "(2a/t10,a)") &
+       write(err_string, "(2a/t10,a)") &
             & "gr_ds_write: Failed to open: ",trim(file), &
             & trim(iom)
+       call gr_message(err_string)
        return
     end if
 
@@ -575,18 +597,18 @@ contains
 
     if (present(source)) then
        data_from => source
-       if (present(from)) write(error_unit,"(A)") &
-            & "gr_ds_copy: SOURCE and FROM both present, using SOURCE"
+       if (present(from)) call gr_message( &
+            & "gr_ds_copy: SOURCE and FROM both present, using SOURCE")
     else if (present(from)) then
        data_from => pdefs%data(from)
     else
-       write(error_unit,"(A)") "gr_ds_copy: Must specify FROM or SOURCE"
+       call gr_message("gr_ds_copy: Must specify FROM or SOURCE")
        return
     end if
 
     if (present(destination)) then
-       if (present(to)) write(error_unit,"(A)") &
-            & "gr_ds_copy: DESTINATION and TO both present, using DESTINATION"
+       call gr_message( &
+            & "gr_ds_copy: DESTINATION and TO both present, using DESTINATION")
 
        if (present(copy_format)) then
           fcopy = copy_format
@@ -798,15 +820,16 @@ contains
     end if
 
     if (pdefs%data(dest)%type /= pdefs%data(index)%type) then
-       write(error_unit, "(a/t10,a,i0,a,i0)") &
+       write(err_string, "(a/t10,a,i0,a,i0)") &
             & "gr_ds_append: Datasets to concatenate must have the same types",&
             & "Source: ", pdefs%data(index)%type, " Destination: ", &
             & pdefs%data(dest)%type
+       call gr_message(err_string)
        return
     end if
     if (pdefs%data(dest)%type == 9 .or. pdefs%data(dest)%type < 0) then
-       write(error_unit, "(a)") &
-            & "gr_ds_append: Datasets to concatenate must be X-Y data"
+      call gr_message( &
+            & "gr_ds_append: Datasets to concatenate must be X-Y data")
        return
     end if
 

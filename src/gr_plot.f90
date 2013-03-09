@@ -57,7 +57,7 @@ module gr_plot
 
   real(kind=plflt) :: xprev, yprev
   character(len=80) :: selected_device
-
+  character(len=160), private :: error_str
 contains
 
   subroutine gr_plot_open(device, area)
@@ -243,7 +243,7 @@ contains
     end if
 
     if (.not. ok) then
-       write(error_unit, "(a)") "gr_plot_draw: Invalid axis ranges"
+       call gr_message("gr_plot_draw: Invalid axis ranges")
        return
     end if
 
@@ -271,8 +271,9 @@ contains
        case(-4)
           if (.not. pdefs%opts%s2d .or. .not. gr_is_widget) call gr_2df_plot(i)
        case default
-          write(error_unit, "(a,i0,a)")"gr_plot_draw: ",&
+          write(error_str, "(a,i0,a)")"gr_plot_draw: ",&
                &  pdefs%data(i)%type, "is invalid"
+          call gr_message(error_str)
        end select
     end do
 
@@ -492,8 +493,9 @@ contains
        end if
     case(2)
     case default
-       write(error_unit, "(A,i0)") "gr_2dd_plot: Invalid format setting: ",&
+       write(error_str, "(A,i0)") "gr_2dd_plot: Invalid format setting: ",&
             & pdefs%data(index)%zdata%format
+       call gr_message(error_str)
     end select
   end subroutine gr_2dd_plot
 

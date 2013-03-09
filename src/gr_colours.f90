@@ -19,6 +19,8 @@ module gr_colours
   use iso_fortran_env
   use plplot
 
+  use gr_msg
+
   implicit none
 
   character(len=32), dimension(:), allocatable :: table_names
@@ -38,6 +40,7 @@ contains
     character(len=len(basename)+4) :: datafile
     integer :: unit, ios, i
     character(len=120) :: iom
+    character(len=160), dimension(2) :: err_string
 
     if (basename /= '') then
        header = trim(basename)//".info"
@@ -46,9 +49,10 @@ contains
        open(newunit=unit, file=header, form='formatted', status='old', &
             & action='read', iostat=ios, iomsg=iom)
        if (ios /= 0) then
-          write(error_unit, "(2A/t10,a)") &
+          write(err_string, "(2A/t10,a)") &
                & "gr_ct_init: Failed to open header file: ", &
                & trim(header), trim(iom)
+          call gr_message(err_string)
           return
        end if
        
@@ -69,9 +73,10 @@ contains
             & status='old', access='direct', recl=ncolours*6, iostat=ios, &
             & iomsg=iom)
        if (ios /= 0) then
-          write(error_unit, "(2A/t10,a)") &
+          write(err_string, "(2A/t10,a)") &
                & "gr_ct_init: Failed to open table file: ", &
                & trim(datafile), trim(iom)
+          call gr_message(err_string)
           ct_unit=-1
           ct_is_open=.false.
           return
@@ -120,6 +125,7 @@ contains
     character(len=120) :: iom
     logical :: reversed
     real(kind=real32) :: xgamma
+    character(len=160), dimension(2) :: err_string
 
     if (present(invert)) then
        reversed = invert
@@ -142,8 +148,9 @@ contains
        read(ct_unit, ct_fmt, rec=ct_index+1, iostat=ios, iomsg=iom) red, &
             & green, blue
        if (ios /= 0) then
-          write(error_unit, "(A,i0/t10,a)") "gr_ct_get: Read failed: #", &
+          write(err_string, "(A,i0/t10,a)") "gr_ct_get: Read failed: #", &
                & ct_index, trim(iom)
+          call gr_message(err_string)
           return
        end if
     end if

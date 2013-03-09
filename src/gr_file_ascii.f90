@@ -22,6 +22,7 @@
 
   use graff_types
   use gr_utils
+  use gr_msg
 
   implicit none
 
@@ -43,6 +44,8 @@
   interface gr_dbl_val
      module procedure gr_dbl_val_s, gr_dbl_val_a
   end interface gr_dbl_val
+
+  character(len=160), dimension(3), private :: error_str
 
 contains
   subroutine gr_str_val(line, tag, val)
@@ -73,9 +76,10 @@ contains
 
     read(string, *, iostat=ios, iomsg=iom) ilg
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_log_val_s: Failed to read logical value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
        gr_log_val_s = .false.
     else
        gr_log_val_s = c_f_logical(int(ilg))
@@ -97,9 +101,10 @@ contains
     allocate(gr_log_val_a(num), ilg(num))
     read(string, *, iostat=ios, iomsg=iom) ilg
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_log_val_a: Failed to read logical value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
        gr_log_val_a = .false.
     else
        gr_log_val_a = ilg == 0
@@ -117,9 +122,10 @@ contains
 
     read(string, *, iostat=ios, iomsg=iom) gr_byt_val_s
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_byt_val_s: Failed to read int8 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_byt_val_s
 
@@ -136,9 +142,10 @@ contains
     allocate(gr_byt_val_a(num))
     read(string, *, iostat=ios, iomsg=iom) gr_byt_val_a
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_byt_val_a: Failed to read int8 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_byt_val_a
 
@@ -153,9 +160,10 @@ contains
 
     read(string, *, iostat=ios, iomsg=iom) gr_int_val_s
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_int_val_s: Failed to read int16 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_int_val_s
 
@@ -173,9 +181,10 @@ contains
     allocate(gr_int_val_a(num))
     read(string, *, iostat=ios, iomsg=iom) gr_int_val_a
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_int_val_a: Failed to read int16 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_int_val_a
 
@@ -190,9 +199,10 @@ contains
 
     read(string, *, iostat=ios, iomsg=iom) gr_lon_val_s
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_lon_val_s: Failed to read int32 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_lon_val_s
 
@@ -209,9 +219,10 @@ contains
     allocate(gr_lon_val_a(num))
     read(string, *, iostat=ios, iomsg=iom) gr_lon_val_a
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_lon_val_a: Failed to read int32 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_lon_val_a
 
@@ -226,9 +237,10 @@ contains
 
     read(string, *, iostat=ios, iomsg=iom) gr_flt_val_s
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_flt_val_s: Failed to read real32 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_flt_val_s
 
@@ -245,9 +257,10 @@ contains
     allocate(gr_flt_val_a(num))
     read(string, *, iostat=ios, iomsg=iom) gr_flt_val_a
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_flt_val_a: Failed to read real32 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_flt_val_a
 
@@ -262,9 +275,10 @@ contains
 
     read(string, *, iostat=ios, iomsg=iom) gr_dbl_val_s
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_dbl_val_s: Failed to read real64 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_dbl_val_s
 
@@ -281,9 +295,10 @@ contains
     allocate(gr_dbl_val_a(num))
     read(string, *, iostat=ios, iomsg=iom) gr_dbl_val_a
     if (ios /= 0) then
-       write(error_unit, "(a/t10,a/t10,a)") &
+       write(error_str, "(a/t10,a/t10,a)") &
             & "gr_dbl_val_a: Failed to read real64 value from:",&
             & trim(string), trim(iom)
+       call gr_message(error_str)
     end if
   end function gr_dbl_val_a
 
@@ -304,7 +319,8 @@ contains
     open(newunit=unit, file=file, form='formatted', &
             & status='old', action='read', iostat=ios, iomsg=iom)
     if (ios /= 0) then
-       write(error_unit, "(A)") "GR_OPEN_ASC: Failed to open file", trim(iom)
+       write(error_str, "(A)") "GR_OPEN_ASC: Failed to open file", trim(iom)
+       call gr_message(error_str(:2))
        gr_open_asc = .false.
        return
     end if
@@ -360,8 +376,9 @@ contains
        read(unit, '(a)', iostat=ios, iomsg=iom) inln
        if (ios == iostat_end) exit
        if (ios /= 0) then
-          write(error_unit, "(a/t10,a)") &
+          write(error_str, "(a/t10,a)") &
                & "gr_get_asc: Error reading from ascii file", trim(iom)
+          call gr_message(error_str(:2))
           close(unit)
           return
        end if
@@ -516,9 +533,9 @@ contains
              if (pdefs%gamma == 0.) pdefs%gamma = 1.0
 
           case('DN')
-             if (dflag) write(error_unit, "(a)") &
+             if (dflag) call gr_message( &
                   & "gr_get_asc: Datasets have already been defined"// &
-                  & "these will be destroyed."
+                  & "these will be destroyed.")
 
              pdefs%nsets = gr_int_val(tag_val(itag+1))
              if (allocated(pdefs%data)) deallocate(pdefs%data)
@@ -529,9 +546,9 @@ contains
              pdefs%cset = gr_int_val(tag_val(itag+1))+1_int16
 
           case('TN')
-             if (tflag)  write(error_unit, "(a)") &
+             if (tflag) call gr_message( &
                   & "gr_get_asc: Text strings have already been defined"// &
-                  & "these will be destroyed."
+                  & "these will be destroyed.")
 
              pdefs%ntext = gr_int_val(tag_val(itag+1))
              if (allocated(pdefs%text)) deallocate(pdefs%text)
@@ -541,8 +558,8 @@ contains
           case('DS')
              rset = gr_int_val(tag_val(itag+1)) + 1_int16
              if (.not. dflag) then 
-                write(error_unit, "(a)") &
-                     & "gr_get_asc: Dataset read before number of sets defined"
+                call gr_message( &
+                     & "gr_get_asc: Dataset read before number of sets defined")
                 stop
              end if
 
@@ -553,9 +570,9 @@ contains
           case('TS')
              tset = gr_int_val(tag_val(itag+1))+1
              if (.not. tflag) then 
-                write(error_unit, "(a)") &
+                call gr_message( &
                      & "gr_get_asc: Text string read before number of sets"//&
-                     & " defined"
+                     & " defined")
                 stop
              end if
              text => pdefs%text(tset)
@@ -678,8 +695,9 @@ contains
        read(unit, "(a)", iostat=ios, iomsg=iom) inln
        if (ios == iostat_end) return
        if (ios /= 0) then
-          write(error_unit, "(a/t10,a)") &
+          write(error_str, "(a/a)") &
                & "gr_get_ds_asc: error reading dataset from ascii", trim(iom)
+          call gr_message(error_str)
           return
        end if
 
@@ -743,8 +761,8 @@ contains
                 data%zdata%levels = &
                      & gr_dbl_val(tag_val(itag+1), int(data%zdata%n_levels))
              else
-                write(error_unit, "(a)") "gr_get_ds_asc: contour level "// &
-                     & "given without count - ignored"
+                call gr_message( "gr_get_ds_asc: contour level "// &
+                     & "given without count - ignored")
              end if
           case('ZLL')
              if (cflag(1)) then 
@@ -753,8 +771,8 @@ contains
                 read(unit, *) data%zdata%levels 
                 exit
              else
-                write(error_unit, "(a)") "gr_get_ds_asc: contour level "// &
-                     & "given without count - ignored"
+                call gr_message("gr_get_ds_asc: contour level "// &
+                     & "given without count - ignored")
              end if
 
           case('ZNC')
@@ -769,8 +787,8 @@ contains
                 data%zdata%colours = gr_int_val(tag_val(itag+1), &
                      & int(data%zdata%n_cols))
              else 
-                write(error_unit, "(a)") "gr_get_ds_asc:  Contour colour "// &
-                     & "list given without count - ignored"
+                call gr_message("gr_get_ds_asc:  Contour colour "// &
+                     & "list given without count - ignored")
              end if
           case('ZCL')
              if (cflag(2)) then 
@@ -780,8 +798,8 @@ contains
                 read(unit, *) data%zdata%colours
                 exit
              else 
-                write(error_unit, "(a)") "gr_get_ds_asc:  Contour colour "// &
-                     & "list given without count - ignored"
+                call gr_message("gr_get_ds_asc:  Contour colour "// &
+                     & "list given without count - ignored")
              end if
 
           case('ZCT')
@@ -802,8 +820,8 @@ contains
                 data%zdata%style = gr_int_val(tag_val(itag+1), &
                      & int(data%zdata%n_sty))
              else 
-                write(error_unit, "(a)") "gr_get_ds_asc: Contour style "// &
-                     & "list given without count - ignored"
+                call gr_message("gr_get_ds_asc: Contour style "// &
+                     & "list given without count - ignored")
              end if
           case('ZSL')
              if (cflag(3)) then
@@ -812,8 +830,8 @@ contains
                 read(unit, *) data%zdata%style
                 exit
              else 
-                write(error_unit, "(a)") "gr_get_ds_asc: Contour style "// &
-                     & "list given without count - ignored"
+                call gr_message("gr_get_ds_asc: Contour style "// &
+                     & "list given without count - ignored")
              end if
 
           case('ZNT')
@@ -827,8 +845,8 @@ contains
                 data%zdata%thick = gr_int_val(tag_val(itag+1), &
                      & int(data%zdata%n_thick))
              else
-                write(error_unit, "(a)") "gr_get_ds_asc: Contour thickness "//&
-                     & "list given without count - ignored"
+                call gr_message("gr_get_ds_asc: Contour thickness "//&
+                     & "list given without count - ignored")
              end if
          case('ZTL')
              if (cflag(4)) then
@@ -837,8 +855,8 @@ contains
                 read(unit, *) data%zdata%thick
                 exit
              else
-                write(error_unit, "(a)") "gr_get_ds_asc: Contour thickness "//&
-                     & "list given without count - ignored"
+                call gr_message("gr_get_ds_asc: Contour thickness "//&
+                     & "list given without count - ignored")
              end if
 
           case('ZCF')
@@ -865,11 +883,11 @@ contains
 
           case('R')
              if (.not. tflag) then 
-                write(error_unit, "(a)") "gr_get_ds_asc: Range found "// &
-                     & "before type defined - ignored"
+                call gr_message("gr_get_ds_asc: Range found "// &
+                     & "before type defined - ignored")
              else if (data%type >= 0) then 
-                write(error_unit, "(a)") &
-                     & "gr_get_ds_asc: Range found in XY data set - ignored"
+                call gr_message( &
+                     & "gr_get_ds_asc: Range found in XY data set - ignored")
              else if (data%type == -4) then 
                 data%funct%range = &
                      & reshape(gr_dbl_val(tag_val(itag+1), 4), [2,2])
@@ -878,42 +896,42 @@ contains
              end if
           case('F')
              if (.not. tflag) then 
-                write(error_unit, "(a)") "gr_get_ds_asc: Function found "// &
-                     & "before type defined - ignored"
+                call gr_message("gr_get_ds_asc: Function found "// &
+                     & "before type defined - ignored")
              else if (data%type >= 0) then 
-                write(error_unit, "(a)") "gr_get_ds_asc: Function found "// &
-                     & "in XY data set - ignored"
+                call gr_message("gr_get_ds_asc: Function found "// &
+                     & "in XY data set - ignored")
              else if (data%type == -3) then 
-                write(error_unit, "(a)") "gr_get_ds_asc: Plain function "// &
-                     & "found in parametric set - ignored" 
+                call gr_message("gr_get_ds_asc: Plain function "// &
+                     & "found in parametric set - ignored")
              else 
                 call gr_str_val(inln, 'F', data%funct%funct(1))
                 exit
              end if
           case('FX')
              if (.not. tflag) then 
-                write(error_unit, "(a)") "gr_get_ds_asc: Function found "// &
-                     & "before type defined - ignored"
+                call gr_message("gr_get_ds_asc: Function found "// &
+                     & "before type defined - ignored")
              else if (data%type >= 0) then 
-                write(error_unit, "(a)") "gr_get_ds_asc: Function found "// &
-                     & "in XY data set - ignored"
+                call gr_message("gr_get_ds_asc: Function found "// &
+                     & "in XY data set - ignored")
              else if (data%type /= -3) then
-                write(error_unit, "(a)") "gr_get_ds_asc: X function found "// &
-                     & "in plain function - ignored"
+               call gr_message("gr_get_ds_asc: X function found "// &
+                     & "in plain function - ignored")
              else 
                 call gr_str_val(inln, 'FX', data%funct%funct(1))
                 exit
              end if
           case('FY')
              if (.not. tflag) then 
-                write(error_unit, "(a)") "gr_get_ds_asc: Function found "// &
-                     & "before type defined - ignored"
+                call gr_message("gr_get_ds_asc: Function found "// &
+                     & "before type defined - ignored")
              else if (data%type >= 0) then 
-                write(error_unit, "(a)") "gr_get_ds_asc: Function found "// &
-                     & "in XY data set - ignored"
+                call gr_message("gr_get_ds_asc: Function found "// &
+                     & "in XY data set - ignored")
              else if (data%type /= -3) then
-                write(error_unit, "(a)") "gr_get_ds_asc: Y function found "// &
-                     & "in plain function - ignored"
+                call gr_message("gr_get_ds_asc: Y function found "// &
+                     & "in plain function - ignored")
              else 
                 call gr_str_val(inln, 'FY', data%funct%funct(2))
                 exit
@@ -921,22 +939,22 @@ contains
 
           case('VS')
              if (.not. tflag) then
-                write(error_unit, "(a)") "gr_get_ds_asc: Data found "// &
-                     & "before type defined - ignored"
+                call gr_message("gr_get_ds_asc: Data found "// &
+                     & "before type defined - ignored")
                 do
                    read(unit, '(a)') inln
                    if (index(inln, "VE:") > 0) exit
                 end do
              else if (data%type < 0) then
-                write(error_unit, "(a)") "gr_get_ds_asc: Data found "// &
-                     & "in function dataset - ignored"
+                call gr_message("gr_get_ds_asc: Data found "// &
+                     & "in function dataset - ignored")
                 do
                    read(unit, '(a)') inln
                    if (index(inln, "VE:") > 0) exit
                 end do
              else if (data%type > 8) then
-                write(error_unit, "(a)") "gr_get_ds_asc: 1-D Data "// &
-                     & "found in 2-D dataset - ignored"
+                call gr_message("gr_get_ds_asc: 1-D Data "// &
+                     & "found in 2-D dataset - ignored")
                 do
                    read(unit, '(a)') inln
                    if (index(inln, "VE:") > 0) exit
@@ -944,29 +962,29 @@ contains
              else
                 ncols = gr_int_val(tag_val(itag+1))
                 if (ncols /= elements(data%type)) &
-                     & write(error_unit, "(a)") "gr_get_ds_asc: WARNING "// &
-                     & "Data columns wrong could get corrupt DS"
+                     & call gr_message("gr_get_ds_asc: WARNING "// &
+                     & "Data columns wrong could get corrupt DS")
                 if (allocated(data%xydata)) deallocate(data%xydata)
                 allocate(data%xydata(elements(data%type), data%ndata))
                 read(unit, *) data%xydata
                 read(unit, "(a)") inln
                 if (index(inln, 'VE:') == 0) then 
-                   write(error_unit, "(a)") "gr_get_ds_asc: WARNING Data "// &
-                        & "rows wrong could get corrupt DS"
+                   call gr_message("gr_get_ds_asc: WARNING Data "// &
+                        & "rows wrong could get corrupt DS")
                 end if
              end if
 
           case('ZXS')
              if (.not. tflag) then
-                write(error_unit, "(a)") "gr_get_ds_asc: Data found "// &
-                     & "before type defined - ignored"
+                call gr_message("gr_get_ds_asc: Data found "// &
+                     & "before type defined - ignored")
                 do
                    read(unit, '(a)') inln
                    if (index(inln, "ZXE:") > 0) exit
                 end do
              else if (data%type /= 9) then
-                write(error_unit, "(a)") "gr_get_ds_asc: 2-D Data found "//&
-                     & "in function or 1-D dataset - ignored"
+                call gr_message("gr_get_ds_asc: 2-D Data found "//&
+                     & "in function or 1-D dataset - ignored")
                 do
                    read(unit, '(a)') inln
                    if (index(inln, "ZXE:") > 0) exit
@@ -980,22 +998,22 @@ contains
                 end if
                 read(unit, *) data%zdata%x
                 read(unit, "(a)") inln
-                if (index(inln, 'ZXE:') == 0) write(error_unit, "(a)") &
+                if (index(inln, 'ZXE:') == 0) call gr_message( &
                      & "gr_get_ds_asc: WARNING Data X count wrong "// &
-                     & "could get corrupt DS"
+                     & "could get corrupt DS")
              end if
 
           case('ZYS')
              if (.not. tflag) then
-                write(error_unit, "(a)") "gr_get_ds_asc: Data found "// &
-                     & "before type defined - ignored"
+                call gr_message("gr_get_ds_asc: Data found "// &
+                     & "before type defined - ignored")
                 do
                    read(unit, '(a)') inln
                    if (index(inln, "ZYE:") > 0) exit
                 end do
              else if (data%type /= 9) then
-                write(error_unit, "(a)") "gr_get_ds_asc: 2-D Data found "//&
-                     & "in function or 1-D dataset - ignored"
+               call gr_message("gr_get_ds_asc: 2-D Data found "//&
+                     & "in function or 1-D dataset - ignored")
                 do
                    read(unit, '(a)') inln
                    if (index(inln, "ZYE:") > 0) exit
@@ -1009,22 +1027,22 @@ contains
                 end if
                 read(unit, *) data%zdata%y
                 read(unit, "(a)") inln
-                if (index(inln, 'ZYE:') == 0) write(error_unit, "(a)") &
+                if (index(inln, 'ZYE:') == 0) call gr_message( &
                      & "gr_get_ds_asc: WARNING Data Y count wrong "// &
-                     & "could get corrupt DS"
+                     & "could get corrupt DS")
              end if
 
           case('ZZS')
              if (.not. tflag) then
-                write(error_unit, "(a)") "gr_get_ds_asc: Data found "// &
-                     & "before type defined - ignored"
+                call gr_message("gr_get_ds_asc: Data found "// &
+                     & "before type defined - ignored")
                 do
                    read(unit, '(a)') inln
                    if (index(inln, "ZZE:") > 0) exit
                 end do
              else if (data%type /= 9) then
-                write(error_unit, "(a)") "gr_get_ds_asc: 2-D Data found "//&
-                     & "in function or 1-D dataset - ignored"
+                call gr_message("gr_get_ds_asc: 2-D Data found "//&
+                     & "in function or 1-D dataset - ignored")
                 do
                    read(unit, '(a)') inln
                    if (index(inln, "ZZE:") > 0) exit
@@ -1034,9 +1052,9 @@ contains
                 allocate(data%zdata%z(data%ndata, data%ndata2))
                 read(unit, *) data%zdata%z
                 read(unit, "(a)") inln
-                if (index(inln, 'ZZE:') == 0) write(error_unit, "(a)") &
+                if (index(inln, 'ZZE:') == 0) call gr_message( &
                      & "gr_get_ds_asc: WARNING Data Z count wrong "// &
-                     & "could get corrupt DS"
+                     & "could get corrupt DS")
              end if
 
           case('ZX2')
@@ -1048,9 +1066,9 @@ contains
              exit main
 
           case default
-             write(error_unit, "(a)") &
+             call gr_message( &
                   & "gr_get_ds_asc: Unknown Dataset tag "//tag_val(itag)//&
-                  & " - ignored"
+                  & " - ignored")
           end select
        end do
     end do main
@@ -1089,8 +1107,9 @@ contains
        read(unit, "(a)", iostat=ios, iomsg=iom) inln
        if (ios == iostat_end) return
        if (ios /= 0) then
-          write(error_unit, "(a/t10,a)") &
+          write(error_str, "(a/t10,a)") &
                & "gr_get_txt_asc: error reading dataset from ascii", trim(iom)
+          call gr_message(error_str(:2))
           return
        end if
 
@@ -1140,9 +1159,9 @@ contains
              return
 
           case default
-             write(error_unit, "(a)") &
+             call gr_message( &
                   & "gr_get_txt_asc: Unknown text tag "//tag_val(itag)//&
-                  & " - ignored"
+                  & " - ignored")
 
           end select
        end do
@@ -1174,14 +1193,14 @@ contains
     open(newunit=unit, file=outfile, form='formatted', action='write', &
          & status='replace', iostat=ios, iomsg=iom)
     if (ios /= 0) then
-       write(error_unit, "(2a/t10,a)") &
+       write(error_str, "(2a/t10,a)") &
             & "gr_save_asc: Failed to open output file: ", trim(outfile), &
             & trim(iom)
+       call gr_message(error_str)
        ok = .false.
        return
     end if
 
-!!$    call date_and_time(date=date, time=time, zone=zone)
     call gr_date(date)
     write(unit, "('Graffer V',I2,'.',I2.2,': ', 2A,' : @',A)") &
          & pdefs%version, trim(pdefs%dir), trim(pdefs%name), date !, time, zone

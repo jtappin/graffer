@@ -71,6 +71,7 @@ set(sources
   "gr_text_widgets.f90"
   "gr_text_pick_widgets.f90"
   "gr_text_utils.f90"
+  "gr_msg.f90"
   )
 
 add_executable(graffer ${sources})

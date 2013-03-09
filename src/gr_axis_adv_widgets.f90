@@ -28,6 +28,7 @@ module gr_axis_adv_widgets
   use graff_types
   use graff_globals
   use gr_plot
+  use gr_cb_common
 
   implicit none
 
@@ -136,6 +137,7 @@ contains
     integer :: ios
     real(kind=real64) :: xm
     character(len=120) :: iom
+    character(len=160), dimension(2) :: err_string
 
     call c_f_pointer(data, apply)
 
@@ -146,8 +148,9 @@ contains
        if (len_trim(tvalue) > 0) then
           read(tvalue, *, iostat=ios, iomsg=iom) xm
           if (ios /= 0) then
-             write(error_unit, "(a/t10,a)") &
+             write(err_string, "(a/t10,a)") &
                   & "gr_adv_quit: Failed to read major tick spacing", trim(iom)
+             call gr_message(err_string)
           else
              axstyle%xmajor = xm
           end if

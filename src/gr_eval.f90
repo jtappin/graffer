@@ -25,6 +25,7 @@ module gr_eval
   use g, only: g_find_program_in_path
 
   use graff_globals
+  use gr_msg
 
   implicit none
 
@@ -85,6 +86,7 @@ contains
     end if
 
     write(error_unit, "(A)") "Failed to find 'gdl' or 'idl' in ${PATH}"
+    call gr_message("Failed to find 'gdl' or 'idl' in ${PATH}")
 
     gdl_found = .false.
     gr_have_gdl =.false.
@@ -165,17 +167,10 @@ contains
     gr_evaluate = status
 
     if (status /= 0) then
-       if (c_associated(gr_infobar)) then
-          write(err_buffer, "(a,i0)") &
-               & "gr_evaluate: Failed to evaluate function for dataset #", &
-               & dsidx
-          call hl_gtk_info_bar_message(gr_infobar, &
-               & trim(err_buffer)//c_null_char)
-       else
-          write(error_unit, "(a,i0)") &
-               & "gr_evaluate: Failed to evaluate function for dataset #", &
-               & dsidx
-       end if
+       write(err_buffer, "(a,i0)") &
+            & "gr_evaluate: Failed to evaluate function for dataset #", &
+            & dsidx
+       call gr_message(err_buffer)
        return
     end if
 

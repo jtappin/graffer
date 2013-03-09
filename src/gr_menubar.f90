@@ -225,7 +225,7 @@ contains
           call gr_write(pdefs, ok)
        case(GTK_RESPONSE_NO)
        case default
-          write(error_unit, "(A)") "gr_exit: Invalid response code"
+          call gr_message("gr_open_cb: Invalid response code")
           return
        end select
     end if
@@ -239,8 +239,6 @@ contains
     end if
     call graffer_version%string(gr_sversion)
 
-!!$    call gtk_window_set_title(gr_window, "Graffer V"//trim(gr_sversion)//&
-!!$         & ": "//trim(files(1))//c_null_char)
     gui_active = .true.
     call gr_set_values_global()
     call gr_set_values_dataset()

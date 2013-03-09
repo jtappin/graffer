@@ -39,6 +39,7 @@ module gr_drawing
   use gr_plot_tools
   use gr_cb_common
   use gr_drawing_buttons
+  use gr_msg
 
   implicit none
 
@@ -167,7 +168,7 @@ contains
     integer(kind=c_int) :: key_f, key_esc, key_f11, wstate
     type(c_ptr) :: gdk_win
     type(gdkeventkey), pointer :: fevent
-
+    
     rv = FALSE
 
     key_f = gdk_keyval_from_name("f"//c_null_char)
@@ -177,8 +178,8 @@ contains
     gdk_win = gtk_widget_get_window(gr_window)
 
     if (.not. c_associated(gdk_win)) then
-       write(error_unit, "(a)")  &
-            & "gr_draw_key: No GDK window associated with top level GTK window"
+      call gr_message(&
+           & "gr_draw_key: No GDK window associated with top level GTK window")
        return
     end if
 

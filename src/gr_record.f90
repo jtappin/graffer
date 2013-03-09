@@ -16,11 +16,12 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_record
-  use iso_fortran_env, only: error_unit, int8, int16, int32, real32, real64, &
+  use iso_fortran_env, only: int8, int16, int32, real32, real64, &
        & iostat_end
 
   use gr_idl_types
   use gr_utils
+  use gr_msg
 
   implicit none
 
@@ -96,6 +97,8 @@ module gr_record
      procedure, public :: get_tag => gr_get_tag
   end type graffer_record
 
+  character(len=160), dimension(2), private :: error_str
+
 contains
 
   function gr_read_rec(this, unit, swap) result(status)
@@ -114,8 +117,9 @@ contains
     status = 0
     inquire(unit=unit, opened=isopen)
     if (.not. isopen) then
-       write(error_unit, "(A,i0,a)") &
+       write(error_str, "(A,i0,a)") &
             & "GR_READ_REC: Unit: ", unit, " is not open"
+       call gr_message(error_str(1))
        status = 1
     end if
 
@@ -131,8 +135,9 @@ contains
        return
     end if
     if (ios /= 0) then
-       write(error_unit, "(A)") "GR_READ_REC: Failed to read tag data", &
+       write(error_str, "(A)") "GR_READ_REC: Failed to read tag data", &
             & trim(iomsg)
+       call gr_message(error_str)
        status = 1
        return
     end if
@@ -149,9 +154,10 @@ contains
        allocate(this%dims(this%ndims))
        read(unit, iostat=ios, iomsg=iomsg) this%dims
        if (ios /= 0) then
-          write(error_unit, "(2A/a)") &
+          write(error_str, "(2A/a)") &
                & "GR_READ_REC: Failed to read dimensions for: ", this%tag, &
                & trim(iomsg)
+          call gr_message(error_str)
           status = 1
           return
        end if
@@ -164,17 +170,18 @@ contains
        else if (this%ndims == 0) then
           allocate(this%length(1))
        else
-          write(error_unit, "(A)") &
-               & "GR_READ_REC: only 1-D string arrays are handled"
+          call gr_message( &
+               & "GR_READ_REC: only 1-D string arrays are handled")
           status = 1
           return
        end if
 
        read(unit, iostat=ios, iomsg=iomsg) this%length
        if (ios /= 0) then
-          write(error_unit, "(2A/a)") &
+          write(error_str, "(2A/a)") &
                & "GR_READ_REC: Failed to read lengths for: ", this%tag, &
                & trim(iomsg)
+          call gr_message(error_str)
           status = 1
           return
        end if
@@ -187,18 +194,20 @@ contains
        case(idl_byte)
           read(unit, iostat=ios, iomsg=iomsg) this%b_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read byte scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
        case(idl_int)
           read(unit, iostat=ios, iomsg=iomsg) this%i_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read integer scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -206,9 +215,10 @@ contains
        case(idl_long)
           read(unit, iostat=ios, iomsg=iomsg) this%l_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read long scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -216,9 +226,10 @@ contains
        case(idl_float)
           read(unit, iostat=ios, iomsg=iomsg) this%r_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read float scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -226,9 +237,10 @@ contains
        case(idl_double)
           read(unit, iostat=ios, iomsg=iomsg) this%d_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read double scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -237,15 +249,17 @@ contains
           allocate(this%ba_val(this%length(1)))
           read(unit, iostat=ios, iomsg=iomsg) this%ba_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read string scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
        case default
-          write(error_unit, "(A, i0)") &
+          write(error_str, "(A, i0)") &
                & "GR_READ_REC: Unknown/inappropriate type code, ", this%tcode
+          call gr_message(error_str(1))
           status = 2
           return
        end select
@@ -257,9 +271,10 @@ contains
           allocate(this%ba_val(this%dims(1)))
           read(unit, iostat=ios, iomsg=iomsg) this%ba_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read byte array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -267,9 +282,10 @@ contains
           allocate(this%ia_val(this%dims(1)))
           read(unit, iostat=ios, iomsg=iomsg) this%ia_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read int array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -278,9 +294,10 @@ contains
           allocate(this%la_val(this%dims(1)))
           read(unit, iostat=ios, iomsg=iomsg) this%la_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read long array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -289,9 +306,10 @@ contains
           allocate(this%ra_val(this%dims(1)))
           read(unit, iostat=ios, iomsg=iomsg) this%ra_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read float array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -300,9 +318,10 @@ contains
           allocate(this%da_val(this%dims(1)))
           read(unit, iostat=ios, iomsg=iomsg) this%da_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read double array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -314,16 +333,18 @@ contains
              read(unit, iostat=ios, iomsg=iomsg) &
                   & this%baa_val(:this%length(i), i)
              if (ios /= 0) then
-                write(error_unit, "(A)") &
+                write(error_str, "(A)") &
                      & "GR_READ_REC: Failed to read string array", &
                      & trim(iomsg)
+                call gr_message(error_str)
                 status = 1
                 return
              end if
           end do
        case default
-          write(error_unit, "(A, i0)") &
+          write(error_str, "(A, i0)") &
                & "GR_READ_REC: Unknown/inappropriate type code, ", this%tcode
+          call gr_message(error_str(1))
           status = 2
           return
        end select
@@ -335,22 +356,25 @@ contains
           allocate(this%daa_val(this%dims(1), this%dims(2)))
           read(unit, iostat=ios, iomsg=iomsg) this%daa_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_READ_REC: Failed to read double array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
           if (swap_end) call byte_swap(this%daa_val)
        case default
-          write(error_unit, "(A, i0)") &
+          write(error_str, "(A, i0)") &
                & "GR_READ_REC: Unknown/inappropriate type code, ", this%tcode
+          call gr_message(error_str(1))
           status = 2
           return
        end select
     case default
-       write(error_unit, "(A, i0)") &
+       write(error_str, "(A, i0)") &
             & "GR_READ_REC: Inappropriate dimensionality, ", this%ndims
+          call gr_message(error_str(1))
        status = 2
        return
 
@@ -370,7 +394,7 @@ contains
     status = 0
 
     if (this%ndims /= 0) then
-       write(error_unit, "(A)") "GR_GET_INT: Try to read scalar from array"
+       call gr_message("GR_GET_INT: Try to read scalar from array")
        status = 2
        return
     end if
@@ -390,8 +414,9 @@ contains
     case(idl_byte)
        ival = int(this%b_val, int16)
     case default
-       write(error_unit, "(A, I0)") "GR_GET_INT: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_INT: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_int
@@ -406,7 +431,7 @@ contains
     status = 0
 
     if (this%ndims /= 0) then
-       write(error_unit, "(A)") "GR_GET_LONG: Try to read scalar from array"
+       call gr_message("GR_GET_LONG: Try to read scalar from array")
        status = 2
        return
     end if
@@ -425,8 +450,9 @@ contains
     case(idl_byte)
        lval = int(this%b_val, int32)
     case default
-       write(error_unit, "(A, I0)") "GR_GET_LONG: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_LONG: Unknown type code: ", &
             & this%tcode
+          call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_long
@@ -441,7 +467,7 @@ contains
     status = 0
 
     if (this%ndims /= 0) then
-       write(error_unit, "(A)") "GR_GET_REAL: Try to read scalar from array"
+       call gr_message("GR_GET_REAL: Try to read scalar from array")
        status = 2
        return
     end if
@@ -460,8 +486,9 @@ contains
     case(idl_byte)
        rval = real(this%b_val, real32)
     case default
-       write(error_unit, "(A, I0)") "GR_GET_FLOAT: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_FLOAT: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_float
@@ -476,7 +503,7 @@ contains
     status = 0
 
     if (this%ndims /= 0) then
-       write(error_unit, "(A)") "GR_GET_DOUBLE: Try to read scalar from array"
+       call gr_message("GR_GET_DOUBLE: Try to read scalar from array")
        status = 2
        return
     end if
@@ -493,8 +520,9 @@ contains
     case(idl_byte)
        dval = real(this%b_val, real64)
     case default
-       write(error_unit, "(A, I0)") "GR_GET_DOUBLE: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_DOUBLE: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_double
@@ -511,7 +539,7 @@ contains
     status = 0
 
     if (this%ndims /= 0) then
-       write(error_unit, "(A)") "GR_GET_STRING: Try to read scalar from array"
+       call gr_message("GR_GET_STRING: Try to read scalar from array")
        status = 2
        return
     end if
@@ -526,8 +554,9 @@ contains
        end do
        if (len(sval) > this%length(1)) sval(this%length(1)+1:) = ' '
     case default
-       write(error_unit, "(A, I0)") "GR_GET_STRING: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_STRING: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_string
@@ -542,7 +571,7 @@ contains
     status = 0
 
     if (this%ndims /= 0) then
-       write(error_unit, "(A)") "GR_GET_LOGICAL: Try to read scalar from array"
+       call gr_message("GR_GET_LOGICAL: Try to read scalar from array")
        status = 2
        return
     end if
@@ -563,8 +592,9 @@ contains
        tval = this%d_val /= 0
        status = 4
     case default
-       write(error_unit, "(A, I0)") "GR_GET_INT: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_LOGICAL: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_logical
@@ -579,7 +609,7 @@ contains
     status = 0
 
     if (this%ndims /= 0) then
-       write(error_unit, "(A)") "GR_GET_BYTE: Try to read scalar from array"
+       call gr_message("GR_GET_BYTE: Try to read scalar from array")
        status = 2
        return
     end if
@@ -600,8 +630,9 @@ contains
        bval = int(this%d_val, int8)
        status = 4
     case default
-       write(error_unit, "(A, I0)") "GR_GET_BYTE: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_BYTE: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_byte
@@ -622,8 +653,7 @@ contains
        ival = sival
        return
     else if (this%ndims == 2) then
-       write(error_unit, "(A)") &
-                   & "GR_GET_INT_A: Try to read 1D array from 2-D"
+       call gr_message("GR_GET_INT_A: Try to read 1D array from 2-D")
        status = 2
        return
     end if
@@ -631,9 +661,10 @@ contains
     sz = size(ival)
     mxi = min(this%dims(1), sz)
     if (sz /= this%dims(1)) then
-       write(error_unit, "(A,i0,a,i0,a)") &
+       write(error_str, "(A,i0,a,i0,a)") &
             & "GR_GET_INT_A: output size (",sz,&
             & ") not equal to data size (",this%dims(1),")"
+       call gr_message(error_str(1))
        status = 4
     end if
 
@@ -652,8 +683,9 @@ contains
     case(idl_byte)
        ival(:mxi) = int(this%ba_val(:mxi), int16)
     case default
-       write(error_unit, "(A, I0)") "GR_GET_INT_A: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_INT_A: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_int_a
@@ -673,8 +705,7 @@ contains
        lval = slval
        return
     else if (this%ndims == 2) then
-       write(error_unit, "(A)") &
-                   & "GR_GET_LONG_A: Try to read 1D array from 2-D"
+       call gr_message("GR_GET_LONG_A: Try to read 1D array from 2-D")
        status = 2
        return
     end if
@@ -682,9 +713,10 @@ contains
     sz = size(lval)
     mxi = min(this%dims(1), sz)
     if (sz /= this%dims(1)) then
-       write(error_unit, "(A,i0,a,i0,a)") &
-            & "GR_GET_INT_A: output size (",sz,&
+       write(error_str, "(A,i0,a,i0,a)") &
+            & "GR_GET_LONG_A: output size (",sz,&
             & ") not equal to data size (",this%dims(1),")"
+       call gr_message(error_str(1))
        status = 4
     end if
 
@@ -702,8 +734,9 @@ contains
     case(idl_byte)
        lval(:mxi) = int(this%ba_val(:mxi), int32)
     case default
-       write(error_unit, "(A, I0)") "GR_GET_LONG_A: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_LONG_A: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_long_a
@@ -723,8 +756,7 @@ contains
        rval = srval
        return
     else if (this%ndims == 2) then
-       write(error_unit, "(A)") &
-                   & "GR_GET_FLOAT_A: Try to read 1D array from 2-D"
+       call gr_message("GR_GET_FLOAT_A: Try to read 1D array from 2-D")
        status = 2
        return
     end if
@@ -732,9 +764,10 @@ contains
     sz = size(rval)
     mxi = min(this%dims(1), sz)
     if (sz /= this%dims(1)) then
-       write(error_unit, "(A,i0,a,i0,a)") &
-            & "GR_GET_INT_A: output size (",sz,&
+       write(error_str, "(A,i0,a,i0,a)") &
+            & "GR_GET_FLOAT_A: output size (",sz,&
             & ") not equal to data size (",this%dims(1),")"
+       call gr_message(error_str(1))
        status = 4
     end if
 
@@ -752,8 +785,9 @@ contains
     case(idl_byte)
        rval(:mxi) = real(this%ba_val(:mxi), real32)
     case default
-       write(error_unit, "(A, I0)") "GR_GET_FLOAT_A: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_FLOAT_A: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_float_a
@@ -773,8 +807,7 @@ contains
        dval = sdval
        return
     else if (this%ndims == 2) then
-       write(error_unit, "(A)") &
-                   & "GR_GET_DOUBLE_A: Try to read 1D array from 2-D"
+       call gr_message("GR_GET_DOUBLE_A: Try to read 1D array from 2-D")
        status = 2
        return
     end if
@@ -782,9 +815,10 @@ contains
     sz = size(dval)
     mxi = min(this%dims(1), sz)
     if (sz /= this%dims(1)) then
-       write(error_unit, "(A,i0,a,i0,a)") &
-            & "GR_GET_INT_A: output size (",sz,&
+       write(error_str, "(A,i0,a,i0,a)") &
+            & "GR_GET_DOUBLE_A: output size (",sz,&
             & ") not equal to data size (",this%dims(1),")"
+       call gr_message(error_str(1))
        status = 4
     end if
 
@@ -801,8 +835,9 @@ contains
     case(idl_byte)
        dval(:mxi) = real(this%ba_val(:mxi), real64)
     case default
-       write(error_unit, "(A, I0)") "GR_GET_DOUBLE_A: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_DOUBLE_A: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_double_a
@@ -828,8 +863,7 @@ contains
        sval = ssval
        return
     else if (this%ndims == 2) then
-       write(error_unit, "(A)") &
-                   & "GR_GET_STRING_A: Try to read 1D array from 2-D"
+       call gr_message("GR_GET_STRING_A: Try to read 1D array from 2-D")
        status = 2
        return
     end if
@@ -846,8 +880,9 @@ contains
        if (len(sval) > this%length(j)) sval(j)(this%length(j)+1:) = ' '
        end do
     case default
-       write(error_unit, "(A, I0)") "GR_GET_STRING_A: Unknown type code: ", &
+       write(error_str, "(A, I0)") "GR_GET_STRING_A: Unknown type code: ", &
             & this%tcode
+       call gr_message(error_str(1))
        status = 2
     end select
   end subroutine gr_get_string_a
@@ -875,8 +910,7 @@ contains
        else if (sz(1) == 1) then
           call gr_get_double_a(this, dval(1,:), status)
        else
-          write(error_unit, "(A)") &
-                   & "GR_GET_DOUBLE_AA: Try to read 2D array from 1-D"
+          call gr_message("GR_GET_DOUBLE_AA: Try to read 2D array from 1-D")
           status = 2
           return
        end if
@@ -885,9 +919,10 @@ contains
        mxj = min(this%dims(2), sz(2))
 
        if (any(sz /= this%dims)) then
-          write(error_unit, "(A,i0,1x,i0,a,i0,1x,i0,a)") &
-               & "GR_GET_INT_A: output size (",sz,&
+          write(error_str, "(A,i0,1x,i0,a,i0,1x,i0,a)") &
+               & "GR_GET_DOUBLE_AA: output size (",sz,&
                & ") not equal to data size (",this%dims,")"
+          call gr_message(error_str(1))
           status = 4
        end if
 
@@ -895,8 +930,9 @@ contains
        case(idl_double) 
           dval(:mxi,:mxj) = this%daa_val(:mxi,:mxj)
        case default
-          write(error_unit, "(A, I0)") "GR_GET_DOUBLE_AA: Unknown type code: ", &
+          write(error_str, "(A, I0)") "GR_GET_DOUBLE_AA: Unknown type code: ", &
                & this%tcode
+          call gr_message(error_str(1))
           status = 2
        end select
     end if
@@ -1210,16 +1246,18 @@ contains
 
     inquire(unit=unit, opened=isopen)
     if (.not. isopen) then
-       write(error_unit, "(A,i0,a)") &
+       write(error_str , "(A,i0,a)") &
             & "GR_PUT_REC: Unit: ", unit, " is not open"
+       call gr_message(error_str(1))
        status = 1
     end if
 
     write(unit, iostat=ios, iomsg=iomsg) this%tag, to_little(this%tcode), &
          & to_little(this%ndims)
     if (ios /= 0) then
-       write(error_unit, "(A)") "GR_PUT_REC: Failed to write tag header", &
+       write(error_str, "(A)") "GR_PUT_REC: Failed to write tag header", &
             & trim(iomsg)
+       call gr_message(error_str)
        status = 1
        return
     end if
@@ -1227,8 +1265,9 @@ contains
     if (this%ndims > 0) then
        write(unit, iostat=ios, iomsg=iomsg) to_little(this%dims)
        if (ios /= 0) then
-          write(error_unit, "(A)") "GR_PUT_REC: Failed to write dimensions", &
+          write(error_str, "(A)") "GR_PUT_REC: Failed to write dimensions", &
                & trim(iomsg)
+          call gr_message(error_str)
           status = 1
           return
        end if
@@ -1236,8 +1275,9 @@ contains
     if (this%tcode == idl_string) then
        write(unit, iostat=ios, iomsg=iomsg) to_little(this%length)
        if (ios /= 0) then
-          write(error_unit, "(A)") "GR_READ_REC: Failed to write lengths", &
+          write(error_str, "(A)") "GR_READ_REC: Failed to write lengths", &
                & trim(iomsg)
+          call gr_message(error_str)
           status = 1
           return
        end if
@@ -1251,54 +1291,60 @@ contains
        case(idl_byte)
           write(unit, iostat=ios, iomsg=iomsg) this%b_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write byte scalar", &
                   & trim(iomsg)
-             status = 1
+             call gr_message(error_str)
+            status = 1
              return
           end if
        case(idl_int)
           write(unit, iostat=ios, iomsg=iomsg) to_little(this%i_val)
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write integer scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
        case(idl_long)
           write(unit, iostat=ios, iomsg=iomsg) to_little(this%l_val)
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write long scalar", &
                   & trim(iomsg)
-             status = 1
+             call gr_message(error_str)
+            status = 1
              return
           end if
        case(idl_float)
           write(unit, iostat=ios, iomsg=iomsg) to_little(this%r_val)
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write float scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
        case(idl_double)
           write(unit, iostat=ios, iomsg=iomsg) to_little(this%d_val)
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write double scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
        case(idl_string)
           write(unit, iostat=ios, iomsg=iomsg) this%ba_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write string scalar", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -1309,45 +1355,50 @@ contains
        case (idl_byte)
           write(unit, iostat=ios, iomsg=iomsg) this%ba_val
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write byte array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
        case (idl_int)
           write(unit, iostat=ios, iomsg=iomsg) to_little(this%ia_val)
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write int array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
        case (idl_long)
           write(unit, iostat=ios, iomsg=iomsg) to_little(this%la_val)
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write long array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
        case (idl_float)
           write(unit, iostat=ios, iomsg=iomsg) to_little(this%ra_val)
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write float array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
        case (idl_double)
           write(unit, iostat=ios, iomsg=iomsg) to_little(this%da_val)
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write double array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if
@@ -1356,9 +1407,10 @@ contains
              write(unit, iostat=ios, iomsg=iomsg) &
                   & this%baa_val(:this%length(i), i)
              if (ios /= 0) then
-                write(error_unit, "(A)") &
+                write(error_str, "(A)") &
                      & "GR_PUT_REC: Failed to write string array", &
                      & trim(iomsg)
+                call gr_message(error_str)
                 status = 1
                 return
              end if
@@ -1371,9 +1423,10 @@ contains
        case(idl_double)
           write(unit, iostat=ios, iomsg=iomsg) to_little(this%daa_val)
           if (ios /= 0) then
-             write(error_unit, "(A)") &
+             write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write double array", &
                   & trim(iomsg)
+             call gr_message(error_str)
              status = 1
              return
           end if

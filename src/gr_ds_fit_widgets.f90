@@ -32,11 +32,13 @@ module gr_ds_fit_widgets
   use gr_fitting
   use gr_plot
   use gr_cb_common
+  use gr_msg
 
   implicit none
 
   type(c_ptr), private :: fit_window, fit_list, fit_type_cbo, fit_order_sb, &
-       & fit_dir_cbo, fit_soln_entry, fit_prob_entry, fit_wt_but, fit_neval_sb
+       & fit_dir_cbo, fit_soln_entry, fit_prob_entry, fit_wt_but, &
+       & fit_neval_sb, fit_chi2_entry
   type(graff_fdata), private :: oldfun
   integer(kind=int16), private :: oldtype
 
@@ -51,7 +53,7 @@ contains
 
     nxy = count(pdefs%data%type >= 0 .and. pdefs%data%type <= 8)
     if (nxy == 0) then
-       write(error_unit, "(A)") "gr_fit_menu: No fittable datasets found"
+       call gr_message("gr_fit_menu: No fittable datasets found")
        return
     end if
 
@@ -158,12 +160,16 @@ contains
     junk = gtk_label_new("Fit:"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 0_c_int, 0_c_int, xopts=0_c_int)
     fit_soln_entry = hl_gtk_entry_new(editable=FALSE)
-    call hl_gtk_table_attach(jb, fit_soln_entry, 1_c_int, 0_c_int)
+    call hl_gtk_table_attach(jb, fit_soln_entry, 1_c_int, 0_c_int, xspan=3)
 
     junk = gtk_label_new("Chi**2/DF:"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int, xopts=0_c_int)
+    fit_chi2_entry = hl_gtk_entry_new(editable=FALSE)
+    call hl_gtk_table_attach(jb, fit_chi2_entry, 1_c_int, 1_c_int)
+    junk = gtk_label_new("Prob:"//c_null_char)
+    call hl_gtk_table_attach(jb, junk, 2_c_int, 1_c_int, xopts=0_c_int)
     fit_prob_entry = hl_gtk_entry_new(editable=FALSE)
-    call hl_gtk_table_attach(jb, fit_prob_entry, 1_c_int, 1_c_int)
+    call hl_gtk_table_attach(jb, fit_prob_entry, 3_c_int, 1_c_int)
 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(base, jb)
@@ -271,7 +277,7 @@ contains
     real(kind=real64), dimension(:), allocatable, target :: xr, yr
     real(kind=real64), dimension(:), allocatable :: wt
     real(kind=real64), dimension(:), pointer :: x, y
-    real(kind=real64) :: xbar, ybar, chi2
+    real(kind=real64) :: chi2, prob
 
     integer :: order, neval,i,ipos
     integer(kind=int16) :: oftype
@@ -394,7 +400,10 @@ contains
 
     call gtk_entry_set_text(fit_soln_entry, trim(fstring)//c_null_char)
 
-    write(termstr, "(g0)") chi2/(size(x)-1)
+    write(termstr, "(g0)") chi2/(size(x)-1-order)
+    call gtk_entry_set_text(fit_chi2_entry, trim(termstr)//c_null_char)
+    prob = 1. - gammap(real(size(x)-1-order, real64)/2., chi2/2.)
+    write(termstr, "(g0)") prob
     call gtk_entry_set_text(fit_prob_entry, trim(termstr)//c_null_char)
 
     curr_ds%type = oftype

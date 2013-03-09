@@ -28,7 +28,7 @@ module gr_file
   use gr_utils
   use graff_version
   use graff_init
-
+  use gr_msg
   use gr_file_ascii
 
   implicit none
@@ -36,6 +36,7 @@ module gr_file
   integer, private :: gr_unit=0
   logical, private :: swap_end
 
+  character(len=160), dimension(2), private :: error_str
 contains
 
   function gr_open(file, version, ascii, name, dir, date)
@@ -93,14 +94,18 @@ contains
     end if
 
     if (ios /= 0) then
-       write(error_unit, "(A)") "GR_OPEN: Failed to open file", trim(iom)
+       write(error_str, "(2A/a)") "GR_OPEN: Failed to open file: ", file, &
+            & trim(iom)
+       call gr_message(error_str)
        gr_open = .false.
        return
     end if
 
     read(gr_unit, iostat=ios, iomsg=iom) rs
     if (ios /= 0) then
-       write(error_unit, "(A)") "GR_OPEN: Failed to read file", trim(iom)
+       write(error_str, "(2A/a)") "GR_OPEN: Failed to read file", file, &
+            & trim(iom)
+       call gr_message(error_str)
        gr_open = .false.
        return
     end if
@@ -115,8 +120,7 @@ contains
     end if
 
     if (rs /= 'GRAFFER') then
-       write(error_unit, "(A)") &
-            & "GR_OPEN: Not a Graffer file."
+       call gr_message("GR_OPEN: Not a Graffer file.")
        gr_open = .false.
        call gr_close
        return
@@ -126,7 +130,7 @@ contains
     if (version(1) > 255) then  ! Probably swapped
        call byte_swap(version)
        if (version(1) > 255) then
-          write(error_unit, "(A)") "GR_OPEN: Invalid version data"
+          call gr_message("GR_OPEN: Invalid version data")
           gr_open = .false.
           call gr_close
           return
@@ -137,9 +141,10 @@ contains
     end if
 
     if (version(1) < 4) then
-       write(error_unit, "(A,i0,'.',i0)") &
+       write(error_str, "(A,i0,'.',i0)") &
             & "GR_OPEN: Only V4 (and above) files are supported, found:", &
             & version
+       call gr_message(error_str(1))
        gr_open = .false.
        call gr_close
        return
@@ -197,14 +202,15 @@ contains
 
     status = 0
     if (gr_unit == 0) then   ! No open file
-       write(error_unit, "(A)") "GR_STR_READ: No open file"
+       call gr_message("GR_STR_READ: No open file")
        status = 1
        return
     end if
 
     read(gr_unit, iostat=ios, iomsg=iom) slen
     if (ios /= 0) then
-       write(error_unit, "(A)") "GR_STR_READ: Failed to read length", trim(iom)
+       write(error_str, "(A)") "GR_STR_READ: Failed to read length", trim(iom)
+       call gr_message(error_str)
        status = 1
        return
     end if
@@ -218,7 +224,8 @@ contains
        if (slen < len(string)) string(slen+1:) = ' '
     end if
     if (ios /= 0) then
-       write(error_unit, "(A)") "GR_STR_READ: Failed to read string", trim(iom)
+       write(error_str, "(A)") "GR_STR_READ: Failed to read string", trim(iom)
+       call gr_message(error_str)
        status = 1
     end if
  
@@ -271,8 +278,7 @@ contains
        status = rec%read(gr_unit, swap_end)
        if (status == -1) exit
        if (status == 1) then
-          write(error_unit, "(2A)") &
-               & "GR_READ: Failed to read a tag ", rec%tag
+         call gr_message("GR_READ: Failed to read a tag "//rec%tag)
 !!$          ok = .false.
           exit
        end if
@@ -614,24 +620,24 @@ contains
           ! corrupted. 
 
        case default
-          write(error_unit, "(A,A,A)") "GR_READ: unknown tag: ", &
-               & rec%get_tag(), " Aborting"
+         call gr_message("GR_READ: unknown tag: "// &
+               & rec%get_tag()//" Aborting")
           status = 2
 
        end select
 
        select case (status)
        case(1)
-          write(error_unit, "(A)") "GR_READ: I/O error"
+          call gr_message("GR_READ: I/O error")
           ok = .false.
           exit
        case(2)
-          write(error_unit, "(A)") "GR_READ: possibly invalid file"
+          call gr_message("GR_READ: possibly invalid file")
 !!$          ok = .false.
           exit
        case(4)
-          write(error_unit, "(2A)") "GR_READ: possible loss of precision: ", &
-               & rec%get_tag()
+          call gr_message("GR_READ: possible loss of precision: "// &
+               & rec%get_tag())
        end select
     end do
 
@@ -662,8 +668,7 @@ contains
        status = rec%read(gr_unit, swap_end)
        if (status == -1) exit
        if (status == 1) then
-          write(error_unit, "(2A)") &
-               & "GR_READ_TXT: Failed to read a tag ", rec%tag
+          call gr_message("GR_READ_TXT: Failed to read a tag "//rec%tag)
           exit
        end if
 
@@ -742,8 +747,8 @@ contains
           return
 
        case default
-          write(error_unit, "(3a)") "Unknown text tag: ", &
-               & rec%get_tag(), " Ignoring."
+          call gr_message("Unknown text tag: "// &
+               & rec%get_tag()//" Ignoring.")
           status = 2
        end select
 
@@ -771,8 +776,7 @@ contains
        status = rec%read(gr_unit, swap_end)
        if (status == -1) exit
        if (status == 1) then
-          write(error_unit, "(2A)") &
-               & "GR_READ_DS: Failed to read a tag ", rec%get_tag()
+          call gr_message("GR_READ_DS: Failed to read a tag "//rec%get_tag())
           exit
        end if
 
@@ -982,8 +986,8 @@ contains
           exit
 
        case default
-          write(error_unit, "(A,A,A)") "GR_READ_DS: Unknown DS tag: ", &
-               & rec%get_tag(), ", Ignoring."
+          call gr_message("GR_READ_DS: Unknown DS tag: "// &
+               & rec%get_tag()//", Ignoring.")
           status = 2
 
        end select
@@ -1040,7 +1044,8 @@ contains
          & form='unformatted', action='write', access='stream', &
          & iostat=ios, iomsg=iom)
     if (ios /= 0) then
-       write(error_unit, "(A)") "GR_WRITE:: Failed to open file", trim(iom)
+       write(error_str, "(A)") "GR_WRITE:: Failed to open file", trim(iom)
+       call gr_message(error_str)
        ok = .false.
        return
     end if
