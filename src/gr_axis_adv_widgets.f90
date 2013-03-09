@@ -56,7 +56,7 @@ contains
        tickstep = abs(pdefs%axrange(2,axis)- pdefs%axrange(1,axis))/&
             & real(axstyle%major)
        p10 = floor(log10(tickstep))
-       tickstep = tickstep/real(p10,real64)
+       tickstep = tickstep/(10._real64**p10)
        if (tickstep < 1.5) then
           tickstep = 1.0_real64
        else if (tickstep < 2.5) then
