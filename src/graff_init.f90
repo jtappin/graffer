@@ -74,6 +74,8 @@ contains
     if (allocated(pdefs%text)) deallocate(pdefs%text)
     if (allocated(pdefs%remarks)) deallocate(pdefs%remarks)
 
+    call gr_pdefs_text_init(pdefs%text_options)
+
     pdefs%transient%current_only = .false.
     if (allocated(pdefs%transient%x_dev)) deallocate(pdefs%transient%x_dev)
     if (allocated(pdefs%transient%y_dev)) deallocate(pdefs%transient%y_dev)
@@ -87,8 +89,8 @@ contains
     pdefs%hardset%psize = 0_int8
     pdefs%hardset%timestamp = .false.
     pdefs%hardset%cmyk = .false.
-    pdefs%hardset%font_family = 0_int16
-    pdefs%hardset%font_wg_sl = 0_int16
+    pdefs%hardset%font_family = 1_int16
+    pdefs%hardset%font_wg_sl = 1_int16
 
     pdefs%hardset%size = [23., 18.]
     pdefs%hardset%off = [3.35, 1.5]
@@ -234,8 +236,8 @@ contains
     text%orient = 0._real32
     text%align = 0._real32
 
-    text%ffamily = 0_int16
-    text%font = 0_int16
+    text%ffamily = 1_int16
+    text%font = 1_int16
     text%thick = 1._real32
     text%x = 0._real64
     text%y = 0._real64

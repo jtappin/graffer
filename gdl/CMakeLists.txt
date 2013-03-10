@@ -42,6 +42,7 @@ install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_byt_rd.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_dbl_rd.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_flt_rd.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gr_font_remap.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_get_asc.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_get_bin.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_get_bin_v3.pro"

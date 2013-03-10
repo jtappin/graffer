@@ -155,6 +155,7 @@ endif else begin
     else gr_get_bin_v3, pdefs, ilu, fvers, no_set = no_set
 endelse
 
+if (fvers[0] lt 4 || fvers[1] le 6) then gr_font_remap, pdefs
 if icont eq -1 or fvers[0] eq 1 then graff_save, pdefs
 
 return, 1

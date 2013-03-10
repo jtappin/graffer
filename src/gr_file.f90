@@ -278,6 +278,7 @@ contains
 
     if (is_ascii) then
        call gr_get_asc(pdefs, gr_unit)
+       if (pdefs%version(2) <= 6) call gr_font_remap(pdefs)
        call gr_close
        return
     end if
@@ -650,6 +651,8 @@ contains
 
     call gr_close
 
+    if (pdefs%version(2) <= 6) call gr_font_remap(pdefs)
+
     pdefs%chflag = .false.
     pdefs%transient%changes = 0_int16
     pdefs%transient%backup = .false.
@@ -718,19 +721,6 @@ contains
 
        case('F')
           call rec%get_value(txt_s%font, status)
-
-          !  May be able to do something about IDL compatibility
-          !  a bit like this
-!!$          if (font >= 3) then
-!!$             txt_s%font = font
-!!$             if (.not. ffflag) txt_s%ffamily = -1
-!!$          else if (font == 1) then
-!!$             txt_s%font = 3
-!!$             txt_s%ffamily = 1
-!!$          else
-!!$             txt_s%font = 3
-!!$             txt_s%ffamily = 0
-!!$          end if
 
        case ('W')
           call rec%get_value(txt_s%thick, status)
@@ -1310,4 +1300,51 @@ contains
     pdefs%transient%changes = 0_int16
 
   end subroutine gr_write
+
+  subroutine gr_font_remap(pdefs)
+    type(graff_pdefs), intent(inout), target :: pdefs
+
+    ! Approximate font mapping
+
+    integer(kind=int16), parameter, dimension(3:20,-1:1) :: &
+         & ffam = reshape( int( &
+         & [1,5,1,2,5,2,5,5,2,4,4,2,2,1,2,2,1,5,&
+         &  1,1,1,1,2,2,5,5,3,3,2,2,2,2,1,4,4,1,&
+         &  1,1,1,1,2,2,5,5,3,3,3,3,2,2,1,1,1,1], int16), [18,3]), &
+         & fshp = reshape( int( &
+         & [1,1,2,1,2,3,1,1,1,1,2,1,1,1,2,4,1,1,&
+         &  1,2,1,6,1,4,1,1,1,5,1,3,2,4,1,1,2,1,&
+         &  1,2,3,4,1,3,1,1,1,3,2,4,2,4,1,1,1,1], int16), [18,3])
+    integer(kind=int16) tff, tfsh
+    type(graff_text), pointer :: text
+    integer :: i
+
+    if (pdefs%version(2) > 6) return
+
+    if (pdefs%hardset%font_wg_sl >= 3) then
+       tff = pdefs%hardset%font_family
+       tfsh = pdefs%hardset%font_wg_sl
+       pdefs%hardset%font_family = ffam(tfsh,tff)
+       pdefs%hardset%font_wg_sl = fshp(tfsh,tff)
+    end if
+
+    do i = 1, pdefs%ntext
+       text => pdefs%text(i)
+       if (text%font >= 3) then
+          tff = text%ffamily
+          tfsh = text%font
+          text%ffamily = ffam(tfsh,tff)
+          text%font = fshp(tfsh,tff)
+       end if
+    end do
+
+    text => pdefs%text_options
+    if (text%font >= 3) then
+       tff = text%ffamily
+       tfsh = text%font
+       text%ffamily = ffam(tfsh,tff)
+       text%font = fshp(tfsh,tff)
+    end if
+
+  end subroutine gr_font_remap
 end module gr_file
