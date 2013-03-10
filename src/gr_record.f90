@@ -19,6 +19,8 @@ module gr_record
   use iso_fortran_env, only: int8, int16, int32, real32, real64, &
        & iostat_end
 
+  use gtk, only: GTK_MESSAGE_ERROR
+
   use gr_idl_types
   use gr_utils
   use gr_msg
@@ -119,7 +121,7 @@ contains
     if (.not. isopen) then
        write(error_str, "(A,i0,a)") &
             & "GR_READ_REC: Unit: ", unit, " is not open"
-       call gr_message(error_str(1))
+       call gr_message(error_str(1), type=GTK_MESSAGE_ERROR)
        status = 1
     end if
 
@@ -1248,7 +1250,7 @@ contains
     if (.not. isopen) then
        write(error_str , "(A,i0,a)") &
             & "GR_PUT_REC: Unit: ", unit, " is not open"
-       call gr_message(error_str(1))
+       call gr_message(error_str(1), type=GTK_MESSAGE_ERROR)
        status = 1
     end if
 

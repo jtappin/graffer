@@ -23,6 +23,7 @@ module gr_eval
   use gtk_hl
 
   use g, only: g_find_program_in_path
+  use gtk, only: GTK_MESSAGE_ERROR, GTK_MESSAGE_INFO
 
   use graff_globals
   use gr_msg
@@ -56,8 +57,8 @@ contains
             & g_find_program_in_path(trim(gdl_default_command)//c_null_char)
        if (c_associated(executable)) then
           call c_f_string(executable, gdl_command)
-          write(error_unit, "(2a)") "Found ${GRAFFER_GDL} at: ", &
-               & trim(gdl_command)
+          call gr_message("Found ${GRAFFER_GDL} at: "// &
+               & trim(gdl_command), type=GTK_MESSAGE_INFO)
           is_init = .true.
           gdl_found = .true.
           gr_have_gdl = .true.
@@ -68,7 +69,8 @@ contains
     executable = g_find_program_in_path("gdl"//c_null_char)
     if (c_associated(executable)) then
        call c_f_string(executable, gdl_command)
-       write(error_unit, "(2a)") "Found 'gdl' at: ", trim(gdl_command)
+       call gr_message("Found 'gdl' at: "// trim(gdl_command), &
+            & type=GTK_MESSAGE_INFO)
        is_init = .true.
        gdl_found = .true.
        gr_have_gdl = .true.
@@ -78,14 +80,14 @@ contains
     executable = g_find_program_in_path("idl"//c_null_char)
     if (c_associated(executable)) then
        call c_f_string(executable, gdl_command)
-       write(error_unit, "(2a)") "Found 'idl' at: ", trim(gdl_command)
+       call gr_message("Found 'idl' at: "//trim(gdl_command), &
+            & type=GTK_MESSAGE_INFO)
        is_init = .true.
        gdl_found = .true.
        gr_have_gdl = .true.
        return
     end if
 
-    write(error_unit, "(A)") "Failed to find 'gdl' or 'idl' in ${PATH}"
     call gr_message("Failed to find 'gdl' or 'idl' in ${PATH}")
 
     gdl_found = .false.
@@ -170,7 +172,7 @@ contains
        write(err_buffer, "(a,i0)") &
             & "gr_evaluate: Failed to evaluate function for dataset #", &
             & dsidx
-       call gr_message(err_buffer)
+       call gr_message(err_buffer, type=GTK_MESSAGE_ERROR)
        return
     end if
 

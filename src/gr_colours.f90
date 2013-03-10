@@ -19,6 +19,8 @@ module gr_colours
   use iso_fortran_env
   use plplot
 
+  use gtk, only: GTK_MESSAGE_ERROR
+
   use graff_globals
   use gr_msg
   use gr_utils
@@ -78,7 +80,7 @@ contains
           write(err_string, "(2A/t10,a)") &
                & "gr_ct_init: Failed to open header file: ", &
                & trim(header), trim(iom)
-          call gr_message(err_string)
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           call gr_ct_simple
           return
        end if
@@ -103,7 +105,7 @@ contains
           write(err_string, "(2A/t10,a)") &
                & "gr_ct_init: Failed to open table file: ", &
                & trim(datafile), trim(iom)
-          call gr_message(err_string)
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           call gr_ct_simple
           return
        end if
@@ -111,7 +113,8 @@ contains
 
        write(ct_fmt, "('(',i0,'z2)')") 3*ncolours
     else
-       call gr_message("gr_colours: header or data file not found")
+       call gr_message("gr_colours: header or data file not found", &
+            & type=GTK_MESSAGE_ERROR)
        call gr_ct_simple
     end if
   end subroutine gr_ct_init
@@ -186,7 +189,7 @@ contains
           if (ios /= 0) then
              write(err_string, "(A,i0/t10,a)") "gr_ct_get: Read failed: #", &
                   & ct_index, trim(iom)
-             call gr_message(err_string)
+             call gr_message(err_string, type=GTK_MESSAGE_ERROR)
              return
           end if
        end if

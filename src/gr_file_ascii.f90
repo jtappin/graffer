@@ -19,6 +19,7 @@
   use iso_fortran_env
 
   use gtk_sup
+  use gtk, only: GTK_MESSAGE_ERROR
 
   use graff_types
   use gr_utils
@@ -320,7 +321,7 @@ contains
             & status='old', action='read', iostat=ios, iomsg=iom)
     if (ios /= 0) then
        write(error_str, "(A)") "GR_OPEN_ASC: Failed to open file", trim(iom)
-       call gr_message(error_str(:2))
+       call gr_message(error_str(:2), type=GTK_MESSAGE_ERROR)
        gr_open_asc = 0
        return
     end if
@@ -378,7 +379,7 @@ contains
        if (ios /= 0) then
           write(error_str, "(a/t10,a)") &
                & "gr_get_asc: Error reading from ascii file", trim(iom)
-          call gr_message(error_str(:2))
+          call gr_message(error_str(:2), type=GTK_MESSAGE_ERROR)
           close(unit)
           return
        end if
@@ -559,7 +560,8 @@ contains
              rset = gr_int_val(tag_val(itag+1)) + 1_int16
              if (.not. dflag) then 
                 call gr_message( &
-                     & "gr_get_asc: Dataset read before number of sets defined")
+                     & "gr_get_asc: Dataset read before number of sets defined", &
+                     & type=GTK_MESSAGE_ERROR)
                 stop
              end if
 
@@ -572,7 +574,7 @@ contains
              if (.not. tflag) then 
                 call gr_message( &
                      & "gr_get_asc: Text string read before number of sets"//&
-                     & " defined")
+                     & " defined", type=GTK_MESSAGE_ERROR)
                 stop
              end if
              text => pdefs%text(tset)
@@ -1109,7 +1111,7 @@ contains
        if (ios /= 0) then
           write(error_str, "(a/t10,a)") &
                & "gr_get_txt_asc: error reading dataset from ascii", trim(iom)
-          call gr_message(error_str(:2))
+          call gr_message(error_str(:2), type=GTK_MESSAGE_ERROR)
           return
        end if
 
@@ -1196,7 +1198,7 @@ contains
        write(error_str, "(2a/t10,a)") &
             & "gr_save_asc: Failed to open output file: ", trim(outfile), &
             & trim(iom)
-       call gr_message(error_str)
+       call gr_message(error_str, type=GTK_MESSAGE_ERROR)
        ok = .false.
        return
     end if

@@ -18,6 +18,7 @@
 module gr_fitting
   use iso_fortran_env
 
+  use gtk, only: GTK_MESSAGE_ERROR
   use gr_msg
 
   implicit none
@@ -52,7 +53,7 @@ contains
        write(error_str, "(a,i0,a,i0,a)") &
             & "gr_polyfit: Sizes of x & y must be equal, X(",&
             & npts,"), Y(",size(y),")"
-       call gr_message(error_str)
+       call gr_message(error_str, type=GTK_MESSAGE_ERROR)
        if (present(status)) status = .false.
        coeff = 0._real64
        return
@@ -63,7 +64,7 @@ contains
           write(error_str, "(a,i0,a,i0,a)") &
                & "gr_polyfit: Sizes of x, y & weights must be equal, X, Y(",&
                & npts,"), WEIGHTS(",size(weights),")"
-          call gr_message(error_str)
+          call gr_message(error_str, type=GTK_MESSAGE_ERROR)
            if (present(status)) status = .false.
           return
        end if
@@ -126,7 +127,7 @@ contains
 
     n = size(x,2)
     if (size(x,1) /= n) then
-       call gr_message("invert: Non square input")
+       call gr_message("invert: Non square input", type=GTK_MESSAGE_ERROR)
        xi = 0.
        return
     end if
@@ -159,7 +160,7 @@ contains
     if (size(x,1) /= n) then
        write(error_str, "(A,i0,'x',i0)") &
             & "lu_fact:: input matrix not square: ", shape(x)
-       call gr_message(error_str)
+       call gr_message(error_str, type=GTK_MESSAGE_ERROR)
        return
     end if
 
@@ -202,7 +203,7 @@ contains
 
     n = size(a,2)
     if (size(a,1) /= n .or. size(b) /= n .or. size(p) /= n) then
-       call gr_message("lu_subst: Sizes do not match")
+       call gr_message("lu_subst: Sizes do not match", type=GTK_MESSAGE_ERROR)
        return
     end if
 
@@ -232,7 +233,8 @@ contains
     real(kind=real64), intent(out), optional :: gln
 
     if (x < 0. .or. a <= 0.) then
-       call gr_message("gammap: invalid input arguments")
+       call gr_message("gammap: invalid input arguments", &
+            & type=GTK_MESSAGE_ERROR)
        gammap = -huge(x)
     end if
 
@@ -264,10 +266,11 @@ contains
        tol = 3e-10
     end if
 
-    lng = log(gamma(a))
+    lng = log_gamma(a)
 
     if (x < 0.) then
-       call gr_message("gammap (gser): invalid input arguments")
+       call gr_message("gammap (gser): invalid input arguments", &
+            & type=GTK_MESSAGE_ERROR)
        gser = -huge(x)
     else if (x == 0.) then
        gser = 0._real64

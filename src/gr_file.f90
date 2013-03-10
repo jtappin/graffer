@@ -21,7 +21,8 @@ module gr_file
 
   use gtk_hl
 
-  use gtk, only: GTK_RESPONSE_YES, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO
+  use gtk, only: GTK_RESPONSE_YES, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, &
+       & GTK_MESSAGE_ERROR
 
   use gr_record
   use graff_types
@@ -96,7 +97,7 @@ contains
     if (ios /= 0) then
        write(error_str, "(2A/a)") "GR_OPEN: Failed to open file: ", file, &
             & trim(iom)
-       call gr_message(error_str)
+       call gr_message(error_str, type=GTK_MESSAGE_ERROR)
        gr_open = 0
        return
     end if
@@ -105,7 +106,7 @@ contains
     if (ios /= 0) then
        write(error_str, "(2A/a)") "GR_OPEN: Failed to read file", file, &
             & trim(iom)
-       call gr_message(error_str)
+       call gr_message(error_str, type=GTK_MESSAGE_ERROR)
        gr_open = 0
        return
     end if
@@ -120,7 +121,7 @@ contains
     end if
 
     if (rs /= 'GRAFFER') then
-       call gr_message("GR_OPEN: Not a Graffer file.")
+       call gr_message("GR_OPEN: Not a Graffer file.", type=GTK_MESSAGE_ERROR)
        gr_open = 0
        call gr_close
        return
@@ -130,7 +131,8 @@ contains
     if (version(1) > 255) then  ! Probably swapped
        call byte_swap(version)
        if (version(1) > 255) then
-          call gr_message("GR_OPEN: Invalid version data")
+          call gr_message("GR_OPEN: Invalid version data", &
+               & type=GTK_MESSAGE_ERROR)
           gr_open = 0
           call gr_close
           return
@@ -144,7 +146,7 @@ contains
        write(error_str, "(A,i0,'.',i0)") &
             & "GR_OPEN: Only V4 (and above) files are supported, found:", &
             & version
-       call gr_message(error_str(1))
+       call gr_message(error_str(1), type=GTK_MESSAGE_ERROR)
        gr_open = 0
        call gr_close
        return
@@ -206,7 +208,7 @@ contains
 
     status = 0
     if (gr_unit == 0) then   ! No open file
-       call gr_message("GR_STR_READ: No open file")
+       call gr_message("GR_STR_READ: No open file", type=GTK_MESSAGE_ERROR)
        status = 1
        return
     end if
@@ -214,7 +216,7 @@ contains
     read(gr_unit, iostat=ios, iomsg=iom) slen
     if (ios /= 0) then
        write(error_str, "(A)") "GR_STR_READ: Failed to read length", trim(iom)
-       call gr_message(error_str)
+       call gr_message(error_str, type=GTK_MESSAGE_ERROR)
        status = 1
        return
     end if
@@ -229,7 +231,7 @@ contains
     end if
     if (ios /= 0) then
        write(error_str, "(A)") "GR_STR_READ: Failed to read string", trim(iom)
-       call gr_message(error_str)
+       call gr_message(error_str, type=GTK_MESSAGE_ERROR)
        status = 1
     end if
  
@@ -284,7 +286,8 @@ contains
        status = rec%read(gr_unit, swap_end)
        if (status == -1) exit
        if (status == 1) then
-          call gr_message("GR_READ: Failed to read a tag "//rec%tag)
+          call gr_message("GR_READ: Failed to read a tag "//rec%tag, &
+               & type=GTK_MESSAGE_ERROR)
           exit
        end if
 
@@ -626,19 +629,18 @@ contains
 
        case default
           call gr_message("GR_READ: unknown tag: "// &
-               & rec%get_tag()//" Aborting")
+               & rec%get_tag()//" Skipping")
           status = 2
 
        end select
 
        select case (status)
        case(1)
-          call gr_message("GR_READ: I/O error")
+          call gr_message("GR_READ: I/O error", type=GTK_MESSAGE_ERROR)
           ok = .false.
           exit
        case(2)
           call gr_message("GR_READ: possibly invalid file")
-!!$          ok = .false.
           exit
        case(4)
           call gr_message("GR_READ: possible loss of precision: "// &
@@ -673,7 +675,8 @@ contains
        status = rec%read(gr_unit, swap_end)
        if (status == -1) exit
        if (status == 1) then
-          call gr_message("GR_READ_TXT: Failed to read a tag "//rec%tag)
+          call gr_message("GR_READ_TXT: Failed to read a tag "//rec%tag, &
+               & type=GTK_MESSAGE_ERROR)
           exit
        end if
 
@@ -753,7 +756,7 @@ contains
 
        case default
           call gr_message("Unknown text tag: "// &
-               & rec%get_tag()//" Ignoring.")
+               & rec%get_tag()//" Skipping.")
           status = 2
        end select
 
@@ -781,7 +784,8 @@ contains
        status = rec%read(gr_unit, swap_end)
        if (status == -1) exit
        if (status == 1) then
-          call gr_message("GR_READ_DS: Failed to read a tag "//rec%get_tag())
+          call gr_message("GR_READ_DS: Failed to read a tag "//rec%get_tag(), &
+               & type=GTK_MESSAGE_ERROR)
           exit
        end if
 
@@ -992,7 +996,7 @@ contains
 
        case default
           call gr_message("GR_READ_DS: Unknown DS tag: "// &
-               & rec%get_tag()//", Ignoring.")
+               & rec%get_tag()//", Skipping.")
           status = 2
 
        end select
@@ -1050,12 +1054,11 @@ contains
          & iostat=ios, iomsg=iom)
     if (ios /= 0) then
        write(error_str, "(A)") "GR_WRITE:: Failed to open file", trim(iom)
-       call gr_message(error_str)
+       call gr_message(error_str, type=GTK_MESSAGE_ERROR)
        ok = .false.
        return
     end if
 
-!!$    call date_and_time(date=date(:8), time=date(10:19), zone=date(21:))
     call gr_date(date)
     write(unit) "GRAFFER", graffer_version%ints(), &
          & to_little(len_trim(pdefs%dir)), &

@@ -34,7 +34,7 @@ module gr_cb_common
        & gtk_widget_set_tooltip_text, gtk_widget_show_all, &
        & gtk_window_set_title, TRUE, GTK_RESPONSE_DELETE_EVENT, &
        & GTK_RESPONSE_CANCEL, GTK_RESPONSE_YES, GTK_RESPONSE_NO, &
-       & GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE
+       & GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE, GTK_MESSAGE_ERROR
 
   use graff_types
   use graff_globals
@@ -201,7 +201,8 @@ contains
        case(GTK_RESPONSE_NO)
           pdefs%chflag = .false.
        case default
-          call gr_message("gr_exit: Invalid response code")
+          call gr_message("gr_exit: Invalid response code", &
+               & type=GTK_MESSAGE_ERROR)
           return
        end select
     end if

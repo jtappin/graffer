@@ -21,7 +21,7 @@ module gr_ds_tools
   use iso_fortran_env
   use iso_c_binding
 
-  use gtk, only: gtk_notebook_set_current_page
+  use gtk, only: gtk_notebook_set_current_page, GTK_MESSAGE_ERROR
 
   use graff_types
   use graff_globals
@@ -59,7 +59,7 @@ contains
     if (ios /= 0) then
        write(err_string, "(2a/t10,a)") "gr_ds_xy_read: Failed to open file: ", &
             & trim(file), trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        return
     end if
 
@@ -73,7 +73,7 @@ contains
           write(err_string, "(2a/t10,a)") &
                & "gr_ds_xy_read: Error reading file: ", &
                & trim(file), trim(iom)
-          call gr_message(err_string)
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           return
        end if
     end do
@@ -140,7 +140,7 @@ contains
     case default
        write(err_string, "(2A)") "gr_ds_xy_read: Invalid errors code: ", &
             & trim(errtag)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        return
     end select
 
@@ -148,7 +148,7 @@ contains
        write(err_string, "(A,I0,A/3a,i0,a)") &
             & "gr_ds_xy_read: number of columns(", nt, ") does not match", &
             & "that for error code ", trim(errtag), " (", nte,")"
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        return
     end if
 
@@ -185,7 +185,7 @@ contains
     if (ios /= 0) then
        write(err_string, "(2a/t10,a)") "gr_ds_z_read: Failed to open file: ", &
             & trim(file), trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        return
     end if
 
@@ -194,7 +194,7 @@ contains
        write(err_string, "(2a/t10,a)") &
             & "gr_ds_z_read: Failed to read size from: ", &
             & trim(file), trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        close(unit)
        return
     end if
@@ -224,7 +224,7 @@ contains
        write(err_string, "(2a/t10,a)") &
             & "gr_ds_z_read: Failed to read X values from: ", &
             & trim(file), trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        close(unit)
        return
     end if
@@ -233,7 +233,7 @@ contains
        write(err_string, "(2a/t10,a)") &
             & "gr_ds_z_read: Failed to read Y values from: ", &
             & trim(file), trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        close(unit)
        return
     end if
@@ -242,7 +242,7 @@ contains
        write(err_string, "(2a/t10,a)") &
             & "gr_ds_z_read: Failed to read Z values from: ", &
             & trim(file), trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        close(unit)
        return
     end if
@@ -285,7 +285,7 @@ contains
        write(err_string, "(2a/t10,a)") &
             & "gr_ds_fun_read: Failed to open file: ", &
             & trim(file), trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        return
     end if
 
@@ -294,7 +294,7 @@ contains
        write(err_string, "(a/t10,a)") &
             & "gr_ds_fun_read: Failed to read type code: ", &
             &  trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        return
     end if
     code = upcase(adjustl(code))
@@ -310,7 +310,7 @@ contains
     case default
        write(err_string, "(2a)") "gr_ds_fun_read: invalid type code ", &
             & trim(code)
-       call gr_message(err_string(1))
+       call gr_message(err_string(1), type=GTK_MESSAGE_ERROR)
        return
     end select
 
@@ -320,7 +320,7 @@ contains
           write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: failed to read range", &
                &  trim(iom)
-          call gr_message(err_string)
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           return
        end if
        read(unit, *, iostat=ios, iomsg=iom) neval, neval2
@@ -328,7 +328,7 @@ contains
           write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: Failed to read evaluation counts", &
                & trim(iom)
-          call gr_message(err_string)
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           return
        end if
     else
@@ -337,7 +337,7 @@ contains
           write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: failed to read range", &
                &  trim(iom)
-          call gr_message(err_string)
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           return
        end if
        range(:,2) = 0._real64
@@ -346,7 +346,7 @@ contains
           write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: Failed to read evaluation count", &
                & trim(iom)
-          call gr_message(err_string)
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           return
        end if
        neval2 = 0_int32
@@ -357,7 +357,7 @@ contains
        write(err_string, "(a/t10,a)") &
             & "gr_ds_fun_read: Failed to read function definition", &
             & trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        return
     end if
     if (type == -3) then
@@ -366,7 +366,7 @@ contains
           write(err_string, "(a/t10,a)") &
                & "gr_ds_fun_read: Failed to read function definition", &
                & trim(iom)
-          call gr_message(err_string)
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           return
        end if
     else
@@ -438,7 +438,7 @@ contains
           write(err_string, "(a,i0/a)") &
                & "gr_xy_decode: Failed to read line ",i, &
                & trim(iom)
-          call gr_message(err_string)
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           ok  = .false.
           return
        end if
@@ -472,7 +472,8 @@ contains
           status = gr_evaluate(dataset=data)
           if (status /= 0) then
             call gr_message(&
-                 & "gr_ds_write: Failed to evaluate function to write as data")
+                 & "gr_ds_write: Failed to evaluate function to write as data", &
+                 & type=GTK_MESSAGE_ERROR)
              return
           end if
        end if
@@ -484,7 +485,7 @@ contains
        write(err_string, "(2a/t10,a)") &
             & "gr_ds_write: Failed to open: ",trim(file), &
             & trim(iom)
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        return
     end if
 
@@ -602,7 +603,8 @@ contains
     else if (present(from)) then
        data_from => pdefs%data(from)
     else
-       call gr_message("gr_ds_copy: Must specify FROM or SOURCE")
+       call gr_message("gr_ds_copy: Must specify FROM or SOURCE", &
+            & type=GTK_MESSAGE_ERROR)
        return
     end if
 
@@ -824,12 +826,13 @@ contains
             & "gr_ds_append: Datasets to concatenate must have the same types",&
             & "Source: ", pdefs%data(index)%type, " Destination: ", &
             & pdefs%data(dest)%type
-       call gr_message(err_string)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
        return
     end if
     if (pdefs%data(dest)%type == 9 .or. pdefs%data(dest)%type < 0) then
       call gr_message( &
-            & "gr_ds_append: Datasets to concatenate must be X-Y data")
+            & "gr_ds_append: Datasets to concatenate must be X-Y data", &
+            & type=GTK_MESSAGE_ERROR)
        return
     end if
 
