@@ -210,6 +210,11 @@ GRAFFER can accept a number of keywords to control its operation:
   with the colour table files (e.g. \texttt{-{}-colour-dir ./data}
   Default is to check in \texttt{/usr/local/share/graffer} and
   \texttt{/usr/share/graffer}. 
+\item[\texttt{-{}-gdl} or \texttt{-{}-idl}:]
+  Specify the command to run GDL or IDL to evaluate functions
+  (e.g. \texttt{--gdl /usr/local/bin/gdl-git}). Default it to try first
+  the \texttt{GRAFFER\_GDL} environment variable then to try first
+  \texttt{gdl} and then \texttt{idl} in the user's path.
 \end{description}
 
 \subsection{A quick tour of the main window}

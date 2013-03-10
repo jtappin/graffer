@@ -26,3 +26,6 @@
 
 # Colour table stem
 # ColourName: c_tables
+
+# GDL (or IDL) command
+# Gdl: /usr/bin/gdl

@@ -32,7 +32,6 @@ module gr_eval
 
   logical :: is_init=.false.
   logical :: gdl_found=.false.
-  character(len=100) :: gdl_command
 
 contains
 
@@ -44,10 +43,24 @@ contains
     integer :: status
     character(len=150) :: gdl_default_command
     type(c_ptr) :: executable
+    character(len=150) :: gdl_command
 
     if (is_init) then
        gr_have_gdl = gdl_found
        return
+    end if
+
+    if (pdefs%opts%gdl_command /= '') then
+       executable = &
+            & g_find_program_in_path(trim(pdefs%opts%gdl_command)//c_null_char)
+       if (c_associated(executable)) then
+          call gr_message("Found gdl/idl at: "// &
+               & trim(pdefs%opts%gdl_command), type=GTK_MESSAGE_INFO)
+          is_init = .true.
+          gdl_found = .true.
+          gr_have_gdl = .true.
+          return
+       end if
     end if
 
     call get_environment_variable("GRAFFER_GDL", &
@@ -62,6 +75,7 @@ contains
           is_init = .true.
           gdl_found = .true.
           gr_have_gdl = .true.
+          pdefs%opts%gdl_command = gdl_command
           return
        end if
     end if
@@ -74,6 +88,7 @@ contains
        is_init = .true.
        gdl_found = .true.
        gr_have_gdl = .true.
+       pdefs%opts%gdl_command = gdl_command
        return
     end if
 
@@ -85,6 +100,7 @@ contains
        is_init = .true.
        gdl_found = .true.
        gr_have_gdl = .true.
+       pdefs%opts%gdl_command = gdl_command
        return
     end if
 
@@ -93,7 +109,7 @@ contains
     gdl_found = .false.
     gr_have_gdl =.false.
     is_init = .true.
-    gdl_command = ''
+    pdefs%opts%gdl_command = ''
   end function gr_have_gdl
 
   function gr_evaluate(dsidx, dataset)
@@ -238,7 +254,7 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call execute_command_line(trim(gdl_command)//" "//pfile//&
+    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//pfile//&
          & ' > /dev/null 2> /dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -295,7 +311,7 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call execute_command_line(trim(gdl_command)//" "//trim(pfile)//&
+    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2>/dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -355,7 +371,7 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call execute_command_line(trim(gdl_command)//" "//trim(pfile)//&
+    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2> /dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -419,7 +435,7 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call execute_command_line(trim(gdl_command)//" "//trim(pfile)//&
+    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2>/dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return

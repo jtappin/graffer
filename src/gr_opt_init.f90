@@ -167,7 +167,11 @@ contains
           default_options%colour_stem = trim(adjustl(keyval))
 
        case('pdfview')
-          default_options%pdfviewer=trim(adjustl(keyval))
+          default_options%pdfviewer = trim(adjustl(keyval))
+
+       case('gdl', 'idl')
+          default_options%gdl_command = trim(adjustl(keyval))
+
        case('geometry')
           px = scan(keyval, 'xX')
           if (px > 0) keyval(px:px) = ' '
@@ -292,6 +296,30 @@ contains
              end if
           end if
 
+       case('--gdl', '--idl')
+          if (keyval == '') then
+             call  get_command_argument(i+1, keyval, &
+                  & status=status)
+             arg_plus = .true.
+          else
+             status = 0
+          end if
+          if (status /= 0) then
+             write(error_unit, "(a/t10,a)") &
+                  & "gr_parse_command: Failed to get a value for key: ",&
+                  &  trim(key)
+          else
+             if (arg_plus) i = i+1
+             gpath_find = g_find_program_in_path(trim(keyval)//c_null_char)
+             if (.not. c_associated(gpath_find)) then
+                write(error_unit, "(a/t10,a)") &
+                     & "gr_parse_command: gdl/idl command not found in path", &
+                     & trim(keyval)
+             else 
+                default_options%gdl_command = trim(keyval)
+             end if
+          end if
+
        case('-ct', '--colour-table')
           if (keyval == '') then
              call  get_command_argument(i+1, keyval, &
@@ -407,6 +435,7 @@ contains
          & "-ct --colour-table <name>: Specify the filename stem for the colour", &
          & "                        table files (default 'c_tables')", &
          & "-cd --colour-dir <dir>: Specify where the colour tables are installed", &
+         & "--gdl --idl <cmd>     : Specify the gdl or idl command to use", &
          & "                        default ${PREFIX}/share/graffer.", &
          & "", &
          & "<file>                : The graffer file to open or a directory to search"

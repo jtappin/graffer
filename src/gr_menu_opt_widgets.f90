@@ -38,7 +38,8 @@ module gr_menu_opt_widgets
   implicit none
 
   type(c_ptr), private :: opt_window, opt_view_cbo, opt_2d_but, &
-       & opt_mouse_but, opt_ffam_cbo, opt_fnt_cbo, opt_delete_f_but
+       & opt_mouse_but, opt_ffam_cbo, opt_fnt_cbo, opt_delete_f_but, &
+       & opt_gdl_entry
   character(len=16), dimension(:), allocatable, private :: viewnames
 
 contains
@@ -89,6 +90,18 @@ contains
 
     call gtk_combo_box_set_active(opt_view_cbo, iviewer-1)
     call hl_gtk_box_pack(jb, opt_view_cbo)
+
+    jb = hl_gtk_box_new(horizontal=TRUE)
+    call hl_gtk_box_pack(base, jb, expand=FALSE)
+
+    junk = gtk_label_new("GDL/IDL command:"//c_null_char)
+    call hl_gtk_box_pack(jb, junk, expand=FALSE)
+
+    opt_gdl_entry = hl_gtk_entry_new(value=&
+         & trim(pdefs%opts%gdl_command)//c_null_char, &
+         & tooltip="Set the command or path for the GDL or IDL interpreter" &
+         & //c_null_char)
+    call hl_gtk_box_pack(jb, opt_gdl_entry)
 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(base, jb, expand=FALSE)
@@ -171,6 +184,7 @@ contains
             & int(gtk_combo_box_get_active(opt_ffam_cbo), int16)+1_int16
        pdefs%hardset%font_wg_sl  = &
             & int(gtk_combo_box_get_active(opt_fnt_cbo), int16)+1_int16
+       call hl_gtk_entry_get_text(opt_gdl_entry, text=pdefs%opts%gdl_command)
 
        call gr_plot_draw(.true.)
     end if
