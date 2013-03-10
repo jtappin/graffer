@@ -181,6 +181,16 @@ may be started from the \texttt{Applications->Education->Science} menu,
 and if you define a new mime type for \texttt{*.grf} files, then that
 can be bound to the application.
 
+\subsubsection{Environment}
+\label{sec:env}
+
+The command to invoke \texttt{gdl} or \texttt{idl} may be specified by
+the environment variable \texttt{GRAFFER\_GDL}. This has a lower
+priority than a value set in the resource file or the command line
+options, but higher than searching in \texttt{\$PATH}. It's probably
+not that useful now that the command can be set in the resource file or
+on the command line.
+
 \subsubsection{Keywords}
 
 GRAFFER can accept a number of keywords to control its operation:
@@ -2181,7 +2191,7 @@ that made the Fortran version possible.
 \section{Resource file}
 \label{sec:grafferrc}
 
-The resource file provides a very limited range of control
+The resource file provides a limited range of control
 over the default settings for GRAFFER. It is a colon-separated text
 file with a few options.
 \begin{description}
@@ -2200,19 +2210,23 @@ file with a few options.
   \texttt{okular} and \texttt{evince} to be installed)
 \item[\texttt{Geometry:} \textit{int}\texttt{x}\textit{int}] Set the
   geometry of the drawing window. (600x600).
-\item[\texttt{ColourDir:}] The directory in which the colour tables are
-  installed. (\texttt{/usr/local/share/graffer} or
+\item[\texttt{ColourDir:} \textit{string}] The directory in which the
+  colour tables are installed. (\texttt{/usr/local/share/graffer} or
   \texttt{/usr/share/graffer})
-\item[\texttt{ColourName:}] The name stem of the colour table
-  files. (\texttt{c\_tables})
+\item[\texttt{ColourName:} \textit{string}] The name stem of the colour
+  table files. (\texttt{c\_tables})
+\item[\texttt{Gdl:} or \texttt{Idl:} \textit{string}] The command to
+  access the GDL or IDL interpreter to evaluate functions.
 \end{description}
 
 GRAFFER first reads any resource file \texttt{graffer.rc} in
 \texttt{/usr/local/etc} or \texttt{/etc}, and then a personal resource
-file \texttt{.grafferrc} in the user's home directory.
+file \texttt{.grafferrc} in the user's home directory. Command line
+options will override any resource file options.
 
-A sample resource file (with all options as default and commented) is
+A sample resource file (with all options as default and commented out) is
 installed in the \texttt{share/graffer} subdirectory of the
-installation prefix.
+installation prefix\footnote{Packagers may wish to install this
+  directly to \texttt{/etc}.}. 
 
 \end{document}
