@@ -72,6 +72,7 @@ contains
     real(kind=plflt) :: css
 
     text_ready = .false.
+    call gr_text_init
 
     call plgchr(csd, css)
 

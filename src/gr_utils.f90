@@ -25,7 +25,8 @@ module gr_utils
 
   use gtk_sup
 
-  use g, only: g_get_current_dir, g_find_program_in_path
+!!$3  use gtk_os_dependent, only: g_find_program_in_path, g_get_current_dir
+  use g, only: g_find_program_in_path, g_get_current_dir
 
   use gr_msg
   

@@ -20,7 +20,10 @@ module gr_opt_init
 
   use gtk_sup
 
-  use g, only: g_file_test, g_find_program_in_path, g_get_home_dir
+!!$3  use gtk_os_dependent, only: g_file_test, g_find_program_in_path, &
+!!$3        & g_get_home_dir
+  use g, only: g_file_test, g_find_program_in_path, &
+        & g_get_home_dir
 
   use gtk, only: G_FILE_TEST_IS_REGULAR, G_FILE_TEST_IS_DIR
 
@@ -218,6 +221,7 @@ contains
 
     i = 1
     do 
+       if (i > nargs) exit
        call get_command_argument(i, argv)
        poseq = index(argv, '=')
        if (poseq > 0) then
@@ -410,7 +414,6 @@ contains
        end select
 
        i = i+1
-       if (i > nargs) exit
     end do
   end subroutine gr_parse_command
 

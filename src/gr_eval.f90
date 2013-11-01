@@ -22,8 +22,9 @@ module gr_eval
   use gtk_sup
   use gtk_hl
 
-  use g, only: g_find_program_in_path
   use gtk, only: GTK_MESSAGE_ERROR, GTK_MESSAGE_INFO
+!!$3  use gtk_os_dependent, only: g_find_program_in_path
+  use g, only: g_find_program_in_path
 
   use graff_globals
   use gr_msg

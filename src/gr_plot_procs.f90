@@ -375,7 +375,7 @@ contains
        do i = 1, 3
           call gr_plot_coords_v_w(xav(i), yav(i), xa(i), ya(i), nolog=.true.)
           call plcol0(1)
-          call plwid(1)
+          call plwidth(1._plflt)
           call gr_plot_linesty(0_int16)
        end do
        call plline(xa, ya)
@@ -490,7 +490,7 @@ contains
        call gr_plot_linesty(pdefs%data(i)%line, &
             & scale = ceiling(sqrt(pdefs%data(i)%thick)))
        call plcol0(int(pdefs%data(i)%colour))
-       call plwid(nint(pdefs%data(i)%thick))
+       call plwidth(real(pdefs%data(i)%thick, plflt))
 
        if (pdefs%data(i)%pline == 2 .and. .not. pdefs%key%one_point) then
           xx = [x(1), sum(x)/2., sum(x)/2., x(2)]
@@ -629,7 +629,7 @@ contains
     end if
 
     call plcol0(1)
-    call plwid(1)
+    call plwidth(1.0_plflt)
     call gr_plot_linesty(0_int16)
 
     if (data%zdata%fill == 2_int8) call hl_gtk_info_bar_message(gr_infobar, &
@@ -649,17 +649,17 @@ contains
                & data%zdata%n_cols)+1), real64)
           if (c2d) then
              call plshade(z, '', xmin, xmax, ymin, ymax, &
-                  & clevels(i), huge(0._plflt), 0, ccol, 1, &
-                  & 0, 0, 0, 0, x2, y2)
+                  & clevels(i), huge(0._plflt), 0, ccol, 1._plflt, &
+                  & 0, 0._plflt, 0, 0._plflt, x2, y2)
           else
              call plshade(z, '', xmin, xmax, ymin, ymax, &
-                  & clevels(i), huge(0._plflt), 0, ccol, 1, &
-                  & 0, 0, 0, 0, x1, y1)
+                  & clevels(i), huge(0._plflt), 0, ccol, 1._plflt, &
+                  & 0, 0._plflt, 0, 0._plflt, x1, y1)
           end if
        else
           if (allocated(data%zdata%thick) .and. data%zdata%n_thick > 0) &
-               & call plwid(int(data%zdata%thick(mod(i-1, &
-               & data%zdata%n_thick)+1)))
+               & call plwidth(real(data%zdata%thick(mod(i-1, &
+               & data%zdata%n_thick)+1), plflt))
           if (allocated(data%zdata%colours) .and. data%zdata%n_cols > 0) &
                & call plcol0(int(data%zdata%colours(mod(i-1, &
                & data%zdata%n_cols)+1)))
@@ -962,9 +962,11 @@ contains
          & gamma=data%zdata%gamma)
 
     if (c2d) then
-       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0, 0, 0, x2, y2)
+       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
+            & 0, 0._plflt, x2, y2)
     else
-       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0, 0, 0, x1, y1)
+       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
+            & 0, 0._plflt, x1, y1)
     end if
   end subroutine gr_shade_smooth
 

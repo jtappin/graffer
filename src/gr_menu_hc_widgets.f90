@@ -23,6 +23,7 @@ module gr_menu_hc_widgets
   use gtk_hl
   use gtk_sup
 
+!!$3  use gtk_os_dependent, only: g_find_program_in_path
   use g, only: g_find_program_in_path
 
   use gtk, only: gtk_combo_box_get_active, gtk_combo_box_set_active, &

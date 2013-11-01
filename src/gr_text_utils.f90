@@ -28,13 +28,18 @@ module gr_text_utils
 
   ! Font defintions
 
-  integer, parameter, dimension(*) :: font_list = [PL_FCI_SANS, PL_FCI_SERIF, &
-       & PL_FCI_MONO, PL_FCI_SCRIPT, PL_FCI_SYMBOL]
-  integer, dimension(*), parameter :: font_weight = [PL_FCI_MEDIUM, &
-       & PL_FCI_BOLD, PL_FCI_MEDIUM, PL_FCI_BOLD, PL_FCI_MEDIUM, PL_FCI_BOLD]
-  integer, dimension(*), parameter :: font_shape = [PL_FCI_UPRIGHT, &
-       & PL_FCI_UPRIGHT, PL_FCI_ITALIC, PL_FCI_ITALIC, PL_FCI_OBLIQUE, &
-       & PL_FCI_OBLIQUE]
+  ! Temporarily (5.9.10) the font definition constants are not.
+  ! integer, parameter, dimension(*) :: font_list = [PL_FCI_SANS, PL_FCI_SERIF, &
+  !      & PL_FCI_MONO, PL_FCI_SCRIPT, PL_FCI_SYMBOL]
+  ! integer, parameter, dimension(*) :: font_weight = [PL_FCI_MEDIUM, &
+  !      & PL_FCI_BOLD, PL_FCI_MEDIUM, PL_FCI_BOLD, PL_FCI_MEDIUM, PL_FCI_BOLD]
+  ! integer, parameter, dimension(*) :: font_shape = [PL_FCI_UPRIGHT, &
+  !      & PL_FCI_UPRIGHT, PL_FCI_ITALIC, PL_FCI_ITALIC, PL_FCI_OBLIQUE, &
+  !      & PL_FCI_OBLIQUE]
+  integer, protected, dimension(5) :: font_list
+  integer, protected, dimension(6) :: font_weight
+  integer, protected, dimension(6) :: font_shape
+  logical, private :: text_is_init=.false.
 
   character(len=*), dimension(*), parameter :: font_names = ['Sans Serif',  &
        & 'Serif     ', 'Monospaced', 'Script    ', 'Symbol    ']
@@ -43,6 +48,20 @@ module gr_text_utils
        & 'Italic Bold   ', 'Oblique Medium', 'Oblique Bold  ']
 
 contains
+  subroutine gr_text_init
+
+    if (text_is_init) return
+
+    font_list = [PL_FCI_SANS, PL_FCI_SERIF, &
+         & PL_FCI_MONO, PL_FCI_SCRIPT, PL_FCI_SYMBOL]
+    font_weight = [PL_FCI_MEDIUM, &
+         & PL_FCI_BOLD, PL_FCI_MEDIUM, PL_FCI_BOLD, PL_FCI_MEDIUM, PL_FCI_BOLD]
+    font_shape = [PL_FCI_UPRIGHT, &
+         & PL_FCI_UPRIGHT, PL_FCI_ITALIC, PL_FCI_ITALIC, PL_FCI_OBLIQUE, &
+         & PL_FCI_OBLIQUE]
+    text_is_init=.true.
+  end subroutine gr_text_init
+
   subroutine gr_add_text(text)
     type(graff_text), intent(in) :: text
 
