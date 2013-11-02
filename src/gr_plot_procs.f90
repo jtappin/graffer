@@ -649,13 +649,17 @@ contains
                & ccol = real(data%zdata%colours(mod(i-1, &
                & data%zdata%n_cols)+1), real64)
           if (c2d) then
-             call plshade(z, '', xmin, xmax, ymin, ymax, &
-                  & clevels(i), huge(0._plflt), 0, ccol, 1._plflt, &
-                  & 0, 0._plflt, 0, 0._plflt, x2, y2)
+             call gr_plshade(z, xmin, xmax, ymin, ymax, clevels(1), &
+                  & ccol, x2, y2)
+!!$             call plshade(z, '', xmin, xmax, ymin, ymax, &
+!!$                  & clevels(i), huge(0._plflt), 0, ccol, 1._plflt, &
+!!$                  & 0, 0._plflt, 0, 0._plflt, x2, y2)
           else
-             call plshade(z, '', xmin, xmax, ymin, ymax, &
-                  & clevels(i), huge(0._plflt), 0, ccol, 1._plflt, &
-                  & 0, 0._plflt, 0, 0._plflt, x1, y1)
+             call gr_plshade(z, xmin, xmax, ymin, ymax, clevels(1), &
+                  & ccol, x1, y1)
+!!$             call plshade(z, '', xmin, xmax, ymin, ymax, &
+!!$                  & clevels(i), huge(0._plflt), 0, ccol, 1._plflt, &
+!!$                  & 0, 0._plflt, 0, 0._plflt, x1, y1)
           end if
        else
           if (allocated(data%zdata%thick) .and. data%zdata%n_thick > 0) &
@@ -963,11 +967,13 @@ contains
          & gamma=data%zdata%gamma)
 
     if (c2d) then
-       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
-            & 0, 0._plflt, x2, y2)
+       call gr_plshades(z, xmin, xmax, ymin, ymax, clevels, x2, y2)
+!!$       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
+!!$            & 0, 0._plflt, x2, y2)
     else
-       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
-            & 0, 0._plflt, x1, y1)
+       call gr_plshades(z, xmin, xmax, ymin, ymax, clevels, x1, y1)
+!!$       call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
+!!$            & 0, 0._plflt, x1, y1)
     end if
   end subroutine gr_shade_smooth
 

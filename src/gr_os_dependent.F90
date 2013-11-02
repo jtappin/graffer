@@ -36,10 +36,19 @@ module gr_os_dependent
   use gtk_sup
 
 #ifdef HAVE_PLWIDTH
-  use plplot, only: plwidth, plflt, plsdev
+  use plplot, only: plwidth, plflt, plsdev, plshade, plshades
 #else
-  use plplot, only: plwid, plflt, plsdev
+  use plplot, only: plwid, plflt, plsdev, plshade, plshades
 #endif
+
+  interface gr_plshade
+     module procedure gr_plshade1
+     module procedure gr_plshade2
+  end interface gr_plshade
+  interface gr_plshades
+     module procedure gr_plshades1
+     module procedure gr_plshades2
+  end interface gr_plshades
 
 contains
   function gr_find_program(name, path)
@@ -115,6 +124,70 @@ contains
     call plwid(nint(width))
 #endif
   end subroutine gr_pl_width
+
+  subroutine gr_plshade1(z, xmin, xmax, ymin, ymax, clevel, ccol, x1, y1)
+    real(kind=plflt), intent(in), dimension(:,:) :: z
+    real(kind=plflt), intent(in) :: xmin, xmax, ymin, ymax, clevel, ccol
+    real(kind=plflt), intent(in), dimension(:) :: x1, y1
+
+#ifdef HAVE_PLWIDTH
+    call plshade(z, '', xmin, xmax, ymin, ymax, &
+         & clevel, huge(0._plflt), 0, ccol, 1._plflt, &
+         & 0, 0._plflt, 0, 0._plflt, x1, y1)
+#else
+    call plshade(z, '', xmin, xmax, ymin, ymax, &
+         & clevel, huge(0._plflt), 0, ccol, 1, &
+         & 0, 0._plflt, 0, 0._plflt, x1, y1)
+#endif
+  end subroutine gr_plshade1
+
+  subroutine gr_plshade2(z, xmin, xmax, ymin, ymax, clevel, ccol, x2, y2)
+    real(kind=plflt), intent(in), dimension(:,:) :: z
+    real(kind=plflt), intent(in) :: xmin, xmax, ymin, ymax, clevel, ccol
+    real(kind=plflt), intent(in), dimension(:,:) :: x2, y2
+
+#ifdef HAVE_PLWIDTH
+    call plshade(z, '', xmin, xmax, ymin, ymax, &
+         & clevel, huge(0._plflt), 0, ccol, 1._plflt, &
+         & 0, 0._plflt, 0, 0._plflt, x2, y2)
+#else
+    call plshade(z, '', xmin, xmax, ymin, ymax, &
+         & clevel, huge(0._plflt), 0, ccol, 1, &
+         & 0, 0._plflt, 0, 0._plflt, x2, y2)
+#endif
+  end subroutine gr_plshade2
+
+  subroutine gr_plshades1(z, xmin, xmax, ymin, ymax, clevels, x1, y1)
+    real(kind=plflt), intent(in), dimension(:,:) :: z
+    real(kind=plflt), intent(in) :: xmin, xmax, ymin, ymax
+    real(kind=plflt), intent(in), dimension(:) :: clevels, x1, y1
+
+#ifdef HAVE_PLWIDTH
+    call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
+            & 0, 0._plflt, x1, y1)
+#else
+    call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0, &
+            & 0, 0, x1, y1)
+#endif
+
+  end subroutine gr_plshades1
+
+  subroutine gr_plshades2(z, xmin, xmax, ymin, ymax, clevels, x2, y2)
+    real(kind=plflt), intent(in), dimension(:,:) :: z
+    real(kind=plflt), intent(in) :: xmin, xmax, ymin, ymax
+    real(kind=plflt), intent(in), dimension(:) :: clevels
+    real(kind=plflt), intent(in), dimension(:,:) :: x2, y2
+
+#ifdef HAVE_PLWIDTH
+    call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
+            & 0, 0._plflt, x2, y2)
+#else
+    call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0, &
+            & 0, 0, x2, y2)
+#endif
+
+  end subroutine gr_plshades2
+
 
 end module gr_os_dependent
     
