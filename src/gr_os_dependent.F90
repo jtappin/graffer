@@ -137,7 +137,7 @@ contains
 #else
     call plshade(z, '', xmin, xmax, ymin, ymax, &
          & clevel, huge(0._plflt), 0, ccol, 1, &
-         & 0, 0._plflt, 0, 0._plflt, x1, y1)
+         & 0, 0, 0, 0, x1, y1)
 #endif
   end subroutine gr_plshade1
 
@@ -153,7 +153,7 @@ contains
 #else
     call plshade(z, '', xmin, xmax, ymin, ymax, &
          & clevel, huge(0._plflt), 0, ccol, 1, &
-         & 0, 0._plflt, 0, 0._plflt, x2, y2)
+         & 0, 0, 0, 0, x2, y2)
 #endif
   end subroutine gr_plshade2
 
