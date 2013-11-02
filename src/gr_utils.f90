@@ -25,11 +25,9 @@ module gr_utils
 
   use gtk_sup
 
-!!$3  use gtk_os_dependent, only: g_find_program_in_path, g_get_current_dir
-  use g, only: g_find_program_in_path, g_get_current_dir
-
   use gr_msg
-  
+  use gr_os_dependent
+
   implicit none
 
   interface byte_swap
@@ -297,8 +295,7 @@ contains
     name = trim(fullname(ps+1:))
 
     if (ps == 0) then
-       cdir = g_get_current_dir()
-       call c_f_string(cdir, dir)
+       call gr_current_dir(dir)
        if (index(dir,'/', back=.true.) < len_trim(dir)) &
             & dir = trim(dir)//'/'
     else
@@ -475,8 +472,7 @@ contains
        
     allocate(found(size(viewers)))
     do i = 1, size(viewers)
-       ppointer = g_find_program_in_path(trim(viewers(i))//c_null_char)
-       found(i) = c_associated(ppointer)
+       found(i) = gr_find_program(viewers(i))
     end do
 
     if (count(found) == 0) then

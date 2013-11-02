@@ -37,6 +37,7 @@ module gr_plot
   use gr_eval
   use gr_sort
   use gr_text_utils
+  use gr_os_dependent
 
   implicit none
 
@@ -111,9 +112,9 @@ contains
 
           call plsfnam(trim(hardset%name)//'.ps')
        case('eps')
-          ! Change this to 'epscairo' once it's readily available.
           page_aspect = hardset%size(1)/hardset%size(2)
-          call plsdev("epscairo")
+          ! EPS device depends on plplot version
+          call gr_pl_eps
           call plsori(1)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
@@ -321,8 +322,7 @@ contains
          & call plslabelfunc(gr_format_labels)
 
     call plcol0(1)
-    !    call plwid(nint(pdefs%axthick))
-    call plwidth(real(pdefs%axthick, plflt))
+    call gr_pl_width(pdefs%axthick)
     call gr_plot_linesty(0_int16)
     call plschr(0._plflt, real(pdefs%charsize, plflt))
     call gr_plot_transform(index=1, full=.false._int8)
@@ -347,8 +347,7 @@ contains
 
     if (pdefs%y_right) then
        call plcol0(1)
-       !       call plwid(nint(pdefs%axthick))
-       call plwidth(real(pdefs%axthick, plflt))
+       call gr_pl_width(pdefs%axthick)
        call gr_plot_linesty(0_int16)
 
        ! The RH Y axis
@@ -431,9 +430,7 @@ contains
 
     call plcol0(int(data%colour))
 
-    ! ****** CHANGE for Version > 5.9.9
-    !    call plwid(nint(data%thick))
-    call plwidth(real(data%thick, plflt))
+    call gr_pl_width(data%thick)
     call gr_plot_linesty(data%line, scale=ceiling(sqrt(data%thick)))
 
     select case (data%pline)

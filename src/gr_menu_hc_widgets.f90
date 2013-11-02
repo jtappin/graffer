@@ -23,9 +23,6 @@ module gr_menu_hc_widgets
   use gtk_hl
   use gtk_sup
 
-!!$3  use gtk_os_dependent, only: g_find_program_in_path
-  use g, only: g_find_program_in_path
-
   use gtk, only: gtk_combo_box_get_active, gtk_combo_box_set_active, &
        & gtk_container_add, gtk_label_new, gtk_toggle_button_get_active, &
        & gtk_widget_destroy, gtk_widget_show_all, TRUE, FALSE
@@ -33,6 +30,7 @@ module gr_menu_hc_widgets
   use graff_types
   use graff_globals
   use gr_utils
+  use gr_os_dependent
 
   implicit none
 
@@ -50,7 +48,7 @@ contains
 
     ! Menus to configure hard copy options.
 
-    type(c_ptr) :: base, junk, jb, views
+    type(c_ptr) :: base, junk, jb
     type(graff_hard), pointer :: hardset
     logical, dimension(2), target :: iapply = [.false., .true.]
     integer(kind=c_int) :: iviewer, i
@@ -69,8 +67,7 @@ contains
           end if
        end do
        if (iviewer == 0) then
-          views = g_find_program_in_path(trim(hardset%viewer(1))//c_null_char)
-          if (c_associated(views)) iviewer = size(viewnames)+1
+          if (gr_find_program(hardset%viewer(1))) iviewer = size(viewnames)+1
        end if
     end if
 

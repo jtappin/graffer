@@ -51,7 +51,8 @@ module graff_types
      logical(kind=int8) :: set_levels=.false.
      integer(kind=int16) :: n_levels=0_int16, n_cols=0_int16, &
           & n_sty=0_int16, n_thick=0_int16
-     real(kind=real64), dimension(:), allocatable :: levels, thick
+     real(kind=real32), dimension(:), allocatable :: thick
+     real(kind=real64), dimension(:), allocatable :: levels
      integer(kind=int16), dimension(:), allocatable :: style, colours
      real(kind=real64), dimension(2) :: range=0._real64
      real(kind=real64) :: missing=0._real64

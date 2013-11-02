@@ -20,15 +20,9 @@ module gr_opt_init
 
   use gtk_sup
 
-!!$3  use gtk_os_dependent, only: g_file_test, g_find_program_in_path, &
-!!$3        & g_get_home_dir
-  use g, only: g_file_test, g_find_program_in_path, &
-        & g_get_home_dir
-
-  use gtk, only: G_FILE_TEST_IS_REGULAR, G_FILE_TEST_IS_DIR
-
   use graff_types
   use gr_utils
+  use gr_os_dependent
 
   implicit none
 
@@ -49,17 +43,14 @@ contains
     logical :: ok
     
     do i = 1, size(sysetc)
-       if (c_f_logical(g_file_test(trim(sysetc(i))//trim(sysrc)//c_null_char, &
-            & G_FILE_TEST_IS_REGULAR))) then
+       if (gr_is_file(trim(sysetc(i))//trim(sysrc))) then
           ok = gr_read_rc_file(trim(sysetc(i))//trim(sysrc))
           if (ok) exit
        end if
     end do
 
-    chome = g_get_home_dir()
-    call c_f_string(chome, home)
-    if (c_f_logical(g_file_test(trim(home)//trim(persrc)//c_null_char, &
-         & G_FILE_TEST_IS_REGULAR))) &
+    call gr_home_dir(home)
+    if (gr_is_file(trim(home)//trim(persrc))) &
          & ok = gr_read_rc_file(trim(home)//trim(persrc))
 
   end subroutine gr_read_rc
@@ -290,13 +281,12 @@ contains
                   &  trim(key)
           else
              if (arg_plus) i = i+1
-             gpath_find = g_find_program_in_path(trim(keyval)//c_null_char)
-             if (.not. c_associated(gpath_find)) then
+             if (gr_find_program(keyval)) then
+                default_options%pdfviewer =trim(keyval)
+             else 
                 write(error_unit, "(a/t10,a)") &
                      & "gr_parse_command: Pdf viewer not found in path", &
                      & trim(keyval)
-             else 
-                default_options%pdfviewer =trim(keyval)
              end if
           end if
 
@@ -314,13 +304,12 @@ contains
                   &  trim(key)
           else
              if (arg_plus) i = i+1
-             gpath_find = g_find_program_in_path(trim(keyval)//c_null_char)
-             if (.not. c_associated(gpath_find)) then
+             if (gr_find_program(keyval)) then
+                default_options%gdl_command = trim(keyval)
+             else
                 write(error_unit, "(a/t10,a)") &
                      & "gr_parse_command: gdl/idl command not found in path", &
                      & trim(keyval)
-             else 
-                default_options%gdl_command = trim(keyval)
              end if
           end if
 
@@ -408,13 +397,13 @@ contains
              end if
           else
              file = trim(argv)
-             isdir = c_f_logical(g_file_test(trim(file), G_FILE_TEST_IS_DIR))
+             isdir = gr_is_dir(file)
              if (file == '.' .or. file == '..') isdir = .true.
           end if
        end select
 
        i = i+1
-    end do
+    end do 
   end subroutine gr_parse_command
 
   subroutine gr_cmd_help

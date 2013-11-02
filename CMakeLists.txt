@@ -17,7 +17,8 @@
 
  
 cmake_minimum_required(VERSION 2.8.5)
-project(graffer Fortran)
+project(graffer Fortran C)
+include(CheckCSourceCompiles)
 
 # Note that we override the lib directory here because most
 # 64-bit systems don't actually work if we use the default.
@@ -56,11 +57,13 @@ if (GTK EQUAL 2)
   if (NOT GTK2FORTRAN_FOUND)
     message (FATAL_ERROR "Gtk2Fortran not found, aborting")
   endif()
+  add_definitions("-DGTK2")
 elseif (GTK EQUAL 3) 
   find_package(Gtk3Fortran)
   if (NOT GTK3FORTRAN_FOUND)
     message (FATAL_ERROR "Gtk3Fortran not found, aborting")
   endif()
+  add_definitions("-DGTK3")
 else ()
   find_package(Gtk2Fortran)
   if (NOT GTK2FORTRAN_FOUND)
@@ -69,12 +72,28 @@ else ()
     if (NOT GTK3FORTRAN_FOUND)
       message (FATAL_ERROR "Gtk3Fortran not found either, aborting")
     endif()
+    add_definitions("-DGTK3")
+  else (GTK2FORTRAN_FOUND)
+    add_definitions("-DGTK2")
   endif()
 endif()
 find_package(PlplotF95)
 if(NOT PLPLOT_FOUND)
   message(FATAL_ERROR "PLPLOT not found")
 endif()
+set(CMAKE_REQUIRED_LIBRARIES "${PLPLOT_LIBRARIES}")
+set(CMAKE_REQUIRED_INCLUDES "${PLPLOT_INCLUDE_DIR}")
+check_c_source_compiles("
+#include <plplot/plplot.h> 
+int main(int argc, void *argv[])
+{
+  PLFLT w = 0.5;
+  plinit();
+  plwidth(w);
+}" HAVE_PLWIDTH)
+if(HAVE_PLWIDTH)
+  add_definitions("-DHAVE_PLWIDTH")
+endif(HAVE_PLWIDTH)
 
 find_program(GDL "gdl")
 if (NOT GDL)

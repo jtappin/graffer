@@ -23,11 +23,10 @@ module gr_eval
   use gtk_hl
 
   use gtk, only: GTK_MESSAGE_ERROR, GTK_MESSAGE_INFO
-!!$3  use gtk_os_dependent, only: g_find_program_in_path
-  use g, only: g_find_program_in_path
 
   use graff_globals
   use gr_msg
+  use gr_os_dependent
 
   implicit none
 
@@ -43,8 +42,8 @@ contains
 
     integer :: status
     character(len=150) :: gdl_default_command
-    type(c_ptr) :: executable
     character(len=150) :: gdl_command
+    logical :: cmd_found
 
     if (is_init) then
        gr_have_gdl = gdl_found
@@ -52,9 +51,7 @@ contains
     end if
 
     if (pdefs%opts%gdl_command /= '') then
-       executable = &
-            & g_find_program_in_path(trim(pdefs%opts%gdl_command)//c_null_char)
-       if (c_associated(executable)) then
+       if (gr_find_program(pdefs%opts%gdl_command)) then
           call gr_message("Found gdl/idl at: "// &
                & trim(pdefs%opts%gdl_command), type=GTK_MESSAGE_INFO)
           is_init = .true.
@@ -67,10 +64,7 @@ contains
     call get_environment_variable("GRAFFER_GDL", &
          & value=gdl_default_command, status=status)
     if (status == 0) then
-       executable = &
-            & g_find_program_in_path(trim(gdl_default_command)//c_null_char)
-       if (c_associated(executable)) then
-          call c_f_string(executable, gdl_command)
+       if (gr_find_program(gdl_default_command, path=gdl_command)) then
           call gr_message("Found ${GRAFFER_GDL} at: "// &
                & trim(gdl_command), type=GTK_MESSAGE_INFO)
           is_init = .true.
@@ -81,9 +75,7 @@ contains
        end if
     end if
 
-    executable = g_find_program_in_path("gdl"//c_null_char)
-    if (c_associated(executable)) then
-       call c_f_string(executable, gdl_command)
+    if (gr_find_program("gdl", path=gdl_command)) then
        call gr_message("Found 'gdl' at: "// trim(gdl_command), &
             & type=GTK_MESSAGE_INFO)
        is_init = .true.
@@ -93,9 +85,7 @@ contains
        return
     end if
 
-    executable = g_find_program_in_path("idl"//c_null_char)
-    if (c_associated(executable)) then
-       call c_f_string(executable, gdl_command)
+    if (gr_find_program("idl", path=gdl_command)) then
        call gr_message("Found 'idl' at: "//trim(gdl_command), &
             & type=GTK_MESSAGE_INFO)
        is_init = .true.
