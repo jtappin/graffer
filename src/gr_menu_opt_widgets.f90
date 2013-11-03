@@ -45,7 +45,7 @@ contains
 
     ! Menus to configure global options.
 
-    type(c_ptr) :: base, jb, junk, views
+    type(c_ptr) :: base, jb, junk
     integer :: iviewer, i
     logical, dimension(2), target :: iapply = [.false., .true.]
 

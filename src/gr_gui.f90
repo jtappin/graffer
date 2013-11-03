@@ -55,7 +55,6 @@ contains
          & global_base, ds_base, ynb, topbase
 
     integer(kind=c_int) :: nbi, tid, iseconds
-!!$    integer(kind=int16) :: zformat
 
     gui_active = .false.
 
@@ -152,7 +151,7 @@ contains
     ! Last but not least, the drawing area
 
     gr_drawing_area = gr_drawing_new()
-    call hl_gtk_box_pack(base, gr_drawing_area)
+    call hl_gtk_box_pack(base, gr_drawing_area, expand=TRUE)
 
     ! And a message box
 

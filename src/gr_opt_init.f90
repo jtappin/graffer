@@ -37,7 +37,6 @@ contains
          & ['/usr/local/etc/', '/etc/          ']
     character(len=*), parameter :: sysrc='graffer.rc', persrc='.grafferrc'
     character(len=512) :: home
-    type(c_ptr) :: chome
 
     integer :: i
     logical :: ok
@@ -199,7 +198,6 @@ contains
     integer :: nargs, i, poseq, status, px
     integer(kind=int32) :: ival
     logical :: arg_plus
-    type(c_ptr) :: gpath_find
     integer :: ios
     character(len=120) :: iom
     logical :: helped

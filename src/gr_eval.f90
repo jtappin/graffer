@@ -43,7 +43,6 @@ contains
     integer :: status
     character(len=150) :: gdl_default_command
     character(len=150) :: gdl_command
-    logical :: cmd_found
 
     if (is_init) then
        gr_have_gdl = gdl_found

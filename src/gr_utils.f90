@@ -289,7 +289,6 @@ contains
     ! Split a file name into directory and filename.
 
     integer :: ps
-    type(c_ptr) :: cdir
     
     ps = index(fullname, '/', back=.true.)
     name = trim(fullname(ps+1:))
@@ -447,7 +446,6 @@ contains
     logical :: isps
     logical, dimension(:), allocatable :: found
     integer :: i, j
-    type(c_ptr) :: ppointer
 
     character(len=10), dimension(5), target :: epsviewers = &
          & [character(len=10) :: 'okular', 'evince', 'gv', &

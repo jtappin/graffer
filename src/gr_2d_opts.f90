@@ -495,7 +495,7 @@ contains
     ! Contour thicknesses
 
     character(len=32), dimension(:), allocatable :: text
-    real(kind=real64), dimension(:), allocatable :: thick
+    real(kind=real32), dimension(:), allocatable :: thick
     integer :: nthick, ios, i, j
     logical :: rewrite
     type(graff_zdata), pointer :: zdata
