@@ -609,7 +609,7 @@ contains
     end if
 
     if (present(destination)) then
-       call gr_message( &
+       if (present(to)) call gr_message( &
             & "gr_ds_copy: DESTINATION and TO both present, using DESTINATION")
 
        if (present(copy_format)) then
