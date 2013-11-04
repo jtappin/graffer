@@ -649,10 +649,10 @@ contains
                & ccol = real(data%zdata%colours(mod(i-1, &
                & data%zdata%n_cols)+1), real64)
           if (c2d) then
-             call gr_plshade(z, xmin, xmax, ymin, ymax, clevels(1), &
+             call gr_plshade(z, xmin, xmax, ymin, ymax, clevels(i), &
                   & ccol, x2, y2)
           else
-             call gr_plshade(z, xmin, xmax, ymin, ymax, clevels(1), &
+             call gr_plshade(z, xmin, xmax, ymin, ymax, clevels(i), &
                   & ccol, x1, y1)
           end if
        else
