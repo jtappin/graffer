@@ -104,7 +104,7 @@ contains
 
   function gr_evaluate(dsidx)
     integer :: gr_evaluate
-    integer(kind=int16), intent(in) :: dsidx
+    integer(kind=int16), intent(in), optional :: dsidx
 
     ! Evalutate a function and store the evaluations.
 
