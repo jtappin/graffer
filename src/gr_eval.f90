@@ -104,7 +104,7 @@ contains
 
   function gr_evaluate(dsidx)
     integer :: gr_evaluate
-    integer(kind=int16), intent(in), optional :: dsidx
+    integer(kind=int16), intent(in) :: dsidx
 
     ! Evalutate a function and store the evaluations.
 
@@ -116,11 +116,7 @@ contains
     type(graff_data), pointer :: data
     character(len=120) :: err_buffer
 
-    if (present(dsidx)) then
-       data => pdefs%data(dsidx)
-    else
-       data => pdefs%data(pdefs%cset)
-    end if
+    data => pdefs%data(dsidx)
 
     if (data%funct%evaluated) then
        gr_evaluate = 0
