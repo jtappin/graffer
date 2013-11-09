@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_ds_editor_widgets
+  ! Editor for X-Y datasets
+
   use iso_fortran_env
   use iso_c_binding
 
@@ -40,8 +42,6 @@ module gr_ds_editor_widgets
 contains
 
   subroutine gr_ds_editor
-
-    ! Editor for X-Y datasets
 
     type(graff_data), pointer :: data
     character(len=40) :: title

@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_ds_rescale_widgets
+  ! Widgets & handlers to scale and/or shift datasets.
+
   use iso_fortran_env
   use iso_c_binding
 

@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
  module gr_file_ascii
+   ! Routines for accessing ASCII Graffer files.
+
   use iso_fortran_env
 
   use gtk_sup

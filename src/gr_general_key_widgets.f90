@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_general_key_widgets
+  ! Widget for adding a key to the plot.
+
   use iso_fortran_env
   use iso_c_binding
 

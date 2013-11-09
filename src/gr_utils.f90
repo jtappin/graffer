@@ -15,11 +15,11 @@
 ! this program; see the files COPYING3 and COPYING.RUNTIME respectively.
 ! If not, see <http://www.gnu.org/licenses/>.
 
-! Utility routines for the Fortran version of GRAFFER
-
-! Also widely needed constants
-
 module gr_utils
+  ! Utility routines for the Fortran version of GRAFFER
+
+  ! Also widely needed constants
+
   use iso_fortran_env
   use iso_c_binding
 

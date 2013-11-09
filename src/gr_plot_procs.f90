@@ -16,6 +16,9 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_plot_procs
+  ! General graphics routines: error bars, annotations, key, contouring,
+  ! shading and time stamp.
+
   use iso_fortran_env
   use iso_c_binding
 

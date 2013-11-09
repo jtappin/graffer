@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_opt_init
+  ! Set default options, and read configuration files.
+
   use iso_fortran_env
 
   use gtk_sup

@@ -16,6 +16,7 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_sort
+  ! General sorting routines (for axis sorting).
   use iso_fortran_env
 
   implicit none

@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_menubar
+  ! The Graffer menubar.
+
   use iso_c_binding
   use iso_fortran_env
 

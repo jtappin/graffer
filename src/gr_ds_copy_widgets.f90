@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_ds_copy_widgets
+  ! Widget and handlers to copy datasets
+
   use iso_fortran_env
   use iso_c_binding
 

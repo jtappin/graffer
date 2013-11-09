@@ -15,9 +15,10 @@
 ! this program; see the files COPYING3 and COPYING.RUNTIME respectively.
 ! If not, see <http://www.gnu.org/licenses/>.
 
-! Module for the data structures for the Fortran
-! version of Graffer
 module graff_types
+  ! Module for the data structures for the Fortran
+  ! version of Graffer
+
   use iso_fortran_env
   use iso_c_binding, only: c_int
   use plplot, only: plflt

@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_axis_autoscale
+  ! Autoscale an axis and update necessary flags.
+
   use iso_c_binding
   use iso_fortran_env
 

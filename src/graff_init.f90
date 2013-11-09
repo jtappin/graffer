@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module graff_init
+  ! Set initial default values in a graffer data structure.
+
   use iso_fortran_env
 
   use graff_types

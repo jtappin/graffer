@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_fitting
+  ! Fit functions to datasets.
+
   use iso_fortran_env
 
   use gtk, only: GTK_MESSAGE_ERROR

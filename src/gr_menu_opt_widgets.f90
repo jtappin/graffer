@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_menu_opt_widgets
+  ! Menus to configure global options.
+
   use iso_fortran_env
   use iso_c_binding
 
@@ -42,8 +44,6 @@ module gr_menu_opt_widgets
 
 contains
   subroutine gr_options_menu
-
-    ! Menus to configure global options.
 
     type(c_ptr) :: base, jb, junk
     integer :: iviewer, i

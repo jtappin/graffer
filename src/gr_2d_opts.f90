@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_2d_opts
+  ! Widgets and handlers for 2D dataset display options.
+
   use iso_c_binding
   use iso_fortran_env
 

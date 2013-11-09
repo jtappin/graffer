@@ -16,6 +16,7 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_text_pick_widgets
+  ! Widget to select a text annotation to edit.
 
   use iso_c_binding
   use iso_fortran_env

@@ -16,6 +16,7 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_text_utils
+  ! Routines to manage text annotations.
 
   use iso_fortran_env
 

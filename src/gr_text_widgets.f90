@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_text_widgets
+  ! Widget for editing text annotations.
+
   use iso_fortran_env
   use iso_c_binding
 

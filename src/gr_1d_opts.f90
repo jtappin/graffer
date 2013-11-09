@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_1d_opts
+  ! Widgets and handlers for 1D dataset display options.
+
   use iso_c_binding
   use iso_fortran_env
 

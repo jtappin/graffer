@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_colours
+  ! Colour table management.
+
   use iso_fortran_env
   use plplot
 

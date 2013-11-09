@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_record
+  ! Define a data record and tools to read, write and decode it.
+
   use iso_fortran_env, only: int8, int16, int32, real32, real64, &
        & iostat_end
 

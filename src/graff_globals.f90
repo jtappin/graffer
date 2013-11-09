@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module graff_globals
+  ! Global variables needed by many different routines.
+
   use iso_c_binding
 
   use graff_types

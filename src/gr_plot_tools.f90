@@ -16,7 +16,9 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_plot_tools
-  ! Generic plot related stuff that makes plplot calls
+  ! Generic plot related stuff that makes plplot calls (e.g. coordinates
+  ! and linestyles)
+
   use iso_fortran_env
   use iso_c_binding
 

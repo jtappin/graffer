@@ -19,6 +19,9 @@
 ! Also widgets that need to be accessed outside their own module
 
 module gr_cb_common
+  ! Event handlers that are shared between multiple widgets.
+  ! Or which need access to widgets that are from a different
+  ! part of the code.
 
   use iso_c_binding
   use iso_fortran_env

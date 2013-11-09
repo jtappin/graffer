@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_general_corner_widgets
+  ! Widgets to set the corners of the plto viewport.
+
   use iso_c_binding
   use iso_fortran_env
 

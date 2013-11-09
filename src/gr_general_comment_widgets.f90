@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_general_comment_widgets
+  ! Widget to add a global comment to a Graffer file.
+
   use iso_c_binding
   use iso_fortran_env
 

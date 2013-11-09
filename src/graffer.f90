@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 program graffer
+  ! Main program for Graffer.
+
   use iso_c_binding
 
   use gtk_hl

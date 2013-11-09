@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_general
+  ! Global display settings 
+
   use iso_c_binding
 
   use gtk_hl

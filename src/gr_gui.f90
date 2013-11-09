@@ -16,6 +16,8 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_gui
+  ! Top level GUI layout for graffer.
+
   use iso_c_binding
   use iso_fortran_env
 
