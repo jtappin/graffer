@@ -102,10 +102,9 @@ contains
     pdefs%opts%gdl_command = ''
   end function gr_have_gdl
 
-  function gr_evaluate(dsidx, dataset)
+  function gr_evaluate(dsidx)
     integer :: gr_evaluate
-    integer, intent(in), optional :: dsidx
-    type(graff_data), optional, intent(inout), target :: dataset
+    integer(kind=int16), intent(in), optional :: dsidx
 
     ! Evalutate a function and store the evaluations.
 
@@ -117,9 +116,7 @@ contains
     type(graff_data), pointer :: data
     character(len=120) :: err_buffer
 
-    if (present(dataset)) then
-       data => dataset
-    else if (present(dsidx)) then
+    if (present(dsidx)) then
        data => pdefs%data(dsidx)
     else
        data => pdefs%data(pdefs%cset)
@@ -217,7 +214,7 @@ contains
     integer(kind=int32), intent(in) :: n
     real(kind=real64), dimension(2), intent(in) :: xr
     real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
-    integer, intent(in) :: dsidx
+    integer(kind=int16), intent(in) :: dsidx
     integer, intent(out) :: status
 
     ! Evaluate a function y = f(x)
@@ -274,7 +271,7 @@ contains
     integer(kind=int32), intent(in) :: n
     real(kind=real64), dimension(2), intent(in) :: yr
     real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
-    integer, intent(in) :: dsidx
+    integer(kind=int16), intent(in) :: dsidx
     integer, intent(out) :: status
 
     ! Evaluate a function x = f(y)
@@ -333,7 +330,7 @@ contains
     integer(kind=int32), intent(in) :: n
     real(kind=real64), dimension(2), intent(in) :: tr
     real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
-    integer, intent(in) :: dsidx
+    integer(kind=int16), intent(in) :: dsidx
     integer, intent(out) :: status
 
     ! Evaluate a function x = f(t), y = g(t)
@@ -393,7 +390,7 @@ contains
     real(kind=real64), dimension(2), intent(in) :: xr, yr
     real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     real(kind=real64), dimension(:,:), allocatable, intent(out) :: z
-    integer, intent(in) :: dsidx
+    integer(kind=int16), intent(in) :: dsidx
     integer, intent(out) :: status
 
     ! Evaluate a function z = f(x,y)
@@ -453,7 +450,7 @@ contains
   end subroutine gr_eval_fz
 
   subroutine gr_make_gdl_names(dsidx, pfile, dfile)
-    integer, intent(in) :: dsidx
+    integer(kind=int16), intent(in) :: dsidx
     character(len=*), intent(out) :: pfile, dfile
 
     ! Generate the names for the program and its output.

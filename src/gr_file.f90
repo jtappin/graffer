@@ -66,8 +66,10 @@ contains
     autofile = trim(dir1)//'#'//trim(name1)//'#'
 
     autoflag = .false.
-    ! WARNING
-    !   STAT is a GNU extension for portability remove this stuff.
+    ! WARNING:
+    !   STAT is a GNU extension for portability remove this stuff. (down to
+    !   "END of GNU extension") Can probably be replaced with something using
+    !   GIO routines.
     if (file_exists(autofile)) then
        call stat(file, svals)
        mtrq = svals(10)

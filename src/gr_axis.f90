@@ -525,6 +525,7 @@ contains
     character(len=32) :: text
     real(kind=real64) :: val
     integer :: ios
+    integer(kind=int16) :: i
 
     if (.not. gui_active) return
 
@@ -537,9 +538,34 @@ contains
     if (ios /= 0) then
        write(text, "(g0.5)") pdefs%axrange(mm,axis)
        call gtk_entry_set_text(widget, trim(text)//c_null_char)
-    else
+    else if (val /= pdefs%axrange(mm,axis)) then
        pdefs%axrange(mm,axis) = val
+       do i = 1, pdefs%nsets
+          select case (pdefs%data(i)%type)
+          case(-1) 
+             if (axis == 1 .and.&
+                  & pdefs%data(i)%funct%range(1,1) == &
+                  & pdefs%data(i)%funct%range(2,1)) &
+                  & pdefs%data(i)%funct%evaluated = .false.
+          case(-2)
+             if (((axis == 2 .and. pdefs%data(i)%y_axis == 0) .or.&
+                  & (axis == 2 .and. pdefs%data(i)%y_axis == 1) .and. &
+                  & pdefs%data(i)%funct%range(1,1) == &
+                  & pdefs%data(i)%funct%range(2,1))) &
+                  & pdefs%data(i)%funct%evaluated = .false.
+          case(-4)
+             if ((axis == 1 .and. &
+                  & pdefs%data(i)%funct%range(1,1) == &
+                  & pdefs%data(i)%funct%range(2,1)) .or.  &
+                  & (((axis == 2 .and. pdefs%data(i)%y_axis == 0) .or.&
+                  & (axis == 2 .and. pdefs%data(i)%y_axis == 1)) .and. &
+                  & pdefs%data(i)%funct%range(1,2) == &
+                  & pdefs%data(i)%funct%range(2,2))) &
+                  & pdefs%data(i)%funct%evaluated = .false.
+          end select
+       end do
     end if
+
     if (minval(pdefs%axrange(:,axis)) > 0.) then
        call gtk_widget_set_sensitive(log_chb(axis), TRUE)
     else if (pdefs%axtype(axis) == 1) then

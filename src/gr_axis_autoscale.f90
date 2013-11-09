@@ -39,9 +39,10 @@ contains
 
     real(kind=real64) :: axmin, axmax
     type(graff_data), pointer :: data
-    integer :: i, status
+    integer :: status
     logical :: ishrink
     character(len=32) :: text
+    integer(kind=int16) :: i
 
     if (axis == 3 .and. .not. pdefs%y_right) return
 
@@ -58,7 +59,7 @@ contains
        do i = 1, pdefs%nsets
           data => pdefs%data(i)
           if (data%type < 0) then
-             status = gr_evaluate(dataset=data)
+             status = gr_evaluate(i)
           else
              status = 0
           end if
@@ -75,7 +76,7 @@ contains
           data => pdefs%data(i)
           if (pdefs%y_right .and. data%y_axis /= axis-2) cycle
           if (data%type < 0) then
-             status = gr_evaluate(dataset=data)
+             status = gr_evaluate(i)
           else
              status = 0
           end if
@@ -101,6 +102,31 @@ contains
     do i = 1, 2
        write(text, "(g0.5)") pdefs%axrange(i,axis)
        call gtk_entry_set_text(rbox(i, axis), adjustl(trim(text))//c_null_char)
+    end do
+
+    do i = 1, pdefs%nsets
+       select case (pdefs%data(i)%type)
+       case(-1) 
+          if (axis == 1 .and.&
+               & pdefs%data(i)%funct%range(1,1) == &
+               & pdefs%data(i)%funct%range(2,1)) &
+               & pdefs%data(i)%funct%evaluated = .false.
+       case(-2)
+          if (((axis == 2 .and. pdefs%data(i)%y_axis == 0) .or.&
+               & (axis == 2 .and. pdefs%data(i)%y_axis == 1) .and. &
+               & pdefs%data(i)%funct%range(1,1) == &
+               & pdefs%data(i)%funct%range(2,1))) &
+               & pdefs%data(i)%funct%evaluated = .false.
+       case(-4)
+          if ((axis == 1 .and. &
+               & pdefs%data(i)%funct%range(1,1) == &
+               & pdefs%data(i)%funct%range(2,1)) .or.  &
+               & (((axis == 2 .and. pdefs%data(i)%y_axis == 0) .or.&
+               & (axis == 2 .and. pdefs%data(i)%y_axis == 1)) .and. &
+               & pdefs%data(i)%funct%range(1,2) == &
+               & pdefs%data(i)%funct%range(2,2))) &
+               & pdefs%data(i)%funct%evaluated = .false.
+       end select
     end do
 
     call gtk_widget_set_sensitive(log_chb(axis), &

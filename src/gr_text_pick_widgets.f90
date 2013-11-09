@@ -95,7 +95,8 @@ contains
     call gtk_widget_show_all(tp_window)
     call hl_gtk_listn_set_selection(tp_pick)
 
-    ! May need this?
+    ! Need this so that we don't return to the caller until the
+    ! chooser is exited.
     call gtk_main()
 
     isel = selection+1

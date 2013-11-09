@@ -469,7 +469,7 @@ contains
           else
              etype = 0
           end if
-          status = gr_evaluate(dataset=data)
+          status = gr_evaluate(pdefs%cset)
           if (status /= 0) then
             call gr_message(&
                  & "gr_ds_write: Failed to evaluate function to write as data", &

@@ -471,7 +471,7 @@ contains
 
     integer :: status
 
-    status = gr_evaluate(index)
+    status = gr_evaluate(int(index, int16))
     if (status == 0) call gr_1dd_plot(index)
 
   end subroutine gr_1df_plot
@@ -505,7 +505,7 @@ contains
 
     integer :: status
 
-    status = gr_evaluate(index)
+    status = gr_evaluate(int(index, int16))
     if (status == 0) call gr_2dd_plot(index)
 
   end subroutine gr_2df_plot
