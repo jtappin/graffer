@@ -57,11 +57,11 @@ contains
          & tooltip="Select drawing or text mode"//c_null_char)
     call hl_gtk_box_pack(jb, junk)
 
-    junk = hl_gtk_check_button_new("Cross Hairs"//c_null_char, &
+    xhair_but = hl_gtk_check_button_new("Cross Hairs"//c_null_char, &
          & toggled=c_funloc(gr_cross_hairs), &
          & initial_state=f_c_logical(pdefs%transient%hairs), &
          & tooltip="Toggle display of cross hairs at the cursor"//c_nulL_char)
-    call hl_gtk_box_pack(jb, junk)
+    call hl_gtk_box_pack(jb, xhair_but)
 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(table, jb)

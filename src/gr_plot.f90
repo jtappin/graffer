@@ -28,7 +28,7 @@ module gr_plot
   use gtk_draw_hl
   use gtk_sup
 
-  use gtk, only: gtk_widget_queue_draw
+  use gtk, only: gtk_widget_queue_draw, gtk_widget_set_sensitive
 
   use graff_types
   use graff_globals
@@ -75,6 +75,7 @@ contains
     integer :: pdot
     real(kind=plflt) :: page_aspect
     type(graff_hard), pointer :: hardset
+    logical :: status
 
     if (gr_plot_is_open) return
 
@@ -170,6 +171,8 @@ contains
        cc = hl_gtk_drawing_area_cairo_new(plotting_area)
        call pl_cmd(PLESC_DEVINIT, cc)
        gr_is_widget = .true.
+       call plxormod(.false., status)
+       call gtk_widget_set_sensitive(xhair_but, f_c_logical(status))
     end if
     call plfontld(1)
     gr_plot_is_open = .true.
