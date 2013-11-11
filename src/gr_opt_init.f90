@@ -24,7 +24,6 @@ module gr_opt_init
 
   use graff_types
   use gr_utils
-  use gr_os_dependent
 
   implicit none
 

@@ -28,7 +28,7 @@ module gr_eval
 
   use graff_globals
   use gr_msg
-  use gr_os_dependent
+  use gr_utils
 
   implicit none
 

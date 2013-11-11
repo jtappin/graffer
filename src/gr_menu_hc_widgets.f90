@@ -31,7 +31,6 @@ module gr_menu_hc_widgets
   use graff_types
   use graff_globals
   use gr_utils
-  use gr_os_dependent
 
   implicit none
 

@@ -26,7 +26,10 @@ module gr_utils
   use gtk_sup
 
   use gr_msg
-  use gr_os_dependent
+
+  use g, only: g_find_program_in_path, g_get_home_dir
+  use gtk, only: G_FILE_TEST_IS_REGULAR, G_FILE_TEST_IS_DIR
+  use gtk_os_dependent, only: g_file_test, g_get_current_dir
 
   implicit none
 
@@ -256,7 +259,7 @@ contains
        if (ic >= lcmin .and. ic <= lcmax) upcase(i:i) = achar(ic+case_diff)
     end do
   end function upcase
-  
+
   elemental function lowcase(str)
     character(len=*), intent(in) :: str
     character(len=len(str)) :: lowcase
@@ -289,7 +292,7 @@ contains
     ! Split a file name into directory and filename.
 
     integer :: ps
-    
+
     ps = index(fullname, '/', back=.true.)
     name = trim(fullname(ps+1:))
 
@@ -302,7 +305,7 @@ contains
     end if
   end subroutine split_fname
 
- function count_lines_file(file, quiet) result(count_lines)
+  function count_lines_file(file, quiet) result(count_lines)
     integer :: count_lines
     character(len=*), intent(in) :: file
     logical, intent(in), optional :: quiet
@@ -408,7 +411,7 @@ contains
           maxl=max(maxl,idx1-idx0+1)
        end if
     end do
-    
+
     if (present(count)) count=n
     if (present(maxlen)) maxlen=maxl
     if (present(istrunc)) then
@@ -417,10 +420,10 @@ contains
        write(error_unit,*) "SPLIT:: Some substrings truncated"
        write(error_unit,*) "SPLIT:: MAXLEN:",maxl," LEN:",len(sta)
     end if
-    
+
 
     ! Allocate the output array and extract the substrings to it.
-    
+
     allocate(sta(n))
 
     idx0 = 1
@@ -434,7 +437,7 @@ contains
           sta(i) = str(idx0:idx1)
        end if
     end do
-    
+
   end subroutine split
 
   subroutine gr_find_viewers(list, eps)
@@ -467,7 +470,7 @@ contains
     else
        viewers => pdfviewers
     end if
-       
+
     allocate(found(size(viewers)))
     do i = 1, size(viewers)
        found(i) = gr_find_program(viewers(i))
@@ -581,5 +584,61 @@ contains
 
     finite = .not. (isnan(x) .or. x > huge(x) .or. x < -huge(x))
   end function finite
-    
+
+  ! Miscellaneous glib interfaces with "fortranization"
+
+  function gr_find_program(name, path)
+    logical :: gr_find_program
+    character(len=*), intent(in) :: name
+    character(len=*), intent(out), optional :: path
+
+    type(c_ptr) :: executable
+
+    executable = g_find_program_in_path(trim(name)//c_null_char)
+    gr_find_program = c_associated(executable)
+
+    if (present(path)) then
+       if (gr_find_program) then
+          call c_f_string(executable, path)
+       else
+          path = ''
+       end if
+    end if
+  end function gr_find_program
+
+  subroutine gr_home_dir(home)
+    character(len=*), intent(out) :: home
+
+    type(c_ptr) :: chome
+
+    chome = g_get_home_dir()
+    call c_f_string(chome, home)
+  end subroutine gr_home_dir
+
+  subroutine gr_current_dir(dir)
+    character(len=*), intent(out) :: dir
+
+    type(c_ptr) :: cdir
+
+    cdir = g_get_current_dir()
+    call c_f_string(cdir, dir)
+  end subroutine gr_current_dir
+
+  function gr_is_file(file)
+    logical :: gr_is_file
+    character(len=*), intent(in) :: file
+
+    gr_is_file = c_f_logical(g_file_test(trim(file)//c_null_char, &
+         & G_FILE_TEST_IS_REGULAR))
+
+  end function gr_is_file
+
+  function gr_is_dir(file)
+    logical :: gr_is_dir
+    character(len=*), intent(in) :: file
+
+    gr_is_dir = c_f_logical(g_file_test(trim(file)//c_null_char, &
+         & G_FILE_TEST_IS_DIR))
+
+  end function gr_is_dir
 end module gr_utils

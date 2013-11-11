@@ -34,7 +34,7 @@ module gr_menu_opt_widgets
 
   use gr_text_utils
   use gr_plot
-  use gr_os_dependent
+
   implicit none
 
   type(c_ptr), private :: opt_window, opt_view_cbo, opt_2d_but, &
