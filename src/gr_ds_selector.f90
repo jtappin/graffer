@@ -264,7 +264,8 @@ contains
     iresp = hl_gtk_file_chooser_show(files, &
          & filter=['*.dat'], all=TRUE, edit_filters=TRUE, &
          & current=TRUE, create=TRUE, parent=gr_window, &
-         & initial_file = trim(deffile)//c_null_char)
+         & initial_file = trim(deffile)//c_null_char, &
+         & initial_dir=trim(pdefs%dir)//c_null_char)
 
     if (c_f_logical(iresp)) call gr_ds_write(files(1))
   end subroutine gr_ds_write_cb
@@ -287,7 +288,8 @@ contains
     iresp = hl_gtk_file_chooser_show(files, &
          & filter=['*.dat'], all=TRUE, edit_filters=TRUE, &
          & current=TRUE, create=TRUE, parent=gr_window, &
-         & initial_file = trim(deffile)//c_null_char)
+         & initial_file = trim(deffile)//c_null_char, &
+         & initial_dir=trim(pdefs%dir)//c_null_char)
 
     if (c_f_logical(iresp)) call gr_ds_write(files(1), as_data=.true.)
   end subroutine gr_ds_write_data_cb

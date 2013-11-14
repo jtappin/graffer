@@ -162,7 +162,8 @@ contains
 
     iresp = hl_gtk_file_chooser_show(files, &
          & filter=['*.dat'], all=TRUE, edit_filters=TRUE, &
-         & current=TRUE, create=FALSE, parent=gr_window)
+         & current=TRUE, create=FALSE, parent=gr_window, &
+         & initial_dir=trim(pdefs%dir)//c_null_char)
 
     if (.not. c_f_logical(iresp)) return
 
@@ -260,7 +261,8 @@ contains
 
     iresp = hl_gtk_file_chooser_show(files, &
          & filter=['*.dat'], all=TRUE, edit_filters=TRUE, &
-         & current=TRUE, create=FALSE, parent=gr_window)
+         & current=TRUE, create=FALSE, parent=gr_window, &
+         & initial_dir=trim(pdefs%dir)//c_null_char)
 
     if (.not. c_f_logical(iresp)) return
 
@@ -370,7 +372,8 @@ contains
 
     iresp = hl_gtk_file_chooser_show(files, &
          & filter=['*.dat'], all=TRUE, edit_filters=TRUE, &
-         & current=TRUE, create=FALSE, parent=gr_window)
+         & current=TRUE, create=FALSE, parent=gr_window, &
+         & initial_dir=trim(pdefs%dir)//c_null_char)
 
     if (.not. c_f_logical(iresp)) return
 
