@@ -15,10 +15,13 @@
 ! this program; see the files COPYING3 and COPYING.RUNTIME respectively.
 ! If not, see <http://www.gnu.org/licenses/>.
 
-module gr_os_dependent
+module gr_version_dependent
   ! Module to handle differences of plplot API between versions.
   ! Essentially this should be the only module needing #ifdef and the
   ! C-preprocessor.
+
+  ! As of now it handles the differences between plplot 5.9.9 and plplot 5.9.10
+  ! which is determined by whether plwidth exists.
 
   use iso_fortran_env
 
@@ -121,6 +124,4 @@ contains
 
   end subroutine gr_plshades2
 
-
-end module gr_os_dependent
-    
+end module gr_version_dependent

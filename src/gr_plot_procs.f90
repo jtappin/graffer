@@ -32,7 +32,7 @@ module gr_plot_procs
   use gr_plot_utils
 
   use gr_text_utils
-  use gr_os_dependent
+  use gr_version_dependent
 
   implicit none
 
