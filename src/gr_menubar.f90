@@ -295,7 +295,8 @@ contains
           pdefs%hardset%name = pdefs%name(:pdot-1)
        end if
     end if
-    call hl_gdk_pixbuf_save(pixb, trim(pdefs%hardset%name)//'.'//&
+    call hl_gdk_pixbuf_save(pixb, trim(pdefs%dir)//'/'//&
+         & trim(pdefs%hardset%name)//'.'//&
          & trim(filetype)//c_null_char)
 
   end subroutine gr_dump

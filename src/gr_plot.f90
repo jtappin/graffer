@@ -113,7 +113,7 @@ contains
                & int(hardset%off(1)*cm2pt), &
                & int(hardset%off(2)*cm2pt))
 
-          call plsfnam(trim(hardset%name)//'.ps')
+          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.ps')
        case('eps')
           page_aspect = hardset%size(1)/hardset%size(2)
           ! EPS device depends on plplot version
@@ -124,7 +124,7 @@ contains
                & int(hardset%size(2)*cm2pt), &
                & int(hardset%size(1)*cm2pt), &
                & 0, 0)
-          call plsfnam(trim(hardset%name)//'.eps')
+          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.eps')
        case('pdf')
           if (hardset%psize == 0) then     ! A4
              page_aspect = 297._plflt/210._plflt
@@ -142,7 +142,7 @@ contains
                & int(hardset%size(2)*cm2pt), &
                & int(hardset%off(1)*cm2pt), &
                & int(hardset%off(2)*cm2pt))
-          call plsfnam(trim(hardset%name)//'.pdf')
+          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.pdf')
        end select
 
        call plscolor(f_c_logical(hardset%colour))
