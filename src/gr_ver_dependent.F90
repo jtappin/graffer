@@ -24,6 +24,7 @@ module gr_version_dependent
   ! which is determined by whether plwidth exists.
 
   use iso_fortran_env
+  use gr_plot_utils
 
 #ifdef HAVE_PLWIDTH
   use plplot, only: plwidth, plflt, plsdev, plshade, plshades
@@ -43,13 +44,16 @@ module gr_version_dependent
 contains
 
   subroutine gr_pl_eps
-          ! epscairo was introduced at the same revision as plwidth
-          ! so we are lazy and only do the one test.
-#ifdef HAVE_PLWIDTH
-    call plsdev("epscairo")
-#else
-    call plsdev("epsqt")
-#endif
+    character(len=20), dimension(:), allocatable :: devlist
+
+    call gr_plot_devices(devlist, fileonly=.true.)
+    if (any(devlist == "epscairo")) then
+       call plsdev("epscairo")
+    else if (any(devlist == "epsqt")) then
+       call plsdev("epsqt")
+    else
+       print *, "No suitable EPS device available"
+    end if
   end subroutine gr_pl_eps
 
   subroutine gr_pl_width(width)

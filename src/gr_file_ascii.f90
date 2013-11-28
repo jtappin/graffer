@@ -627,6 +627,19 @@ contains
           case('HFN')
              call gr_str_val(inln, 'HFN', pdefs%hardset%name)
              exit
+          case('HPS')
+             call gr_str_val(inln, 'HPS', pdefs%hardset%psdev)
+             exit
+          case('HEP')
+             call gr_str_val(inln, 'HEP', pdefs%hardset%epsdev)
+             exit
+          case('HPD')
+             call gr_str_val(inln, 'HPD', pdefs%hardset%pdfdev)
+             exit
+          case('HSV')
+             call gr_str_val(inln, 'HSV', pdefs%hardset%svgdev)
+             exit
+
           case('KU')
              pdefs%key%use = gr_log_val(tag_val(itag+1))
           case('KX')
@@ -1448,6 +1461,10 @@ contains
     write(unit, "(2(a,i0))") "HF:", pdefs%hardset%font_family, &
          & ":HWS:", pdefs%hardset%font_wg_sl
     write(unit, "(2a)") "HFN:", trim(pdefs%hardset%name)
+    write(unit, "(2a)") "HPS:", trim(pdefs%hardset%psdev)
+    write(unit, "(2a)") "HEP:", trim(pdefs%hardset%epsdev)
+    write(unit, "(2a)") "HPD:", trim(pdefs%hardset%pdfdev)
+    write(unit, "(2a)") "HSV:", trim(pdefs%hardset%svgdev)
 
     if (allocated(pdefs%remarks)) then
        write(unit, "(a,i0)") "REM:", size(pdefs%remarks)

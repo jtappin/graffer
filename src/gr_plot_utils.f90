@@ -23,14 +23,44 @@ module gr_plot_utils
 
   use plplot, only: plflt
   use gtk_hl
+  use gtk_sup
 
   use graff_globals
   use gr_utils
-  
+
   implicit none
 
   integer, private, dimension(3) :: tick_index
   real, private, dimension(3) :: top_last
+
+  interface gr_plot_devices_type
+     module procedure gr_plot_devices_type_d
+     module procedure gr_plot_devices_type_l
+  end interface gr_plot_devices_type
+
+  ! Interfaces for the PLPLOT device list routines, which are not part
+  ! of the normal Fortran API.
+
+  ! void plgDevs( const char ***p_menustr, const char ***p_devname,
+  !               int *p_ndev )
+  interface
+     subroutine plgdevs(p_menustr, p_devname, p_ndev) bind(c, name='plgDevs')
+       use iso_c_binding, only: c_ptr, c_int
+       type(c_ptr) :: p_menustr, p_devname
+       integer(kind=c_int) :: p_ndev
+     end subroutine plgdevs
+  end interface
+  ! void plgFileDevs( const char ***p_menustr, const char ***p_devname,
+  !                   int *p_ndev )
+  interface
+     subroutine plgfiledevs(p_menustr, p_devname, p_ndev) &
+          & bind(c, name='plgFileDevs')
+       use iso_c_binding, only: c_ptr, c_int
+       type(c_ptr) :: p_menustr, p_devname
+       integer(kind=c_int) :: p_ndev
+     end subroutine plgfiledevs
+  end interface
+
 
 contains
   subroutine gr_axis_range(axis, a0, a1, ok)
@@ -221,7 +251,7 @@ contains
     else 
        iaxis = 3
     end if
-    
+
     if (btest(pdefs%axsty(iaxis)%time, time_bit)) then
        call gr_format_time(iaxis, value, label)
     else
@@ -281,7 +311,7 @@ contains
     case(2)
        h = floor(t)
        mm = 60.*(t-h)
-       
+
        if (tick_index(axis) == 0 .or. h /= top_last(axis)) then
           if (range*ucf(unit) > 1.) then
              write(label, "(I0.2,':',I2.2)") h+zero, nint(mm)
@@ -325,4 +355,107 @@ contains
 
     tick_index(axis) = tick_index(axis)+1
   end subroutine gr_format_time
+
+  subroutine gr_plot_devices(list, descr, fileonly)
+    character(len=*), dimension(:), allocatable, intent(out) :: list
+    character(len=*), dimension(:), allocatable, intent(out), optional :: descr
+    logical, intent(in), optional :: fileonly
+
+    type(c_ptr), target, dimension(40) :: menup, devp
+    integer(kind=c_int), target :: ndev
+    logical :: filed
+    integer :: i
+
+    if (present(fileonly)) then
+       filed = fileonly
+    else
+       filed = .false.
+    end if
+    ndev = size(devp)
+
+    if (filed) then
+       call plgfiledevs(c_loc(menup), c_loc(devp), ndev)
+    else
+       call plgdevs(c_loc(menup), c_loc(devp), ndev)
+    end if
+
+    allocate(list(ndev))
+    if (present(descr)) allocate(descr(ndev))
+    do i = 1, ndev
+       call c_f_string(devp(i), list(i))
+       if (present(descr)) call c_f_string(menup(i), descr(i))
+    end do
+  end subroutine gr_plot_devices
+
+  function gr_plot_has_device(device)
+    logical :: gr_plot_has_device
+    character(len=*), intent(in) :: device
+
+    type(c_ptr), target, dimension(40) :: menup, devp
+    integer(kind=c_int), target :: ndev
+    integer ::i
+    character(len=20) :: dev
+
+    ndev = size(devp)
+
+    call plgdevs(c_loc(menup), c_loc(devp), ndev)
+    gr_plot_has_device = .false.
+
+    do i = 1, ndev
+       call c_f_string(devp(i), dev)
+       if (dev == device) then
+          gr_plot_has_device = .true.
+          exit
+       end if
+    end do
+  end function gr_plot_has_device
+
+  subroutine gr_plot_devices_type_d(type, list, descr)
+    character(len=*), intent(in) :: type
+    character(len=*), dimension(:), allocatable, intent(out) :: list
+    character(len=*), dimension(:), allocatable, intent(out) :: descr
+
+    character(len=len(list)), dimension(:), allocatable :: listf
+    character(len=len(descr)), dimension(:), allocatable :: descf
+    integer :: i, j, nm
+
+    call gr_plot_devices(listf, descf)
+    nm = count(index(listf, type) == 1)
+    if (nm == 0) return
+
+    allocate(list(nm), descr(nm))
+
+    j = 1
+    do i = 1, size(listf)
+       if (index(listf(i), type) == 1) then
+          list(j) = listf(i)
+          descr(j) = descf(i)
+          j = j+1
+       end if
+    end do
+
+  end subroutine gr_plot_devices_type_d
+  subroutine gr_plot_devices_type_l(type, list)
+    character(len=*), intent(in) :: type
+    character(len=*), dimension(:), allocatable, intent(out) :: list
+
+    character(len=len(list)), dimension(:), allocatable :: listf
+    integer :: i, j, nm
+
+    call gr_plot_devices(listf)
+    nm = count(index(listf, type) == 1)
+    if (nm == 0) return
+
+    allocate(list(nm))
+
+    j = 1
+    do i = 1, size(listf)
+       if (index(listf(i), type) == 1) then
+          list(j) = listf(i)
+          j = j+1
+       end if
+    end do
+
+  end subroutine gr_plot_devices_type_l
+
 end module gr_plot_utils

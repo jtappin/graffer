@@ -31,17 +31,21 @@ module gr_menu_hc_widgets
   use graff_types
   use graff_globals
   use gr_utils
+  use gr_plot_utils
 
   implicit none
 
   type(c_ptr), private :: hc_window, hc_paper_cbo, hc_ls_but, hc_name_entry, &
-       & hc_view_cbo, hc_lp_entry, hc_col_but, hc_ts_but
+       & hc_view_cbo, hc_lp_entry, hc_col_but, hc_ts_but, ps_cbo, eps_cbo, &
+       & pdf_cbo, svg_cbo
   type(c_ptr), dimension(2), private :: hc_psize_sb, hc_off_sb
 
   real, dimension(2,2), parameter, private :: phys_size = &
        & reshape([21.0, 29.7, 21.59, 27.94], [2, 2])
 
   character(len=16), dimension(:), allocatable, private :: viewnames
+  character(len=16), dimension(:), allocatable, private :: psdevs, epsdevs, &
+       & pdfdevs, svgdevs
 
 contains
   subroutine gr_hc_menu
@@ -51,12 +55,16 @@ contains
     type(c_ptr) :: base, junk, jb
     type(graff_hard), pointer :: hardset
     logical, dimension(2), target :: iapply = [.false., .true.]
-    integer(kind=c_int) :: iviewer, i
+    integer(kind=c_int) :: iviewer, i, dindex
     integer :: pdot
 
     hardset => pdefs%hardset
 
     if (.not. allocated(viewnames)) call gr_find_viewers(viewnames, eps=.true.)
+    if (.not. allocated(psdevs)) call gr_plot_devices_type('ps', psdevs)
+    if (.not. allocated(epsdevs)) call gr_plot_devices_type('eps', epsdevs)
+    if (.not. allocated(pdfdevs)) call gr_plot_devices_type('pdf', pdfdevs)
+    if (.not. allocated(svgdevs)) call gr_plot_devices_type('svg', svgdevs)
 
     iviewer = 0
     if (hardset%viewer(1) /= '') then
@@ -188,6 +196,36 @@ contains
     call gtk_combo_box_set_active(hc_view_cbo, iviewer)
     call hl_gtk_table_attach(jb, hc_view_cbo, 3_c_int, 1_c_int)
 
+
+    jb = hl_gtk_table_new()
+    call hl_gtk_box_pack(base, jb)
+
+    dindex = first(psdevs == trim(hardset%psdev))-1
+    ps_cbo = hl_gtk_combo_box_new(initial_choices=psdevs, &
+         & active=dindex, &
+         & tooltip="Select the PostScript output device driver"//c_null_char)
+    call hl_gtk_table_attach(jb, ps_cbo, 0_c_int, 0_c_int)
+
+    dindex = first(epsdevs == trim(hardset%epsdev))-1
+    eps_cbo = hl_gtk_combo_box_new(initial_choices=epsdevs, &
+         & active=dindex, &
+         & tooltip="Select the encapsulated PostScript output device driver"//&
+         & c_null_char)
+    call hl_gtk_table_attach(jb, eps_cbo, 1_c_int, 0_c_int)
+
+    dindex = first(pdfdevs == trim(hardset%pdfdev))-1
+    pdf_cbo = hl_gtk_combo_box_new(initial_choices=pdfdevs, &
+         & active=dindex, &
+         & tooltip="Select the PDF output device driver"//c_null_char)
+    call hl_gtk_table_attach(jb, pdf_cbo, 0_c_int, 1_c_int)
+
+    dindex = first(svgdevs == trim(hardset%svgdev))-1
+    svg_cbo = hl_gtk_combo_box_new(initial_choices=svgdevs, &
+         & active=dindex, &
+         & tooltip="Select the SVG output device driver"//c_null_char)
+    call hl_gtk_table_attach(jb, svg_cbo, 1_c_int, 1_c_int)
+
+
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(base, jb, expand=FALSE)
 
@@ -214,8 +252,9 @@ contains
     logical, pointer :: apply
     type(graff_hard), pointer :: hardset
     integer :: i
-    integer(kind=c_int) :: vsel
+    integer(kind=c_int) :: vsel, dsel
     character(len=120) :: vtext
+    character(len=16) :: dtext
 
     call c_f_pointer(data, apply)
 
@@ -242,6 +281,16 @@ contains
        else
           hardset%viewer(1) = vtext
        end if
+
+       dsel = hl_gtk_combo_box_get_active(ps_cbo, ftext=dtext)
+       if (dtext /= '') hardset%psdev = dtext
+       dsel = hl_gtk_combo_box_get_active(eps_cbo, ftext=dtext)
+       if (dtext /= '') hardset%epsdev = dtext
+       dsel = hl_gtk_combo_box_get_active(pdf_cbo, ftext=dtext)
+       if (dtext /= '') hardset%pdfdev = dtext
+       dsel = hl_gtk_combo_box_get_active(svg_cbo, ftext=dtext)
+       if (dtext /= '') hardset%svgdev = dtext
+
        pdefs%chflag = .true.
        pdefs%transient%changes = pdefs%transient%changes + 1_int16
     end if

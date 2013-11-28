@@ -332,7 +332,7 @@ contains
     if (ios /= 0) then
        if (iprint) then
           write(error_unit, *) "COUNT_LINES:: ", trim(file)
-          write(error_unit, *)"               ", trim(iom)
+          write(error_unit, *) "              ", trim(iom)
        end if
        count_lines = -1
     else
@@ -641,4 +641,24 @@ contains
          & G_FILE_TEST_IS_DIR))
 
   end function gr_is_dir
+
+  function first(l) result(p1)
+    integer :: p1
+    logical, intent(in), dimension(:) :: l
+
+    do p1 = 1, size(l)
+       if (l(p1)) return
+    end do
+    p1=0
+  end function first
+  function last(l) result(pl)
+    integer :: pl
+    logical, intent(in), dimension(:) :: l
+
+    do pl = size(l),1,-1
+       if (l(pl)) return
+    end do
+    pl=0
+  end function last
+
 end module gr_utils

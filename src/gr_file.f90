@@ -546,7 +546,11 @@ contains
           ! HWS - Font weight and slant (bit 0 is
           !       on for bold, bit 1 for
           !       oblique/italic)
-          ! HFN - Plot file name      
+          ! HFN - Plot file name
+          ! HPS - PS device
+          ! HEP - EPS device
+          ! HPD - PDF device
+          ! HSV - SVG device
 
        case ('HC ')
           call rec%get_value(pdefs%hardset%colour, status)
@@ -580,6 +584,15 @@ contains
           call rec%get_value(pdefs%hardset%font_wg_sl, status)
        case ('HFN')
           call rec%get_value(pdefs%hardset%name, status)
+
+       case ('HPS')
+          call rec%get_value(pdefs%hardset%psdev, status)
+       case ('HEP')
+          call rec%get_value(pdefs%hardset%epsdev, status)
+       case ('HPD')
+          call rec%get_value(pdefs%hardset%pdfdev, status)
+       case ('HSV')
+          call rec%get_value(pdefs%hardset%svgdev, status)
 
           ! The K tags relate to the plotting of
           ! a key on the plot.
@@ -1290,6 +1303,10 @@ contains
     call rec%set_value('HF ', pdefs%hardset%font_family, unit)
     call rec%set_value('HWS', pdefs%hardset%font_wg_sl, unit)
     call rec%set_value('HFN', pdefs%hardset%name, unit)
+    call rec%set_value('HPS', pdefs%hardset%psdev, unit)
+    call rec%set_value('HEP', pdefs%hardset%epsdev, unit)
+    call rec%set_value('HPD', pdefs%hardset%pdfdev, unit)
+    call rec%set_value('HSV', pdefs%hardset%svgdev, unit)
 
     close(unit)
 

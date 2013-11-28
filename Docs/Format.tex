@@ -24,13 +24,13 @@
 \setlength{\oddsidemargin}{5mm}
 \setlength{\evensidemargin}{5mm}
 \pagestyle{myheadings}
-\markboth{GRAFFER}{Version 4.07}
+\markboth{GRAFFER}{Version 4.08}
 
 \begin{document}
 
 \title{\includegraphics[width=0.80\textwidth]{logo} \\
 A Flexible Electronic Graph Paper\\
-Version 4.07\\
+Version 4.08\\
 File Format Description}
 
 \author{\textsf{\textbf{\Large James Tappin}}\\
@@ -326,6 +326,11 @@ to the whole file.
   HVA& String& 1&
   The part of the view command after the filename.\\
   HFN& String & 1 & The filename for the hardcopy output.\\
+  HPS & String & 1 & The device for producing PostScript output.\\
+  HEP & String & 1 & The device for producing encapsulated PostScript output.\\
+  HPD & String & 1 & The device for producing PDF output.\\
+  HSV & String & 1 & The device for producing SVG output.\\
+
   HF& Int& 1& The font family (for hardware fonts) (IDL): 0=courier,
   1=helvetica, 2=helvetica narrow, 3=schoolbook, 4=palatino, 5=times,
   6=avantgarde book, 7=avantgarde demi, 8=bookman demi, 9=bookman

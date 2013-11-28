@@ -129,6 +129,7 @@ module graff_types
      real(kind=real32), dimension(2) :: size=0._real32, off=0._real32
      character(len=120), dimension(2) :: action='', viewer=''
      character(len=120) :: name=''
+     character(len=16) :: psdev='', epsdev='', pdfdev='', svgdev=''
   end type graff_hard
 
   ! General options
