@@ -101,11 +101,10 @@ contains
     pdefs%hardset%viewer = ''
     pdefs%hardset%name = ''
 
-    pdefs%hardset%psdev = 'pscairo'
-    pdefs%hardset%epsdev = 'epscairo'
-    pdefs%hardset%pdfdev = 'pdfcairo'
-    pdefs%hardset%svgdev = 'svgqt'  ! Prefer QT here as text won't work
-    ! on the svgcairo driver.
+    pdefs%hardset%psdev = ''
+    pdefs%hardset%epsdev = ''
+    pdefs%hardset%pdfdev = ''
+    pdefs%hardset%svgdev = '' 
 
     pdefs%opts = default_options
 

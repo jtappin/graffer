@@ -36,8 +36,8 @@ module gr_menu_hc_widgets
   implicit none
 
   type(c_ptr), private :: hc_window, hc_paper_cbo, hc_ls_but, hc_name_entry, &
-       & hc_view_cbo, hc_lp_entry, hc_col_but, hc_ts_but, ps_cbo, eps_cbo, &
-       & pdf_cbo, svg_cbo
+       & hc_view_cbo, hc_lp_entry, hc_col_but, hc_ts_but, ps_cbo=c_null_ptr, &
+       & eps_cbo=c_null_ptr, pdf_cbo=c_null_ptr, svg_cbo=c_null_ptr
   type(c_ptr), dimension(2), private :: hc_psize_sb, hc_off_sb
 
   real, dimension(2,2), parameter, private :: phys_size = &
@@ -46,6 +46,7 @@ module gr_menu_hc_widgets
   character(len=16), dimension(:), allocatable, private :: viewnames
   character(len=16), dimension(:), allocatable, private :: psdevs, epsdevs, &
        & pdfdevs, svgdevs
+  character(len=16), parameter, private :: defdev = "<default>       "
 
 contains
   subroutine gr_hc_menu
@@ -200,31 +201,46 @@ contains
     jb = hl_gtk_table_new()
     call hl_gtk_box_pack(base, jb)
 
-    dindex = first(psdevs == trim(hardset%psdev))-1
-    ps_cbo = hl_gtk_combo_box_new(initial_choices=psdevs, &
-         & active=dindex, &
-         & tooltip="Select the PostScript output device driver"//c_null_char)
-    call hl_gtk_table_attach(jb, ps_cbo, 0_c_int, 0_c_int)
+    if (allocated(psdevs)) then
+       dindex = first(psdevs == trim(hardset%psdev))
+       junk = gtk_label_new("PS Device"//c_null_char)
+       call hl_gtk_table_attach(jb, junk, 0_c_int, 0_c_int)
+       ps_cbo = hl_gtk_combo_box_new(initial_choices=[defdev, psdevs], &
+            & active=dindex, &
+            & tooltip="Select the PostScript output device driver"//c_null_char)
+       call hl_gtk_table_attach(jb, ps_cbo, 1_c_int, 0_c_int)
+    end if
 
-    dindex = first(epsdevs == trim(hardset%epsdev))-1
-    eps_cbo = hl_gtk_combo_box_new(initial_choices=epsdevs, &
-         & active=dindex, &
-         & tooltip="Select the encapsulated PostScript output device driver"//&
-         & c_null_char)
-    call hl_gtk_table_attach(jb, eps_cbo, 1_c_int, 0_c_int)
+    if (allocated(epsdevs)) then
+       dindex = first(epsdevs == trim(hardset%epsdev))
+       junk = gtk_label_new("EPS Device"//c_null_char)
+       call hl_gtk_table_attach(jb, junk, 2_c_int, 0_c_int)
+       eps_cbo = hl_gtk_combo_box_new(initial_choices=[defdev, epsdevs], &
+            & active=dindex, &
+            & tooltip="Select the encapsulated PostScript output device driver"//&
+            & c_null_char)
+       call hl_gtk_table_attach(jb, eps_cbo, 3_c_int, 0_c_int)
+    end if
 
-    dindex = first(pdfdevs == trim(hardset%pdfdev))-1
-    pdf_cbo = hl_gtk_combo_box_new(initial_choices=pdfdevs, &
-         & active=dindex, &
-         & tooltip="Select the PDF output device driver"//c_null_char)
-    call hl_gtk_table_attach(jb, pdf_cbo, 0_c_int, 1_c_int)
+    if (allocated(pdfdevs)) then
+       dindex = first(pdfdevs == trim(hardset%pdfdev))
+       junk = gtk_label_new("PDF Device"//c_null_char)
+       call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int)
+       pdf_cbo = hl_gtk_combo_box_new(initial_choices=[defdev, pdfdevs], &
+            & active=dindex, &
+            & tooltip="Select the PDF output device driver"//c_null_char)
+       call hl_gtk_table_attach(jb, pdf_cbo, 3_c_int, 1_c_int)
+    end if
 
-    dindex = first(svgdevs == trim(hardset%svgdev))-1
-    svg_cbo = hl_gtk_combo_box_new(initial_choices=svgdevs, &
-         & active=dindex, &
-         & tooltip="Select the SVG output device driver"//c_null_char)
-    call hl_gtk_table_attach(jb, svg_cbo, 1_c_int, 1_c_int)
-
+    if (allocated(svgdevs)) then
+       dindex = first(svgdevs == trim(hardset%svgdev))
+       junk = gtk_label_new("SVG Device"//c_null_char)
+       call hl_gtk_table_attach(jb, junk, 2_c_int, 1_c_int)
+       svg_cbo = hl_gtk_combo_box_new(initial_choices=[defdev, svgdevs], &
+            & active=dindex, &
+            & tooltip="Select the SVG output device driver"//c_null_char)
+       call hl_gtk_table_attach(jb, svg_cbo, 1_c_int, 1_c_int)
+    end if
 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(base, jb, expand=FALSE)
@@ -282,14 +298,41 @@ contains
           hardset%viewer(1) = vtext
        end if
 
-       dsel = hl_gtk_combo_box_get_active(ps_cbo, ftext=dtext)
-       if (dtext /= '') hardset%psdev = dtext
-       dsel = hl_gtk_combo_box_get_active(eps_cbo, ftext=dtext)
-       if (dtext /= '') hardset%epsdev = dtext
-       dsel = hl_gtk_combo_box_get_active(pdf_cbo, ftext=dtext)
-       if (dtext /= '') hardset%pdfdev = dtext
-       dsel = hl_gtk_combo_box_get_active(svg_cbo, ftext=dtext)
-       if (dtext /= '') hardset%svgdev = dtext
+       if (c_associated(ps_cbo)) then
+          dsel = hl_gtk_combo_box_get_active(ps_cbo, ftext=dtext)
+          if (dsel /= 0) then
+             hardset%psdev = dtext
+          else
+             hardset%psdev = ''
+          end if
+       end if
+
+       if (c_associated(eps_cbo)) then
+          dsel = hl_gtk_combo_box_get_active(eps_cbo, ftext=dtext)
+          if (dsel /= 0) then
+             hardset%epsdev = dtext
+          else
+             hardset%epsdev = ''
+          end if
+       end if
+
+       if (c_associated(pdf_cbo)) then
+          dsel = hl_gtk_combo_box_get_active(pdf_cbo, ftext=dtext)
+          if (dsel /= 0) then
+             hardset%pdfdev = dtext
+          else
+             hardset%pdfdev = ''
+          end if
+       end if
+
+       if (c_associated(svg_cbo)) then
+          dsel = hl_gtk_combo_box_get_active(svg_cbo, ftext=dtext)
+          if (dsel /= 0) then
+             hardset%svgdev = dtext
+          else
+             hardset%svgdev = ''
+          end if
+       end if
 
        pdefs%chflag = .true.
        pdefs%transient%changes = pdefs%transient%changes + 1_int16

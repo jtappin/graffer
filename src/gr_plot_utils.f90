@@ -27,6 +27,7 @@ module gr_plot_utils
 
   use graff_globals
   use gr_utils
+  use gr_msg
 
   implicit none
 
@@ -403,7 +404,7 @@ contains
 
     do i = 1, ndev
        call c_f_string(devp(i), dev)
-       if (dev == device) then
+       if (lowcase(trim(dev)) == lowcase(trim(device))) then
           gr_plot_has_device = .true.
           exit
        end if
@@ -458,4 +459,45 @@ contains
 
   end subroutine gr_plot_devices_type_l
 
+  subroutine gr_default_device(type, device)
+    character(len=*), intent(in) :: type
+    character(len=*), intent(out) :: device
+
+    select case (lowcase(type))
+    case ('ps')
+       if (gr_plot_has_device('pscairo')) then
+          device = 'pscairo'
+       else if (gr_plot_has_device('psqt')) then
+          device = 'psqt'
+       else
+          device = 'ps'
+       end if
+    case ('eps')
+       if (gr_plot_has_device('epscairo')) then
+          device = 'epscairo'
+       else if (gr_plot_has_device('epsqt')) then
+          device = 'epsqt'
+       else
+          device = 'ps'
+       end if
+    case ('pdf')
+       if (gr_plot_has_device('pdfcairo')) then
+          device = 'pdfcairo'
+       else if (gr_plot_has_device('pdfqt')) then
+          device = 'pdfqt'
+       else
+          call gr_message("No PDF device found", GTK_MESSAGE_ERROR)
+       end if
+    case ('svg')
+       if (gr_plot_has_device('svgqt')) then
+          device = 'svgqt'
+       else if (gr_plot_has_device('svgcairo')) then
+          device = 'svgcairo'
+       else
+          device = 'svg'
+       end if
+    case default
+       call gr_message("Invalid output type "//trim(type), GTK_MESSAGE_WARNING)
+    end select
+  end subroutine gr_default_device
 end module gr_plot_utils

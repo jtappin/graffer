@@ -56,7 +56,8 @@ contains
 
     type(c_ptr) :: smnu, junk, jmnu
     logical, dimension(2), target :: use_current = [.true., .false.]
-    character(len=3), dimension(3), target :: devices=['ps ','eps', 'pdf']
+    character(len=3), dimension(4), target :: devices=['ps ','eps', 'pdf', &
+         & 'svg']
     character(len=4), dimension(3), target :: imtypes = ['png ', 'tiff', 'jpeg']
     character(len=3), dimension(4), target :: helptype = &
          & ['ug ', 'fmt', 'abt', 'gfa']
@@ -119,6 +120,12 @@ contains
          & accel_group=accel, &
          & tooltip="Print to a PDF file"//c_null_char)
 
+    junk = hl_gtk_menu_item_new(smnu, "Generate SVG"//c_null_char, &
+         & activate=c_funloc(gr_print), data=c_loc(devices(4)), &
+         & accel_key='s'//c_null_char, &
+         & accel_mods=ior(GDK_CONTROL_MASK, GDK_SHIFT_MASK), &
+         & accel_group=accel, &
+         & tooltip="Output to an SVG file"//c_null_char)
 
     jmnu = hl_gtk_menu_submenu_new(smnu, "Dump screen"//c_null_char)
 

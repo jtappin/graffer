@@ -72,6 +72,8 @@ contains
 
     integer(kind=c_int) :: width, height
     character(len=20) :: geometry
+    character(len=16) :: driver
+
     integer :: pdot
     real(kind=plflt) :: page_aspect
     type(graff_hard), pointer :: hardset
@@ -96,12 +98,17 @@ contains
 
        select case (device)
        case('ps')
+          if (hardset%psdev == '') then
+             call gr_default_device('ps', driver)
+          else
+             driver = hardset%psdev
+          end if
           if (hardset%psize == 0) then     ! A4
              page_aspect = 297._plflt/210._plflt
           else
              page_aspect = 11._plflt/8.5_plflt
           end if
-          call plsdev("pscairo")
+          call plsdev(driver)
           if (hardset%orient) then
              call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
           else
@@ -115,9 +122,14 @@ contains
 
           call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.ps')
        case('eps')
+          if (hardset%epsdev == '') then
+             call gr_default_device('eps', driver)
+          else
+             driver = hardset%epsdev
+          end if
           page_aspect = hardset%size(1)/hardset%size(2)
-          ! EPS device depends on plplot version
-          call gr_pl_eps
+
+          call plsdev(device)
           call plsori(1)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
@@ -126,12 +138,18 @@ contains
                & 0, 0)
           call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.eps')
        case('pdf')
+          if (hardset%pdfdev == '') then
+             call gr_default_device('pdf', driver)
+          else
+             driver = hardset%pdfdev
+          end if
+
           if (hardset%psize == 0) then     ! A4
              page_aspect = 297._plflt/210._plflt
           else
              page_aspect = 11._plflt/8.5_plflt
           end if
-          call plsdev("pdfcairo")
+          call plsdev(driver)
           if (hardset%orient) then
              call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
           else
@@ -143,6 +161,23 @@ contains
                & int(hardset%off(1)*cm2pt), &
                & int(hardset%off(2)*cm2pt))
           call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.pdf')
+       case('svg')
+          if (hardset%svgdev == '') then
+             call gr_default_device('svg', driver)
+          else
+             driver = hardset%svgdev
+          end if
+          page_aspect = hardset%size(1)/hardset%size(2)
+
+          call plsdev(device)
+!          call plsori(1)
+          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
+          call plspage(0._plflt, 0._plflt, &
+               & int(hardset%size(2)*cm2pt), &
+               & int(hardset%size(1)*cm2pt), &
+               & 0, 0)
+          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.svg')
+
        end select
 
        call plscolor(f_c_logical(hardset%colour))
