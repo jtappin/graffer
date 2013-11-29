@@ -43,6 +43,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
 ;	Add support for a second Y-scale: 22/12/11; SJT
 ;	V4 version: 6/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
+;	Add options for plplot drivers: 29/11/13; SJT
 ;-
 
 
@@ -276,6 +277,11 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'HF ': pdefs.hardset.font.family = value
         'HWS': pdefs.hardset.font.wg_sl = value
         'HFN': pdefs.hardset.name = value
+        'HPS': pdefs.hardset.psdev = value
+        'HEP': pdefs.hardset.epsdev = value
+        'HPD': pdefs.hardset.pdfdev = value
+        'HSV': pdefs.hardset.svgdev = value
+
 
                                 ; The K tags relate to the plotting of
                                 ; a key on the plot.

@@ -45,7 +45,9 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
                  h_ymargin = h_ymargin, isotropic = isotropic, h_cmyk $
                  = $
                  h_cmyk, ctable = ctable, h_print = h_print, h_viewer $
-                 = h_viewer, h_file = h_file
+                 = h_viewer, h_file = h_file, h_psdev = h_psdev, $
+                 h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, h_pdfdev = $
+                 h_pdfdev
 ;+
 ; GRAFF_PROPS
 ;	User-callable interface to set global properties of a graffer
@@ -79,7 +81,9 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;                 h_ysize = h_ysize, h_xmargin = h_xmargin, $ $
 ;                 h_ymargin = h_ymargin, isotropic = isotropic, h_cmyk = $
 ;                 h_cmyk, ctable = ctable, h_print = h_print, h_viewer $
-;                 = h_viewer, h_file = h_file
+;                 = h_viewer, h_file = h_file, h_psdev = h_psdev, $
+;                 h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, h_pdfdev = $
+;                 h_pdfdev
 ;
 ; Argument:
 ;	file	string	input	The graffer file to modify.
@@ -173,6 +177,10 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;	h_viewer	input	Specify the command to view EPS output
 ;				files (can be a scalar or 2-element aray).
 ;	h_file		input	Specify the output file for hardcopies.
+;	h_psdev		input	Specify the PS device driver (plplot).
+;	h_epsdev	input	Specify the EPS device driver (plplot).
+;	h_pdfdev	input	Specify the PDF device driver (plplot).
+;	h_svgdev	input	Specify the SVG device driver (plplot).
 ;				
 ; Restrictions:
 ;	The ASPECT and CORNERS keys are exclusive (if both are given,
@@ -196,6 +204,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;	Add options for secondary Y-axis: 23/12/11; SJT
 ;	Add some more hardcopy options: 16/2/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
+;	Add options for plplot drivers: 29/11/13; SJT
 ;-
 
 ;	Check that the necessary inputs are present
@@ -504,6 +513,10 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      2: pdefs.hardset.viewer = h_viewer[0:1]
   endcase
   if n_elements(h_file) ne 0 then pdefs.hardset.name = h_file
+  if n_elements(h_psdev) ne 0 then pdefs.hardset.psdev = h_psdev
+  if n_elements(h_epsdev) ne 0 then pdefs.hardset.epsdev = h_epsdev
+  if n_elements(h_pdfdev) ne 0 then pdefs.hardset.pdfdev = h_pdfdev
+  if n_elements(h_svgdev) ne 0 then pdefs.hardset.svgdev = h_svgdev
 
   gr_bin_save, pdefs
 

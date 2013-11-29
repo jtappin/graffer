@@ -45,6 +45,7 @@ pro Gr_bin_save, pdefs, auto = auto
 ;	New V4 format: 6/1/12; SJT
 ;	New font handling and contour setting: 11/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
+;	Add options for plplot drivers: 29/11/13; SJT
 ;-
 
 if (keyword_set(auto)) then begin
@@ -305,6 +306,11 @@ graff_put_rec, ilu, 'HVA', pdefs.hardset.viewer[1]
 graff_put_rec, ilu, 'HF ', pdefs.hardset.font.family
 graff_put_rec, ilu, 'HWS', pdefs.hardset.font.wg_sl
 graff_put_rec, ilu, 'HFN', pdefs.hardset.name
+
+graff_put_rec, ilu, 'HPS', pdefs.hardset.psdev
+graff_put_rec, ilu, 'HEP', pdefs.hardset.epsdev
+graff_put_rec, ilu, 'HPD', pdefs.hardset.pdfdev
+graff_put_rec, ilu, 'HSV', pdefs.hardset.svgdev
 
 free_lun, ilu
 

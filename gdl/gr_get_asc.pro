@@ -49,6 +49,7 @@ pro Gr_get_asc, pdefs, ilu, no_set = no_set
 ;	Add support for a second Y-scale: 22/12/11; SJT
 ;	Convert to procedure for Graffer V4: 6/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
+;	Add options for plplot drivers: 29/11/13; SJT
 ;-
 
 
@@ -371,7 +372,24 @@ while (not eof(ilu)) do begin
             'HFN':  begin
                 pdefs.hardset.name = gr_str_val(inline, 'HFN')
                 goto, new_line
+             end
+            'HPS': begin
+               pdefs.hardset.psdev = gr_str_val(inline, 'HPS')
+               goto, new_line
             end
+            'HEP': begin
+               pdefs.hardset.epsdev = gr_str_val(inline, 'HEP')
+               goto, new_line
+            end
+            'HPD': begin
+               pdefs.hardset.pdfdev = gr_str_val(inline, 'HPD')
+               goto, new_line
+            end
+            'HSV': begin
+               pdefs.hardset.svgdev = gr_str_val(inline, 'HSV')
+               goto, new_line
+            end
+
 
                                 ; The K tags relate to the plotting of
                                 ; a key on the plot.

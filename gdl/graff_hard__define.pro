@@ -35,6 +35,7 @@ pro graff_hard__define
 ;
 ; MODIFICATION HISTORY:
 ;	Extracted: 30/6/05; SJT
+;	Add options for plplot drivers: 29/11/13; SJT
 ;-
 
 Hardset = { graff_hard, $
@@ -51,6 +52,10 @@ Hardset = { graff_hard, $
             Off:    fltarr(2), $
             Action: strarr(2), $
             viewer: strarr(2), $
+            psdev: '', $
+            epsdev: '', $
+            pdfdev: '', $
+            svgdev: '', $
             name: '' $
           }
 

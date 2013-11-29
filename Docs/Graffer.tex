@@ -60,7 +60,7 @@ The original GRAFFER is a package of IDL routines for generating and
 editing plots of data and/or functions. The primary purpose is the
 generation of X-Y plots, but as of version 2 there was limited support
 for displaying 2-D datasets as contours or in an {}``image'' format,
-this support has been much improved in 3.x versions and later.The
+this support was much improved in 3.x versions and later. The
 Fortran version replaces the core interactive plotting program with a
 version written in Fortran and using the gtk-fortran and plplot
 libraries. 
@@ -79,12 +79,12 @@ products) but rather tries to do the things that they (well
 
 \subsection{Why is it?}
 
-The earliest versions of GRAFFER were developed for my own use as a
-consequence of the amount of time I was wasting adjusting the format of
-plots to go into papers (e.g. redoing plots with log axes or with
-different ranges). Naturally being of a tinkering turn of mind I
-gradually added features until GRAFFER became a reasonably general
-data-plotting tool.
+The earliest versions of GRAFFER were developed in the mid 1990's for
+my own use as a consequence of the amount of time I was wasting
+adjusting the format of plots to go into papers (e.g. redoing plots
+with log axes or with different ranges). Naturally being of a tinkering
+turn of mind I gradually added features until GRAFFER became a
+reasonably general data-plotting tool.
 
 At about that time a user posted an enquiry to the UseNet group
 \texttt{comp.lang.idl-pvwave} as to whether there was a widget-based
@@ -94,6 +94,13 @@ graph plotting tool in IDL\footnote{This was well before
   was.}. As a result of this GRAFFER version 1.03 was released to the
 world.
 
+Since the free IDL clone GDL (GNU Data Language,
+\url{http://gnudatalanguage.sourceforge.net/}) still has only limited 
+support for widgets, GRAFFER in its original form is limted to those
+users with access to the commercial IDL package. For that reason, when
+GTK-Fortran became a viable package, I decided to port the core of
+GRAFFER to Fortran (using GDL to evaluate functions and for some
+utility operations).
 
 \subsection{Requirements}
 
@@ -137,6 +144,8 @@ In this section some of the principal features of GRAFFER are listed.
 \item All possible combinations of error bars and limits are available.
 \item Save plot to a file for future additions or modification.
 \item Add a key or legend.
+\item IDL/GDL routines exist to add datasets programattically to a
+  GRAFFER file.
 \end{itemize}
 
 
@@ -1766,7 +1775,9 @@ graff_props, file, title=title, subtitle=subtitle, $
          h_ysize=h_ysize, h_xmargin=h_xmargin, $
          h_ymargin=h_ymargin, isotropic = isotropic, h_cmyk = $
          h_cmyk, ctable = ctable, h_print = h_print, h_viewer $
-         = h_viewer, h_file = h_file
+         = h_viewer, h_file = h_file, h_psdev = h_psdev, $
+         h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, h_pdfdev = $
+         h_pdfdev
 \end{verbatim}
 
 
@@ -1876,6 +1887,11 @@ graff_props, file, title=title, subtitle=subtitle, $
   view EPS output files (can be a scalar or 2-element aray).
 \item[\texttt{h\_file} \textit{string}] Specify the output file for
   hardcopies.
+\item[\texttt{h\_psdev}	\textit{string}] Specify the PS device driver (plplot).
+\item[\texttt{h\_epsdev} \textit{string}] Specify the EPS device driver (plplot).
+\item[\texttt{h\_pdfdev} \textit{string}] Specify the PDF device driver (plplot).
+\item[\texttt{h\_svgdev} \textit{string}] Specify the SVG device driver (plplot).
+
 \end{description}
 
 
