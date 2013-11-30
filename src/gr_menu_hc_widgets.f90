@@ -229,7 +229,7 @@ contains
        pdf_cbo = hl_gtk_combo_box_new(initial_choices=[defdev, pdfdevs], &
             & active=dindex, &
             & tooltip="Select the PDF output device driver"//c_null_char)
-       call hl_gtk_table_attach(jb, pdf_cbo, 3_c_int, 1_c_int)
+       call hl_gtk_table_attach(jb, pdf_cbo, 1_c_int, 1_c_int)
     end if
 
     if (allocated(svgdevs)) then
@@ -239,7 +239,7 @@ contains
        svg_cbo = hl_gtk_combo_box_new(initial_choices=[defdev, svgdevs], &
             & active=dindex, &
             & tooltip="Select the SVG output device driver"//c_null_char)
-       call hl_gtk_table_attach(jb, svg_cbo, 1_c_int, 1_c_int)
+       call hl_gtk_table_attach(jb, svg_cbo, 3_c_int, 1_c_int)
     end if
 
     jb = hl_gtk_box_new(horizontal=TRUE)

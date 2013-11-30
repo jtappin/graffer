@@ -129,7 +129,7 @@ contains
           end if
           page_aspect = hardset%size(1)/hardset%size(2)
 
-          call plsdev(device)
+          call plsdev(driver)
           call plsori(1)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
@@ -169,7 +169,7 @@ contains
           end if
           page_aspect = hardset%size(1)/hardset%size(2)
 
-          call plsdev(device)
+          call plsdev(driver)
 !          call plsori(1)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
