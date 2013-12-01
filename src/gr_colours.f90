@@ -72,13 +72,10 @@ contains
     call find_ct(datafile, basename, dirname)
     if (datafile == '') then
        call gr_message("Failed to find colour tables", type=GTK_MESSAGE_ERROR)
-       print *, iapp, ntables
        if (.not. iapp .and. ntables == 0) call gr_ct_simple
-       print *, iapp, ntables
        return
     end if
 
-    print *, trim(datafile)
     open(newunit=unit, file=datafile, form='unformatted', status='old', &
          & action='read', iostat=ios, iomsg=iom, access='stream')
     if (ios /= 0) then
@@ -91,7 +88,6 @@ contains
     end if
 
     read(unit) ntabf
-    print *, ntabf
     if (ntabf == 0) then
        call gr_message("Empty colour tables", type=GTK_MESSAGE_WARNING)
        if (.not. iapp .and. ntables == 0) call gr_ct_simple
@@ -117,8 +113,6 @@ contains
        istable = 1
     end if
 
-    print *, istable, ntables
-
     do i = istable, ntables
        read(unit, iostat=ios, iomsg=iom) tables(i)%name, rtmp, gtmp, btmp
        if (ios /= 0) then
@@ -128,8 +122,6 @@ contains
           call gr_message(err_string, type=GTK_MESSAGE_ERROR)
           exit
        end if
-       print *, i, tables(i)%name
-       print *, rtmp
 
        ! Note we must do the IAND otherwise values >= 128 will appear
        ! negative, since Fortran has no unsigned types/attributes.

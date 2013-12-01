@@ -200,7 +200,6 @@ contains
          & xspan=4_c_int)
     call hl_gtk_listn_ins(cg_table_pick, count=gr_ct_get_ntables())
     do i = 0, gr_ct_get_ntables()-1
-       print *, i, gr_ct_get_name(i)
        call hl_gtk_listn_set_cell(cg_table_pick, &
             & int(i, c_int), 0_c_int, &
             & svalue = trim(gr_ct_get_name(i))//c_null_char)
