@@ -22,8 +22,9 @@ configure_file(
   )
 
 install(FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/c_tables.info"
-  "${CMAKE_CURRENT_SOURCE_DIR}/c_tables.tab"
+#  "${CMAKE_CURRENT_SOURCE_DIR}/c_tables.info"
+#  "${CMAKE_CURRENT_SOURCE_DIR}/c_tables.tab"
+  "${CMAKE_CURRENT_SOURCE_DIR}/colours.table"
   "${CMAKE_CURRENT_SOURCE_DIR}/graffer.rc"
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/graffer
   )

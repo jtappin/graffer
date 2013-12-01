@@ -198,11 +198,12 @@ contains
          & "Select a colour table"//c_null_char)
     call hl_gtk_table_attach(table, sbox, 0_c_int, 0_c_int, &
          & xspan=4_c_int)
-    call hl_gtk_listn_ins(cg_table_pick, count=size(table_names))
-    do i = 1, size(table_names)
+    call hl_gtk_listn_ins(cg_table_pick, count=gr_ct_get_ntables())
+    do i = 0, gr_ct_get_ntables()-1
+       print *, i, gr_ct_get_name(i)
        call hl_gtk_listn_set_cell(cg_table_pick, &
-            & int(i-1, c_int), 0_c_int, &
-            & svalue = trim(table_names(i))//c_null_char)
+            & int(i, c_int), 0_c_int, &
+            & svalue = trim(gr_ct_get_name(i))//c_null_char)
     end do
     call hl_gtk_listn_set_selection(cg_table_pick, int(zdata%ctable, c_int))
 

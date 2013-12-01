@@ -16,12 +16,12 @@
 ! If not, see <http://www.gnu.org/licenses/>.
 
 module gr_colours
-  ! Colour table management.
+  ! Colour table management. (Alternative version)
 
   use iso_fortran_env
   use plplot
 
-  use gtk, only: GTK_MESSAGE_ERROR
+  use gtk, only: GTK_MESSAGE_ERROR, GTK_MESSAGE_WARNING
 
   use graff_globals
   use gr_msg
@@ -29,97 +29,187 @@ module gr_colours
 
   implicit none
 
-  character(len=32), dimension(:), allocatable :: table_names
-  integer, dimension(:), allocatable, private :: red, green, blue
-  integer, private :: ntables = 0, ncolours = 0
-  integer, private :: ct_unit = -1, ct_index=-1
-  logical, private :: ct_is_open
-  character(len=20), private :: ct_fmt
+  integer, parameter, private :: table_size=256
 
-  character(len=*), dimension(2), parameter, private :: ctdirs = &
+  type :: gr_colour_table
+     character(len=32) :: name
+     integer(kind=int32), dimension(table_size) :: red, green, blue
+  end type gr_colour_table
+
+  type(gr_colour_table), dimension(:), allocatable :: tables
+  integer, private :: ntables = 0
+  integer(kind=int32), parameter, private :: mask8 = Z'FF'
+
+  character(len=*), dimension(*), parameter, private :: ctdirs = &
        & ['/usr/local/share/graffer/',&
-       &  '/usr/share/graffer/      ']
+       &  '/usr/share/graffer/      ',&
+       &  '/opt/graffer/data/       ']
+  character(len=*), parameter, private :: ctname='colour.table'
+
+  private :: find_ct
 
 contains
-  subroutine gr_ct_init(basename)
-    character(len=*), intent(in), optional :: basename
+  subroutine gr_ct_init(basename, append, dirname, table_list)
+    character(len=*), intent(in), optional :: basename, dirname
+    logical, intent(in), optional :: append
+    type(c_ptr), intent(in), optional :: table_list
 
-    ! Initialize the colour table system.
-
-    character(len=300) :: header, datafile
-    integer :: unit, ios, i
+    character(len=300) :: datafile
+    integer :: unit, ios, i, istable
     character(len=120) :: iom
     character(len=160), dimension(2) :: err_string
+    logical :: iapp
+    integer(kind=int8) :: ntabf
+    type(gr_colour_table), dimension(:), allocatable :: tmp_tables
+    integer(kind=int8), dimension(table_size) :: rtmp, gtmp, btmp
 
-    if (present(basename)) then
-       header = trim(basename)//".info"
-       datafile = trim(basename)//".tab"
-    else 
-       if (pdefs%opts%colour_stem == '') pdefs%opts%colour_stem = 'c_tables'
-       if (pdefs%opts%colour_dir == '') then
-          do i = 1, size(ctdirs)
-             if (file_exists(trim(ctdirs(i))//trim(pdefs%opts%colour_stem)// &
-                  & ".tab")) then
-                pdefs%opts%colour_dir=ctdirs(i)
-                exit
-             end if
-          end do
-       else if (index(pdefs%opts%colour_dir, '/', back=.true.) /= &
-            & len_trim(pdefs%opts%colour_dir)) then
-          pdefs%opts%colour_dir = trim(pdefs%opts%colour_dir)//'/'
-       end if
-
-       header = trim(pdefs%opts%colour_dir)//trim(pdefs%opts%colour_stem)//&
-            & ".info"
-       datafile = trim(pdefs%opts%colour_dir)//trim(pdefs%opts%colour_stem)//&
-            & ".tab"
+    if (present(append)) then
+       iapp = append
+    else
+       iapp = .false.
     end if
 
-    if (file_exists(header) .and. file_exists(datafile)) then
-       open(newunit=unit, file=header, form='formatted', status='old', &
-            & action='read', iostat=ios, iomsg=iom)
+    call find_ct(datafile, basename, dirname)
+    if (datafile == '') then
+       call gr_message("Failed to find colour tables", type=GTK_MESSAGE_ERROR)
+       print *, iapp, ntables
+       if (.not. iapp .and. ntables == 0) call gr_ct_simple
+       print *, iapp, ntables
+       return
+    end if
+
+    print *, trim(datafile)
+    open(newunit=unit, file=datafile, form='unformatted', status='old', &
+         & action='read', iostat=ios, iomsg=iom, access='stream')
+    if (ios /= 0) then
+       write(err_string, "(2A/t10,a)") &
+            & "gr_ct_init: Failed to open table file: ", &
+            & trim(datafile), trim(iom)
+       call gr_message(err_string, type=GTK_MESSAGE_ERROR)
+       call gr_ct_simple
+       return
+    end if
+
+    read(unit) ntabf
+    print *, ntabf
+    if (ntabf == 0) then
+       call gr_message("Empty colour tables", type=GTK_MESSAGE_WARNING)
+       if (.not. iapp .and. ntables == 0) call gr_ct_simple
+       return
+    end if
+
+    if (ntables > 0 .and. iapp) then
+       call move_alloc(tables, tmp_tables)
+       ntables = ntables + ntabf
+    else
+       if (allocated(tables)) deallocate(tables)
+       ntables = ntabf
+    end if
+
+
+    allocate(tables(ntables))
+
+    if (allocated(tmp_tables)) then
+       tables(:size(tmp_tables)) = tmp_tables
+       istable = size(tmp_tables)+1
+       deallocate(tmp_tables)
+    else
+       istable = 1
+    end if
+
+    print *, istable, ntables
+
+    do i = istable, ntables
+       read(unit, iostat=ios, iomsg=iom) tables(i)%name, rtmp, gtmp, btmp
        if (ios /= 0) then
-          write(err_string, "(2A/t10,a)") &
-               & "gr_ct_init: Failed to open header file: ", &
-               & trim(header), trim(iom)
-          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
-          call gr_ct_simple
-          return
-       end if
-
-       call gr_ct_close
-
-       read(unit, *) ntables, ncolours
-
-       allocate(table_names(ntables), red(ncolours), green(ncolours), &
-            & blue(ncolours))
-
-       do i = 1, ntables
-          read(unit,"(A)") table_names(i)
-       end do
-
-       close(unit)
-
-       open(newunit=ct_unit, file=datafile, form='formatted', action='read', &
-            & status='old', access='direct', recl=ncolours*6, iostat=ios, &
-            & iomsg=iom)
-       if (ios /= 0) then
-          write(err_string, "(2A/t10,a)") &
-               & "gr_ct_init: Failed to open table file: ", &
+          write(err_string, "(a,i0,2a/t10,a)") &
+               & "gr_ct_init: Failed to read table #: ", i, ' from', &
                & trim(datafile), trim(iom)
           call gr_message(err_string, type=GTK_MESSAGE_ERROR)
-          call gr_ct_simple
+          exit
+       end if
+       print *, i, tables(i)%name
+       print *, rtmp
+
+       ! Note we must do the IAND otherwise values >= 128 will appear
+       ! negative, since Fortran has no unsigned types/attributes.
+
+       tables(i)%red = iand(int(rtmp, int32), mask8)
+       tables(i)%green = iand(int(gtmp, int32), mask8)
+       tables(i)%blue = iand(int(btmp, int32), mask8)
+
+    end do
+
+    close(unit)
+
+    if (present(table_list)) then
+       if (iapp) then
+          call hl_gtk_listn_ins(table_list, count=ntables-istable+1)
+          do i = istable, ntables
+             call hl_gtk_listn_set_cell(table_list, &
+                  & int(i-1, c_int), 0_c_int, &
+                  & svalue = trim(tables(i)%name)//c_null_char)
+          end do
+       else
+          call hl_gtk_listn_rem(table_list)
+          do i = 1, ntables
+             call hl_gtk_listn_set_cell(table_list, &
+                  & int(i-1, c_int), 0_c_int, &
+                  & svalue = trim(tables(i)%name)//c_null_char)
+          end do
+       end if
+    end if
+
+  end subroutine gr_ct_init
+
+  subroutine find_ct(datafile, basename, dirname)
+    character(len=*), intent(out) :: datafile
+    character(len=*), intent(in), optional :: basename, dirname
+
+    integer :: i
+
+    if (present(basename)) then
+       datafile = basename
+    else if (pdefs%opts%colour_stem /= '') then
+       datafile = pdefs%opts%colour_stem
+    else 
+       datafile='colours.table'
+    end if
+
+    ! Search order is:
+    ! 1) Dirname argument
+    ! 2) pdefs location
+    ! 3) current directory
+    ! 4) System locations
+
+    if (present(dirname)) then
+       if (file_exists(trim(dirname)//'/'//trim(datafile))) then
+          datafile = trim(dirname)//'/'//trim(datafile)
           return
        end if
-       ct_is_open = .true.
-
-       write(ct_fmt, "('(',i0,'z2)')") 3*ncolours
-    else
-       call gr_message("gr_colours: header or data file not found", &
-            & type=GTK_MESSAGE_ERROR)
-       call gr_ct_simple
     end if
-  end subroutine gr_ct_init
+
+    if (pdefs%opts%colour_dir /= '') then
+       if (file_exists(trim(pdefs%opts%colour_dir)//'/'//trim(datafile))) then
+          datafile = trim(pdefs%opts%colour_dir)//'/'//trim(datafile)
+          return
+       end if
+    end if
+
+    if (file_exists('./'//trim(datafile))) then
+       datafile = './'//trim(datafile)
+       return
+    end if
+
+    do i = 1, size(ctdirs)
+       if (file_exists(trim(ctdirs(i))//trim(datafile))) then
+          datafile = ctdirs(i)//trim(datafile)
+          return
+       end if
+    end do
+
+    datafile = ''
+  end subroutine find_ct
 
   subroutine gr_ct_simple
 
@@ -127,29 +217,17 @@ contains
 
     integer :: i
 
-    call gr_ct_close
     ntables = 1
-    ncolours = 256
-    allocate(table_names(ntables), red(ncolours), green(ncolours), &
-         & blue(ncolours))
-    table_names(1) = "Simple Greyscale"
-    do i = 1, 256
-       red(i) = i-1
-       green(i) = i-1
-       blue(i) = i-1
+    allocate(tables(1))
+
+    tables(1)%name = "Simple Greyscale"
+    do i = 1, table_size
+       tables(1)%red(i) = i-1
+       tables(1)%green(i) = i-1
+       tables(1)%blue(i) = i-1
     end do
-    ct_unit=-1
-    ct_is_open = .true.
+
   end subroutine gr_ct_simple
-  subroutine gr_ct_close
-
-    ! Close the colour table files.
-
-    if (ct_is_open) close(ct_unit)
-    ct_is_open = .false.
-    if (allocated(table_names)) deallocate(table_names, red, green, blue)
-    ct_index = -1
-  end subroutine gr_ct_close
 
   subroutine gr_ct_get(index, load, r, g, b, invert, gamma)
     integer, intent(in) :: index
@@ -160,17 +238,25 @@ contains
 
     ! Select, and load or return a colour table.
 
-    integer, dimension(:), allocatable :: map, rr, gg, bb
+    integer, dimension(table_size) :: map, rr, gg, bb
     integer :: ios, i
     character(len=120) :: iom
     logical :: reversed
     real(kind=real32) :: xgamma
     character(len=160), dimension(2) :: err_string
+    integer :: idx
 
     if (present(invert)) then
        reversed = invert
     else
        reversed = .false.
+    end if
+
+    idx = min(max(index,0),ntables-1)
+    if (idx /= index) then
+       call gr_message("Table number out of range, using 0", &
+            & type=GTK_MESSAGE_WARNING)
+       idx = 0
     end if
 
     if (present(gamma)) then
@@ -179,37 +265,16 @@ contains
        xgamma = 1.0
     end if
 
-    if (.not. ct_is_open .or. ct_unit==-1) then
-       if (.not. ct_is_open) call gr_ct_init()
-       ct_index = -1
-    end if
-    if (index /= ct_index) then
-       ct_index = min(max(index,0), ntables-1)
-       if (ct_unit /= -1) then
-          read(ct_unit, ct_fmt, rec=ct_index+1, iostat=ios, iomsg=iom) red, &
-               & green, blue
-          if (ios /= 0) then
-             write(err_string, "(A,i0/t10,a)") "gr_ct_get: Read failed: #", &
-                  & ct_index, trim(iom)
-             call gr_message(err_string, type=GTK_MESSAGE_ERROR)
-             return
-          end if
-       end if
-    end if
-
-
-    allocate(rr(ncolours), gg(ncolours), bb(ncolours))
     if (xgamma /= 1.) then
-       allocate(map(ncolours))
-       map = int(ncolours*([(real(i), i = 0, ncolours-1)]/&
-            & real(ncolours))**xgamma) + 1
-       rr = red(map)
-       gg = green(map)
-       bb = blue(map)
+       map = int(table_size*([(real(i), i = 0, table_size-1)]/&
+            & real(table_size))**xgamma) + 1
+       rr = tables(idx+1)%red(map)
+       gg = tables(idx+1)%green(map)
+       bb = tables(idx+1)%blue(map)
     else
-       rr = red
-       gg = green
-       bb = blue
+       rr = tables(idx+1)%red
+       gg = tables(idx+1)%green
+       bb = tables(idx+1)%blue
     end if
 
     if (load) then
@@ -222,39 +287,40 @@ contains
     end if
 
     if (present(r)) then
-       if (size(r) == ncolours) then
+       if (size(r) == table_size) then
           r = rr
        else
           do i = 1, size(r)
-             r(i) = rr(1 + ((i-1)*ncolours)/size(r))
+             r(i) = rr(1 + ((i-1)*table_size)/size(r))
           end do
        end if
        if (reversed) r = r(size(r):1:-1)
     end if
 
     if (present(g)) then
-       if (size(g) == ncolours) then
+       if (size(g) == table_size) then
           g = gg
        else
           do i = 1, size(g)
-             g(i) = gg(1 + ((i-1)*ncolours)/size(g))
+             g(i) = gg(1 + ((i-1)*table_size)/size(g))
           end do
        end if
        if (reversed) g = g(size(g):1:-1)
     end if
 
     if (present(b)) then
-       if (size(b) == ncolours) then
+       if (size(b) == table_size) then
           b = bb
        else
           do i = 1, size(b)
-             b(i) = bb(1 + ((i-1)*ncolours)/size(b))
+             b(i) = bb(1 + ((i-1)*table_size)/size(b))
           end do
        end if
        if (reversed) b = b(size(b):1:-1)
     end if
 
   end subroutine gr_ct_get
+
   function gr_ct_get_ntables()
     integer :: gr_ct_get_ntables
 
@@ -263,19 +329,16 @@ contains
     gr_ct_get_ntables = ntables
   end function gr_ct_get_ntables
 
-  function gr_ct_get_ncolours()
-    integer :: gr_ct_get_ncolours
+  function gr_ct_get_name(index)
+    character(len=32) :: gr_ct_get_name
+    integer, intent(in) :: index
 
-    ! Return the size of the colour tables
+    if (index >= 0 .and. index < ntables) then
+       gr_ct_get_name = tables(index+1)%name
+    else
+       gr_ct_get_name = "Invalid table number"
+    end if
 
-    gr_ct_get_ncolours = ncolours
-  end function gr_ct_get_ncolours
+  end function gr_ct_get_name
 
-  function gr_ct_get_table()
-    integer :: gr_ct_get_table
-
-    ! Return the index of the current table.
-
-    gr_ct_get_table = ct_index
-  end function gr_ct_get_table
 end module gr_colours

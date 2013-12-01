@@ -71,7 +71,7 @@ module gr_cb_common
   type(c_ptr) :: clevel_cbo, cfmt_cbo, clevel_view, ccol_view, csty_view, &
        & clevels_entry, cthick_view, clabel_entry, cchsize_entry
 
-  type(c_ptr) :: cg_table_pick, cg_missing_entry, & 
+  type(c_ptr) :: cg_table_pick=c_null_ptr, cg_missing_entry, & 
        & cg_gamma_entry, cg_log_but, cg_invert_but, cg_smooth_but, &
        & gc_smooth_l_sb
 
