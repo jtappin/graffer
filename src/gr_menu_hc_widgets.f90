@@ -26,7 +26,8 @@ module gr_menu_hc_widgets
 
   use gtk, only: gtk_combo_box_get_active, gtk_combo_box_set_active, &
        & gtk_container_add, gtk_label_new, gtk_toggle_button_get_active, &
-       & gtk_widget_destroy, gtk_widget_show_all, TRUE, FALSE
+       & gtk_widget_destroy, gtk_widget_show_all, gtk_expander_new, &
+       & gtk_expander_set_expanded, TRUE, FALSE
 
   use graff_types
   use graff_globals
@@ -53,7 +54,7 @@ contains
 
     ! Menus to configure hard copy options.
 
-    type(c_ptr) :: base, junk, jb
+    type(c_ptr) :: base, junk, jb, je
     type(graff_hard), pointer :: hardset
     logical, dimension(2), target :: iapply = [.false., .true.]
     integer(kind=c_int) :: iviewer, i, dindex
@@ -91,7 +92,7 @@ contains
 
     hc_window = hl_gtk_window_new("Hardcopy options"//c_null_char,&
          & destroy=c_funloc(gr_hc_quit), data_destroy=c_loc(iapply(1)), &
-         & parent=gr_window, modal=TRUE)
+         & parent=gr_window, modal=TRUE, resizable=FALSE)
 
     base = hl_gtk_box_new()
     call gtk_container_add(hc_window, base)
@@ -198,8 +199,12 @@ contains
     call hl_gtk_table_attach(jb, hc_view_cbo, 3_c_int, 1_c_int)
 
 
+    je = gtk_expander_new("Advanced"//c_null_char)
+    call hl_gtk_box_pack(base, je)
+    call gtk_expander_set_expanded (je, FALSE)
+
     jb = hl_gtk_table_new()
-    call hl_gtk_box_pack(base, jb)
+    call gtk_container_add(je, jb)
 
     if (allocated(psdevs)) then
        dindex = first(psdevs == trim(hardset%psdev))
