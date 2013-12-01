@@ -559,4 +559,21 @@ TTE& Null& 0&
 End the template.\\
 \end{longtable}
 
+\section{Colour Table}
+\label{sec:colour_table}
+
+The colour table file lists the colours for each colour table. 
+
+The first byte indicate how many tables the file contains.
+
+For each table there is then:
+\begin{itemize}
+\item A 32 byte table name, as a character string.
+\item Red intensities, as 256 1-byte values.
+\item Green intensities, 256 1-byte values.
+\item Blue intensities, 256 1-byte values.
+\end{itemize}
+
+Note that this is not the same as the IDL colour table format where the
+names are at the end.
 \end{document}
