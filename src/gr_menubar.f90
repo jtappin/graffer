@@ -40,6 +40,7 @@ module gr_menubar
   use gr_utils
   use gr_file
   use graff_init
+  use gr_colours
 
   use gr_cb_common
 
@@ -150,10 +151,19 @@ contains
          & accel_group=accel, tooltip=&
          & "Dump screen to a JPEG file"//c_null_char)
 
+    ! Settings
 
-    junk = hl_gtk_menu_item_new(mbar, "Options..."//c_null_char, &
+    smnu = hl_gtk_menu_submenu_new(mbar, "Settings ▼"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Options..."//c_null_char, &
          & activate=c_funloc(gr_set_opts), tooltip=&
          & "Set special options for this file."//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Add colour table"//c_null_char, &
+         & activate=c_funloc(gr_add_ct), tooltip= &
+         & "Add a colour table file."//c_null_char)
+
+    ! Help system
 
     smnu = hl_gtk_menu_submenu_new(mbar, "Help ▼"//c_null_char, &
          & tooltip="Help displays"//c_null_char)
@@ -316,6 +326,36 @@ contains
     call gr_options_menu
 
   end subroutine gr_set_opts
+
+  subroutine gr_add_ct(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Select and open a colour table file.
+
+    integer(kind=c_int) :: ipick
+    character(len=256), dimension(:), allocatable :: file
+    character(len=256) :: dir, base
+    
+    if (pdefs%opts%colour_dir /= '') then
+       dir = pdefs%opts%colour_dir
+    else
+       dir = '.'
+    end if
+
+    ipick = hl_gtk_file_chooser_show(file, &
+         & filter=["*.table"], filter_name=["Table Files"], &
+         & edit_filters=TRUE, all=TRUE, create=FALSE, &
+         & parent=gr_window, initial_dir=trim(dir)//c_null_char, &
+         & title="Colour table selector"//c_null_char)
+    if (.not. c_f_logical(ipick)) return
+
+    call split_fname(file(1), base, dir)
+
+    call gr_ct_init(basename=base, dirname=dir, append=.true., &
+         & table_list=cg_table_pick)
+
+  end subroutine gr_add_ct
+
   subroutine gr_help(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
@@ -324,9 +364,10 @@ contains
     character(len=3), pointer :: type
     character(len=120), dimension(:), allocatable :: pdflist
     integer(kind=c_int) :: iresp
-    character(len=*), parameter, dimension(2) :: docdir = &
+    character(len=*), parameter, dimension(*) :: docdir = &
          & ['/usr/local/share/doc/graffer', &
-         &  '/usr/share/doc/graffer      ']
+         &  '/usr/share/doc/graffer      ',&
+         &  '/opt/graffer/Docs           ']
     integer :: i
 
     call c_f_pointer(data, type)
