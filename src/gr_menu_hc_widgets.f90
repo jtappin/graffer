@@ -25,9 +25,9 @@ module gr_menu_hc_widgets
   use gtk_sup
 
   use gtk, only: gtk_combo_box_get_active, gtk_combo_box_set_active, &
-       & gtk_container_add, gtk_label_new, gtk_toggle_button_get_active, &
-       & gtk_widget_destroy, gtk_widget_show_all, gtk_expander_new, &
-       & gtk_expander_set_expanded, TRUE, FALSE
+       & gtk_container_add, gtk_expander_new, gtk_expander_set_expanded, &
+       & gtk_label_new, gtk_toggle_button_get_active, gtk_widget_destroy, &
+       & gtk_widget_set_tooltip_text, gtk_widget_show_all, TRUE, FALSE
 
   use graff_types
   use graff_globals
@@ -202,6 +202,8 @@ contains
     je = gtk_expander_new("Advanced"//c_null_char)
     call hl_gtk_box_pack(base, je)
     call gtk_expander_set_expanded (je, FALSE)
+    call gtk_widget_set_tooltip_text(je, &
+         & "Settings to select plot devices"//c_null_char)
 
     jb = hl_gtk_table_new()
     call gtk_container_add(je, jb)
@@ -214,6 +216,8 @@ contains
             & active=dindex, &
             & tooltip="Select the PostScript output device driver"//c_null_char)
        call hl_gtk_table_attach(jb, ps_cbo, 1_c_int, 0_c_int)
+    else
+       ps_cbo = c_null_ptr
     end if
 
     if (allocated(epsdevs)) then
@@ -225,6 +229,8 @@ contains
             & tooltip="Select the encapsulated PostScript output device driver"//&
             & c_null_char)
        call hl_gtk_table_attach(jb, eps_cbo, 3_c_int, 0_c_int)
+    else
+       eps_cbo = c_null_ptr
     end if
 
     if (allocated(pdfdevs)) then
@@ -235,6 +241,8 @@ contains
             & active=dindex, &
             & tooltip="Select the PDF output device driver"//c_null_char)
        call hl_gtk_table_attach(jb, pdf_cbo, 1_c_int, 1_c_int)
+    else
+       pdf_cbo = c_null_ptr
     end if
 
     if (allocated(svgdevs)) then
@@ -245,7 +253,14 @@ contains
             & active=dindex, &
             & tooltip="Select the SVG output device driver"//c_null_char)
        call hl_gtk_table_attach(jb, svg_cbo, 3_c_int, 1_c_int)
+    else
+       svg_cbo = c_null_ptr
     end if
+
+    junk = hl_gtk_button_new("Defaults"//c_null_char, &
+         & clicked = c_funloc(gr_hc_defdev), tooltip = &
+         & "Reset all plot devices to the defaults"//c_null_char)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 2_c_int, xspan=4_c_int)
 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(base, jb, expand=FALSE)
@@ -392,5 +407,24 @@ contains
 
   end subroutine gr_hc_orient
 
-   
+  subroutine gr_hc_defdev(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! reset devices to defaults.
+
+    type(graff_hard), pointer :: hardset
+
+    hardset => pdefs%hardset
+
+    if (c_associated(ps_cbo)) call gtk_combo_box_set_active(ps_cbo, 0_c_int)
+    if (c_associated(eps_cbo)) call gtk_combo_box_set_active(eps_cbo, 0_c_int)
+    if (c_associated(pdf_cbo)) call gtk_combo_box_set_active(pdf_cbo, 0_c_int)
+    if (c_associated(svg_cbo)) call gtk_combo_box_set_active(svg_cbo, 0_c_int)
+
+    hardset%psdev = ''
+    hardset%epsdev = ''
+    hardset%pdfdev = ''
+    hardset%svgdev = ''
+
+  end subroutine gr_hc_defdev
 end module gr_menu_hc_widgets
