@@ -60,12 +60,19 @@ contains
     if (axis == 1) then
        do i = 1, pdefs%nsets
           data => pdefs%data(i)
+
           if (data%type < 0) then
              status = gr_evaluate(i)
-          else
-             status = 0
+             if (status /= 0) cycle
           end if
-          if (status /= 0 .or. .not. allocated(data%xydata)) cycle
+
+          select case (data%type)
+          case(-3:8)
+             if (.not. allocated(data%xydata)) cycle
+          case(9)
+             if (.not. (allocated(data%zdata%x) .and. &
+                  & allocated(data%zdata%y))) cycle
+          end select
 
           if (data%mode == 0) then
              call gr_autoscale_x_rect(data, axmin, axmax)
@@ -77,12 +84,19 @@ contains
        do i = 1, pdefs%nsets
           data => pdefs%data(i)
           if (pdefs%y_right .and. data%y_axis /= axis-2) cycle
+
           if (data%type < 0) then
              status = gr_evaluate(i)
-          else
-             status = 0
+             if (status /= 0) cycle
           end if
-          if (status /= 0 .or. .not. allocated(data%xydata)) cycle
+
+          select case (data%type)
+          case(-3:8)
+             if (.not. allocated(data%xydata)) cycle
+          case(9)
+             if (.not. (allocated(data%zdata%x) .and. &
+                  & allocated(data%zdata%y))) cycle
+          end select
 
           if (data%mode == 0) then
              call gr_autoscale_y_rect(data, axmin, axmax)
@@ -107,7 +121,7 @@ contains
     end do
 
     do i = 1, pdefs%nsets
-       select case (pdefs%data(i)%type)
+      select case (pdefs%data(i)%type)
        case(-1) 
           if (axis == 1 .and.&
                & pdefs%data(i)%funct%range(1,1) == &
