@@ -259,7 +259,7 @@ contains
     call gtk_entry_set_text(name_id, &
          & trim(pdefs%dir)//'/'//trim(pdefs%name)//c_null_char)
     call gtk_window_set_title(gr_window, "Graffer V"//trim(gr_sversion)//&
-         & ": "//trim(pdefs%dir)//'/'//trim(pdefs%name)//c_null_char)
+         & ": "//trim(pdefs%dir)//trim(pdefs%name)//c_null_char)
 
     if (present(minimal)) then
        if (minimal) then

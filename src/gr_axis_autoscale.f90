@@ -61,13 +61,11 @@ contains
        do i = 1, pdefs%nsets
           data => pdefs%data(i)
 
-          if (data%type < 0) then
+          select case (data%type)
+          case(-4:-1)
              status = gr_evaluate(i)
              if (status /= 0) cycle
-          end if
-
-          select case (data%type)
-          case(-3:8)
+          case(0:8)
              if (.not. allocated(data%xydata)) cycle
           case(9)
              if (.not. (allocated(data%zdata%x) .and. &
@@ -85,13 +83,11 @@ contains
           data => pdefs%data(i)
           if (pdefs%y_right .and. data%y_axis /= axis-2) cycle
 
-          if (data%type < 0) then
+          select case (data%type)
+          case(-4:-1)
              status = gr_evaluate(i)
              if (status /= 0) cycle
-          end if
-
-          select case (data%type)
-          case(-3:8)
+          case(0:8)
              if (.not. allocated(data%xydata)) cycle
           case(9)
              if (.not. (allocated(data%zdata%x) .and. &
@@ -121,7 +117,7 @@ contains
     end do
 
     do i = 1, pdefs%nsets
-      select case (pdefs%data(i)%type)
+       select case (pdefs%data(i)%type)
        case(-1) 
           if (axis == 1 .and.&
                & pdefs%data(i)%funct%range(1,1) == &
