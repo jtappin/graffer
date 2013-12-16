@@ -75,11 +75,11 @@ program graffer
      end if
   end if
 
-  call gr_pdefs_init(pdefs)
+  call gr_pdefs_init
   call gr_ct_init()
 
   if (file_exists(input)) then 
-     call gr_read(pdefs, input, ok)
+     call gr_read(input, ok)
      if (.not. ok) stop
   else
      call split_fname(input, pdefs%name, pdefs%dir)

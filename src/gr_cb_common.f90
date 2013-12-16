@@ -133,9 +133,10 @@ contains
        ascii = pdefs%is_ascii
     end if
 
-    call gr_write(pdefs, ok, ascii=ascii)
+    call gr_write(ok, ascii=ascii)
     call gr_set_values_global(.true.)
-    if (ok) pdefs%chflag = .false.
+    if (ok) call gr_set_changed(.false.)
+
   end subroutine gr_save_cb
 
   subroutine gr_save_asc_cb(widget, data) bind(c)
@@ -156,9 +157,10 @@ contains
     if (.not. c_f_logical(ipick)) return
     call split_fname(files(1), pdefs%name, pdefs%dir)
 
-    call gr_write(pdefs, ok, ascii=.true.)
+    call gr_write(ok, ascii=.true.)
     call gr_set_values_global(.true.)
-    if (ok) pdefs%chflag = .false.
+    if (ok) call gr_set_changed(.false.)
+
   end subroutine gr_save_asc_cb
 
   recursive subroutine gr_exit(widget, data) bind(c)
@@ -200,9 +202,9 @@ contains
        case(GTK_RESPONSE_CANCEL, GTK_RESPONSE_DELETE_EVENT)
           return
        case(GTK_RESPONSE_YES)
-          call gr_write(pdefs, ok)
+          call gr_write(ok)
        case(GTK_RESPONSE_NO)
-          pdefs%chflag = .false.
+          call gr_set_changed(.false.)
        case default
           call gr_message("gr_exit: Invalid response code", &
                & type=GTK_MESSAGE_ERROR)
@@ -506,7 +508,7 @@ contains
     logical :: ok
 
     if (pdefs%transient%changes > 0) then
-       call gr_write(pdefs, ok, auto=.TRUE.)
+       call gr_write(ok, auto=.TRUE.)
        pdefs%transient%changes = 0
     end if
 

@@ -24,8 +24,10 @@
   use gtk, only: GTK_MESSAGE_ERROR
 
   use graff_types
+  use graff_globals
   use gr_utils
   use gr_msg
+  use graff_init
 
   implicit none
 
@@ -352,8 +354,7 @@ contains
     gr_open_asc = 1
   end function gr_open_asc
     
-  subroutine gr_get_asc(pdefs, unit)
-    type(graff_pdefs), intent(inout), target :: pdefs
+  subroutine gr_get_asc(unit)
     integer, intent(in) :: unit
 
     ! Read an ASCII Graffer file
@@ -679,8 +680,7 @@ contains
        end do
     end do
 
-    pdefs%chflag = .false.
-    pdefs%transient%changes = 0_int16
+    call gr_set_changed(.false.)
     pdefs%transient%backup = .false.
     pdefs%is_ascii = .true.
 
@@ -1185,8 +1185,7 @@ contains
     end do
   end subroutine gr_get_txt_asc
 
-  subroutine gr_save_asc(pdefs, ok)
-    type(graff_pdefs), intent(inout), target :: pdefs
+  subroutine gr_save_asc(ok)
     logical, intent(out) :: ok
 
     ! Write an ASCII Graffer file.
@@ -1473,8 +1472,7 @@ contains
 
     close(unit)
 
-    pdefs%chflag = .false.
-    pdefs%transient%changes = 0_int16
+    call gr_set_changed(.false.)
     pdefs%is_ascii = .true.
 
   end subroutine gr_save_asc

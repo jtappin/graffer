@@ -33,6 +33,7 @@ module gr_menu_hc_widgets
   use graff_globals
   use gr_utils
   use gr_plot_utils
+  use graff_init
 
   implicit none
 
@@ -354,8 +355,7 @@ contains
           end if
        end if
 
-       pdefs%chflag = .true.
-       pdefs%transient%changes = pdefs%transient%changes + 1_int16
+       call gr_set_changed(.true.)
     end if
 
     call gtk_widget_destroy(hc_window)

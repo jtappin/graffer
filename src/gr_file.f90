@@ -28,6 +28,7 @@ module gr_file
 
   use gr_record
   use graff_types
+  use graff_globals
   use gr_utils
   use graff_version
   use graff_init
@@ -244,8 +245,7 @@ contains
 
   ! The main read routine
 
-  subroutine gr_read(pdefs, file, ok)
-    type(graff_pdefs), intent(out) :: pdefs
+  subroutine gr_read(file, ok)
     character(len=*), intent(in) :: file
     logical, intent(out) :: ok
 
@@ -276,13 +276,13 @@ contains
        return
     end if
 
-    call gr_pdefs_init(pdefs)
+    call gr_pdefs_init
     call split_fname(file, pdefs%name, pdefs%dir)
-    if (status < 0) pdefs%chflag = .true.
+    if (status < 0) call gr_set_changed(.true.)
 
     if (is_ascii) then
-       call gr_get_asc(pdefs, gr_unit)
-       if (pdefs%version(2) <= 6) call gr_font_remap(pdefs)
+       call gr_get_asc(gr_unit)
+       if (pdefs%version(2) <= 6) call gr_font_remap
        call gr_close
        return
     end if
@@ -470,7 +470,7 @@ contains
           nds = max(pdefs%nsets, 1_int16)
           if (allocated(pdefs%data)) deallocate(pdefs%data)
           allocate(pdefs%data(nds))
-          call gr_pdefs_data_init_all(pdefs)
+          call gr_pdefs_data_init_all
           dflag = .true.
 
        case ('DC ')
@@ -487,7 +487,7 @@ contains
           ntext = max(pdefs%ntext, 1_int16)
           if (allocated(pdefs%text)) deallocate(pdefs%text)
           allocate(pdefs%text(ntext))
-          call gr_pdefs_text_init_all(pdefs%text)
+          call gr_pdefs_text_init_all
           tflag = .true.
           ! DS - Start the definition of a
           !      dataset.
@@ -668,10 +668,9 @@ contains
 
     call gr_close
 
-    if (pdefs%version(2) <= 6) call gr_font_remap(pdefs)
+    if (pdefs%version(2) <= 6) call gr_font_remap
 
-    pdefs%chflag = .false.
-    pdefs%transient%changes = 0_int16
+    call gr_set_changed(.false.)
     pdefs%transient%backup = .false.
     pdefs%is_ascii = .false.
 
@@ -1010,8 +1009,7 @@ contains
     end do
   end subroutine gr_read_ds
 
-  subroutine gr_write(pdefs, ok, auto, ascii)
-    type(graff_pdefs), intent(inout), target :: pdefs
+  subroutine gr_write(ok, auto, ascii)
     logical, intent(out) :: ok
     logical, optional, intent(in) :: auto, ascii
 
@@ -1051,7 +1049,7 @@ contains
           use_ascii = pdefs%is_ascii
        end if
        if (use_ascii) then
-          call gr_save_asc(pdefs, ok)
+          call gr_save_asc(ok)
           return
        end if
     end if
@@ -1310,20 +1308,18 @@ contains
 
     close(unit)
 
+    call gr_set_changed(.false., auto=autosave)
     if (.not. autosave) then
-       pdefs%chflag = .false.
        pdefs%is_ascii = .false.
        if (file_exists(autofile)) then
           open(newunit=unit, file=autofile)
           close(unit, status='delete')
        end if
     end if
-    pdefs%transient%changes = 0_int16
 
   end subroutine gr_write
 
-  subroutine gr_font_remap(pdefs)
-    type(graff_pdefs), intent(inout), target :: pdefs
+  subroutine gr_font_remap
 
     ! Approximate font mapping
 

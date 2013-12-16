@@ -578,7 +578,7 @@ contains
          & call hl_gtk_spin_button_set_range_int(ds_idx_id, &
          & upper=int(pdefs%nsets, c_int))
 
-    call gr_pdefs_data_init(pdefs=pdefs, index=pdefs%nsets)
+    call gr_pdefs_data_init(index=pdefs%nsets)
     call gr_set_values_dataset()
   end subroutine gr_ds_new
 
@@ -862,7 +862,7 @@ contains
        idx = pdefs%cset
     end if
 
-    call gr_pdefs_data_init(pdefs=pdefs, index=idx)
+    call gr_pdefs_data_init(index=idx)
 
   end subroutine gr_ds_erase
 

@@ -242,7 +242,7 @@ contains
        case(GTK_RESPONSE_CANCEL, GTK_RESPONSE_DELETE_EVENT)
           return
        case(GTK_RESPONSE_YES)
-          call gr_write(pdefs, ok)
+          call gr_write(ok)
        case(GTK_RESPONSE_NO)
        case default
           call gr_message("gr_open_cb: Invalid response code")
@@ -252,9 +252,9 @@ contains
 
     gui_active = .false.
     if (file_exists(files(1))) then
-       call gr_read(pdefs, files(1), ok)
+       call gr_read(files(1), ok)
     else
-       call gr_pdefs_init(pdefs)
+       call gr_pdefs_init
        call split_fname(files(1), pdefs%name, pdefs%dir)
     end if
     call graffer_version%string(gr_sversion)

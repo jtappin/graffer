@@ -21,13 +21,14 @@ module graff_init
   use iso_fortran_env
 
   use graff_types
+  use graff_version
+  use graff_globals
   use gr_opt_init
 
   implicit none
 
 contains
-  subroutine gr_pdefs_init(pdefs)
-    type(graff_pdefs), intent(inout) :: pdefs
+  subroutine gr_pdefs_init
 
     ! Initialize a Graffer data structure
 
@@ -72,7 +73,7 @@ contains
 
     if (allocated(pdefs%data)) deallocate(pdefs%data)
     allocate(pdefs%data(1))
-    call gr_pdefs_data_init_all(pdefs)
+    call gr_pdefs_data_init_all
     if (allocated(pdefs%text)) deallocate(pdefs%text)
     if (allocated(pdefs%remarks)) deallocate(pdefs%remarks)
 
@@ -126,22 +127,20 @@ contains
     
   end subroutine gr_pdefs_init
 
-  subroutine gr_pdefs_data_init_all(pdefs)
-    type(graff_pdefs), intent(inout) :: pdefs
+  subroutine gr_pdefs_data_init_all
 
     ! Initialize all datasets in a Graffer structure.
 
     integer(kind=int16) :: i
 
     do i = 1_int16, pdefs%nsets
-       call gr_pdefs_data_init(pdefs=pdefs, index=i)
+       call gr_pdefs_data_init(index=i)
     end do
   end subroutine gr_pdefs_data_init_all
 
 
-  subroutine gr_pdefs_data_init(dataset, pdefs, index)
+  subroutine gr_pdefs_data_init(dataset, index)
     type(graff_data), intent(inout), optional, target :: dataset
-    type(graff_pdefs),  intent(inout), optional, target :: pdefs
     integer(kind=int16), intent(in), optional :: index
 
     ! Initialize a Graffer dataset.
@@ -150,11 +149,11 @@ contains
 
     if (present(dataset)) then
        data => dataset
-    else if (present(pdefs) .and. present(index)) then
+    else if (present(index)) then
        data => pdefs%data(index)
     else
        write(error_unit, "(A)") &
-            & "gr_pdefs_data_init: Must specify dataset or pdefs AND index"
+            & "gr_pdefs_data_init: Must specify dataset or index"
        return
     end if
 
@@ -173,14 +172,14 @@ contains
     data%sort = .false.
     data%noclip = .false.
 
-    if (present(pdefs)) then
-       data%medit = pdefs%opts%mouse
-       data%zdata%gamma = pdefs%gamma
-       data%zdata%ctable = pdefs%ctable
-    else
+    if (present(dataset)) then
        data%medit = .false.
        data%zdata%gamma = 1._real32
        data%zdata%ctable = 0_int16
+    else
+       data%medit = pdefs%opts%mouse
+       data%zdata%gamma = pdefs%gamma
+       data%zdata%ctable = pdefs%ctable
     end if
 
     data%zdata%format = 0
@@ -218,15 +217,14 @@ contains
 
   end subroutine gr_pdefs_data_init
 
-  subroutine gr_pdefs_text_init_all(text)
-    type(graff_text), dimension(:), intent(inout) :: text
+  subroutine gr_pdefs_text_init_all
 
     ! Initialize all text annotations in a Graffer structure.
 
     integer :: i
 
-    do i = 1, size(text)
-       call gr_pdefs_text_init(text(i))
+    do i = 1, pdefs%ntext
+       call gr_pdefs_text_init(pdefs%text(i))
     end do
   end subroutine gr_pdefs_text_init_all
 
@@ -252,4 +250,35 @@ contains
     text%axis = 0_int16
 
   end subroutine gr_pdefs_text_init
+
+  subroutine gr_set_changed(state, auto)
+    logical, intent(in) :: state
+    logical, intent(in), optional :: auto
+
+    logical :: auto_only
+    character(len=8) :: gr_sversion
+    call graffer_version%string(gr_sversion)
+
+    if (state) then
+       pdefs%chflag = .true.
+       pdefs%transient%changes = pdefs%transient%changes + 1_int16
+       call gtk_window_set_title(gr_window, "Graffer V"//trim(gr_sversion)//&
+            & ": "//trim(pdefs%dir)//trim(pdefs%name)//&
+            & " (Modified)"//c_null_char)
+    else
+       if (present(auto)) then
+          auto_only = auto
+       else
+          auto_only = .false.
+       end if
+
+       pdefs%transient%changes = 0_int16
+       if (.not. auto_only) then
+          pdefs%chflag = .false.
+          call gtk_window_set_title(gr_window, "Graffer V"//trim(gr_sversion)//&
+               & ": "//trim(pdefs%dir)//trim(pdefs%name)//c_null_char)
+       end if
+    end if
+
+  end subroutine gr_set_changed
 end module graff_init

@@ -28,6 +28,7 @@ module gr_general_comment_widgets
 
   use graff_types
   use graff_globals
+  use graff_init
 
   implicit none
 
@@ -88,8 +89,7 @@ contains
 
     call gtk_widget_destroy(comm_window)
 
-    pdefs%chflag = .true.
-    pdefs%transient%changes =  pdefs%transient%changes+1_int16
+    call gr_set_changed(.true.)
 
   end subroutine gr_comment_quit
 end module gr_general_comment_widgets

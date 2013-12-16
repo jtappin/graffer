@@ -280,8 +280,7 @@ contains
     pdefs%data(pdefs%cset)%medit = &
          & c_f_logical(gtk_check_menu_item_get_active(widget))
     call gr_draw_tips
-    pdefs%chflag = .true.
-    pdefs%transient%changes = pdefs%transient%changes + 1_int16
+    call gr_set_changed(.true.)
   end subroutine gr_1d_set_mouse
 
 end module gr_1d_opts

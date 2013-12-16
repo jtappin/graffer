@@ -182,8 +182,7 @@ contains
 
     gui_active = .true.
 
-    pdefs%transient%changes = 0_int16
-    pdefs%chflag = .false.
+    call gr_set_changed(.false.)
 
     call gr_plot_open
     call gr_plot_draw(.false.)

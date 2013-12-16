@@ -35,6 +35,7 @@ module gr_plot
   use gr_plot_utils
   use gr_plot_tools
   use gr_plot_procs
+  use graff_init
 
   use gr_eval
   use gr_sort
@@ -259,10 +260,7 @@ contains
     if (.not. gr_plot_is_open) call gr_plot_open
     if (.not. gr_plot_is_open) return
 
-    if (ichange) then
-       pdefs%transient%changes = pdefs%transient%changes+1_int16
-       pdefs%chflag = .true.
-    end if
+    if (ichange) call gr_set_changed(.true.)
 
     if (pdefs%hardset%font_family <= 0 .or. &
          & pdefs%hardset%font_family > size(font_list)) &
