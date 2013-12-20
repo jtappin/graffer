@@ -262,7 +262,9 @@ contains
     if (state) then
        pdefs%chflag = .true.
        pdefs%transient%changes = pdefs%transient%changes + 1_int16
-       call gtk_window_set_title(gr_window, "Graffer V"//trim(gr_sversion)//&
+       if (c_associated(gr_window)) &
+            & call gtk_window_set_title(gr_window, &
+            & "Graffer V"//trim(gr_sversion)//&
             & ": "//trim(pdefs%dir)//trim(pdefs%name)//&
             & " (Modified)"//c_null_char)
     else
@@ -275,7 +277,9 @@ contains
        pdefs%transient%changes = 0_int16
        if (.not. auto_only) then
           pdefs%chflag = .false.
-          call gtk_window_set_title(gr_window, "Graffer V"//trim(gr_sversion)//&
+          if (c_associated(gr_window)) &
+               & call gtk_window_set_title(gr_window, &
+               & "Graffer V"//trim(gr_sversion)//&
                & ": "//trim(pdefs%dir)//trim(pdefs%name)//c_null_char)
        end if
     end if
