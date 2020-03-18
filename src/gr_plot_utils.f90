@@ -232,10 +232,10 @@ contains
     end if
   end subroutine gr_viewport
 
-  subroutine gr_format_labels(axis, value, label, length)
-    integer :: axis, length
-    real(kind=plflt) :: value
-    character(len=length) :: label
+  subroutine gr_format_labels(axis, value, label)
+    integer, intent(in) :: axis
+    real(kind=plflt), intent(in) :: value
+    character(len=*), intent(out) :: label
 
     ! Format specification for axis labels.
 

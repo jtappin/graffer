@@ -58,9 +58,9 @@ contains
     real(kind=plflt), intent(in), dimension(:) :: x1, y1
 
 #ifdef HAVE_PLWIDTH
-    call plshade(z, '', xmin, xmax, ymin, ymax, &
+    call plshade(z, xmin, xmax, ymin, ymax, &
          & clevel, huge(0._plflt), 0, ccol, 1._plflt, &
-         & 0, 0._plflt, 0, 0._plflt, x1, y1)
+         & 0, 0._plflt, 0, 0._plflt, .true., x1, y1)
 #else
     call plshade(z, '', xmin, xmax, ymin, ymax, &
          & clevel, huge(0._plflt), 0, ccol, 1, &
@@ -74,9 +74,9 @@ contains
     real(kind=plflt), intent(in), dimension(:,:) :: x2, y2
 
 #ifdef HAVE_PLWIDTH
-    call plshade(z, '', xmin, xmax, ymin, ymax, &
+    call plshade(z, xmin, xmax, ymin, ymax, &
          & clevel, huge(0._plflt), 0, ccol, 1._plflt, &
-         & 0, 0._plflt, 0, 0._plflt, x2, y2)
+         & 0, 0._plflt, 0, 0._plflt, .true., x2, y2)
 #else
     call plshade(z, '', xmin, xmax, ymin, ymax, &
          & clevel, huge(0._plflt), 0, ccol, 1, &
@@ -90,8 +90,8 @@ contains
     real(kind=plflt), intent(in), dimension(:) :: clevels, x1, y1
 
 #ifdef HAVE_PLWIDTH
-    call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
-            & 0, 0._plflt, x1, y1)
+    call plshades(z, xmin, xmax, ymin, ymax, clevels, 0._plflt, &
+            & 0, 0._plflt, .true., x1, y1)
 #else
     call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0, &
             & 0, 0, x1, y1)
@@ -106,8 +106,8 @@ contains
     real(kind=plflt), intent(in), dimension(:,:) :: x2, y2
 
 #ifdef HAVE_PLWIDTH
-    call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0._plflt, &
-            & 0, 0._plflt, x2, y2)
+    call plshades(z, xmin, xmax, ymin, ymax, clevels, 0._plflt, &
+            & 0, 0._plflt, .true., x2, y2)
 #else
     call plshades(z, '', xmin, xmax, ymin, ymax, clevels, 0, &
             & 0, 0, x2, y2)

@@ -27,9 +27,9 @@ module gr_utils
 
   use gr_msg
 
-  use g, only: g_find_program_in_path, g_get_home_dir
+  use g, only: g_find_program_in_path, g_get_home_dir, &
+       & g_file_test, g_get_current_dir
   use gtk, only: G_FILE_TEST_IS_REGULAR, G_FILE_TEST_IS_DIR
-  use gtk_os_dependent, only: g_file_test, g_get_current_dir
 
   implicit none
 

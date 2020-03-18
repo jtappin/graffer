@@ -519,7 +519,7 @@ contains
        where(lg > 100) lg = lg*max(scale,1)
     end if
 
-    call plstyl(nseg, ld(1), lg(1))
+    call plstyl(ld, lg)
 
   end subroutine gr_plot_linesty
 

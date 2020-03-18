@@ -677,9 +677,9 @@ contains
              end if
           end if
           if (c2d) then
-             call plcont(z, [clevels(i)], x2, y2)
+             call plcont(z, 1, data%ndata, 1, data%ndata2, [clevels(i)], x2, y2)
           else
-             call plcont(z, [clevels(i)], x1, y1)
+             call plcont(z, 1, data%ndata, 1, data%ndata2, [clevels(i)], x1, y1)
           end if
        end if
     end do

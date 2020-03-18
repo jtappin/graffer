@@ -79,12 +79,13 @@ contains
     real(kind=plflt) :: page_aspect
     type(graff_hard), pointer :: hardset
     logical :: status
-
+    integer :: plrc
+    
     if (gr_plot_is_open) return
 
     hardset => pdefs%hardset
 
-    call plparseopts(PL_PARSE_SKIP)
+    plrc = plparseopts(PL_PARSE_SKIP)
     call plscmap0(red, gre, blu)
 
     if (present(device)) then
@@ -195,12 +196,12 @@ contains
        if (.not. c_associated(plotting_area)) return
 
        call plsdev("extcairo")
-       call plsetopt("drvopt", "set_background=1")
+       plrc = plsetopt("drvopt", "set_background=1")
 
        call hl_gtk_drawing_area_get_size(plotting_area, &
             & width=width, height=height)
        write(geometry, "(I0,'x',I0)") width, height
-       call plsetopt("geometry", geometry)
+       plrc = plsetopt("geometry", geometry)
 
        call plscolor(1)
        call plinit()
