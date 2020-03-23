@@ -40,7 +40,7 @@ module gr_plot
   use gr_eval
   use gr_sort
   use gr_text_utils
-  use gr_version_dependent
+  use gr_shading
 
   implicit none
 
