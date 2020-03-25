@@ -32,7 +32,7 @@ module gr_plot_procs
   use gr_plot_utils
 
   use gr_text_utils
-  use gr_shading
+  use gr_interfaces
 
   implicit none
 
