@@ -1,20 +1,3 @@
-; Copyright (C) 2013
-; James Tappin
-
-; This is free software; you can redistribute it and/or modify
-; it under the terms of the GNU General Public License as published by
-; the Free Software Foundation; either version 3, or (at your option)
-; any later version.
-
-; This software is distributed in the hope that it will be useful,
-; but WITHOUT ANY WARRANTY; without even the implied warranty of
-; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-; GNU General Public License for more details.
-
-; You should have received a copy of the GNU General Public License along with
-; this program; see the files COPYING3 and COPYING.RUNTIME respectively.
-; If not, see <http://www.gnu.org/licenses/>.
-
 pro graff_define__define
 ;+
 ; NAME:
@@ -37,6 +20,8 @@ pro graff_define__define
 ;	Extracted: 30/6/05; SJT
 ;	Add isotropic option: 25/6/08; SJT
 ;	Add support for a second Y-scale: 22/12/11; SJT
+;	Make coordinates double: 24/5/17; SJT
+;	Add fontopt field to allow TT fonts to be used: 11/2/20; SJT
 ;-
 pdefs = {graff_define, $
          Version:   intarr(2), $
@@ -44,10 +29,11 @@ pdefs = {graff_define, $
          Dir:       '', $
          Title:     '', $
          Subtitle:  '', $
-         Charsize:  .0, $
-         Axthick:   0., $
-         Position:  fltarr(4), $
-         Aspect:    fltarr(2), $
+         Charsize:  0.d0, $
+         Axthick:   0.d0, $
+         fontopt:   0, $
+         Position:  dblarr(4), $
+         Aspect:    dblarr(2), $
          Isotropic: 0b, $
          match:     0b, $
          Xrange:    dblarr(2), $
@@ -65,7 +51,7 @@ pdefs = {graff_define, $
          Ysty_r:    {graff_style}, $
          ytransform: replicate({!axis}, 2), $
          Ctable:    0, $
-         Gamma:     .0, $
+         Gamma:     0.d0, $
          Nsets:     0, $
          Cset:      0, $ $
          Data:      ptr_new(), $
@@ -80,7 +66,6 @@ pdefs = {graff_define, $
          Opts: {graff_opts}, $
          Ds_dir:       '', $
          Chflag:       0b, $
-         Short_colour: 0b, $
          is_ascii:     0b $
         }
 

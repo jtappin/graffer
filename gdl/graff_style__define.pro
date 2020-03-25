@@ -36,6 +36,7 @@ pro graff_style__define
 ; MODIFICATION HISTORY:
 ;	Extracted: 30/6/05; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
+;	Remove Xmajor field: unused: 25/3/20; SJT
 ;-
 
 Xsty = {graff_style, $
@@ -46,7 +47,6 @@ Xsty = {graff_style, $
         Tzero:   0l, $
         minor:   0, $
         major:   0, $
-        xmajor:  0.d0, $
         format:  '', $
         values:  ptr_new()}
 
