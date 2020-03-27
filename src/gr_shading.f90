@@ -15,7 +15,7 @@
 ! this program; see the files COPYING3 and COPYING.RUNTIME respectively.
 ! If not, see <http://www.gnu.org/licenses/>.
 
-module gr_interfaces
+module gr_shading
   ! Module to present simplified shading interface. Formerly had
   ! version dependent APIs.
   ! Also provies a float32 interface to plwidth.
@@ -84,4 +84,4 @@ contains
 
   end subroutine gr_plshades2
 
-end module gr_interfaces
+end module gr_shading
