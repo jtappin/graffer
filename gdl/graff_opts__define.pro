@@ -41,6 +41,7 @@ optblock = {graff_opts, $
             Auto_delay:  0., $
             S2d:         0b, $
             Mouse:       0b, $
+            colour_menu: 0b, $
             pdfviewer:   '' $
            }
 
