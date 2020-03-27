@@ -23,17 +23,14 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
                thick, neval = neval, description = description, frange $
                = frange, sort = sort, errtype = $
                errtype, funcz = funcz, ascii = ascii, noclip = noclip, $
-               min_val=min_val, max_val=max_val, $
                mouse = mouse, z_format = z_format, z_nlevels = $
                z_nlevels, z_levels = z_levels, z_colours = z_colours, $
                z_style = z_style, z_thick = z_thick, z_range = $
                z_range, z_label = z_label, z_pxsize = z_pxsize, $
                z_invert = z_invert, z_fill = z_fill, z_log = z_log, $
                z_ctable = z_ctable, xy_file = xy_file, z_file = $
-               z_file, z_lmap = z_lmap, $
-               func_file = func_file, y_axis = y_axis, $
-               z_missing = z_missing, z_charsize = z_charsize, z_mode $
-               = zmode
+               z_file, func_file = func_file, y_axis = y_axis, $
+               z_missing = z_missing, z_charsize = z_charsize
 
 ;+
 ; GRAFF_ADD
@@ -47,9 +44,8 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;               style=style, psym=psym, symsize=symsize, colour=colour, $
 ;               thick=thick, neval=neval, description=description, $
 ;               frange=frange, /ascii, /noclip, $
-;               min_val=min_val, max_val=max_val, $
 ;               mouse=mouse,z_format=z_format, z_nlevels = z_nlevels, $
-;               z_lmap=z_lmap, z_levels = $ 
+;               z_levels = $ 
 ;               z_levels, z_colours = z_colours, z_style = z_style, $
 ;               z_thick = z_thick, z_range = z_range, z_label = $
 ;               z_label, z_pxsize = z_pxsize, z_invert = z_invert, $
@@ -60,14 +56,14 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;
 ; Arguments:
 ;	file	string	input	The graffer file to modify.
-;	z	double	input	The Z values for a 2-D dataset (If
+;	z	float	input	The Z values for a 2-D dataset (If
 ;				only 2 arguments are present, then
 ;				they are treated as X & Y)
-;	x	double	input	The x values to add.
-;	y	double	input	The y values to add.
+;	x	float	input	The x values to add.
+;	y	float	input	The y values to add.
 ;
 ; Keywords:
-;	errors	double	input	Array with errors, 1-d or (m,n).
+;	errors	float	input	Array with errors, 1-d or (m,n).
 ;	errtype string	input	Specify error types as code
 ;				(e.g. "XXY" for asymmetrical errors in
 ;				X and symmetric errors in Y)
@@ -76,7 +72,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	y_func	string	input	Function specification for y = f(x) or
 ;				y = f(t)
 ;	z_func	string	input	Function specification for z = f(x,y)
-;	frange  double	input	The range of x, y or t over which to
+;	frange  float	input	The range of x, y or t over which to
 ;				plot a function
 ;	polar	int	input	If unset or 0 rectangular, 1 = polar
 ;				in radians, 2 = polar in degrees.
@@ -89,15 +85,13 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	join	int	input	The style of joining: 0 - none
 ;					 	      1 - sloping lines
 ;						      2 - histogram
-;	symsize double	input	The size for the symbols (relative to
+;	symsize float	input	The size for the symbols (relative to
 ;				standard)
 ;	colour	int	input	Colour number - standard GRAFFER
 ;                                               colours (which may
 ;                                               well not work on
 ;                                               current device).
-;				May also be a triple or a long value
-;				with a "packed" colour
-;	thick	double	input	Line thickness.
+;	thick	float	input	Line thickness.
 ;	neval	int	input	The number of times to evaluate a
 ;				function. (2-elements for funcz)
 ;	description str input	A description of the data set.
@@ -107,42 +101,37 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;				file (by default a binary graffer file
 ;				is generated).
 ;	noclip		input	If  set, then disable clipping to the
-;				axis box.
-;	min_val		input	Set a minimum data value to display
-;	max_val		input	Set a maximum data value to display
+;				axis box. 
 ;	mouse	int	input	If explicitly set to zero then
 ;				disable mouse-editing of the dataset.
 ;	z_format int	input	For 2-D datasets, select display
 ;				format (0=contour, 1=colour image)
 ;	z_nlevels int	input	For 2D datasets, select number of
 ;				automatic contours
-;	z_levels double	input	For 2D datasets, select levels for
+;	z_levels float	input	For 2D datasets, select levels for
 ;				explicit contours
-;	z_lmap  int	input	For 2-D datasets, set the mapping of
-;				automatic contour levels. 0=linear,
-;				1=log, 2=sqrt
 ;	z_colours int	input	For 2D datasets, select the colours
 ;				for the contours
 ;	z_style	int	input	For 2D datasets, select linestyles for contours
-;	z_thick	double	input	For 2D datasets, select line
+;	z_thick	float	input	For 2D datasets, select line
 ;				thicknesses for contours
 ;	z_label	int	input	Specify the interval of contours for labelling.
 ;	/z_fill		input	If set, then fill the contours.
 ;	z_range	int	input	For 2-D datasets, specify the cutoff
 ;				range for image displays
-;	z_pxsize double	input	For 2D datasets, specify the pixel
+;	z_pxsize float	input	For 2D datasets, specify the pixel
 ;				size to use in images for PS device.
 ;	/z_invert	input	For image display, invert the colour
 ;				table if set.
-;	z_mode	int	input	0=linear, 1=log, 2=sqrt. For colour displays.
+;	/z_log		input	If set, then map the Z values logarithmically.
 ;	z_ctable int	input	Select a colour table for 2-D display
 ;				of images.
 ;	xy_file	string	input	A file with a graffer dataset (x-y plot).
 ;	z_file	string	input	A file with a graffer dataset (2-D data).
 ;	func_file string input	A file with a graffer function dataset.
 ;	y_axis	int	input	Specify which Y axis to use. (0 or 1)
-;	z_missing double	input	A missing value to use for warped images.
-;	z_charsize double input	The character size (relative to
+;	z_missing float	input	A missing value to use for warped images.
+;	z_charsize float input	The character size (relative to
 ;				default) for contour labels.
 ;	
 ;
@@ -170,10 +159,6 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	Add option to select secondary Y-axis: 23/12/11; SJT
 ;	Make errtype match documents, fix leak: 25/1/12; SJT
 ;	Deprecate func[xyz], replace with [xyz]_func: 3/2/12; SJT
-;	Add min_val, max_val: 2/6/15; SJT
-;	z_log -> z_mode: 18/11/15: SJT
-;	Add non-linear contour level maps: 12/10/16; SJT
-;	Allow long/triple colours: 1/3/19; SJT
 ;-
 
 ;	Check that the necessary inputs are present
@@ -185,8 +170,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
         message, /continue, $
                  "Both X_FUNC and the obsolete FUNCX are set, ignoring FUNCX" $
      else begin
-        message, /continue, $
-                 "FUNCX is obsolete, please use X_FUNC " + $
+        message, /continue, "FUNCX is obsolete, please use X_FUNC " + $
                  "instead"
         x_func = funcx
      endelse
@@ -233,30 +217,16 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 
   case (n_params()) of
      0: message, "Must specify a GRAFFER file"
-     1: if (~keyword_set(x_func) && $
-            ~keyword_set(y_func) && $
-            ~keyword_set(z_func) && $
-            ~keyword_set(xy_file) && $
-            ~keyword_set(z_file) && $
+     1: if (~keyword_set(x_func) and $
+            ~keyword_set(y_func) and $
+            ~keyword_set(z_func) and $
+            ~keyword_set(xy_file) and $
+            ~keyword_set(z_file) and $
             ~keyword_set(func_file)) then $
                message, "Must give data arrays, data file or a function specification"
      2: begin
-        sx = size(a1)
-        if sx[0] eq 2 &&  (sx[1] eq 2 || sx[2] eq 2) then begin
-           if sx[1] eq 2 then begin
-              x = double(reform(a1[0, *]))
-              y = double(reform(a1[1, *]))
-           endif else begin
-              x = double(a1[*, 0])
-              y = double(a1[*, 1])
-           endelse
-        endif else if sx[sx[0]+1] eq 6 || sx[sx[0]+1] eq 9 then begin
-           x = double(real_part(a1))
-           y = double(imaginary(a1))
-        endif else begin
-           y = double(a1)
-           x = dindgen(n_elements(y))
-        endelse
+        y = double(a1)
+        x = dindgen(n_elements(y))
      end
      3: begin                   ; 1-D dataset
         x = double(a1)
@@ -299,11 +269,11 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 
   if (keyword_set(xy_file)) then begin
      istat = gr_xy_read(pdefs, xy_file)
-     if (istat eq 0) then message, "Failed to add dataset from: ", $
+     if (istat eq 0) then message, "Failed to add dataset from: "+ $
                                    xy_file
   endif else if keyword_set(z_file) then begin
      istat = gr_z_read(pdefs, z_file)
-     if (istat eq 0) then message, "Failed to add dataset from: ", $
+     if (istat eq 0) then message, "Failed to add dataset from: "+ $
                                    z_file
      
   endif else if (n_params() eq 3 or n_params() eq 2) then begin ; Ordinary data
@@ -468,28 +438,17 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
   if (n_elements(symsize) ne 0) then  (*pdefs.data)[pdefs.cset].symsize $
      = symsize
   if (n_elements(style) ne 0) then (*pdefs.data)[pdefs.cset].line = style
-  if (n_elements(colour) ne 0) then begin
-     if n_elements(colour) eq 3 then begin
-        (*pdefs.data)[pdefs.cset].colour = -2
-        (*pdefs.data)[pdefs.cset].c_vals = colour
-     endif else if colour gt 255 then begin
-        (*pdefs.data)[pdefs.cset].colour = -2
-        (*pdefs.data)[pdefs.cset].c_vals = $
-           graff_colours(colour, /triple)
-     endif else (*pdefs.data)[pdefs.cset].colour = colour
-  endif
+  if (n_elements(colour) ne 0) then  (*pdefs.data)[pdefs.cset].colour $
+     = colour
   if (n_elements(thick) ne 0) then  (*pdefs.data)[pdefs.cset].thick = thick
   if (keyword_set(sort)) then (*pdefs.data)[pdefs.cset].sort = 1
   if (n_elements(description) ne 0) then $
      (*pdefs.data)[pdefs.cset].descript = description 
-  if (n_elements(noclip)  ne 0) then (*pdefs.data)[pdefs.cset].noclip = noclip
-  if n_elements(min_val) ne 0 then (*pdefs.data)[pdefs.cset].min_val = min_val $
-  else (*pdefs.data)[pdefs.cset].min_val = !values.d_nan
-  if n_elements(max_val) ne 0 then (*pdefs.data)[pdefs.cset].max_val = max_val $
-  else (*pdefs.data)[pdefs.cset].max_val = !values.d_nan
-
+  if (n_elements(noclip)  ne 0) then (*pdefs.data)[pdefs.cset].noclip $
+     = noclip
   if (n_elements(mouse) ne 0) then (*pdefs.data)[pdefs.cset].medit = mouse
   if (n_elements(y_axis) ne 0) then (*pdefs.data)[pdefs.cset].y_axis = $
+     $
      y_axis
 
   if (keyword_set(rescale)) then begin
@@ -507,28 +466,13 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      endif else if keyword_set(z_nlevels) then $
         (*pdefs.data)[pdefs.cset].zopts.N_levels = z_nlevels $
      else (*pdefs.data)[pdefs.cset].zopts.N_levels = 6
-     if keyword_set(z_lmap) then (*pdefs.data)[pdefs.cset].zopts.lmap $
-        = z_lmap
 
      if n_elements(z_colours) gt 0 then begin
         (*pdefs.data)[pdefs.cset].zopts.N_cols = n_elements(z_colours)
-        case size(z_colours, /type) of
-           11: (*pdefs.data)[pdefs.cset].zopts.Colours = z_colours
-           7: begin
-              clist = gr_cont_col_get(z_colours)
-              if size(clist, /type) eq 7 then $
-                 (*pdefs.data)[pdefs.cset].zopts.Colours = clist $
-              else begin
-                 (*pdefs.data)[pdefs.cset].zopts.N_cols = 1
-                 (*pdefs.data)[pdefs.cset].zopts.Colours = list(1)
-              endelse
-           end
-           else: (*pdefs.data)[pdefs.cset].zopts.Colours = $
-              list(z_colours,  /extr)
-        endcase
+        (*pdefs.data)[pdefs.cset].zopts.Colours = ptr_new(z_colours)
      endif else begin
         (*pdefs.data)[pdefs.cset].zopts.N_cols = 1
-        (*pdefs.data)[pdefs.cset].zopts.Colours = list(1)
+        (*pdefs.data)[pdefs.cset].zopts.Colours = ptr_new(1)
      endelse
 
      if n_elements(z_ctable) ne 0 then $
@@ -544,7 +488,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 
      if keyword_set(z_thick) then begin
         (*pdefs.data)[pdefs.cset].zopts.N_thick = n_elements(z_thick)
-        (*pdefs.data)[pdefs.cset].zopts.thick = ptr_new(double(z_thick))
+        (*pdefs.data)[pdefs.cset].zopts.thick = ptr_new(float(z_thick))
      endif else begin
         (*pdefs.data)[pdefs.cset].zopts.N_thick = 1
         (*pdefs.data)[pdefs.cset].zopts.Thick = ptr_new(1.)
@@ -566,12 +510,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      if (n_elements(z_missing) ne 0) then $
         (*pdefs.data)[pdefs.cset].zopts.missing = z_missing
      (*pdefs.data)[pdefs.cset].zopts.fill = keyword_set(z_fill)
-     if n_elements(z_mode) ne 0 then $
-        (*pdefs.data)[pdefs.cset].zopts.ilog = z_mode $
-     else if n_elements(z_log) ne 0 then begin
-        (*pdefs.data)[pdefs.cset].zopts.ilog = z_log
-        print, "Z_LOG is now deprecated, use Z_MODE"
-     endif else (*pdefs.data)[pdefs.cset].zopts.ilog = 0
+     (*pdefs.data)[pdefs.cset].zopts.ilog = keyword_set(z_log)
   endif
 
   gr_bin_save, pdefs

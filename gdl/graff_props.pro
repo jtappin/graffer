@@ -47,7 +47,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
                  h_cmyk, ctable = ctable, h_print = h_print, h_viewer $
                  = h_viewer, h_file = h_file, h_psdev = h_psdev, $
                  h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, h_pdfdev = $
-                 h_pdfdev, h_pdfviewer = h_pdfviewer
+                 h_pdfdev
 ;+
 ; GRAFF_PROPS
 ;	User-callable interface to set global properties of a graffer
@@ -128,7 +128,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;				turn off the minor ticks. If a
 ;				non-unit value then set the number of
 ;				minor intervals to that.
-;	[xyyr]major	input	Set the number of major intervals.
+;	[xyyr]major	input	Set the size of major intervals.
 ;	[xyyr]tickv	input	Set explicit tick locations. Set to a
 ;				scalar value, or set [xyyr]major without
 ;				setting this key to revert to automatic.
@@ -177,8 +177,6 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;	h_viewer	input	Specify the command to view EPS output
 ;				files (can be a scalar or 2-element aray).
 ;	h_file		input	Specify the output file for hardcopies.
-;	h_pdfviewer	input	Specify the command to view PDF output
-;				files (can be a scalar or 2-element aray).
 ;	h_psdev		input	Specify the PS device driver (plplot).
 ;	h_epsdev	input	Specify the EPS device driver (plplot).
 ;	h_pdfdev	input	Specify the PDF device driver (plplot).
@@ -206,9 +204,6 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;	Add options for secondary Y-axis: 23/12/11; SJT
 ;	Add some more hardcopy options: 16/2/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
-;	Add PDF keys: 21/9/16; SJT
-;	Add optional return argument: 8/1/18; SJT
-;	Reorder axis settings so autoscale nws about log: 27/9/19; SJT
 ;	Add options for plplot drivers: 29/11/13; SJT
 ;-
 
@@ -269,11 +264,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 
 ;	X axis settings
 
-  if (n_elements(xtitle) ne 0) then pdefs.xtitle = xtitle
-  if (n_elements(xlog) ne 0) then pdefs.xtype = keyword_set(xlog)
-
   if (n_elements(xrange) eq 2) then pdefs.xrange = xrange $
   else if keyword_set(xauto) then  gr_autoscale, pdefs, /xaxis, /ignore
+
+  if (n_elements(xtitle) ne 0) then pdefs.xtitle = xtitle
+  if (n_elements(xlog) ne 0) then pdefs.xtype = keyword_set(xlog)
 
 ;	Standard IDL style settings
 
@@ -286,11 +281,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      else  pdefs.xsty.idl = pdefs.xsty.idl and (not 2)
   endif
   if (n_elements(xaxes) ne 0) then begin
-     if ~keyword_set(xaxes) then pdefs.xsty.idl = pdefs.xsty.idl or 4 $
+     if keyword_set(xaxes) then pdefs.xsty.idl = pdefs.xsty.idl or 4 $
      else  pdefs.xsty.idl = pdefs.xsty.idl and (not 4)
   endif
   if (n_elements(xbox) ne 0) then begin
-     if ~keyword_set(xbox) then pdefs.xsty.idl = pdefs.xsty.idl or 8 $
+     if keyword_set(xbox) then pdefs.xsty.idl = pdefs.xsty.idl or 8 $
      else  pdefs.xsty.idl = pdefs.xsty.idl and (not 8)
   endif
 
@@ -304,7 +299,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      endcase
   endif
   if n_elements(xmajor) ne 0 then begin
-     pdefs.xsty.major = xmajor
+     pdefs.xsty.xmajor = xmajor
      if  ptr_valid(pdefs.xsty.values) and n_elements(xtickv) eq 0 then $
         ptr_free, pdefs.xsty.values
   endif
@@ -342,11 +337,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 
 ;	Y axis settings
 
-  if (n_elements(ytitle) ne 0) then pdefs.ytitle = ytitle
-  if (n_elements(ylog) ne 0) then pdefs.ytype = keyword_set(ylog)
-
   if (n_elements(yrange) eq 2) then pdefs.yrange = yrange $
   else if keyword_set(yauto) then  gr_autoscale, pdefs, /yaxis, /ignore
+
+  if (n_elements(ytitle) ne 0) then pdefs.ytitle = ytitle
+  if (n_elements(ylog) ne 0) then pdefs.ytype = keyword_set(ylog)
 
 ;	Standard IDL style settings
 
@@ -359,11 +354,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      else  pdefs.ysty.idl = pdefs.ysty.idl and (not 2)
   endif
   if (n_elements(yaxes) ne 0) then begin
-     if ~keyword_set(yaxes) then pdefs.ysty.idl = pdefs.ysty.idl or 4 $
+     if keyword_set(yaxes) then pdefs.ysty.idl = pdefs.ysty.idl or 4 $
      else  pdefs.ysty.idl = pdefs.ysty.idl and (not 4)
   endif
   if (n_elements(ybox) ne 0) then begin
-     if ~keyword_set(ybox) then pdefs.ysty.idl = pdefs.ysty.idl or 8 $
+     if keyword_set(ybox) then pdefs.ysty.idl = pdefs.ysty.idl or 8 $
      else  pdefs.ysty.idl = pdefs.ysty.idl and (not 8)
   endif
 
@@ -377,7 +372,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      endcase
   endif
   if n_elements(ymajor) ne 0 then begin
-     pdefs.ysty.major = ymajor
+     pdefs.ysty.xmajor = ymajor
      if  ptr_valid(pdefs.ysty.values) and n_elements(ytickv) eq 0 then $
         ptr_free, pdefs.ysty.values
   endif
@@ -418,11 +413,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
   if (n_elements(yr_enable) ne 0) then pdefs.y_right = $
      keyword_set(yr_enable)
 
-  if (n_elements(yrtitle) ne 0) then pdefs.ytitle_r = yrtitle
-  if (n_elements(yrlog) ne 0) then pdefs.ytype_r = keyword_set(yrlog)
-
   if (n_elements(yrrange) eq 2) then pdefs.yrange_r = yrrange $
   else if keyword_set(yrauto) then  gr_autoscale, pdefs, yaxis = 2, /ignore
+
+  if (n_elements(yrtitle) ne 0) then pdefs.ytitle_r = yrtitle
+  if (n_elements(yrlog) ne 0) then pdefs.ytype_r = keyword_set(yrlog)
 
 ;	Standard IDL style settings
 
@@ -435,7 +430,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      else  pdefs.ysty_r.idl = pdefs.ysty_r.idl and (not 2)
   endif
   if (n_elements(yraxes) ne 0) then begin
-     if ~keyword_set(yraxes) then pdefs.ysty_r.idl = pdefs.ysty_r.idl or 4 $
+     if keyword_set(yraxes) then pdefs.ysty_r.idl = pdefs.ysty_r.idl or 4 $
      else  pdefs.ysty_r.idl = pdefs.ysty_r.idl and (not 4)
   endif
 
@@ -449,7 +444,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      endcase
   endif
   if n_elements(yrmajor) ne 0 then begin
-     pdefs.ysty_r.major = yrmajor
+     pdefs.ysty_r.xmajor = yrmajor
      if  ptr_valid(pdefs.ysty_r.values) and n_elements(yrtickv) eq 0 then $
         ptr_free, pdefs.ysty_r.values
   endif
@@ -492,8 +487,8 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
   if (n_elements(h_colour) ne 0) then pdefs.hardset.colour = $
      keyword_set(h_colour)
   if (n_elements(h_eps) ne 0) then begin
-     pdefs.hardset.eps = h_eps
-     if (h_eps and 1b) && n_elements(h_orient) eq 0 then $
+     pdefs.hardset.eps = keyword_set(h_eps)
+     if (keyword_set(h_eps) and n_elements(h_orient) eq 0) then $
         pdefs.hardset.orient = 1b
   endif
 
@@ -516,11 +511,6 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      0:                         ; Not given do nothing
      1: pdefs.hardset.viewer = [h_viewer, ' &']
      2: pdefs.hardset.viewer = h_viewer[0:1]
-  endcase
-  case  n_elements(h_pdfviewer) of
-     0:                         ; Not given do nothing
-     1: pdefs.hardset.pdfviewer = [h_pdfviewer, ' &']
-     2: pdefs.hardset.pdfviewer = h_pdfviewer[0:1]
   endcase
   if n_elements(h_file) ne 0 then pdefs.hardset.name = h_file
   if n_elements(h_psdev) ne 0 then pdefs.hardset.psdev = h_psdev
