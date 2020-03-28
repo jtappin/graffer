@@ -31,7 +31,7 @@ module graff_types
           & grid=0_int16, time=0_int16
      integer(kind=int32) :: tzero=0_int32
      integer(kind=int16) :: minor=0_int16, major=0_int16
-     real(kind=real64) :: xmajor=0._real64
+ !!    real(kind=real64) :: xmajor=0._real64
      character(len=40) :: format=''
      real(kind=real64), dimension(:), allocatable :: values
   end type graff_style
@@ -50,15 +50,18 @@ module graff_types
      logical(kind=int8) :: x_is_2d, y_is_2d
      integer(kind=int16) :: format=0
      logical(kind=int8) :: set_levels=.false.
-     integer(kind=int16) :: n_levels=0_int16, n_cols=0_int16, &
+     integer(kind=int16) :: n_levels=0_int16, lmap=0_int16, &
+          & n_cols=0_int16, &
           & n_sty=0_int16, n_thick=0_int16
-     real(kind=real32), dimension(:), allocatable :: thick
+     real(kind=real64), dimension(:), allocatable :: thick
      real(kind=real64), dimension(:), allocatable :: levels
      integer(kind=int16), dimension(:), allocatable :: style, colours
+     integer(kind=int16), dimension(:,:), allocatable :: raw_colours
      real(kind=real64), dimension(2) :: range=0._real64
      real(kind=real64) :: missing=0._real64
-     real(kind=real32) :: pxsize=0._real32, charsize=0._real32, gamma=0._real32
-     integer(kind=int16) :: label=0_int16, ctable=0_int16
+     real(kind=real64) :: pxsize=0._real32, charsize=0._real32, gamma=0._real32
+     integer(kind=int16) :: label=0_int16, label_off = 0_int16, &
+          & ctable=0_int16
      integer(kind=int8) :: fill=0_int8
      logical(kind=int8) :: ilog=.false., invert=.false., smooth=.false.
      integer(kind=int32) :: shade_levels
@@ -80,9 +83,11 @@ module graff_types
      type(graff_fdata) :: funct
      character(len=120) :: descript=''
      integer(kind=int16) :: pline=0_int16, psym=0_int16
-     real(kind=real32) :: symsize=0._real32
+     real(kind=real64) :: symsize=0._real64
      integer(kind=int16) :: line=0_int16, colour=0_int16
-     real(kind=real32) :: thick=0._real32
+     integer(kind=int16), dimension(3) :: c_vals=0_int16
+     real(kind=real64) :: thick=0._real64, min_val=0._real64, &
+          & max_val=0._real64
      integer(kind=int16) :: y_axis=0_int16
      logical(kind=int8) :: sort=.false., noclip=.false., medit=.false.
   end type graff_data
@@ -92,9 +97,10 @@ module graff_types
      character(len=40) :: id=''
      character(len=256) :: text=''
      integer(kind=int16) :: colour=0_int16
-     real(kind=real32) :: size=0._real32, orient=0._real32, align=0._real32
+     integer(kind=int16), dimension(3) :: c_vals = 0_int16
+     real(kind=real64) :: size=0._real64, orient=0._real64, align=0._real64
      integer(kind=int16) :: ffamily=0_int16, font=0_int16
-     real(kind=real32) :: thick=0._real32
+     real(kind=real64) :: thick=0._real64
      real(kind=real64) :: x=0._real64, y=0._real64
      integer(kind=int16) :: norm=0_int16, axis=0_int16
   end type graff_text
@@ -122,19 +128,20 @@ module graff_types
 
   ! Hardcopy options
   type :: graff_hard
-     logical(kind=int8) :: colour=.false., eps=.false., orient=.false., &
+     logical(kind=int8) :: colour=.true., eps=.false., orient=.false., &
           & timestamp=.false., cmyk=.false.
      integer(kind=int8) :: psize=0_int8
      integer(kind=int16) :: font_family=1_int16, font_wg_sl=1_int16
-     real(kind=real32), dimension(2) :: size=0._real32, off=0._real32
-     character(len=120), dimension(2) :: action='', viewer=''
+     real(kind=real64), dimension(2) :: size=0._real64, off=0._real64
+     character(len=120), dimension(2) :: action='', viewer='', &
+          & pdfviewer=''
      character(len=120) :: name=''
      character(len=16) :: psdev='', epsdev='', pdfdev='', svgdev=''
   end type graff_hard
 
   ! General options
   type :: graff_opts
-     real(kind=int32) :: auto_delay=300_int32
+     real(kind=float32) :: auto_delay=300._float32
      logical(kind=int8) :: s2d=.false., mouse=.false., colour_menu=.false., &
           & delete_function_files=.false.
      character(len=120) :: pdfviewer=''
@@ -149,9 +156,10 @@ module graff_types
      integer(kind=int16), dimension(2) :: version=0_int16
      character(len=120) :: name='', dir=''
      character(len=120) :: title='', subtitle=''
-     real(kind=real32) :: charsize=0._real32, axthick=0._real32
-     real(kind=real32), dimension(4) :: position=0._real32
-     real(kind=real32), dimension(2) :: aspect=0._real32
+     real(kind=real64) :: charsize=0._real64, axthick=0._real64
+     integer(kind=int16) :: fontopt = 0_int16
+     real(kind=real64), dimension(4) :: position=0._real64
+     real(kind=real64), dimension(2) :: aspect=0._real64
      logical(kind=int8) :: isotropic=.false., match=.false.
      logical(kind=int8) :: y_right=.false.
      real(kind=real64), dimension(2,3) :: axrange=0._real64
@@ -160,7 +168,7 @@ module graff_types
      type(graff_style), dimension(3) :: axsty
      type(window_spec) :: transform
      integer(kind=int16) :: ctable=0_int16
-     real(kind=real32) :: gamma=0._real32
+     real(kind=real64) :: gamma=0._real64
      integer(kind=int16) :: nsets=0_int16, cset=0_int16
      type(graff_data), dimension(:), allocatable :: data
      integer(kind=int16) :: ntext=0_int16

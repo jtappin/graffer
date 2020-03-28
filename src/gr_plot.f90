@@ -361,7 +361,7 @@ contains
          & call plslabelfunc(gr_format_labels)
 
     call plcol0(1)
-    call gr_pl_width(pdefs%axthick)
+    call plwidth(pdefs%axthick)
     call gr_plot_linesty(0_int16)
     call plschr(0._plflt, real(pdefs%charsize, plflt))
     call gr_plot_transform(index=1, full=.false._int8)
@@ -386,7 +386,7 @@ contains
 
     if (pdefs%y_right) then
        call plcol0(1)
-       call gr_pl_width(pdefs%axthick)
+       call plwidth(pdefs%axthick)
        call gr_plot_linesty(0_int16)
 
        ! The RH Y axis
@@ -469,7 +469,7 @@ contains
 
     call plcol0(int(data%colour))
 
-    call gr_pl_width(data%thick)
+    call plwidth(data%thick)
     call gr_plot_linesty(data%line, scale=ceiling(sqrt(data%thick)))
 
     select case (data%pline)

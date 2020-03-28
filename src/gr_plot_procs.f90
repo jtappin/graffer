@@ -379,7 +379,7 @@ contains
        do i = 1, 3
           call gr_plot_coords_v_w(xav(i), yav(i), xa(i), ya(i), nolog=.true.)
           call plcol0(1)
-          call gr_pl_width(1._real32)
+          call plwidth(1._plflt)
           call gr_plot_linesty(0_int16)
        end do
        call plline(xa, ya)
@@ -494,7 +494,7 @@ contains
        call gr_plot_linesty(pdefs%data(i)%line, &
             & scale = ceiling(sqrt(pdefs%data(i)%thick)))
        call plcol0(int(pdefs%data(i)%colour))
-       call gr_pl_width(pdefs%data(i)%thick)
+       call plwidth(pdefs%data(i)%thick)
 
        if (pdefs%data(i)%pline == 2 .and. .not. pdefs%key%one_point) then
           xx = [x(1), sum(x)/2., sum(x)/2., x(2)]
@@ -633,7 +633,7 @@ contains
     end if
 
     call plcol0(1)
-    call gr_pl_width(1.0_real32)
+    call plwidth(1.0_plflt)
     call gr_plot_linesty(0_int16)
 
     if (data%zdata%fill == 2_int8) call hl_gtk_info_bar_message(gr_infobar, &
@@ -660,7 +660,7 @@ contains
           end if
        else
           if (allocated(data%zdata%thick) .and. data%zdata%n_thick > 0) &
-               & call gr_pl_width(data%zdata%thick(mod(i-1, &
+               & call plwidth(data%zdata%thick(mod(i-1, &
                & data%zdata%n_thick)+1))
           if (allocated(data%zdata%colours) .and. data%zdata%n_cols > 0) &
                & call plcol0(int(data%zdata%colours(mod(i-1, &
