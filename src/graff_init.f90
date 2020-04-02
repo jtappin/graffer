@@ -57,7 +57,6 @@ contains
        pdefs%axsty(i)%tzero = 0_int32
        pdefs%axsty(i)%minor = 0_int16
        pdefs%axsty(i)%major = 0_int16
-       pdefs%axsty(i)%xmajor = 0._real64
        pdefs%axsty(i)%format = ""
     end do
 

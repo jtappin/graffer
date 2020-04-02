@@ -348,7 +348,7 @@ contains
   subroutine gr_plot_symbol(x, y, index, symsize)
     real(kind=plflt), intent(in), dimension(:) :: x, y
     integer(kind=int16) :: index
-    real(kind=real32) :: symsize
+    real(kind=real64) :: symsize
 
     ! Plot symbols at data points
 

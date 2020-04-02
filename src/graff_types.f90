@@ -31,7 +31,7 @@ module graff_types
           & grid=0_int16, time=0_int16
      integer(kind=int32) :: tzero=0_int32
      integer(kind=int16) :: minor=0_int16, major=0_int16
- !!    real(kind=real64) :: xmajor=0._real64
+     real(kind=real64) :: xmajor=0._real64    ! Keep it in to allow compiles FTTB
      character(len=40) :: format=''
      real(kind=real64), dimension(:), allocatable :: values
   end type graff_style
@@ -55,11 +55,12 @@ module graff_types
           & n_sty=0_int16, n_thick=0_int16
      real(kind=real64), dimension(:), allocatable :: thick
      real(kind=real64), dimension(:), allocatable :: levels
-     integer(kind=int16), dimension(:), allocatable :: style, colours
+     integer(kind=int16), dimension(:), allocatable :: style
+     integer(kind=int16), dimension(:), allocatable :: colours
      integer(kind=int16), dimension(:,:), allocatable :: raw_colours
      real(kind=real64), dimension(2) :: range=0._real64
      real(kind=real64) :: missing=0._real64
-     real(kind=real64) :: pxsize=0._real32, charsize=0._real32, gamma=0._real32
+     real(kind=real64) :: pxsize=0._real64, charsize=0._real64, gamma=0._real64
      integer(kind=int16) :: label=0_int16, label_off = 0_int16, &
           & ctable=0_int16
      integer(kind=int8) :: fill=0_int8
@@ -141,7 +142,7 @@ module graff_types
 
   ! General options
   type :: graff_opts
-     real(kind=float32) :: auto_delay=300._float32
+     real(kind=real32) :: auto_delay=300._real32
      logical(kind=int8) :: s2d=.false., mouse=.false., colour_menu=.false., &
           & delete_function_files=.false.
      character(len=120) :: pdfviewer=''

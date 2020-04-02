@@ -322,7 +322,9 @@ contains
           call rec%get_value(pdefs%isotropic,status)
        case ('GHA')
           call rec%get_value(pdefs%match,status)
-
+       case('GF')
+          call rec%get_value(pdefs%fontopt, status)
+          
           ! The X, Y and R keys are items relating
           ! to the X, Y and right-hand Y axes
           ! respectively  
@@ -703,6 +705,7 @@ contains
 
           ! Recognized tags for Text items
           ! C - colour
+          ! CV - Custom colour.
           ! S - character size
           ! O - orientation (degrees
           !     anticlockwise from the normal
@@ -725,6 +728,8 @@ contains
 
        case ('C')
           call rec%get_value(txt_s%colour, status)
+       case('CV')
+          call rec%get_value(txt_s%c_vals, status)
        case ('S')
           call rec%get_value(txt_s%size, status)
        case ('O')
@@ -804,6 +809,7 @@ contains
           ! S - symbol size
           ! L - line style
           ! C - colour
+          ! CV - Custom colour
           ! W - thickness (width)
           ! O - sorted? (Order)
           ! D - description
@@ -831,6 +837,8 @@ contains
           call rec%get_value(ds%line, status)
        case ('C')
           call rec%get_value(ds%colour, status)
+       case ('CV')
+          call rec%get_value(ds%c_vals, status)
        case ('W')
           call rec%get_value(ds%thick, status)
        case ('O')

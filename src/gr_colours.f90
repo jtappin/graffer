@@ -226,7 +226,7 @@ contains
     logical, intent(in) :: load
     integer, dimension(:), intent(out), optional :: r, g, b
     logical(kind=int8), intent(in), optional :: invert
-    real(kind=real32), intent(in), optional :: gamma
+    real(kind=real64), intent(in), optional :: gamma
 
     ! Select, and load or return a colour table.
 
