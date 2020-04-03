@@ -734,6 +734,8 @@ contains
              data%line = gr_int_val(tag_val(itag+1))
           case('C')
              data%colour = gr_int_val(tag_val(itag+1))
+          case('CV')
+             data%c_vals = gr_int_val(tag_val(itag+1), 3)
           case('W')
              data%thick = gr_flt_val(tag_val(itag+1))
           case('O')
@@ -807,6 +809,19 @@ contains
                 call gr_message("gr_get_ds_asc:  Contour colour "// &
                      & "list given without count - ignored")
              end if
+
+          case('ZCR')
+             if (cflag(2)) then 
+                if (allocated(data%zdata%raw_colours)) &
+                     & deallocate(data%zdata%raw_colours)
+                allocate(data%zdata%raw_colours(3,data%zdata%n_cols))
+                read(unit, *) data%zdata%raw_colours
+                exit
+             else 
+                call gr_message("gr_get_ds_asc:  Contour colour "// &
+                     & "list given without count - ignored")
+             end if
+
           case('ZCL')
              if (cflag(2)) then 
                 if (allocated(data%zdata%colours)) &
@@ -1137,6 +1152,8 @@ contains
 
           case('C')
              text%colour = gr_int_val(tag_val(itag+1))
+          case('CV')
+             text%c_vals = gr_int_val(tag_val(itag+1), 3)
           case('S')
              text%size = gr_flt_val(tag_val(itag+1))
           case('O')
@@ -1303,7 +1320,8 @@ contains
             & ":C:", data%colour, ":W:", data%thick, &
             & ":O:", f_c_logical(data%sort), ":K:", f_c_logical(data%noclip), &
             & ":E:", f_c_logical(data%medit)
-
+       if (data%colour == -2) write(unit, "(a,3i5)") 'CV:', data%c_vals
+       
        if (data%ndata > 0) then
           select case(data%type)
           case(0:8)
@@ -1369,6 +1387,11 @@ contains
                 end if
              end if
 
+             if (allocated(data%zdata%raw_colours)) then
+                write(unit, "(a)") "ZCR:"
+                write(unit, "(15i5)") data%zdata%raw_colours
+             end if
+             
              if (allocated(data%zdata%style)) then
                 if (data%zdata%n_sty <= 20) then
                    write(unit, "(a,20i4)") "ZS:", data%zdata%style
@@ -1413,6 +1436,8 @@ contains
 
        write(unit, "(a,i0,a,f8.3,a,f9.4, a,f8.5)") "C:", text%colour, &
             & ":S:", text%size, ":O:", text%orient, ":A:", text%align
+       if (text%colour == -2) write(unit, "(a,3i5)") 'CV:', text%c_vals
+       
        write(unit, "(2(a,i0), a,f7.2)") "FF:", text%ffamily, &
             & ":F:", text%font, ":W:", text%thick
        write(unit, "(a)") "TE:"
@@ -1422,7 +1447,9 @@ contains
     write(unit, "(a,i0)") "TTS:"
     write(unit, "(a,i0,a,f8.3,a,f9.4, a,f8.5)") "C:", text%colour, &
          & ":S:", text%size, ":O:", text%orient, ":A:", text%align
-    write(unit, "(2(a,i0), a,f7.2)") "FF:", text%ffamily, &
+    if (text%colour == -2) write(unit, "(a,3i5)") 'CV:', text%c_vals
+    
+     write(unit, "(2(a,i0), a,f7.2)") "FF:", text%ffamily, &
          & ":F:", text%font, ":W:", text%thick
     write(unit, "(a)") "TTE:"
 

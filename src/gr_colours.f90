@@ -17,7 +17,8 @@
 
 module gr_colours
   ! Colour table management. (Alternative version)
-
+  ! Now includes line colours.
+  
   use iso_fortran_env
   use plplot
 
@@ -46,9 +47,43 @@ module gr_colours
        &  '/opt/graffer/data/       ']
   character(len=*), parameter, private :: ctname='colour.table'
 
+  ! Values for line colours.
+  
+  integer, parameter, dimension(*), private :: red = [255, 0, 255, 0, 0, 0, &
+       & 255, 255, 255, 127, 0, 0, 127, 255, 85, 170, 170, 255, 0, 85, 0, 85, &
+       & 0, 85, 170, 255, 170, 255] 
+  integer, parameter, dimension(*), private :: gre = [255, 0, 0, 255, 0, 255, &
+       & 0, 255, 127, 255, 255, 127, 0, 0, 85, 170, 0, 85, 170, 255, 0, 85, &
+       & 170, 255, 0, 85, 170, 255]
+  integer, parameter, dimension(*), private :: blu = [255, 0, 0, 0, 255, 255, &
+       & 255, 0, 0, 0, 127, 255, 255, 127, 85, 170, 0, 85, 0, 85, 170, 255, &
+       & 170, 255, 170, 255, 0, 85]
+  integer, parameter :: n_cmap=size(red)
+
   private :: find_ct
 
 contains
+  subroutine gr_line_colours()
+    integer :: i
+
+    call plscmap0n(n_cmap)
+    do i = 0, n_cmap-1
+       call plscol0(i, red(i+1), gre(i+1), blu(i+1))
+    end do
+    
+  end subroutine gr_line_colours
+
+  subroutine gr_custom_line(rgb)
+    integer(kind=int16), intent(in), dimension(3) :: rgb
+
+    integer(kind=int32), dimension(3) :: rgbl
+
+    rgbl=int(rgb, int32)
+
+    call plscol0(n_cmap, rgbl(1), rgbl(2), rgbl(3))
+    call plcol0(n_cmap)
+  end subroutine gr_custom_line
+  
   subroutine gr_ct_init(basename, append, dirname, table_list)
     character(len=*), intent(in), optional :: basename, dirname
     logical, intent(in), optional :: append

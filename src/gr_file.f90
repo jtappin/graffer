@@ -907,8 +907,21 @@ contains
           end if
           allocate(ds%zdata%colours(asize))
           call rec%get_value(ds%zdata%colours, status)
+          
+          if (rec%tcode == idl_objref) then
+             if (allocated(ds%zdata%raw_colours)) &
+                  & deallocate(ds%zdata%raw_colours)
+             allocate(ds%zdata%raw_colours(3,asize))
+             call rec%get_value(ds%zdata%raw_colours, status)
+          end if
           ds%zdata%n_cols = int(asize, int16)
 
+       case('ZCR')
+          if (allocated(ds%zdata%raw_colours)) &
+               & deallocate(ds%zdata%raw_colours)
+          allocate(ds%zdata%raw_colours(dims(1), dims(2)))
+          call rec%get_value(ds%zdata%raw_colours, status)
+            
        case ('ZCT')
           call rec%get_value(ds%zdata%ctable, status)
 
@@ -1210,8 +1223,11 @@ contains
           else
              call rec%set_value('ZNL', gdata%zdata%n_levels, unit)
           end if
-          if (gdata%zdata%n_cols > 0)  &
-               & call rec%set_value('ZC ',gdata%zdata%colours , unit)
+          if (gdata%zdata%n_cols > 0)  then
+             call rec%set_value('ZC ',gdata%zdata%colours , unit)
+             if (allocated(gdata%zdata%raw_colours)) &
+                  & call rec%set_value('ZCR',gdata%zdata%raw_colours , unit)
+          end if
           if (gdata%zdata%n_sty > 0)  &
                & call rec%set_value('ZS ', gdata%zdata%style, unit)
           if (gdata%zdata%n_thick > 0)  &
@@ -1244,6 +1260,7 @@ contains
        call rec%set_value('N  ', gtext%norm, unit)
        call rec%set_value('AX ', gtext%axis, unit)
        call rec%set_value('C  ', gtext%colour, unit)
+       call rec%set_value('CV ', gtext%c_vals, unit)
        call rec%set_value('S  ', gtext%size, unit)
        call rec%set_value('O  ', gtext%orient, unit)
        call rec%set_value('A  ', gtext%align, unit)
@@ -1261,6 +1278,7 @@ contains
     call rec%set_value('TTS')
     call rec%put(unit, status)
     call rec%set_value('C  ', pdefs%text_options%colour, unit)
+    call rec%set_value('CV ', pdefs%text_options%c_vals, unit)
     call rec%set_value('S  ', pdefs%text_options%size, unit)
     call rec%set_value('O  ', pdefs%text_options%orient, unit)
     call rec%set_value('A  ', pdefs%text_options%align, unit)

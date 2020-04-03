@@ -36,23 +36,14 @@ module gr_plot
   use gr_plot_tools
   use gr_plot_procs
   use graff_init
-
+  use gr_colours
+  
   use gr_eval
   use gr_sort
   use gr_text_utils
   use gr_interfaces
 
   implicit none
-
-  integer, parameter, dimension(*), private :: red = [255, 0, 255, 0, 0, 0, &
-       & 255, 255, 255, 127, 0, 0, 127, 255, 85, 170, 170, 255, 0, 85, 0, 85, &
-       & 0, 85, 170, 255, 170, 255] 
-  integer, parameter, dimension(*), private :: gre = [255, 0, 0, 255, 0, 255, &
-       & 0, 255, 127, 255, 255, 127, 0, 0, 85, 170, 0, 85, 170, 255, 0, 85, &
-       & 170, 255, 0, 85, 170, 255]
-  integer, parameter, dimension(*), private :: blu = [255, 0, 0, 0, 255, 255, &
-       & 255, 0, 0, 0, 127, 255, 255, 127, 85, 170, 0, 85, 0, 85, 170, 255, &
-       & 170, 255, 170, 255, 0, 85]
 
   real(kind=plflt), parameter :: cm2pt = 72._plflt/2.54_plflt
 
@@ -79,15 +70,16 @@ contains
     real(kind=plflt) :: page_aspect
     type(graff_hard), pointer :: hardset
     logical :: status
-    integer :: plrc
+    integer :: plrc, i
     
     if (gr_plot_is_open) return
 
     hardset => pdefs%hardset
 
     plrc = plparseopts(PL_PARSE_SKIP)
-    call plscmap0(red, gre, blu)
 
+    call gr_line_colours()
+    
     if (present(device)) then
        if (hardset%name == '') then
           pdot = index(pdefs%name, '.', back=.true.)
@@ -465,10 +457,14 @@ contains
        y = r * sin(th*scale)
        if (ylog) y = log10(y)
     end if
-    if (data%colour < 0)  return
+    if (data%colour == -1) return
 
-    call plcol0(int(data%colour))
-
+    if (data%colour == -2) then
+       call gr_custom_line(data%c_vals)
+    else
+       call plcol0(int(data%colour))
+    end if
+    
     call plwidth(data%thick)
     call gr_plot_linesty(data%line, scale=ceiling(sqrt(data%thick)))
 

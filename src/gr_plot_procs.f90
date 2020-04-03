@@ -31,6 +31,8 @@ module gr_plot_procs
   use gr_plot_tools
   use gr_plot_utils
 
+  use gr_colours
+  
   use gr_text_utils
   use gr_interfaces
 
@@ -322,8 +324,9 @@ contains
 
     text => pdefs%text(index)
 
-    if (text%colour < 0) then
-       return
+    if (text%colour == -1)  return
+    if (text%colour == -2) then
+       call gr_custom_line(text%c_vals)
     else
        call plcol0(int(text%colour))
     end if
@@ -542,7 +545,7 @@ contains
     real(kind=real64), dimension(:,:), allocatable ::  x2, y2
     real(kind=real64), dimension(:), allocatable :: x1, y1
     logical :: c2d, clall
-    integer :: i
+    integer :: i, icc
     real(kind=real64) :: zmin, zmax, xmin, xmax, ymin, ymax, ccol
     logical :: xlog, ylog
 
@@ -647,6 +650,10 @@ contains
           call pl_setcontlabelparam(0.006_plflt, &
                & real(0.5*data%zdata%charsize, plflt), 0.25_plflt, 0)
        end if
+       
+       ! I'm not convinced that this will do what it is supposed to do!
+       ! It might have made sense in 2013, but I don't get it now.
+       ! SJT 2/4/20
        if (data%zdata%fill == 1_int8) then
           if (allocated(data%zdata%colours) .and. data%zdata%n_cols > 0) &
                & ccol = real(data%zdata%colours(mod(i-1, &
@@ -662,9 +669,15 @@ contains
           if (allocated(data%zdata%thick) .and. data%zdata%n_thick > 0) &
                & call plwidth(data%zdata%thick(mod(i-1, &
                & data%zdata%n_thick)+1))
-          if (allocated(data%zdata%colours) .and. data%zdata%n_cols > 0) &
-               & call plcol0(int(data%zdata%colours(mod(i-1, &
-               & data%zdata%n_cols)+1)))
+          if (allocated(data%zdata%colours) .and. data%zdata%n_cols > 0) then
+             icc = int(data%zdata%colours(mod(i-1, data%zdata%n_cols)+1))
+             if (icc == -1) cycle
+             if (icc == -2) then
+                call gr_custom_line(data%zdata%raw_colours(:, icc))
+             else
+                call plcol0(icc)
+             end if
+          end if
           if (allocated(data%zdata%style) .and. data%zdata%n_sty > 0) then
              if (allocated(data%zdata%thick) .and. data%zdata%n_thick > 0) then
                 call gr_plot_linesty(data%zdata%style(mod(i-1, &

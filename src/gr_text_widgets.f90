@@ -361,6 +361,7 @@ contains
     if (font < 1 .or. font > size(font_shape)) return
 
     call plschr(0._plflt, cs)
+    ! *** NEED TO ADD CUSTOM COLOUR HANDLING HERE ***
     call plcol0(icol)
     call plsfont(font_list(ffamily), font_shape(font), &
          & font_weight(font))

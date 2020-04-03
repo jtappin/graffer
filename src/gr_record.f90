@@ -127,6 +127,13 @@ contains
     character(len=120) :: iomsg
     integer :: i
 
+    ! List elements
+    integer(kind=int32) :: etcode, endims, edims
+    integer(kind=int8) :: ebval
+    integer(kind=int32) :: elval
+    integer(kind=int8), dimension(3) :: ebaval
+    integer(kind=int32), dimension(3) :: elaval
+
     status = 0
     inquire(unit=unit, opened=isopen)
     if (.not. isopen) then
@@ -354,6 +361,114 @@ contains
                 return
              end if
           end do
+
+       case(idl_objref)
+          ! Only one know case of this: contour colours as a list
+          allocate(this%ia_val(this%dims(1)), &
+               & this%iaa_val(3, this%dims(1)))
+
+          do i = 1, this%dims(1)
+             read(unit, iostat=ios, iomsg=iomsg) etcode, endims
+             if (ios /= 0) then
+                write(error_str, "(A)") &
+                     & "GR_READ_REC: Failed to read list element", &
+                     & trim(iomsg)
+                call gr_message(error_str)
+                status = 1
+                return
+             end if
+             if (endims == 0) then
+                select case (etcode)
+                case(idl_byte)
+                   read(unit, iostat=ios, iomsg=iomsg) ebval
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                   this%ia_val(i) = iand(int(ebval, int16), bmask)
+                case(idl_int)
+                   read(unit, iostat=ios, iomsg=iomsg) this%ia_val(i)
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                case(idl_long)
+                   read(unit, iostat=ios, iomsg=iomsg) elval
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                   this%ia_val(i)= int(elval, int16)
+                end select
+                this%iaa_val(:,i) = 0_int16
+
+             else
+                read(unit, iostat=ios, iomsg=iomsg) edims
+                if (ios /= 0) then
+                   write(error_str, "(A)") &
+                        & "GR_READ_REC: Failed to read list element", &
+                        & trim(iomsg)
+                   call gr_message(error_str)
+                   status = 1
+                   return
+                end if
+                if (edims /= 3) then
+                   write(error_str, "(A,i0,a)") &
+                        & "GR_READ_REC: Array element of list has ", &
+                        & edims, " elements, should have 3,"
+                   call gr_message(error_str)
+                   status = 1
+                   return
+                end if
+                select case (etcode)
+                case(idl_byte)
+                   read(unit, iostat=ios, iomsg=iomsg) ebaval
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                   this%iaa_val(:,i) = iand(int(ebaval, int16), bmask)
+                case(idl_int)
+                   read(unit, iostat=ios, iomsg=iomsg) this%iaa_val(:,i)
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                case(idl_long)
+                   read(unit, iostat=ios, iomsg=iomsg) elaval
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                   this%iaa_val(:,i) =int(elaval, int16)
+                end select
+                this%ia_val(i) = -2
+             end if
+          end do
        case default
           write(error_str, "(A, i0)") &
                & "GR_READ_REC: Unknown/inappropriate type code, ", this%tcode
@@ -377,7 +492,7 @@ contains
              return
           end if
           if (swap_end) call byte_swap(this%daa_val)
-          
+
        case(idl_float)
           allocate(this%raa_val(this%dims(1), this%dims(2)))
           read(unit, iostat=ios, iomsg=iomsg) this%raa_val
@@ -390,7 +505,7 @@ contains
              return
           end if
           if (swap_end) call byte_swap(this%raa_val)
-          
+
        case(idl_int)
           allocate(this%iaa_val(this%dims(1), this%dims(2)))
           read(unit, iostat=ios, iomsg=iomsg) this%iaa_val
@@ -403,8 +518,8 @@ contains
              return
           end if
           if (swap_end) call byte_swap(this%iaa_val)
-          
-        case(idl_long)
+
+       case(idl_long)
           allocate(this%laa_val(this%dims(1), this%dims(2)))
           read(unit, iostat=ios, iomsg=iomsg) this%laa_val
           if (ios /= 0) then
@@ -417,7 +532,7 @@ contains
           end if
           if (swap_end) call byte_swap(this%laa_val)
 
-        case(idl_byte)
+       case(idl_byte)
           allocate(this%baa_val(this%dims(1), this%dims(2)))
           read(unit, iostat=ios, iomsg=iomsg) this%baa_val
           if (ios /= 0) then
@@ -428,7 +543,7 @@ contains
              status = 1
              return
           end if
-          
+
        case default
           write(error_str, "(A, i0)") &
                & "GR_READ_REC: Unknown/inappropriate type code, ", this%tcode
@@ -734,7 +849,7 @@ contains
     end if
 
     select case (this%tcode)
-    case(idl_int)
+    case(idl_int, idl_objref)
        ival(:mxi) = this%ia_val(:mxi)
     case(idl_long)
        ival(:mxi) = int(this%la_val(:mxi), int16)
@@ -1047,7 +1162,7 @@ contains
        select case (this%tcode)
        case(idl_byte) 
           ival(:mxi,:mxj) = iand(int(this%iaa_val(:mxi,:mxj), int16), bmask)
-       case(idl_int) 
+       case(idl_int, idl_objref) 
           ival(:mxi,:mxj) = this%iaa_val(:mxi,:mxj)
        case(idl_long)
           ival(:mxi,:mxj) = int(this%laa_val(:mxi,:mxj), int16)
