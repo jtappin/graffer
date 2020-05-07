@@ -36,7 +36,9 @@ module gr_text_widgets
 
   use gr_plot
   use gr_text_utils
-
+  use gr_colours
+  use gr_colour_widgets
+  
   implicit none
 
   type(c_ptr), private :: text_window, text_draw, text_entry, text_id_entry, &
@@ -50,6 +52,18 @@ module gr_text_widgets
   integer(kind=int16), private :: csys
   real(kind=plflt), private :: csd
 
+  character(len=15), dimension(29), private, parameter :: &
+       & col_list = [character(len=15) :: &
+       & 'White (bg)', 'Black', 'Red', 'Green', 'Blue', 'Cyan', &
+       & 'Magenta', 'Yellow', 'Orange', '#7f ff 00', '#00 ff 7f', &
+       & '#00 7f ff', '#7f 00 ff', 'Mauve', 'Dark Grey', 'Light Grey', &
+       & 'Dark Red', 'Light Red', 'Dark Green', 'Light Green', 'Dark Blue', &
+       & 'Light Blue', 'Dark Cyan', 'Light Cyan', 'Dark Magenta', &
+       & 'Light Magenta', 'Dark Yellow', 'Light Yellow', 'Custom']
+
+  integer, parameter, private :: ccindex=size(col_list)-1
+  integer(kind=int16), private :: current_colour, c_red, c_green, c_blue
+
 contains
 
   subroutine gr_text_menu(index, x, y)
@@ -62,17 +76,11 @@ contains
     logical, dimension(2), target :: iapply = [.false., .true.]
     real(kind=c_double), target, dimension(3) :: align=[0._c_double, &
          & 0.5_c_double, 1.0_c_double]
-    character(len=15), dimension(29) :: col_list = [character(len=15) :: &
-         & 'Omit', 'White (bg)', 'Black', 'Red', 'Green', 'Blue', 'Cyan', &
-         & 'Magenta', 'Yellow', 'Orange', '#7f ff 00', '#00 ff 7f', &
-         & '#00 7f ff', '#7f 00 ff', 'Mauve', 'Dark Grey', 'Light Grey', &
-         & 'Dark Red', 'Light Red', 'Dark Green', 'Light Green', 'Dark Blue', &
-         & 'Light Blue', 'Dark Cyan', 'Light Cyan', 'Dark Magenta', &
-         & 'Light Magenta', 'Dark Yellow', 'Light Yellow']
     real(kind=c_double) :: xs, ys
     real(kind=c_double) :: xcmin, xcmax, xcstep,  ycmin, ycmax, ycstep
     real(kind=plflt) :: css
-
+    integer(kind=c_int) :: isel
+    
     text_ready = .false.
     call gr_text_init
 
@@ -201,9 +209,19 @@ contains
     junk = gtk_label_new("Colour:"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 2_c_int, 4_c_int)
 
-    text_clr_cbo = hl_gtk_combo_box_new(initial_choices=col_list,&
-         & active=int(text%colour, c_int)+1_c_int, &
-         & changed=c_funloc(gr_text_update), tooltip=&
+    current_colour = text%colour
+    if (text%colour == -2) then
+       isel = ccindex
+       c_red = text%c_vals(1)
+       c_green = text%c_vals(2)
+       c_blue = text%c_vals(3)
+    else
+       isel = text%colour
+       call gr_colour_triple(text%colour, c_red, c_green, c_blue)
+    end if
+    text_clr_cbo = hl_gtk_combo_box_new(initial_choices=col_list, &
+         & active=isel, &
+         & changed=c_funloc(gr_text_set_colour), tooltip= &
          & "Select the colour for the text string"//c_null_char)
     call hl_gtk_table_attach(jb, text_clr_cbo, 3_c_int, 4_c_int)
 
@@ -320,8 +338,14 @@ contains
        text%y = hl_gtk_spin_button_get_value(text_xy_sb(2))
        call hl_gtk_entry_get_text(text_id_entry, text=text%id)
        text%size = real(hl_gtk_spin_button_get_value(text_cs_sb), real32)
-       text%colour = int(gtk_combo_box_get_active(text_clr_cbo), int16) - &
-            & 1_int16
+!!$       text%colour = int(gtk_combo_box_get_active(text_clr_cbo), int16) - &
+!!$            & 1_int16
+       text%colour = current_colour
+       if (current_colour == -2) then
+          text%c_vals = [c_red, c_green, c_blue]
+       else
+          text%c_vals = 0_int16
+       end if
        text%align = real(hl_gtk_spin_button_get_value(text_algn_sb), real32)
        text%orient = real(hl_gtk_spin_button_get_value(text_ori_sb), real32)
        text%ffamily = int(gtk_combo_box_get_active(text_ffam_cbo), int16) + &
@@ -340,6 +364,39 @@ contains
     end if
   end subroutine gr_text_quit
 
+  subroutine gr_text_set_colour(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    integer :: icol
+    integer(kind=int16) :: r,g,b
+    logical :: update
+    
+    icol = gtk_combo_box_get_active(widget)
+    if (icol == ccindex) then
+       icol = -2
+       if (current_colour == -2) then
+          r = c_red
+          g = c_green
+          b = c_blue
+       else
+          call gr_colour_triple(current_colour, r, g, b)
+       end if
+       call gr_colour_define(text_window, r, g, b, update)
+       if (update) then
+          c_red = r
+          c_green = g
+          c_blue = b
+          current_colour = -2
+
+          call gr_text_update(widget, data)
+       end if
+    else
+       current_colour = icol
+       call gr_text_update(widget, data)
+    end if
+
+  end subroutine gr_text_set_colour
+  
   subroutine gr_text_update(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
@@ -352,7 +409,7 @@ contains
     if (.not. text_ready) return
 
     call hl_gtk_entry_get_text(text_entry, text=txt)
-    icol = gtk_combo_box_get_active(text_clr_cbo) - 1
+!    icol = gtk_combo_box_get_active(text_clr_cbo) 
     if (icol == -1) return
     cs = hl_gtk_spin_button_get_value(text_cs_sb)
     ffamily = gtk_combo_box_get_active(text_ffam_cbo)+1
@@ -361,8 +418,12 @@ contains
     if (font < 1 .or. font > size(font_shape)) return
 
     call plschr(0._plflt, cs)
-    ! *** NEED TO ADD CUSTOM COLOUR HANDLING HERE ***
-    call plcol0(icol)
+
+    if (current_colour >= 0) then
+       call plcol0(int(current_colour, int32))
+    else
+       call gr_custom_line(c_red, c_green, c_blue)
+    end if
     call plsfont(font_list(ffamily), font_shape(font), &
          & font_weight(font))
     call plclear()

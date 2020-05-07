@@ -31,8 +31,19 @@ module gr_1d_opts
   use graff_globals
 
   use gr_cb_common
-
+  use gr_colours
+  
   implicit none
+
+  character(len=15), dimension(30), parameter, private :: col_list = &
+       & [character(len=15) :: &
+       & 'Omit', 'White (bg)', 'Black', 'Red', 'Green', 'Blue', 'Cyan', &
+       & 'Magenta', 'Yellow', 'Orange', '#7f ff 00', '#00 ff 7f', &
+       & '#00 7f ff', '#7f 00 ff', 'Mauve', 'Dark Grey', 'Light Grey', &
+       & 'Dark Red', 'Light Red', 'Dark Green', 'Light Green', 'Dark Blue', &
+       & 'Light Blue', 'Dark Cyan', 'Light Cyan', 'Dark Magenta', &
+       & 'Light Magenta', 'Dark Yellow', 'Light Yellow', 'Custom']
+  integer, parameter, private :: ccindex=size(col_list)-2
 
 contains
   function gr_1d_opts_new() result(fr)
@@ -41,13 +52,6 @@ contains
     ! Define the options panel for 1-D datasets.
 
     type(c_ptr) :: junk, mnu, table, smnu
-    character(len=15), dimension(29) :: col_list = [character(len=15) :: &
-         & 'Omit', 'White (bg)', 'Black', 'Red', 'Green', 'Blue', 'Cyan', &
-         & 'Magenta', 'Yellow', 'Orange', '#7f ff 00', '#00 ff 7f', &
-         & '#00 7f ff', '#7f 00 ff', 'Mauve', 'Dark Grey', 'Light Grey', &
-         & 'Dark Red', 'Light Red', 'Dark Green', 'Light Green', 'Dark Blue', &
-         & 'Light Blue', 'Dark Cyan', 'Light Cyan', 'Dark Magenta', &
-         & 'Light Magenta', 'Dark Yellow', 'Light Yellow']
     character(len=20), dimension(15) :: sym_list = [character(len=20) :: &
          & 'No symbol', 'Plus', 'Asterisk', 'Dot', 'Diamond', 'Triangle', &
          & 'Square', 'Cross', 'Circle', 'Filled Diamond', 'Filled Triangle', &
@@ -59,6 +63,8 @@ contains
     character(len=10), dimension(3) :: coord_list = ['Rect      ', &
          & 'Polar     ', 'Polar (°)']
 
+    integer(kind=c_int) :: isel
+    
     fr = hl_gtk_box_new()
     table = hl_gtk_table_new()
     call hl_gtk_box_pack(fr, table, expand=FALSE)
@@ -66,9 +72,15 @@ contains
     junk = gtk_label_new("Colour:"//c_null_char)
     call hl_gtk_table_attach(table, junk, 0_c_int, 0_c_int, yopts=0_c_int)
 
+    if (pdefs%data(pdefs%cset)%colour == -2) then
+       isel = ccindex+1
+    else
+       isel = pdefs%data(pdefs%cset)%colour+1
+    end if
+    
     colour_cbo = hl_gtk_combo_box_new(initial_choices=col_list, &
          & changed=c_funloc(gr_1d_set_colour), &
-         & active=int(pdefs%data(pdefs%cset)%colour+1, c_int), &
+         & active=isel, &
          & tooltip="Select the colour for the plot trace"//c_null_char)
     call hl_gtk_table_attach(table, colour_cbo, 1_c_int, 0_c_int, yopts=0_c_int)
 

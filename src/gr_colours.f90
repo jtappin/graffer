@@ -18,7 +18,7 @@
 module gr_colours
   ! Colour table management. (Alternative version)
   ! Now includes line colours.
-  
+
   use iso_fortran_env
   use plplot
 
@@ -48,7 +48,7 @@ module gr_colours
   character(len=*), parameter, private :: ctname='colour.table'
 
   ! Values for line colours.
-  
+
   integer, parameter, dimension(*), private :: red = [255, 0, 255, 0, 0, 0, &
        & 255, 255, 255, 127, 0, 0, 127, 255, 85, 170, 170, 255, 0, 85, 0, 85, &
        & 0, 85, 170, 255, 170, 255] 
@@ -62,6 +62,19 @@ module gr_colours
 
   private :: find_ct
 
+  interface gr_custom_line
+     module procedure gr_custom_linea
+     module procedure gr_custom_line3
+  end interface gr_custom_line
+
+  interface gr_colour_triple
+     module procedure gr_colour_triple3
+     module procedure gr_colour_triplea
+  end interface gr_colour_triple
+
+  private :: gr_custom_linea, gr_custom_line3, &
+       & gr_colour_triple3, gr_colour_triplea
+  
 contains
   subroutine gr_line_colours()
     integer :: i
@@ -70,10 +83,10 @@ contains
     do i = 0, n_cmap-1
        call plscol0(i, red(i+1), gre(i+1), blu(i+1))
     end do
-    
+
   end subroutine gr_line_colours
 
-  subroutine gr_custom_line(rgb)
+  subroutine gr_custom_linea(rgb)
     integer(kind=int16), intent(in), dimension(3) :: rgb
 
     integer(kind=int32), dimension(3) :: rgbl
@@ -82,8 +95,33 @@ contains
 
     call plscol0(n_cmap, rgbl(1), rgbl(2), rgbl(3))
     call plcol0(n_cmap)
-  end subroutine gr_custom_line
-  
+  end subroutine gr_custom_linea
+
+  subroutine gr_custom_line3(r, g, b)
+    integer(kind=int16), intent(in) :: r, g, b
+
+    call plscol0(n_cmap, int(r, int32), int(g, int32), int(b, int32))
+    call plcol0(n_cmap)
+  end subroutine gr_custom_line3
+
+  subroutine gr_colour_triple3(index, r, g, b)
+    integer(kind=int16), intent(in) :: index
+    integer(kind=int16), intent(out) :: r, g, b
+
+    r = int(red(index+1), int16)
+    g = int(gre(index+1), int16)
+    b = int(blu(index+1), int16)
+
+  end subroutine gr_colour_triple3
+
+  subroutine gr_colour_triplea(index, rgb)
+    integer(kind=int16), intent(in) :: index
+    integer(kind=int16), intent(out), dimension(3) :: rgb
+
+    rgb = int([red(index+1), gre(index+1), blu(index+1)], int16)
+
+  end subroutine gr_colour_triplea
+
   subroutine gr_ct_init(basename, append, dirname, table_list)
     character(len=*), intent(in), optional :: basename, dirname
     logical, intent(in), optional :: append
