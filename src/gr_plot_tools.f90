@@ -411,8 +411,8 @@ contains
     case(8)	! Circle
        npoints = 31
        allocate(xs(npoints), ys(npoints))
-       do i = 1, 31
-          th = real(i*12, plflt)*pl_pi/180._plflt
+       do i = 1, npoints
+          th = real(i, plflt)*2._plflt*pl_pi/real(npoints-1, plflt)
           xs(i) = cos(th)*symsize
           ys(i) = sin(th)*symsize
        end do
@@ -438,8 +438,8 @@ contains
     case(12)	! Filled circle
        npoints = 30
        allocate(xs(npoints), ys(npoints))
-       do i = 1, 30
-          th = real(i*12, plflt)*pl_pi/180._plflt
+       do i = 1, npoints
+          th = real(i, plflt)*2._plflt*pl_pi/real(npoints, plflt)
           xs(i) = cos(th)*symsize
           ys(i) = sin(th)*symsize
        end do
@@ -455,7 +455,36 @@ contains
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: -1., 1., 0.]*symsize
        ys = [real(kind=plflt) :: 1., 1., -1]*symsize
-       filled = .true. 
+       filled = .true.
+    case(15)    ! Hexagon
+       npoints = 7
+       allocate(xs(npoints), ys(npoints))
+       do i = 1, npoints
+          th = real(i, plflt) * 2._plflt * pl_pi / real(npoints-1, plflt)``
+          xs(i) = cos(th)
+          ys(i) = sin(th)
+       end do
+       filled = .false.
+    case(16)    ! Filled Hexagon
+       npoints = 6
+       allocate(xs(npoints), ys(npoints))
+       do i = 1, npoints
+          th = real(i, plflt) * 2._plflt * pl_pi / real(npoints, plflt)``
+          xs(i) = cos(th)
+          ys(i) = sin(th)
+       end do
+       filled = .true.
+    case(17)    ! Horizontal bar
+       npoints = 2
+       allocate(xs(npoints), ys(npoints))
+       xs = [real(kind=plflt) :: -1., 1.]*symsize
+       ys = 0._plflt 
+    end select
+    case(18)    ! Vertical bar
+       npoints = 2
+       allocate(xs(npoints), ys(npoints))
+       xs = 0._plflt 
+       ys = [real(kind=plflt) :: -1., 1.]*symsize
     end select
 
     call gr_plot_linesty(0_int16)

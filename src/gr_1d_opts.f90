@@ -52,11 +52,12 @@ contains
     ! Define the options panel for 1-D datasets.
 
     type(c_ptr) :: junk, mnu, table, smnu
-    character(len=20), dimension(15) :: sym_list = [character(len=20) :: &
+    character(len=20), dimension(19) :: sym_list = [character(len=20) :: &
          & 'No symbol', 'Plus', 'Asterisk', 'Dot', 'Diamond', 'Triangle', &
          & 'Square', 'Cross', 'Circle', 'Filled Diamond', 'Filled Triangle', &
          & 'Filled Square', 'Filled Circle', 'Down Triangle', &
-         & 'Filled Down Triangle']
+         & 'Filled Down Triangle', 'Hexagon', 'Filled Hexagon', &
+         & 'Horizontal', 'Vertical']
     character(len=6), dimension(6) :: line_list = ['______', '......', &
          & '_ _ _ ', '_._._.', '_...  ', '__  __']
     character(len=5), dimension(3) :: join_list = ['None ', 'Line ', 'Histo']
