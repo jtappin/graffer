@@ -32,6 +32,7 @@ module gr_1d_opts
 
   use gr_cb_common
   use gr_colours
+  use gr_colour_widgets
   
   implicit none
 
@@ -43,7 +44,7 @@ module gr_1d_opts
        & 'Dark Red', 'Light Red', 'Dark Green', 'Light Green', 'Dark Blue', &
        & 'Light Blue', 'Dark Cyan', 'Light Cyan', 'Dark Magenta', &
        & 'Light Magenta', 'Dark Yellow', 'Light Yellow', 'Custom']
-  integer, parameter, private :: ccindex=size(col_list)-2
+  integer, parameter, private :: ccindex=size(col_list)-1
 
 contains
   function gr_1d_opts_new() result(fr)
@@ -74,7 +75,7 @@ contains
     call hl_gtk_table_attach(table, junk, 0_c_int, 0_c_int, yopts=0_c_int)
 
     if (pdefs%data(pdefs%cset)%colour == -2) then
-       isel = ccindex+1
+       isel = ccindex
     else
        isel = pdefs%data(pdefs%cset)%colour+1
     end if
@@ -169,13 +170,31 @@ contains
   subroutine gr_1d_set_colour(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
+    integer(kind=int16) :: icol, rc, gc, bc
+    logical :: accept
+    
     ! Set the colour for the trace
 
     if (.not. gui_active) return
 
-    pdefs%data(pdefs%cset)%colour = &
-         & int(gtk_combo_box_get_active(widget), int16)-1_int16
-
+    icol = int(gtk_combo_box_get_active(widget), int16)-1_int16
+    if (icol == ccindex) then
+       if (pdefs%data(pdefs%cset)%colour == -2) then
+          rc = pdefs%data(pdefs%cset)%c_vals(1)
+          gc = pdefs%data(pdefs%cset)%c_vals(2)
+          bc = pdefs%data(pdefs%cset)%c_vals(3)
+       else
+          call gr_colour_triple(pdefs%data(pdefs%cset)%colour, rc, gc, bc)
+       end if
+       call gr_colour_define(widget, rc, gc, bc, accept)
+       if (accept) then
+          pdefs%data(pdefs%cset)%colour = -2_int16
+          pdefs%data(pdefs%cset)%c_vals = [rc, gc, bc]
+       end if
+    else
+       pdefs%data(pdefs%cset)%colour = icol
+       pdefs%data(pdefs%cset)%c_vals = 0_int16
+    end if
     call gr_plot_draw(.true.)
   end subroutine gr_1d_set_colour
 

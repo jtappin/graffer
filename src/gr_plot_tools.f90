@@ -460,7 +460,7 @@ contains
        npoints = 7
        allocate(xs(npoints), ys(npoints))
        do i = 1, npoints
-          th = real(i, plflt) * 2._plflt * pl_pi / real(npoints-1, plflt)``
+          th = real(i, plflt) * 2._plflt * pl_pi / real(npoints-1, plflt)
           xs(i) = cos(th)
           ys(i) = sin(th)
        end do
@@ -469,7 +469,7 @@ contains
        npoints = 6
        allocate(xs(npoints), ys(npoints))
        do i = 1, npoints
-          th = real(i, plflt) * 2._plflt * pl_pi / real(npoints, plflt)``
+          th = real(i, plflt) * 2._plflt * pl_pi / real(npoints, plflt)
           xs(i) = cos(th)
           ys(i) = sin(th)
        end do
@@ -479,7 +479,6 @@ contains
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: -1., 1.]*symsize
        ys = 0._plflt 
-    end select
     case(18)    ! Vertical bar
        npoints = 2
        allocate(xs(npoints), ys(npoints))
