@@ -608,12 +608,14 @@ contains
        clall = .false.
     else
        allocate(clevels(data%zdata%n_levels))
-       zmin = minval(z)
-       zmax = maxval(z)
-       do i = 1, data%zdata%n_levels
-          clevels(i) = zmin + (real(i, real64)-0.5_real64)*&
-               & (zmax-zmin)/real(data%zdata%n_levels, real64)
-       end do
+       if (data%zdata%lmap == 1) then
+          zmin = minval(z, finite(z) .and. z > 0.)
+          zmax = maxval(z, finite(z) .and. z > 0.)
+       else
+          zmin = minval(z, finite(z))
+          zmax = maxval(z, finite(z))
+       end if
+       call gr_make_levels(zmin, zmax, data%zdata%lmap, clevels)
        clall = .true.
     end if
 
@@ -646,7 +648,7 @@ contains
 
    do i = 1, data%zdata%n_levels
        if (data%zdata%label /= 0 .and. &
-            & mod(i, max(data%zdata%label,1)) == 0) then
+            & mod(i, max(data%zdata%label,1)) == data%zdata%label_off) then
           call pl_setcontlabelparam(real(0.006*data%zdata%charsize, plflt), &
                & real(0.5*data%zdata%charsize, plflt), 0.5_plflt, 1)
        else
@@ -743,7 +745,7 @@ contains
        zmin = data%zdata%range(1)
        zmax = data%zdata%range(2)
     end if
-    if (data%zdata%ilog) then
+    if (data%zdata%ilog == 1_int16) then
        if (min(zmin, zmax) > 0.) then
           z = log10(z)
           zmin = log10(zmin)
@@ -753,6 +755,10 @@ contains
             & "Setting a zero or negative limit for a log mapping, "//&
             & "using linear"//c_null_char)
        end if
+    else if (data%zdata%ilog == 2_int16) then
+       where(z /= 0.) z = z / sqrt(abs(z))
+       if (zmin /= 0.) zmin = zmin / sqrt(abs(zmin))
+       if (zmax /= 0.) zmax = zmax / sqrt(abs(zmax))
     end if
 
     allocate(x1(nx+1), y1(ny+1))
@@ -898,8 +904,9 @@ contains
     end if
 
     zflag = .false.
-    if (data%zdata%ilog) then
+    if (data%zdata%ilog == 1_int16) then
        if (min(zmin, zmax) > 0.) then
+          z = log10(z)
           zmin = log10(zmin)
           zmax = log10(zmax)
        else
@@ -908,7 +915,12 @@ contains
             & "using linear"//c_null_char)
           zflag = .true.
        end if
+    else if (data%zdata%ilog == 2_int16) then
+       where(z /= 0.) z = z / sqrt(abs(z))
+       if (zmin /= 0.) zmin = zmin / sqrt(abs(zmin))
+       if (zmax /= 0.) zmax = zmax / sqrt(abs(zmax))
     end if
+
     where(.not. finite(z)) z = data%zdata%missing
 
     if (data%zdata%shade_levels == 0) data%zdata%shade_levels = 256
@@ -917,7 +929,7 @@ contains
     do i = 1, size(clevels)
        clevels(i) = zmin + real(i-1)*(zmax - zmin)/real(size(clevels)-1)
     end do
-    if (.not. zflag .and. data%zdata%ilog) clevels = 10.**clevels
+!    if (.not. zflag .and. data%zdata%ilog) clevels = 10.**clevels
     clevels(1) = min(clevels(1), z0)
     clevels(size(clevels)) = max(clevels(size(clevels)), z1)
 
@@ -1020,4 +1032,63 @@ contains
     call plschr(0._plflt, real(pdefs%charsize, plflt)*0.5_plflt)
     call plptex(xw, yw, 1._plflt, 0._plflt, align, date)
   end subroutine gr_stamp
+
+  subroutine gr_make_levels(zmin, zmax, map, levels)
+    real(kind=real64), intent(in) :: zmin, zmax
+    integer(kind=int16), intent(in) :: map
+    real(kind=real64), dimension(:), intent(out) :: levels
+
+    real(kind=real64) :: rg, lmx, lmn
+    integer :: i, nl
+    real(kind=real64), dimension(:), allocatable :: slev
+    
+    nl = size(levels)
+
+    select case (map)
+    case(0)                    ! Linear scaling
+       rg = zmax - zmin
+
+       do i = 1, nl
+          levels(i) = rg * (real(i, real64) - 0.5_real64) / &
+               & real(nl, real64) + zmin
+       end do
+       
+    case(1)                    ! Log scaling
+       lmx = log10(zmax)
+       lmn = log10(zmin)
+       
+       if (.not. finite(lmx) .or. .not. finite(lmn)) then
+          levels(:) = 0._real64
+       else
+          rg = lmx-lmn
+          do i = 1, nl
+             levels(i) = 10._real64 ** (rg * (real(i, real64) - 0.5_real64)/ &
+                  & real(nl,real64) + lmn)
+          end do
+       end if
+
+    case (2)                 ! Square root scaling
+       if (zmax == 0._real64) then
+          lmx = 0._real64
+       else
+          lmx = zmax / sqrt(abs(zmax))
+       end if
+       if (zmin == 0._real64) then
+          lmn = 0._real64
+       else
+          lmn = zmin / sqrt(abs(zmin))
+       end if
+
+       rg = lmx-lmn
+       allocate(slev(nl))
+
+       do i = 1, nl
+          slev(i) = rg * (real(i, real64) - 0.5_real64) / real(nl, real64) &
+               & + lmn
+       end do
+       levels = slev**2
+       where(slev < 0._real64) levels = -levels
+       
+    end select
+  end subroutine gr_make_levels
 end module gr_plot_procs

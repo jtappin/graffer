@@ -614,13 +614,22 @@ contains
              exit
 
           case('HVB')
-             call gr_str_val(inln, 'HAB',  pdefs%hardset%viewer(1) )
+             call gr_str_val(inln, 'HVB',  pdefs%hardset%viewer(1) )
              exit
 
           case('HVA')
-             call gr_str_val(inln, 'HAA', pdefs%hardset%viewer(2))
+             call gr_str_val(inln, 'HVA', pdefs%hardset%viewer(2))
              exit
 
+          case('HPB')
+             call gr_str_val(inln, 'HPB', pdefs%hardset%pdfviewer(1) )
+             exit
+
+          case('HPA')
+             call gr_str_val(inln, 'HPA', pdefs%hardset%pdfviewer(2))
+             exit
+
+ 
           case('HF')
              pdefs%hardset%font_family = gr_int_val(tag_val(itag+1))
           case('HWS')
@@ -894,16 +903,20 @@ contains
           case('ZCF')
              data%zdata%fill = gr_byt_val(tag_val(itag+1))
           case('ZLI')
-             data%zdata%label =  gr_int_val(tag_val(itag+1))
+             data%zdata%label = gr_int_val(tag_val(itag+1))
+          case('ZLO')
+             data%zdata%label_off = gr_int_val(tag_val(itag+1))
           case('ZCS')
              data%zdata%charsize = gr_flt_val(tag_val(itag+1))
-
+          case('ZLM')
+             data%zdata%lmap = gr_int_val(tag_val(itag+1))
+             
           case('ZR')
              data%zdata%range = gr_dbl_val(tag_val(itag+1), 2)
           case('ZP')
              data%zdata%pxsize = gr_flt_val(tag_val(itag+1))
           case('ZIL')
-             data%zdata%ilog = gr_log_val(tag_val(itag+1))
+             data%zdata%ilog = gr_int_val(tag_val(itag+1))
           case('ZIN')
              data%zdata%invert = gr_log_val(tag_val(itag+1))
           case('ZSM')
@@ -1363,10 +1376,12 @@ contains
                   & ':ZNC:', data%zdata%n_cols, &
                   & ':ZNS:', data%zdata%n_sty, &
                   & ':ZNT:', data%zdata%n_thick
-             write(unit, "(3(a,i0),2(a,f7.3))") "ZCF:", data%zdata%fill, &
+             write(unit, "(5(a,i0))") "ZCF:", data%zdata%fill, &
                   & ":ZCT:", data%zdata%ctable, &
                   & ":ZLI:", data%zdata%label, &
-                  & ":ZCS:", data%zdata%charsize, &
+                  & ":ZLO:", data%zdata%label_off, &
+                  & ":ZLM:", data%zdata%lmap
+             write(unit, "(2(a,f7.3))") ":ZCS:", data%zdata%charsize, &
                   & ":ZCG:", data%zdata%gamma
 
              if (data%zdata%set_levels .and. allocated(data%zdata%levels)) then
@@ -1413,7 +1428,7 @@ contains
              write(unit, "(a,2(g0,1x),a,g0)") "ZR:", data%zdata%range, &
                   & ":ZM:", data%zdata%missing
              write(unit, "(a,f7.3, 4(a,i0))") "ZP:", data%zdata%pxsize, &
-                  & ":ZIL:", f_c_logical(data%zdata%ilog), ":ZIN:", &
+                  & ":ZIL:", data%zdata%ilog, ":ZIN:", &
                   & f_c_logical(data%zdata%invert), ':ZSM:', &
                   & f_c_logical(data%zdata%smooth), ':ZSN:', &
                   & data%zdata%shade_levels
@@ -1482,7 +1497,9 @@ contains
     write(unit, "(2a)") "HAB:", pdefs%hardset%action(1), &
          & "HAA:", pdefs%hardset%action(2), &
          & "HVB:", pdefs%hardset%viewer(1), &
-         & "HVA:", pdefs%hardset%viewer(2)
+         & "HVA:", pdefs%hardset%viewer(2), &
+         & "HPB:", pdefs%hardset%pdfviewer(1), &
+         & "HPA:", pdefs%hardset%pdfviewer(2)
 
     write(unit, "(2(a,i0))") "HF:", pdefs%hardset%font_family, &
          & ":HWS:", pdefs%hardset%font_wg_sl

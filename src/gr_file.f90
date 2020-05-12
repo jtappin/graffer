@@ -544,6 +544,11 @@ contains
           ! HVA - Any part of the view
           !       command which follows the
           !       filename. 
+          ! HPB - The pdf view command (up to
+          !       the filename)
+          ! HPA - Any part of the pdf view
+          !       command which follows the
+          !       filename. 
           ! HF - Font family.
           ! HWS - Font weight and slant (bit 0 is
           !       on for bold, bit 1 for
@@ -579,6 +584,10 @@ contains
           call rec%get_value(pdefs%hardset%viewer(1), status)
        case ('HVA')
           call rec%get_value(pdefs%hardset%viewer(2), status)
+       case ('HPB')
+          call rec%get_value(pdefs%hardset%pdfviewer(1), status)
+       case ('HPA')
+          call rec%get_value(pdefs%hardset%pdfviewer(2), status)
 
        case ('HF ')
           call rec%get_value(pdefs%hardset%font_family, status)
@@ -955,9 +964,13 @@ contains
           call rec%get_value(ds%zdata%fill, status)
        case ('ZLI')
           call rec%get_value(ds%zdata%label, status)
+       case ('ZLO')
+          call rec%get_value(ds%zdata%label_off, status)
        case ('ZCS')
           call rec%get_value(ds%zdata%charsize, status)
-
+       case('ZLM')
+          call rec%get_value(ds%zdata%lmap, status)
+          
        case ('ZR')
           call rec%get_value(ds%zdata%range, status)
        case ('ZP')
@@ -1214,7 +1227,10 @@ contains
 
           call rec%set_value('ZCF', gdata%zdata%fill, unit)
           call rec%set_value('ZLI', gdata%zdata%label, unit)
+          call rec%set_value('ZLO', gdata%zdata%label_off, unit)
           call rec%set_value('ZCS', gdata%zdata%charsize, unit)
+          call rec%set_value('ZLM', gdata%zdata%lmap, unit)
+          
           call rec%set_value('ZCT', gdata%zdata%ctable, unit)
           call rec%set_value('ZCG', gdata%zdata%gamma, unit)
 
@@ -1324,6 +1340,8 @@ contains
     call rec%set_value('HAA', pdefs%hardset%action(2), unit)
     call rec%set_value('HVB', pdefs%hardset%viewer(1), unit)
     call rec%set_value('HVA', pdefs%hardset%viewer(2), unit)
+    call rec%set_value('HPB', pdefs%hardset%pdfviewer(1), unit)
+    call rec%set_value('HPA', pdefs%hardset%pdfviewer(2), unit)
 
     call rec%set_value('HF ', pdefs%hardset%font_family, unit)
     call rec%set_value('HWS', pdefs%hardset%font_wg_sl, unit)

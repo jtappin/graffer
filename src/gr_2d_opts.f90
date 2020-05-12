@@ -43,7 +43,7 @@ contains
 
     ! Display options for 2-D datasets.
 
-    type(c_ptr) :: table, junk, sbox, jb, jbb
+    type(c_ptr) :: table, junk, sbox, jb
     integer(kind=c_int) :: nbi
     type(graff_zdata), pointer :: zdata
     character(len=32), dimension(:), allocatable :: txtvals
@@ -75,6 +75,13 @@ contains
          & "Select automatic or explicit contour levels"//c_null_char)
     call hl_gtk_box_pack(jb, clevel_cbo)
 
+    cldist_cbo = hl_gtk_combo_box_new(initial_choices= &
+         & ['Linear     ', 'Logarithmic', 'Square Root'], &
+         & changed = c_funloc(gr_2d_set_clog), &
+         & active = int(zdata%lmap, c_int), &
+         & tooltip = "Select log/linear/sqrt contour levels."//c_null_char)
+    call hl_gtk_box_pack(jb, cldist_cbo)
+    
     cfmt_cbo = hl_gtk_combo_box_new(initial_choices=&
          & ["Outline ", "Filled  ", "Downhill"], &
          & changed=c_funloc(gr_2d_set_ct_fmt), &
@@ -154,45 +161,44 @@ contains
        deallocate(txtvals)
     end if
 
-    jb = hl_gtk_box_new()
+    jb = hl_gtk_table_new()
     call hl_gtk_table_attach(table, jb, 0_c_int, 4_c_int, xspan=2_c_int)
 
-    jbb = hl_gtk_box_new(horizontal=TRUE)
-    call hl_gtk_box_pack(jb, jbb, expand=FALSE)
-
     junk = gtk_label_new("# Levels:"//c_null_char)
-    call hl_gtk_box_pack(jbb, junk)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 0_c_int)
 
     clevels_entry = hl_gtk_spin_button_new(1_c_int, 100_c_int, &
          & initial_value=int(zdata%n_levels, c_int), &
          & value_changed=c_funloc(gr_2d_set_cnlevels), &
          & sensitive=f_c_logical(.not. zdata%set_levels), &
          & tooltip = "Set the number of contours"//c_null_char)
-    call hl_gtk_box_pack(jbb, clevels_entry)
-
-    jbb = hl_gtk_box_new(horizontal=TRUE)
-    call hl_gtk_box_pack(jb, jbb, expand=FALSE)
+    call hl_gtk_table_attach(jb, clevels_entry, 1_c_int, 0_c_int)
 
     junk = gtk_label_new("Label"//c_null_char)
-    call hl_gtk_box_pack(jbb, junk)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int)
 
     clabel_entry = hl_gtk_spin_button_new(0_c_int, 100_c_int, &
          & initial_value=int(zdata%label, c_int), &
          & value_changed=c_funloc(gr_2d_set_clabel), &
          & tooltip="Set the contour labelling frequency (0=Off)"//c_null_char)
-    call hl_gtk_box_pack(jbb, clabel_entry)
+    call hl_gtk_table_attach(jb, clabel_entry, 1_c_int, 1_c_int)
 
-    jbb = hl_gtk_box_new(horizontal=TRUE)
-    call hl_gtk_box_pack(jb, jbb, expand=FALSE)
+    junk = gtk_label_new('Label offset'//c_null_char)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 2_c_int)
+    clabel_off_entry = hl_gtk_spin_button_new(0_c_int, 99_c_int, &
+         & initial_value = int(zdata%label_off, c_int), &
+         & value_changed = c_funloc(gr_2d_set_clabel_off), &
+         & tooltip = "Set the first contour to label."//c_null_char)
+    call hl_gtk_table_attach(jb, clabel_off_entry, 1_c_int, 2_c_int)
 
     junk = gtk_label_new("Charsize"//c_null_char)
-    call hl_gtk_box_pack(jbb, junk)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 3_c_int)
 
     cchsize_entry = hl_gtk_spin_button_new(0._c_double, 100._c_double, &
          & 0.01_c_double, initial_value=real(zdata%charsize, c_double), &
          & value_changed=c_funloc(gr_2d_set_csize), &
          & tooltip="Set the character size for contour labels"//c_null_char)
-    call hl_gtk_box_pack(jbb, cchsize_entry)
+    call hl_gtk_table_attach(jb, cchsize_entry, 1_c_int, 3_c_int)
 
     ! The Greyscale/colour page
 
@@ -258,11 +264,12 @@ contains
     call hl_gtk_table_attach(table, cg_gamma_entry, 3_c_int, 3_c_int)
 
 
-    cg_log_but = hl_gtk_check_button_new("Log. mapping?"//c_null_char, &
-         & toggled=c_funloc(gr_2d_set_log), &
-         & initial_state=f_c_logical(zdata%ilog), &
-         & tooltip="Select log/linear colour mapping"//c_null_char)
-    call hl_gtk_table_attach(table, cg_log_but, 0_c_int, 4_c_int, &
+    cg_log_cbo = hl_gtk_combo_box_new(initial_choices = &
+         & ['Linear     ', 'Logarithmic', 'Square Root'], &
+         & changed=c_funloc(gr_2d_set_log), &
+         & active=int(zdata%ilog, c_int), &
+         & tooltip="Select log/linear/sqrt colour mapping"//c_null_char)
+    call hl_gtk_table_attach(table, cg_log_cbo, 0_c_int, 4_c_int, &
          & xspan=2_c_int)
 
     cg_invert_but = hl_gtk_check_button_new("Invert colours?"//c_null_char, &
@@ -326,12 +333,27 @@ contains
          & c_f_logical(gtk_combo_box_get_active(widget))
 
     call gtk_widget_set_sensitive(clevel_view, &
-         &f_c_logical(pdefs%data(pdefs%cset)%zdata%set_levels))
+         & f_c_logical(pdefs%data(pdefs%cset)%zdata%set_levels))
     call gtk_widget_set_sensitive(clevels_entry, &
-         &f_c_logical(.not. pdefs%data(pdefs%cset)%zdata%set_levels))
+         & f_c_logical(.not. pdefs%data(pdefs%cset)%zdata%set_levels))
+    call gtk_widget_set_sensitive(cldist_cbo, &
+         & f_c_logical(.not. pdefs%data(pdefs%cset)%zdata%set_levels))
 
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_ct_rule
+  subroutine gr_2d_set_clog(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Set log colour mapping
+
+    if (.not. gui_active) return
+
+    pdefs%data(pdefs%cset)%zdata%lmap = &
+         & int(gtk_combo_box_get_active(widget), int16)
+
+    call gr_plot_draw(.true.)
+  end subroutine gr_2d_set_clog
+
 
   subroutine gr_2d_set_ct_fmt(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -385,7 +407,7 @@ contains
     allocate(zdata%levels(nlevels))
     zdata%levels(:) = levels(:nlevels)
     zdata%n_levels = int(nlevels, int16)
-
+        
     if (rewrite) then
        deallocate(text)
        allocate(text(nlevels))
@@ -579,7 +601,7 @@ contains
 
     pdefs%data(pdefs%cset)%zdata%n_levels = &
          & int(hl_gtk_spin_button_get_value(widget), int16)
-
+        
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_cnlevels
 
@@ -595,6 +617,19 @@ contains
 
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_clabel
+
+  subroutine gr_2d_set_clabel_off(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Contour labelling offset
+    
+    if (.not. gui_active) return
+
+    pdefs%data(pdefs%cset)%zdata%label_off = &
+         & int(hl_gtk_spin_button_get_value(widget), int16)
+
+    call gr_plot_draw(.true.)
+  end subroutine gr_2d_set_clabel_off
 
   subroutine gr_2d_set_csize(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -733,7 +768,7 @@ contains
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%zdata%ilog = &
-         & c_f_logical(gtk_toggle_button_get_active(widget))
+         & int(gtk_combo_box_get_active(widget), int16)
 
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_log

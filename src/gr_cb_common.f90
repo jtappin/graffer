@@ -70,12 +70,14 @@ module gr_cb_common
 
   type(c_ptr) :: fmt_nbook
 
-  type(c_ptr) :: clevel_cbo, cfmt_cbo, clevel_view, ccol_view, csty_view, &
-       & clevels_entry, cthick_view, clabel_entry, cchsize_entry
+  type(c_ptr) :: clevel_cbo, cldist_cbo, cfmt_cbo, clevel_view, &
+       & ccol_view, csty_view, &
+       & clevels_entry, cthick_view, clabel_entry, &
+       & clabel_off_entry, cchsize_entry
 
   type(c_ptr) :: cg_table_pick=c_null_ptr, cg_missing_entry, & 
-       & cg_gamma_entry, cg_log_but, cg_invert_but, cg_smooth_but, &
-       & gc_smooth_l_sb
+       & cg_gamma_entry, cg_invert_but, cg_smooth_but, &
+       & gc_smooth_l_sb, cg_log_cbo
 
   type(c_ptr), dimension(2) :: cg_range_entry
 
@@ -378,13 +380,18 @@ contains
 
     call gtk_combo_box_set_active(clevel_cbo, &
          & f_c_logical(data%zdata%set_levels))
+    call gtk_combo_box_set_active(cldist_cbo, &
+         & int(data%zdata%lmap, c_int))
     call gtk_combo_box_set_active(cfmt_cbo,&
          & int(data%zdata%fill, c_int))
     call hl_gtk_spin_button_set_value(clevels_entry, int(data%zdata%n_levels))
     call gtk_widget_set_sensitive(clevels_entry, &
          & f_c_logical(.not. data%zdata%set_levels))
+     call gtk_widget_set_sensitive(cldist_cbo, &
+         & f_c_logical(.not. data%zdata%set_levels))
     call gtk_widget_set_sensitive(clevel_view, &
          & f_c_logical(data%zdata%set_levels))
+    
     if (allocated(data%zdata%levels)) then
        allocate(vtext(size(data%zdata%levels)))
        write(vtext, "(g0.5)") data%zdata%levels
@@ -420,6 +427,9 @@ contains
 
     call hl_gtk_spin_button_set_value(clabel_entry, &
          & int(data%zdata%label, c_int))
+ 
+    call hl_gtk_spin_button_set_value(clabel_off_entry, &
+         & int(data%zdata%label_off, c_int))
     call hl_gtk_spin_button_set_value(cchsize_entry, &
          & real(data%zdata%charsize, c_double))
 
@@ -432,7 +442,7 @@ contains
     call hl_gtk_spin_button_set_value(cg_gamma_entry, &
          & real(data%zdata%gamma, c_double))
 
-    call gtk_toggle_button_set_active(cg_log_but, f_c_logical(data%zdata%ilog))
+    call gtk_combo_box_set_active(cg_log_cbo, int(data%zdata%ilog, c_int))
     call gtk_toggle_button_set_active(cg_invert_but, &
          & f_c_logical(data%zdata%invert))
     call gtk_toggle_button_set_active(cg_smooth_but, &

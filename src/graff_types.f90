@@ -64,7 +64,8 @@ module graff_types
      integer(kind=int16) :: label=0_int16, label_off = 0_int16, &
           & ctable=0_int16
      integer(kind=int8) :: fill=0_int8
-     logical(kind=int8) :: ilog=.false., invert=.false., smooth=.false.
+     integer(kind=int16) :: ilog=0_int16
+     logical(kind=int8) ::  invert=.false., smooth=.false.
      integer(kind=int32) :: shade_levels
   end type graff_zdata
 
