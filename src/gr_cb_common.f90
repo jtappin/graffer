@@ -64,6 +64,8 @@ module gr_cb_common
   type(c_ptr) :: colour_cbo, symbol_cbo, style_cbo, join_cbo, thick_ent, &
        & size_ent, csys_cbo, xsort_id, clip_id, mouse_id
 
+  integer(kind=c_int) :: custom_colour_index
+  
   ! 2 D dataset options
 
   type(c_ptr) :: fmt_nbook
@@ -353,7 +355,12 @@ contains
        call  gtk_notebook_set_current_page(display_nb, 0)
     end if
 
-    call gtk_combo_box_set_active(colour_cbo, int(data%colour, c_int)+1_c_int)
+    if (data%colour == -2) then
+       call gtk_combo_box_set_active(colour_cbo, custom_colour_index)
+    else
+       call gtk_combo_box_set_active(colour_cbo, &
+            & int(data%colour, c_int)+1_c_int)
+    end if
     call gtk_combo_box_set_active(symbol_cbo, int(data%psym, c_int))
     call gtk_combo_box_set_active(style_cbo, int(data%line, c_int))
     call gtk_combo_box_set_active(join_cbo, int(data%pline, c_int))

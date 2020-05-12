@@ -62,7 +62,8 @@ module gr_text_widgets
        & 'Light Magenta', 'Dark Yellow', 'Light Yellow', 'Custom']
 
   integer, parameter, private :: ccindex=size(col_list)-1
-  integer(kind=int16), private :: current_colour, c_red, c_green, c_blue
+  integer(kind=int16), private, target :: current_colour
+  integer(kind=int16), dimension (3), private, target :: current_rgb
 
 contains
 
@@ -212,12 +213,10 @@ contains
     current_colour = text%colour
     if (text%colour == -2) then
        isel = ccindex
-       c_red = text%c_vals(1)
-       c_green = text%c_vals(2)
-       c_blue = text%c_vals(3)
+       current_rgb = text%c_vals
     else
        isel = text%colour
-       call gr_colour_triple(text%colour, c_red, c_green, c_blue)
+       call gr_colour_triple(text%colour, current_rgb)
     end if
     text_clr_cbo = hl_gtk_combo_box_new(initial_choices=col_list, &
          & active=isel, &
@@ -286,38 +285,12 @@ contains
     call hl_gtk_box_pack(jb, junk)
 
     call gtk_widget_show_all(text_window)
-    call gr_set_plw(.true.)
+    call gr_set_plw(text_draw, .true., csize=csd)
 
     text_ready=.true.
     if (text%text /= '') call gr_text_update(c_null_ptr, c_null_ptr)
 
   end subroutine gr_text_menu
-
-  subroutine gr_set_plw(preview, update)
-    logical, intent(in) :: preview
-    logical, intent(in), optional :: update
-
-    ! Select which plot window
-
-    logical :: changed
-
-    call gr_plot_close()
-    if (preview) then
-       call gr_plot_open(area=text_draw)
-       call plbop
-       call plschr(csd, 1._plflt)
-       call plvpor(0._plflt, 1._plflt, 0._plflt, 1._plflt)
-       call plwind(0._plflt, 1._plflt, 0._plflt, 1._plflt)
-    else
-       if (present(update)) then
-          changed = update
-       else 
-          changed = .false.
-       end if
-       call gr_plot_open()
-       call gr_plot_draw(changed)
-    end if
-  end subroutine gr_set_plw
 
   recursive subroutine gr_text_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -328,7 +301,7 @@ contains
 
     call c_f_pointer(data, apply)
 
-    call gr_set_plw(.false., update=apply)
+    call gr_set_plw(update=apply)
     if (apply) then
        call hl_gtk_entry_get_text(text_entry, text=text%text)
        text%norm = int(gtk_combo_box_get_active(text_sys_cbo), int16)
@@ -338,11 +311,10 @@ contains
        text%y = hl_gtk_spin_button_get_value(text_xy_sb(2))
        call hl_gtk_entry_get_text(text_id_entry, text=text%id)
        text%size = real(hl_gtk_spin_button_get_value(text_cs_sb), real32)
-!!$       text%colour = int(gtk_combo_box_get_active(text_clr_cbo), int16) - &
-!!$            & 1_int16
+
        text%colour = current_colour
        if (current_colour == -2) then
-          text%c_vals = [c_red, c_green, c_blue]
+          text%c_vals = current_rgb
        else
           text%c_vals = 0_int16
        end if
@@ -368,30 +340,18 @@ contains
     type(c_ptr), value :: widget, data
 
     integer :: icol
-    integer(kind=int16) :: r,g,b
-    logical :: update
+!!$    logical :: update
     
     icol = gtk_combo_box_get_active(widget)
     if (icol == ccindex) then
-       icol = -2
-       if (current_colour == -2) then
-          r = c_red
-          g = c_green
-          b = c_blue
-       else
-          call gr_colour_triple(current_colour, r, g, b)
-       end if
-       call gr_colour_define(text_window, r, g, b, update)
-       if (update) then
-          c_red = r
-          c_green = g
-          c_blue = b
-          current_colour = -2
-
-          call gr_text_update(widget, data)
-       end if
+       call gr_colour_define(text_window, text_clr_cbo, &
+            & current_colour, current_rgb)
+!!$       if (update) then
+!!$          call gr_text_update(widget, data)
+!!$       end if
     else
-       current_colour = icol
+       current_colour = text%colour
+       current_rgb = text%c_vals
        call gr_text_update(widget, data)
     end if
 
@@ -402,7 +362,7 @@ contains
 
     ! Update the preview.
 
-    integer :: icol, ffamily, font
+    integer :: ffamily, font
     real(kind=plflt) :: cs
     character(len=265) :: txt
 
@@ -410,7 +370,7 @@ contains
 
     call hl_gtk_entry_get_text(text_entry, text=txt)
 !    icol = gtk_combo_box_get_active(text_clr_cbo) 
-    if (icol == -1) return
+!!$    if (icol == -1) return
     cs = hl_gtk_spin_button_get_value(text_cs_sb)
     ffamily = gtk_combo_box_get_active(text_ffam_cbo)+1
     if (ffamily < 1 .or. ffamily > size(font_list)) return
@@ -422,7 +382,7 @@ contains
     if (current_colour >= 0) then
        call plcol0(int(current_colour, int32))
     else
-       call gr_custom_line(c_red, c_green, c_blue)
+       call gr_custom_line(current_rgb)
     end if
     call plsfont(font_list(ffamily), font_shape(font), &
          & font_weight(font))
@@ -444,7 +404,7 @@ contains
     newsys = gtk_combo_box_get_active(widget)
     if (newsys == csys) return
 
-    call gr_set_plw(.false.)
+    call gr_set_plw()
 
     xc = hl_gtk_spin_button_get_value(text_xy_sb(1))
     yc = hl_gtk_spin_button_get_value(text_xy_sb(2))
@@ -495,7 +455,7 @@ contains
     call hl_gtk_spin_button_set_value(text_xy_sb(2), y)
 
     csys = int(newsys, int16)
-    call gr_set_plw(.true.)
+    call gr_set_plw(text_draw, csize=csd)
   end subroutine gr_text_csys
 
   subroutine gr_text_yax(widget, data) bind(c)
@@ -515,12 +475,12 @@ contains
     x = hl_gtk_spin_button_get_value(text_xy_sb(1))
     y = hl_gtk_spin_button_get_value(text_xy_sb(2))
 
-    call gr_set_plw(.false.)
+    call gr_set_plw()
     call gr_plot_coords_w_v(x, y, xv, yv)
     call gr_plot_coords_v_w(xv, yv, x, y, y_axis=newax)
     call hl_gtk_spin_button_set_value(text_xy_sb(1), x)
     call hl_gtk_spin_button_set_value(text_xy_sb(2), y)
-    call gr_set_plw(.true.)
+    call gr_set_plw(text_draw, csize=csd)
 
   end subroutine gr_text_yax
 

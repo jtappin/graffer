@@ -25,7 +25,7 @@ module gr_colour_widgets
   use gtk_sup
 
   use gtk, only: gtk_container_add, gtk_label_new, gtk_widget_destroy, &
-       & gtk_widget_show_all, TRUE, FALSE
+       & gtk_widget_show_all, gtk_widget_queue_draw, TRUE, FALSE
 
   use plplot
 
@@ -37,24 +37,38 @@ module gr_colour_widgets
   type(c_ptr), private :: colour_window, colour_show, &
        & red_level, green_level, blue_level
 
-  integer(kind=int16), private :: rnew, gnew, bnew
-  logical, private :: update_colour
+  integer(kind=int16), dimension(3), private :: rgb_new
+
+  integer(kind=int16), pointer :: source_index
+  integer(kind=int16), dimension(:), pointer :: source_raw
+  integer(kind=c_int), private :: original_index
+  
+  type(c_ptr), private :: pd_menu
   
 contains
-  subroutine gr_colour_define(parent, r, g, b, update)
-    type(c_ptr), intent(in) :: parent
+  subroutine gr_colour_define(parent, pull_down, o_index, o_raw, &
+       & origin)
+    type(c_ptr), intent(in) :: parent, pull_down
+    integer(kind=int16), target :: o_index
+    integer(kind=int16), dimension(3), target :: o_raw
+    integer, intent(in), optional :: origin
     
-    integer(kind=int16), intent(inout) :: r, g, b
-    logical, intent(out) :: update
-    
-    type(c_ptr) :: base, jb, junk, jbb
+    type(c_ptr) :: base, jb, junk
     logical, dimension(2), target :: iapply = [.false., .true.]
     integer, dimension(3), target :: cref = [1, 2, 3]
 
-    rnew = r
-    gnew = g
-    bnew = b
+    source_index => o_index
+    source_raw => o_raw
+    pd_menu = pull_down
+    original_index = o_index
+    if (present(origin)) original_index = original_index - origin
     
+    if (o_index == -2) then
+       rgb_new = o_raw
+    else
+       call gr_colour_triple(o_index, rgb_new)
+    end if
+
     colour_window = hl_gtk_window_new("Colour define"//c_null_char, &
          & destroy=c_funloc(gr_col_quit), data_destroy=c_loc(iapply(1)), &
          & parent=parent, modal=TRUE)
@@ -72,7 +86,7 @@ contains
     call hl_gtk_table_attach(jb, junk, 0_c_int, 0_c_int)
     
     red_level = hl_gtk_spin_button_new(0_c_int, 255_c_int, &
-         & initial_value = int(r, c_int), &
+         & initial_value = int(rgb_new(1), c_int), &
          & value_changed = c_funloc(gr_col_update), &
          & data = c_loc(cref(1)), &
          & tooltip="Set the red level in the colour"//c_null_char)
@@ -81,7 +95,7 @@ contains
     junk = gtk_label_new("Green:"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int)
     green_level = hl_gtk_spin_button_new(0_c_int, 255_c_int, &
-         & initial_value = int(g, c_int), &
+         & initial_value = int(rgb_new(2), c_int), &
          & value_changed = c_funloc(gr_col_update), &
          & data = c_loc(cref(2)), &
          & tooltip="Set the green level in the colour"//c_null_char)
@@ -91,7 +105,7 @@ contains
     call hl_gtk_table_attach(jb, junk, 0_c_int, 2_c_int)
     
     blue_level = hl_gtk_spin_button_new(0_c_int, 255_c_int, &
-         & initial_value = int(b, c_int), &
+         & initial_value = int(rgb_new(3), c_int), &
          & value_changed = c_funloc(gr_col_update), &
          & data = c_loc(cref(3)), &
          & tooltip="Set the blue level in the colour"//c_null_char)
@@ -111,69 +125,62 @@ contains
 
     call gtk_widget_show_all(colour_window)
  
-    call gr_set_clw(r,g,b)
-
-    if (update_colour) then
-       r = rnew
-       g = gnew
-       b = bnew
-    end if
-    update = update_colour
+    call gr_set_plw(colour_show)
     
-  end subroutine gr_colour_define
-
-  subroutine gr_set_clw(r,g,b)
-    ! Select and initialize the colour window.
-
-    integer(kind=int16), intent(in) :: r, g, b
-    call gr_plot_close()
-
-    call gr_plot_open(area=colour_show)
-    call plbop
-    call plvpor(0._plflt, 1._plflt, 0._plflt, 1._plflt)
-
-    call gr_custom_line(r, g, b)
+    call gr_custom_line(rgb_new)
     
     call plfill([0._plflt, 1._plflt, 1._plflt, 0._plflt], &
          & [0._plflt, 0._plflt, 1._plflt, 1._plflt])
+    call gtk_widget_queue_draw(colour_show)
 
-  end subroutine gr_set_clw
+  end subroutine gr_colour_define
+
 
   subroutine gr_col_update(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
     integer(kind=c_int), pointer :: index
     integer(kind=int16) :: cival
-    
+ 
     call c_f_pointer(data, index)
-
     
     cival = int(hl_gtk_spin_button_get_value(widget), int16)
 
-    select case (index)
-    case(1)
-       rnew = cival
-    case(2)
-       gnew = cival
-    case(3)
-       bnew = cival
-    end select
+    rgb_new(index) = cival
+
+    call gr_set_plw(colour_show)
     
-    call gr_custom_line(rnew, gnew, bnew)
+    call gr_custom_line(rgb_new)
     
     call plfill([0._plflt, 1._plflt, 1._plflt, 0._plflt], &
          & [0._plflt, 0._plflt, 1._plflt, 1._plflt])
+    call gtk_widget_queue_draw(colour_show)
+    
   end subroutine gr_col_update
 
-  subroutine gr_col_quit(widget, data) bind(c)
+  recursive subroutine gr_col_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
     logical, pointer :: apply
 
     call c_f_pointer(data, apply)
 
+
+    if (.not. associated(source_index)) return
+
+    if (apply) then
+       source_index = -2_int16
+       source_raw = rgb_new
+    else
+       call gtk_combo_box_set_active(pd_menu, original_index)
+    end if
+   
+    nullify(source_index, source_raw)
+    
     call gtk_widget_destroy(colour_window)
 
-    update_colour = apply
+    call gr_set_plw(update=apply)
+    if (apply) call gr_plot_draw(.true.)
+
   end subroutine gr_col_quit
 end module gr_colour_widgets

@@ -79,7 +79,7 @@ contains
   subroutine gr_line_colours()
     integer :: i
 
-    call plscmap0n(n_cmap)
+    call plscmap0n(n_cmap+1)
     do i = 0, n_cmap-1
        call plscol0(i, red(i+1), gre(i+1), blu(i+1))
     end do
@@ -90,11 +90,12 @@ contains
     integer(kind=int16), intent(in), dimension(3) :: rgb
 
     integer(kind=int32), dimension(3) :: rgbl
-
+     
     rgbl=int(rgb, int32)
 
     call plscol0(n_cmap, rgbl(1), rgbl(2), rgbl(3))
     call plcol0(n_cmap)
+   
   end subroutine gr_custom_linea
 
   subroutine gr_custom_line3(r, g, b)

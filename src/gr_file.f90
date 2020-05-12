@@ -1180,6 +1180,7 @@ contains
        call rec%set_value('S  ', gdata%symsize, unit)
        call rec%set_value('L  ', gdata%line, unit)
        call rec%set_value('C  ', gdata%colour, unit)
+       call rec%set_value('CV ', gdata%c_vals, unit)
        call rec%set_value('W  ', gdata%thick, unit)
        call rec%set_value('O  ', gdata%sort, unit)
        call rec%set_value('K  ', gdata%noclip, unit)

@@ -479,11 +479,20 @@ contains
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: -1., 1.]*symsize
        ys = 0._plflt 
-    case(18)    ! Vertical bar
+       filled = .false.
+     case(18)    ! Vertical bar
        npoints = 2
        allocate(xs(npoints), ys(npoints))
        xs = 0._plflt 
        ys = [real(kind=plflt) :: -1., 1.]*symsize
+       filled = .false.
+     case default
+       npoints = 7
+       allocate(xs(npoints), ys(npoints))
+       xs = [real(kind=plflt) :: 0., 0., .8, .8, .6, -.6, -.8] * symsize
+       ys = [real(kind=plflt) :: -1., -.2, .2, .7, .9, .9, .7] * symsize
+       filled = .false.
+ 
     end select
 
     call gr_plot_linesty(0_int16)

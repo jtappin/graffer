@@ -70,7 +70,7 @@ contains
     real(kind=plflt) :: page_aspect
     type(graff_hard), pointer :: hardset
     logical :: status
-    integer :: plrc, i
+    integer :: plrc
     
     if (gr_plot_is_open) return
 
@@ -209,6 +209,34 @@ contains
     call plsesc(ichar('!'))
 
   end subroutine gr_plot_open
+
+  subroutine gr_set_plw(drawing, update, csize)
+    type(c_ptr), intent(in), optional :: drawing
+    logical, intent(in), optional :: update
+    real(kind=plflt), intent(in), optional :: csize
+
+    ! Select which plot window
+
+    logical :: changed
+
+    call gr_plot_close()
+    if (present(drawing)) then
+       call gr_plot_open(area=drawing)
+       call plbop
+       if (present(csize)) call plschr(csize, 1._plflt)
+       call plvpor(0._plflt, 1._plflt, 0._plflt, 1._plflt)
+       call plwind(0._plflt, 1._plflt, 0._plflt, 1._plflt)
+    else
+       if (present(update)) then
+          changed = update
+       else 
+          changed = .false.
+       end if
+       call gr_plot_open()
+       call gr_plot_draw(changed)
+    end if
+  end subroutine gr_set_plw
+
 
   subroutine gr_plot_close()
 

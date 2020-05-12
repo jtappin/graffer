@@ -47,7 +47,7 @@ contains
     integer(kind=c_int) :: nbi
     type(graff_zdata), pointer :: zdata
     character(len=32), dimension(:), allocatable :: txtvals
-    integer :: i
+    integer :: i, nccol
     integer, dimension(2), target :: idx = [1, 2]
     character(len=32) :: textval
     integer(kind=int16) :: zformat
@@ -109,8 +109,15 @@ contains
          & tooltip="Set contour colours"//c_null_char)
     call hl_gtk_table_attach(table, sbox, 1_c_int, 2_c_int, xpad=5_c_int)
     if (allocated(zdata%colours)) then
-       allocate(txtvals(size(zdata%colours)))
-       write(txtvals, "(i0)") zdata%colours
+       nccol = size(zdata%colours)
+       allocate(txtvals(nccol))
+       do i = 1, nccol
+          if (zdata%colours(i) == -2) then
+             write(txtvals(i), "(3i5)") zdata%raw_colours(:,i)
+          else
+             write(txtvals(i), "(i0)") zdata%colours(i)
+          end if
+       end do
        call hl_gtk_text_view_insert(ccol_view, txtvals, replace=TRUE)
        deallocate(txtvals)
     end if
@@ -396,8 +403,12 @@ contains
     ! Contour colours
 
     character(len=32), dimension(:), allocatable :: text
+    character(len=12), dimension(:), allocatable :: subtext
+
     integer(kind=int16), dimension(:), allocatable :: colours
-    integer :: ncols, ios, i, j
+    integer(kind=int16), dimension(:,:), allocatable :: raw_colours
+
+    integer :: ncols, ios, i, j, nsub
     logical :: rewrite
     type(graff_zdata), pointer :: zdata
 
@@ -408,7 +419,7 @@ contains
     ncols = count(text /= '')
     if (ncols == 0) return
 
-    allocate(colours(ncols))
+    allocate(colours(ncols), raw_colours(3,ncols))
 
     zdata => pdefs%data(pdefs%cset)%zdata
 
@@ -416,24 +427,43 @@ contains
     rewrite = .false.
     do j = 1, size(text)
        if (text(j) == '') cycle
-       read(text(j), *, iostat=ios) colours(i)
-       if (ios /= 0) then
-          rewrite = .true.
-          cycle
+       call split(text(j), ' ,	', subtext, count=nsub)
+       if (nsub < 3) then
+          read(text(j), *, iostat=ios) colours(i)
+          if (ios /= 0) then
+             rewrite = .true.
+             cycle
+          end if
+          raw_colours(:,i) = 0_int16
+       else
+          read(text(j), *, iostat=ios) raw_colours(:,i)
+          if (ios /= 0) then
+             rewrite = .true.
+             cycle
+          end if
+          colours(i) = -2
        end if
        i = i+1
     end do
     ncols = i-1
 
     if (allocated(zdata%colours)) deallocate(zdata%colours)
-    allocate(zdata%colours(ncols))
+    if (allocated(zdata%raw_colours)) deallocate(zdata%raw_colours)
+    allocate(zdata%colours(ncols), zdata%raw_colours(3, ncols))
     zdata%colours(:) = colours(:ncols)
+    zdata%raw_colours(:,:) = raw_colours(:,:ncols)
     zdata%n_cols = int(ncols, int16)
 
     if (rewrite) then
        deallocate(text)
        allocate(text(ncols))
-       write(text, "(i0)") zdata%colours
+       do i = 1, ncols
+          if (zdata%colours(i) == -2) then
+             write(text(i), "(3i5)") zdata%raw_colours(:,i)
+          else
+             write(text(i), "(i0)") zdata%colours(i)
+          end if
+       end do
        call hl_gtk_text_view_insert(widget, text, replace=TRUE)
     end if
 
