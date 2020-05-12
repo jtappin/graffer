@@ -305,11 +305,9 @@ contains
     ! Select, and load or return a colour table.
 
     integer, dimension(table_size) :: map, rr, gg, bb
-    integer :: ios, i
-    character(len=120) :: iom
+    integer :: i
     logical :: reversed
     real(kind=real32) :: xgamma
-    character(len=160), dimension(2) :: err_string
     integer :: idx
 
     if (present(invert)) then
@@ -326,7 +324,7 @@ contains
     end if
 
     if (present(gamma)) then
-       xgamma = gamma
+       xgamma = real(gamma)
     else
        xgamma = 1.0
     end if

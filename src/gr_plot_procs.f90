@@ -545,7 +545,9 @@ contains
     real(kind=real64), dimension(:,:), allocatable ::  x2, y2
     real(kind=real64), dimension(:), allocatable :: x1, y1
     logical :: c2d, clall
-    integer :: i, icc
+    integer :: i, icc, icidx
+    integer(kind=int16), dimension(3) :: icrc
+    
     real(kind=real64) :: zmin, zmax, xmin, xmax, ymin, ymax, ccol
     logical :: xlog, ylog
 
@@ -642,8 +644,9 @@ contains
     if (data%zdata%fill == 2_int8) call hl_gtk_info_bar_message(gr_infobar, &
          & "gr_contour: Contour ticks not (yet) supported"//c_null_char)
 
-    do i = 1, data%zdata%n_levels
-       if (data%zdata%label /= 0 .and. mod(i, data%zdata%label) == 0) then
+   do i = 1, data%zdata%n_levels
+       if (data%zdata%label /= 0 .and. &
+            & mod(i, max(data%zdata%label,1)) == 0) then
           call pl_setcontlabelparam(real(0.006*data%zdata%charsize, plflt), &
                & real(0.5*data%zdata%charsize, plflt), 0.5_plflt, 1)
        else
@@ -670,10 +673,12 @@ contains
                & call plwidth(data%zdata%thick(mod(i-1, &
                & data%zdata%n_thick)+1))
           if (allocated(data%zdata%colours) .and. data%zdata%n_cols > 0) then
-             icc = int(data%zdata%colours(mod(i-1, data%zdata%n_cols)+1))
+             icidx = mod(i-1, data%zdata%n_cols)+1
+             icc = int(data%zdata%colours(icidx))
              if (icc == -1) cycle
              if (icc == -2) then
-                call gr_custom_line(data%zdata%raw_colours(:, icc))
+                icrc= data%zdata%raw_colours(:, icidx)
+                call gr_custom_line(icrc)
              else
                 call plcol0(icc)
              end if
