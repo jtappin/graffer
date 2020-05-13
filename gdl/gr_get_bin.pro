@@ -104,7 +104,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         end
         'XMN': pdefs.xsty.minor = value
         'XMJ': pdefs.xsty.major = value
-        'XMS': pdefs.xsty.xmajor = value
+ ;;       'XMS': pdefs.xsty.xmajor = value
         'XFM': pdefs.xsty.format = value
 
         'XVL': begin
@@ -129,7 +129,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         end
         'YMN': pdefs.ysty.minor = value
         'YMJ': pdefs.ysty.major = value
-        'YMS': pdefs.ysty.xmajor = value
+;;        'YMS': pdefs.ysty.xmajor = value
         'YFM': pdefs.ysty.format = value
         'YVL': begin
            if ptr_valid(pdefs.ysty.values) then $
@@ -154,7 +154,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         end
         'RMN': pdefs.ysty_r.minor = value
         'RMJ': pdefs.ysty_r.major = value
-        'RMS': pdefs.ysty_r.xmajor = value
+;;        'RMS': pdefs.ysty_r.xmajor = value
         'RFM': pdefs.ysty_r.format = value
         'RVL': begin
            if ptr_valid(pdefs.ysty_r.values) then $

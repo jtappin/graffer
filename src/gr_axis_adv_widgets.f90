@@ -54,24 +54,6 @@ contains
     axstyle => pdefs%axsty(axis)
     iaxis = axis
 
-    if (axstyle%major /= 0 .and. axstyle%xmajor == 0.) then
-       tickstep = abs(pdefs%axrange(2,axis)- pdefs%axrange(1,axis))/&
-            & real(axstyle%major)
-       p10 = floor(log10(tickstep))
-       tickstep = tickstep/(10._real64**p10)
-       if (tickstep < 1.5) then
-          tickstep = 1.0_real64
-       else if (tickstep < 2.5) then
-          tickstep = 2.0_real64
-       else if (tickstep < 4.0) then
-          tickstep = 3.0_real64
-       else if (tickstep < 7.0) then
-          tickstep = 5.0_real64
-       else
-          tickstep = 10.0_real64
-       end if
-       axstyle%xmajor = tickstep * 10._real64 ** p10
-    end if
 
     adv_window = hl_gtk_window_new("Advanced "//trim(axnames(axis))//&
          & "-axis settings"//c_null_char, destroy=c_funloc(gr_adv_quit), &
@@ -83,13 +65,12 @@ contains
     jb = hl_gtk_table_new()
     call hl_gtk_box_pack(base, jb)
 
-    junk = gtk_label_new("Major tick spacing:"//c_null_char)
+    junk = gtk_label_new("Major ticks:"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 0_c_int, 0_c_int)
 
-    write(tvalue, "(g0.5)") axstyle%xmajor
-    adv_major_entry = hl_gtk_entry_new(value=&
-         & trim(adjustl(tvalue))//c_null_char, &
-         & tooltip="Enter the spacing between major ticks"//c_new_line//&
+    adv_major_entry = hl_gtk_spin_button_new(0_c_int, &
+         & 30_c_int, initial_value= int(axstyle%major, c_int), &
+         & tooltip="Enter the number of major ticks"//c_new_line//&
          & "or 0 to use the default"//c_null_char)
     call hl_gtk_table_attach(jb, adv_major_entry, 1_c_int, 0_c_int)
 
@@ -146,19 +127,10 @@ contains
     if (apply) then
        axstyle => pdefs%axsty(iaxis)
 
-       call hl_gtk_entry_get_text(adv_major_entry, text=tvalue)
-       if (len_trim(tvalue) > 0) then
-          read(tvalue, *, iostat=ios, iomsg=iom) xm
-          if (ios /= 0) then
-             write(err_string, "(a/t10,a)") &
-                  & "gr_adv_quit: Failed to read major tick spacing", trim(iom)
-             call gr_message(err_string)
-          else
-             axstyle%xmajor = xm
-          end if
-       end if
-
+       axstyle%major = int(hl_gtk_spin_button_get_value(adv_major_entry), &
+            & int16)
        axstyle%minor = int(hl_gtk_spin_button_get_value(adv_minor_sb), int16)
+       
        call hl_gtk_entry_get_text(adv_format_entry, text=tvalue)
        if (tvalue /= '') then
           tvalue = adjustl(tvalue)

@@ -194,7 +194,7 @@ contains
     data%zdata%charsize = 1._real32
     data%zdata%label = 0_int16
     data%zdata%fill = 0_int8
-    data%zdata%ilog = .false.
+    data%zdata%ilog = 0_int16
     data%zdata%invert = .false.
     data%zdata%smooth = .false.
     data%zdata%shade_levels = 256

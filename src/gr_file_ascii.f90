@@ -426,8 +426,8 @@ contains
 
           case('XMJ')
              pdefs%axsty(1)%major = gr_int_val(tag_val(itag+1))
-          case('XMS')
-             pdefs%axsty(1)%xmajor = gr_dbl_val(tag_val(itag+1))
+!!$          case('XMS')
+!!$             pdefs%axsty(1)%xmajor = gr_dbl_val(tag_val(itag+1))
           case('XMN')
              pdefs%axsty(1)%minor = gr_int_val(tag_val(itag+1))
           case('XNV')
@@ -465,8 +465,8 @@ contains
 
           case('YMJ')
              pdefs%axsty(2)%major = gr_int_val(tag_val(itag+1))
-          case('YMS')
-             pdefs%axsty(2)%xmajor = gr_dbl_val(tag_val(itag+1))
+!!$          case('YMS')
+!!$             pdefs%axsty(2)%xmajor = gr_dbl_val(tag_val(itag+1))
           case('YMN')
              pdefs%axsty(2)%minor = gr_int_val(tag_val(itag+1))
           case('YNV')
@@ -504,8 +504,8 @@ contains
 
           case('RMJ')
              pdefs%axsty(3)%major = gr_int_val(tag_val(itag+1))
-          case('RMS')
-             pdefs%axsty(3)%xmajor = gr_dbl_val(tag_val(itag+1))
+!!$          case('RMS')
+!!$             pdefs%axsty(3)%xmajor = gr_dbl_val(tag_val(itag+1))
           case('RMN')
              pdefs%axsty(3)%minor = gr_int_val(tag_val(itag+1))
           case('RNV')
@@ -757,6 +757,11 @@ contains
              call gr_str_val(inln, 'D',  data%descript)
              exit
 
+          case('MN')
+             data%min_val = gr_dbl_val(tag_val(itag+1))
+          case('MX')
+             data%max_val = gr_dbl_val(tag_val(itag+1))
+             
           case('N')
              data%ndata = gr_lon_val(tag_val(itag+1))
              nflag = .true.
@@ -1265,8 +1270,8 @@ contains
          & pdefs%axsty(1)%idl, ":XSE:", pdefs%axsty(1)%extra, &
          & ":XSG:", pdefs%axsty(1)%grid, ":XST:", pdefs%axsty(1)%time, &
          & ":XSZ:", pdefs%axsty(1)%tzero
-    write(unit, "(a,i0,a,g0,a,i0)") "XMJ:", pdefs%axsty(1)%major, ":XMS:", &
-         & pdefs%axsty(1)%xmajor, ":XMN:", pdefs%axsty(1)%minor
+    write(unit, "(a,i0,a,i0)") "XMJ:", pdefs%axsty(1)%major, &
+         &  ":XMN:", pdefs%axsty(1)%minor
     write(unit, "(2a)") "XFM:", trim(pdefs%axsty(1)%format)
 
     if (allocated(pdefs%axsty(1)%values)) then
@@ -1285,8 +1290,8 @@ contains
          & pdefs%axsty(2)%idl, ":YSE:", pdefs%axsty(2)%extra, &
          & ":YSG:", pdefs%axsty(2)%grid, ":YST:", pdefs%axsty(2)%time, &
          & ":YSZ:", pdefs%axsty(2)%tzero
-    write(unit, "(a,i0,a,g0,a,i0)") "YMJ:", pdefs%axsty(2)%major, ":YMS:", &
-         & pdefs%axsty(2)%xmajor, ":YMN:", pdefs%axsty(2)%minor
+    write(unit, "(a,i0,a,i0)") "YMJ:", pdefs%axsty(2)%major, &
+         & ":YMN:", pdefs%axsty(2)%minor
     write(unit, "(2a)") "YFM:", trim(pdefs%axsty(2)%format)
 
     if (allocated(pdefs%axsty(2)%values)) then
@@ -1303,8 +1308,8 @@ contains
          & pdefs%axsty(3)%idl, ":RSE:", pdefs%axsty(3)%extra, &
          & ":RSG:", pdefs%axsty(3)%grid, ":RST:", pdefs%axsty(3)%time, &
          & ":RSZ:", pdefs%axsty(3)%tzero
-    write(unit, "(a,i0,a,g0,a,i0)") "RMJ:", pdefs%axsty(3)%major, ":RMS:", &
-         & pdefs%axsty(3)%xmajor, ":RMN:", pdefs%axsty(3)%minor
+    write(unit, "(a,i0,a,i0)") "RMJ:", pdefs%axsty(3)%major&
+         &, ":RMN:", pdefs%axsty(3)%minor
     write(unit, "(2a)") "RFM:", trim(pdefs%axsty(3)%format)
 
     if (allocated(pdefs%axsty(3)%values)) then
@@ -1334,6 +1339,7 @@ contains
             & ":O:", f_c_logical(data%sort), ":K:", f_c_logical(data%noclip), &
             & ":E:", f_c_logical(data%medit)
        if (data%colour == -2) write(unit, "(a,3i5)") 'CV:', data%c_vals
+       write(unit, "(2(a,g0))") "MN:", data%min_val, ":MX:", data%max_val
        
        if (data%ndata > 0) then
           select case(data%type)

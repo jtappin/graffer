@@ -143,7 +143,7 @@ contains
     ! Create the plbox axis codes based on the requested options.
 
     type(graff_style), pointer :: axsty
-    integer :: other_axis
+    integer :: other_axis, p10
 
     axsty => pdefs%axsty(axis)
 
@@ -171,7 +171,28 @@ contains
     if (axsty%minor /= 1)  options = trim(options)//'s'
     nminor = axsty%minor
 
-    spacing = axsty%xmajor
+    if (axsty%major /= 0) then
+       spacing = abs(pdefs%axrange(2,axis)- pdefs%axrange(1,axis))/&
+            & real(axsty%major)
+       p10 = floor(log10(spacing))
+       spacing = spacing/(10._real64**p10)
+       if (spacing < 1.5) then
+          spacing = 1.0_real64
+       else if (spacing < 2.5) then
+          spacing = 2.0_real64
+       else if (spacing < 4.0) then
+          spacing = 3.0_real64
+       else if (spacing < 7.0) then
+          spacing = 5.0_real64
+       else
+          spacing = 10.0_real64
+       end if
+       spacing = spacing * 10._real64 ** p10
+    else
+       spacing = 0._plflt
+    end if
+    
+!!    spacing = axsty%xmajor
 
     if (pdefs%axtype(axis) == 1) options = trim(options)//'l'
 

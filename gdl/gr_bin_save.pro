@@ -93,7 +93,7 @@ pro Gr_bin_save, pdefs, auto = auto
   graff_put_rec, ilu, 'XST', pdefs.xsty.time
   graff_put_rec, ilu, 'XSZ', pdefs.xsty.tzero
   graff_put_rec, ilu, 'XMJ', pdefs.xsty.major
-  graff_put_rec, ilu, 'XMS', pdefs.xsty.xmajor
+ ;; graff_put_rec, ilu, 'XMS', pdefs.xsty.xmajor
   graff_put_rec, ilu, 'XFM', pdefs.xsty.format
   graff_put_rec, ilu, 'XMN', pdefs.xsty.minor
   if ptr_valid(pdefs.xsty.values) then $
@@ -111,7 +111,7 @@ pro Gr_bin_save, pdefs, auto = auto
   graff_put_rec, ilu, 'YST', pdefs.ysty.time
   graff_put_rec, ilu, 'YSZ', pdefs.ysty.tzero
   graff_put_rec, ilu, 'YMJ', pdefs.ysty.major
-  graff_put_rec, ilu, 'YMS', pdefs.ysty.xmajor
+;;  graff_put_rec, ilu, 'YMS', pdefs.ysty.xmajor
   graff_put_rec, ilu, 'YFM', pdefs.ysty.format
   graff_put_rec, ilu, 'YMN', pdefs.ysty.minor
   if ptr_valid(pdefs.ysty.values) then $
@@ -128,7 +128,7 @@ pro Gr_bin_save, pdefs, auto = auto
   graff_put_rec, ilu, 'RST', pdefs.ysty_r.time
   graff_put_rec, ilu, 'RSZ', pdefs.ysty_r.tzero
   graff_put_rec, ilu, 'RMJ', pdefs.ysty_r.major
-  graff_put_rec, ilu, 'RMS', pdefs.ysty_r.xmajor
+;;  graff_put_rec, ilu, 'RMS', pdefs.ysty_r.xmajor
   graff_put_rec, ilu, 'RFM', pdefs.ysty_r.format
   graff_put_rec, ilu, 'RMN', pdefs.ysty_r.minor
   if ptr_valid(pdefs.ysty_r.values) then $
