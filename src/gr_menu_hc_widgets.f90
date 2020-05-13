@@ -39,7 +39,9 @@ module gr_menu_hc_widgets
 
   type(c_ptr), private :: hc_window, hc_paper_cbo, hc_ls_but, hc_name_entry, &
        & hc_view_cbo, hc_lp_entry, hc_col_but, hc_ts_but, ps_cbo=c_null_ptr, &
-       & eps_cbo=c_null_ptr, pdf_cbo=c_null_ptr, svg_cbo=c_null_ptr
+       & eps_cbo=c_null_ptr, pdf_cbo=c_null_ptr, svg_cbo=c_null_ptr, &
+       & hc_pdf_view_cbo
+  
   type(c_ptr), dimension(2), private :: hc_psize_sb, hc_off_sb
 
   real, dimension(2,2), parameter, private :: phys_size = &
@@ -58,7 +60,7 @@ contains
     type(c_ptr) :: base, junk, jb, je
     type(graff_hard), pointer :: hardset
     logical, dimension(2), target :: iapply = [.false., .true.]
-    integer(kind=c_int) :: iviewer, i, dindex
+    integer(kind=c_int) :: iviewer, iviewer_pdf, i, dindex
     integer :: pdot
 
     hardset => pdefs%hardset
@@ -79,6 +81,20 @@ contains
        end do
        if (iviewer == 0) then
           if (gr_find_program(hardset%viewer(1))) iviewer = size(viewnames)+1
+       end if
+    end if
+    
+    iviewer_pdf = 0
+    if (hardset%pdfviewer(1) /= '') then
+       do i = 1, size(viewnames)
+          if (hardset%pdfviewer(1) == viewnames(i)) then
+             iviewer_pdf = i
+             exit
+          end if
+       end do
+       if (iviewer_pdf == 0) then
+          if (gr_find_program(hardset%pdfviewer(1))) &
+               & iviewer_pdf = size(viewnames)+1
        end if
     end if
 
@@ -199,6 +215,22 @@ contains
     call gtk_combo_box_set_active(hc_view_cbo, iviewer)
     call hl_gtk_table_attach(jb, hc_view_cbo, 3_c_int, 1_c_int)
 
+    junk = gtk_label_new("PDF View cmd:"//c_null_char)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 2_c_int)
+
+    hc_pdf_view_cbo = hl_gtk_combo_box_new(has_entry=TRUE, &
+         & initial_choices=viewnames, tooltip= &
+         & "Select a viewer for PDF files"//c_null_char)
+
+    call hl_gtk_combo_box_add_text(hc_pdf_view_cbo, "<none>"//c_null_char, &
+         & at_start=TRUE)
+    if (iviewer_pdf > size(viewnames)) &
+         & call hl_gtk_combo_box_add_text(hc_view_cbo, &
+         & trim(hardset%viewer(1))//c_null_char)
+
+    call gtk_combo_box_set_active(hc_pdf_view_cbo, iviewer_pdf)
+    call hl_gtk_table_attach(jb, hc_pdf_view_cbo, 1_c_int, 2_c_int)
+
 
     je = gtk_expander_new("Advanced"//c_null_char)
     call hl_gtk_box_pack(base, je)
@@ -318,6 +350,12 @@ contains
        else
           hardset%viewer(1) = vtext
        end if
+       vsel = hl_gtk_combo_box_get_active(hc_pdf_view_cbo, ftext=vtext)
+       if (vsel == 0) then
+          hardset%pdfviewer(1) = ''
+       else
+          hardset%pdfviewer(1) = vtext
+       end if
 
        if (c_associated(ps_cbo)) then
           dsel = hl_gtk_combo_box_get_active(ps_cbo, ftext=dtext)
@@ -394,17 +432,26 @@ contains
     ! Swap page orientation.
 
     real(kind=c_double), dimension(2) :: tmp
-
+    logical :: ostate
+    
     tmp(1) = hl_gtk_spin_button_get_value(hc_psize_sb(1))
     tmp(2) = hl_gtk_spin_button_get_value(hc_psize_sb(2))
-    call hl_gtk_spin_button_set_value(hc_psize_sb(1), tmp(2))
-    call hl_gtk_spin_button_set_value(hc_psize_sb(2), tmp(1))
 
-    tmp(1) = hl_gtk_spin_button_get_value(hc_off_sb(1))
-    tmp(2) = hl_gtk_spin_button_get_value(hc_off_sb(2))
-    call hl_gtk_spin_button_set_value(hc_off_sb(1), tmp(2))
-    call hl_gtk_spin_button_set_value(hc_off_sb(2), tmp(1))
+    ostate = c_f_logical(gtk_toggle_button_get_active(hc_ls_but))
 
+    ! Only swap dimensions if they matched the old orientation.
+    
+    if ((ostate .and. tmp(2) > tmp(1)) .or. &
+         & (.not. ostate .and. tmp(1) > tmp(2))) then
+       call hl_gtk_spin_button_set_value(hc_psize_sb(1), tmp(2))
+       call hl_gtk_spin_button_set_value(hc_psize_sb(2), tmp(1))
+
+       tmp(1) = hl_gtk_spin_button_get_value(hc_off_sb(1))
+       tmp(2) = hl_gtk_spin_button_get_value(hc_off_sb(2))
+       call hl_gtk_spin_button_set_value(hc_off_sb(1), tmp(2))
+       call hl_gtk_spin_button_set_value(hc_off_sb(2), tmp(1))
+    end if
+    
   end subroutine gr_hc_orient
 
   subroutine gr_hc_defdev(widget, data) bind(c)

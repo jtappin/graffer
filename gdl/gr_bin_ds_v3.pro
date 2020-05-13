@@ -148,6 +148,8 @@ while (not eof(ilu)) do begin
         'ZC': begin
             cols = gr_int_rd(ilu, data(nset).zopts.n_cols)
             data(nset).zopts.colours = ptr_new(cols)
+            data(nset).zopts.raw_colours = $
+               ptr_new(intarr(3, data(nset).zopts.n_cols))
         end
 
         'ZCT': data(nset).zopts.ctable = gr_int_rd(ilu, 1)

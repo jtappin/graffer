@@ -74,6 +74,7 @@ while (not eof(ilu)) do begin
                                 ; TE, TTE - End
         
         'C': text(nset).colour = value
+        'CV': text[nset].c_vals = value
         'S': text(nset).size = value
         'O': text(nset).orient = value
         'A': text(nset).align = value

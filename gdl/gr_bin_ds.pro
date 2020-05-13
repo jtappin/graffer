@@ -66,6 +66,7 @@ while (not eof(ilu)) do begin
                                 ; S - symbol size
                                 ; L - line style
                                 ; C - colour
+                                ; CV - custom colour
                                 ; W - thickness (width)
                                 ; O - sorted? (Order)
                                 ; D - description
@@ -91,6 +92,7 @@ while (not eof(ilu)) do begin
         'S': data[nset].symsize = value
         'L': data[nset].line = value
         'C': data[nset].colour = value
+        'CV': data[nset].c_vals = value
         'W': data[nset].thick = value
         'O': data[nset].sort = value
         'K': data[nset].noclip = value
@@ -120,6 +122,9 @@ while (not eof(ilu)) do begin
         end
         'M': data[nset].mode = value
         
+        'MN': data[nset].min_val = value
+        'MX': data[nset].max_val = value
+
         'Y': data[nset].y_axis = value
 
         'ZF':  data[nset].zopts.format = value
@@ -135,10 +140,31 @@ while (not eof(ilu)) do begin
         end
 
         'ZC': begin
-            data[nset].zopts.colours = ptr_new(fix(value))
-            data[nset].zopts.n_cols = nvals
+           if tcode eq 11 then begin
+              cols = intarr(nvals)
+              rcols = intarr(3, nvals)
+              for j = 0, nvals-1 do begin
+                 if n_elements(value[j]) eq 1 then $
+                    cols[j] = fix(value[j]) $
+                 else begin
+                    rcols[*, j] = fix(value)
+                    cols[j] = -2
+                 endelse
+              endfor
+              data[nset].zopts.colours = ptr_new(cols)
+              data[nset].zopts.raw_colours = ptr_new(rcols)
+           ;; endif else if tcode eq 7 then $
+           ;;    data[nset].zopts.colours = ptr_new(value) $
+           endif else data[nset].zopts.colours = ptr_new(fix(value))
+           data[nset].zopts.n_cols = nvals
         end
-
+        'ZCR': begin
+           if data[nset].zopts.n_cols eq 0 then $
+              graff_msg, msgid, $
+                         "Raw colours found before indexed list."
+           data[nset].zopts.raw_colours = ptr_new(fix(value))
+        end
+  
         'ZCT': data[nset].zopts.ctable = value
 
         'ZCG': data[nset].zopts.gamma = value

@@ -46,7 +46,8 @@ Zopts = {graff_2d, $
          lmap:        0, $ 
          Levels:      ptr_new(), $
          N_cols:      0, $ 
-         Colours:     list(), $
+         Colours:     ptr_new(), $
+         raw_colours: ptr_new(), $
          N_sty:       0, $
          Style:       ptr_new(), $
          N_thick:     0, $
