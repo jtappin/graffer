@@ -582,17 +582,18 @@ contains
     call gr_set_values_dataset()
   end subroutine gr_ds_new
 
-  subroutine gr_ds_copy(from, to, source, destination, copy_format, move)
+  subroutine gr_ds_copy(from, to, source, destination, copy_format, &
+       & move, no_housekeeping)
     integer(kind=int16), intent(in), optional :: from, to
     type(graff_data), target, intent(inout), optional :: source
     type(graff_data), target, intent(out), optional :: destination
-    logical, intent(in), optional :: copy_format, move
+    logical, intent(in), optional :: copy_format, move, no_housekeeping
 
     ! Make a copy of a dataset
 
     integer(kind=int16) :: dest
     type(graff_data), pointer :: data_from, data_to
-    logical :: fcopy, realloc
+    logical :: fcopy, realloc, update_hk
     integer :: nn
     integer, dimension(2) :: nn2
 
@@ -642,7 +643,12 @@ contains
     end if
     if (realloc) fcopy = .true.
 
-
+    if (present(no_housekeeping)) then
+       update_hk = .not. no_housekeeping
+    else
+       update_hk = .true.
+    end if
+    
     ! First we clear the target
 
     call gr_pdefs_data_init(dataset=data_to)
@@ -788,14 +794,16 @@ contains
        data_to%zdata%y_is_2d = data_from%zdata%y_is_2d
     end select
 
-    call gr_set_values_dataset()
-    if (pdefs%data(pdefs%cset)%type == -4 .or. &
-         & pdefs%data(pdefs%cset)%type == 9) then
-       call  gtk_notebook_set_current_page(display_nb, 1)
-    else
-       call  gtk_notebook_set_current_page(display_nb, 0)
+    if (update_hk) then
+       call gr_set_values_dataset()
+       if (pdefs%data(pdefs%cset)%type == -4 .or. &
+            & pdefs%data(pdefs%cset)%type == 9) then
+          call  gtk_notebook_set_current_page(display_nb, 1)
+       else
+          call  gtk_notebook_set_current_page(display_nb, 0)
+       end if
     end if
-
+    
   end subroutine gr_ds_copy
 
   subroutine gr_ds_append(index, append_to)
@@ -935,19 +943,22 @@ contains
     iskey = .false.
     if (allocated(pdefs%key%list)) iskey(pdefs%key%list+1) = .true.
 
-    call gr_ds_copy(index, destination=tmpdata, move=.true.)
+    call gr_ds_copy(index, destination=tmpdata, move=.true., &
+         & no_housekeeping=.true.)
     tmpkey = iskey(index)
 
     if (after > index) then
        do i = index+1_int16, after
-          call gr_ds_copy(i, to=i-1_int16, move=.true.)
+          call gr_ds_copy(i, to=i-1_int16, move=.true., &
+               & no_housekeeping=.true.)
           iskey(i-1) = iskey(i)
        end do
        call gr_ds_copy(source=tmpdata, to=after, move=.true.)
        iskey(after) = tmpkey
     else
        do i = index-1_int16, after+1_int16, -1_int16
-          call gr_ds_copy(i, to=i+1_int16, move=.true.)
+          call gr_ds_copy(i, to=i+1_int16, move=.true., &
+               & no_housekeeping=.true.)
           iskey(i+1) = iskey(i)
        end do
        call gr_ds_copy(source=tmpdata, to=after+1_int16, move=.true.)

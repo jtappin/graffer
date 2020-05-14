@@ -162,7 +162,7 @@ contains
 
     logical, pointer :: apply
     integer(kind=c_int) :: i
-
+    
     call c_f_pointer(data, apply)
 
     if (apply) call gr_ds_move(int(sort_from, int16), int(sort_to, int16))
