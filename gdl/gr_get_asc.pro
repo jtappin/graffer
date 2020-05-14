@@ -357,11 +357,19 @@ while (not eof(ilu)) do begin
                 goto, new_line
             end
             'HVB': begin
-                pdefs.hardset.viewer[0] = gr_str_val(inline, 'HAB')
+                pdefs.hardset.viewer[0] = gr_str_val(inline, 'HVB')
                 goto, new_line
             end
             'HVA': begin
-                pdefs.hardset.viewer[1] = gr_str_val(inline, 'HAA')
+                pdefs.hardset.viewer[1] = gr_str_val(inline, 'HVA')
+                goto, new_line
+            end
+            'HPB': begin
+                pdefs.hardset.pdfviewer[0] = gr_str_val(inline, 'HPB')
+                goto, new_line
+            end
+            'HPA': begin
+                pdefs.hardset.pdfviewer[1] = gr_str_val(inline, 'HPA')
                 goto, new_line
             end
 

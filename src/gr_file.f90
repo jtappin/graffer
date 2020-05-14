@@ -356,8 +356,6 @@ contains
           call rec%get_value(pdefs%axsty(1)%minor, status)
        case ('XMJ')
           call rec%get_value(pdefs%axsty(1)%major, status)
-!!$       case ('XMS')
-!!$          call rec%get_value(pdefs%axsty(1)%xmajor, status)
        case ('XFM')
           call rec%get_value(pdefs%axsty(1)%format, status)
 
@@ -392,8 +390,6 @@ contains
           call rec%get_value(pdefs%axsty(2)%minor, status)
        case ('YMJ')
           call rec%get_value(pdefs%axsty(2)%major, status)
-!!$       case ('YMS')
-!!$          call rec%get_value(pdefs%axsty(2)%xmajor, status)
        case ('YFM')
           call rec%get_value(pdefs%axsty(2)%format, status)
        case('YVL')
@@ -429,8 +425,6 @@ contains
           call rec%get_value(pdefs%axsty(3)%minor, status)
        case ('RMJ')
           call rec%get_value(pdefs%axsty(3)%major, status)
-!!$       case ('RMS')
-!!$          call rec%get_value(pdefs%axsty(3)%xmajor, status)
        case ('RFM')
           call rec%get_value(pdefs%axsty(3)%format, status)
        case('RVL')
@@ -657,7 +651,7 @@ contains
           ! corrupted. 
 
        case default
-          call gr_message("GR_READ: unknown tag: "// &
+          call gr_message("GR_READ: unknown or obsolete tag: "// &
                & rec%get_tag()//" Skipping")
           status = 2
 
@@ -684,8 +678,6 @@ contains
     call gr_set_changed(.false.)
     pdefs%transient%backup = .false.
     pdefs%is_ascii = .false.
-
-    !    if (ctflag) call gr_colours(pdefs)
 
   end subroutine gr_read
 
@@ -1127,7 +1119,6 @@ contains
     call rec%set_value('XST', pdefs%axsty(1)%time, unit)
     call rec%set_value('XSZ', pdefs%axsty(1)%tzero, unit)
     call rec%set_value('XMJ', pdefs%axsty(1)%major, unit)
-!!$    call rec%set_value('XMS', pdefs%axsty(1)%xmajor, unit)
     call rec%set_value('XFM', pdefs%axsty(1)%format, unit)
     call rec%set_value('XMN', pdefs%axsty(1)%minor, unit)
     if (allocated(pdefs%axsty(1)%values)) &
@@ -1145,7 +1136,6 @@ contains
     call rec%set_value('YST', pdefs%axsty(2)%time, unit)
     call rec%set_value('YSZ', pdefs%axsty(2)%tzero, unit)
     call rec%set_value('YMJ', pdefs%axsty(2)%major, unit)
-!!$    call rec%set_value('YMS', pdefs%axsty(2)%xmajor, unit)
     call rec%set_value('YFM', pdefs%axsty(2)%format, unit)
     call rec%set_value('YMN', pdefs%axsty(2)%minor, unit)
     if (allocated(pdefs%axsty(2)%values)) &
@@ -1162,7 +1152,6 @@ contains
     call rec%set_value('RST', pdefs%axsty(3)%time, unit)
     call rec%set_value('RSZ', pdefs%axsty(3)%tzero, unit)
     call rec%set_value('RMJ', pdefs%axsty(3)%major, unit)
-!!$    call rec%set_value('RMS', pdefs%axsty(3)%xmajor, unit)
     call rec%set_value('RFM', pdefs%axsty(3)%format, unit)
     call rec%set_value('RMN', pdefs%axsty(3)%minor, unit)
     if (allocated(pdefs%axsty(3)%values)) &

@@ -340,15 +340,11 @@ contains
     type(c_ptr), value :: widget, data
 
     integer :: icol
-!!$    logical :: update
     
     icol = gtk_combo_box_get_active(widget)
     if (icol == ccindex) then
        call gr_colour_define(text_window, text_clr_cbo, &
             & current_colour, current_rgb)
-!!$       if (update) then
-!!$          call gr_text_update(widget, data)
-!!$       end if
     else
        current_colour = text%colour
        current_rgb = text%c_vals
@@ -369,8 +365,6 @@ contains
     if (.not. text_ready) return
 
     call hl_gtk_entry_get_text(text_entry, text=txt)
-!    icol = gtk_combo_box_get_active(text_clr_cbo) 
-!!$    if (icol == -1) return
     cs = hl_gtk_spin_button_get_value(text_cs_sb)
     ffamily = gtk_combo_box_get_active(text_ffam_cbo)+1
     if (ffamily < 1 .or. ffamily > size(font_list)) return
