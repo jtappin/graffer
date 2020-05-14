@@ -426,8 +426,6 @@ contains
 
           case('XMJ')
              pdefs%axsty(1)%major = gr_int_val(tag_val(itag+1))
-!!$          case('XMS')
-!!$             pdefs%axsty(1)%xmajor = gr_dbl_val(tag_val(itag+1))
           case('XMN')
              pdefs%axsty(1)%minor = gr_int_val(tag_val(itag+1))
           case('XNV')
@@ -465,8 +463,6 @@ contains
 
           case('YMJ')
              pdefs%axsty(2)%major = gr_int_val(tag_val(itag+1))
-!!$          case('YMS')
-!!$             pdefs%axsty(2)%xmajor = gr_dbl_val(tag_val(itag+1))
           case('YMN')
              pdefs%axsty(2)%minor = gr_int_val(tag_val(itag+1))
           case('YNV')
@@ -504,8 +500,6 @@ contains
 
           case('RMJ')
              pdefs%axsty(3)%major = gr_int_val(tag_val(itag+1))
-!!$          case('RMS')
-!!$             pdefs%axsty(3)%xmajor = gr_dbl_val(tag_val(itag+1))
           case('RMN')
              pdefs%axsty(3)%minor = gr_int_val(tag_val(itag+1))
           case('RNV')

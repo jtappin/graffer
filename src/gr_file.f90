@@ -1097,7 +1097,8 @@ contains
     call gr_date(date)
     write(unit) "GRAFFER", graffer_version%ints(), &
          & to_little(len_trim(pdefs%dir)), &
-         & trim(pdefs%dir), to_little(len_trim(pdefs%name)), trim(pdefs%name), &
+         & trim(pdefs%dir), to_little(len_trim(pdefs%name)), &
+         & trim(pdefs%name), &
          & to_little(len_trim(date)), trim(date)
 
     call rec%set_value('GT ', pdefs%title, unit)

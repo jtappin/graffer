@@ -99,6 +99,7 @@ contains
     
     pdefs%hardset%action = ''
     pdefs%hardset%viewer = ''
+    pdefs%hardset%pdfviewer = ''
     pdefs%hardset%name = ''
 
     pdefs%hardset%psdev = ''

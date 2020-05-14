@@ -153,8 +153,6 @@ while (not eof(ilu)) do begin
               endfor
               data[nset].zopts.colours = ptr_new(cols)
               data[nset].zopts.raw_colours = ptr_new(rcols)
-           ;; endif else if tcode eq 7 then $
-           ;;    data[nset].zopts.colours = ptr_new(value) $
            endif else data[nset].zopts.colours = ptr_new(fix(value))
            data[nset].zopts.n_cols = nvals
         end

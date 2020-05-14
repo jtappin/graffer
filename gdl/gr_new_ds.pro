@@ -34,24 +34,24 @@ function gr_new_ds, pdefs
 ; 	Original: 10/1/12; SJT
 ;-
 
-ds = {graff_data}
+  ds = {graff_data}
 
-ds.Pline = 1
-ds.Symsize =  1.
-ds.Colour =   1
-ds.Thick =    1.
-ds.Zopts.N_levels = 6
-ds.Zopts.N_cols =  1
-ds.Zopts.Colours = ptr_new(1)
-ds.zopts.raw_colours = ptr_new(intarr(3))
-ds.Zopts.N_sty = 1
-ds.Zopts.style = ptr_new(0)
-ds.Zopts.N_thick =  1
-ds.Zopts.Thick = ptr_new(1.)
-ds.Zopts.Pxsize =  0.5
+  ds.Pline = 1
+  ds.Symsize =  1.
+  ds.Colour =   1
+  ds.Thick =    1.
+  ds.Zopts.N_levels = 6
+  ds.Zopts.N_cols =  1
+  ds.Zopts.Colours = ptr_new(1)
+  ds.zopts.raw_colours = ptr_new(intarr(3))
+  ds.Zopts.N_sty = 1
+  ds.Zopts.style = ptr_new(0)
+  ds.Zopts.N_thick =  1
+  ds.Zopts.Thick = ptr_new(1.)
+  ds.Zopts.Pxsize =  0.5
 
-ds.Medit = pdefs.opts.mouse
+  ds.Medit = pdefs.opts.mouse
 
-return, ds
+  return, ds
 
 end

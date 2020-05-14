@@ -192,8 +192,6 @@ contains
        spacing = 0._plflt
     end if
     
-!!    spacing = axsty%xmajor
-
     if (pdefs%axtype(axis) == 1) options = trim(options)//'l'
 
     if (.not. btest(axsty%extra, annot_bit)) then
