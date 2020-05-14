@@ -344,14 +344,25 @@ contains
     icol = gtk_combo_box_get_active(widget)
     if (icol == ccindex) then
        call gr_colour_define(text_window, text_clr_cbo, &
-            & current_colour, current_rgb)
+            & current_colour, current_rgb, &
+            & updater=c_funloc(gr_text_update_timer))
     else
-       current_colour = text%colour
-       current_rgb = text%c_vals
+       current_colour = int(icol, int16)
+       current_rgb = 0_int16
        call gr_text_update(widget, data)
     end if
 
   end subroutine gr_text_set_colour
+
+  function gr_text_update_timer(data) bind(c)
+    integer(kind=c_int) :: gr_text_update_timer
+    type(c_ptr), value :: data
+
+    call gr_set_plw(text_draw, .true., csize=csd)
+    call gr_text_update(c_null_ptr, c_null_ptr)
+
+    gr_text_update_timer = FALSE
+  end function gr_text_update_timer
   
   subroutine gr_text_update(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -373,6 +384,8 @@ contains
 
     call plschr(0._plflt, cs)
 
+    print *, current_colour, current_rgb
+    
     if (current_colour >= 0) then
        call plcol0(int(current_colour, int32))
     else

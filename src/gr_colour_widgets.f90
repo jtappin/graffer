@@ -27,6 +27,8 @@ module gr_colour_widgets
   use gtk, only: gtk_container_add, gtk_label_new, gtk_widget_destroy, &
        & gtk_widget_show_all, gtk_widget_queue_draw, TRUE, FALSE
 
+  use g, only: g_timeout_add
+  
   use plplot
 
   use gr_colours
@@ -44,14 +46,16 @@ module gr_colour_widgets
   integer(kind=c_int), private :: original_index
   
   type(c_ptr), private :: pd_menu
+  type(c_funptr), private :: timer_cb
   
 contains
   subroutine gr_colour_define(parent, pull_down, o_index, o_raw, &
-       & origin)
+       & origin, updater)
     type(c_ptr), intent(in) :: parent, pull_down
     integer(kind=int16), target :: o_index
     integer(kind=int16), dimension(3), target :: o_raw
     integer, intent(in), optional :: origin
+    type(c_funptr), intent(in), optional :: updater
     
     type(c_ptr) :: base, jb, junk
     logical, dimension(2), target :: iapply = [.false., .true.]
@@ -62,6 +66,11 @@ contains
     pd_menu = pull_down
     original_index = o_index
     if (present(origin)) original_index = original_index - origin
+    if (present(updater)) then
+       timer_cb = updater
+    else
+       timer_cb = c_null_funptr
+    end if
     
     if (o_index == -2) then
        rgb_new = o_raw
@@ -162,7 +171,8 @@ contains
     type(c_ptr), value :: widget, data
 
     logical, pointer :: apply
-
+    integer(kind=c_int) :: junk
+    
     call c_f_pointer(data, apply)
 
 
@@ -179,8 +189,13 @@ contains
     
     call gtk_widget_destroy(colour_window)
 
-    call gr_set_plw(update=apply)
-    if (apply) call gr_plot_draw(.true.)
-
+    if (apply) then
+       if (c_associated(timer_cb)) then
+          junk = g_timeout_add(100_c_int, timer_cb, c_null_ptr)
+       else
+          call gr_set_plw(update=apply)
+          call gr_plot_draw(.true.)
+       end if
+    end if
   end subroutine gr_col_quit
 end module gr_colour_widgets
