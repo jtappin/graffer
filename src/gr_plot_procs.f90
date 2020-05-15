@@ -36,6 +36,8 @@ module gr_plot_procs
   use gr_text_utils
   use gr_interfaces
 
+  use ieee_arithmetic, only: ieee_is_finite
+  
   implicit none
 
 contains
@@ -609,11 +611,11 @@ contains
     else
        allocate(clevels(data%zdata%n_levels))
        if (data%zdata%lmap == 1) then
-          zmin = minval(z, finite(z) .and. z > 0.)
-          zmax = maxval(z, finite(z) .and. z > 0.)
+          zmin = minval(z, ieee_is_finite(z) .and. z > 0.)
+          zmax = maxval(z, ieee_is_finite(z) .and. z > 0.)
        else
-          zmin = minval(z, finite(z))
-          zmax = maxval(z, finite(z))
+          zmin = minval(z, ieee_is_finite(z))
+          zmax = maxval(z, ieee_is_finite(z))
        end if
        call gr_make_levels(zmin, zmax, data%zdata%lmap, clevels)
        clall = .true.
@@ -921,7 +923,7 @@ contains
        if (zmax /= 0.) zmax = zmax / sqrt(abs(zmax))
     end if
 
-    where(.not. finite(z)) z = data%zdata%missing
+    where(.not. ieee_is_finite(z)) z = data%zdata%missing
 
     if (data%zdata%shade_levels == 0) data%zdata%shade_levels = 256
     allocate(clevels(data%zdata%shade_levels))
@@ -1057,7 +1059,7 @@ contains
        lmx = log10(zmax)
        lmn = log10(zmin)
        
-       if (.not. finite(lmx) .or. .not. finite(lmn)) then
+       if (.not. ieee_is_finite(lmx) .or. .not. ieee_is_finite(lmn)) then
           levels(:) = 0._real64
        else
           rg = lmx-lmn

@@ -579,13 +579,6 @@ contains
     end function mdays
   end subroutine gr_date
 
-  elemental function finite(x)
-    logical :: finite
-    real(kind=real64), intent(in) :: x
-
-    finite = .not. (isnan(x) .or. x > huge(x) .or. x < -huge(x))
-  end function finite
-
   ! Miscellaneous glib interfaces with "fortranization"
 
   function gr_find_program(name, path)
