@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@ module gr_ds_rescale_widgets
   implicit none
 
   type(c_ptr), private :: rs_window
-  type(c_ptr), private, dimension(3) :: rs_shifts, rs_scales
+  type(c_ptr), private, dimension(3) :: rs_shifts, rs_scales, rs_divide
 
 contains
   subroutine gr_ds_rescale
@@ -70,36 +70,58 @@ contains
 
     junk = gtk_label_new("X: Scaling"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 0_c_int, 0_c_int)
-    rs_scales(1) = hl_gtk_entry_new(editable=TRUE)
+    rs_scales(1) = hl_gtk_entry_new(editable=TRUE, tooltip = &
+         & "Set a scaling factor for the X values"//c_null_char)
     call hl_gtk_table_attach(jb, rs_scales(1), 1_c_int, 0_c_int)
 
+    rs_divide(1) = hl_gtk_check_button_new("Divide"//c_null_char, &
+         & initial_state = FALSE, tooltip = &
+         & "Check to divide rather than multiply the values"//c_null_char)
+    call hl_gtk_table_attach(jb, rs_divide(1), 2_c_int, 0_c_int)
+
     junk = gtk_label_new("Shift"//c_null_char)
-    call hl_gtk_table_attach(jb, junk, 2_c_int, 0_c_int)
-    rs_shifts(1) = hl_gtk_entry_new(editable=TRUE)
-    call hl_gtk_table_attach(jb, rs_shifts(1), 3_c_int, 0_c_int)
+    call hl_gtk_table_attach(jb, junk, 3_c_int, 0_c_int)
+    rs_shifts(1) = hl_gtk_entry_new(editable=TRUE, tooltip = &
+         & "Set a shift for the X values"//c_null_char)
+    call hl_gtk_table_attach(jb, rs_shifts(1), 4_c_int, 0_c_int)
 
     junk = gtk_label_new("Y: Scaling"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int)
-    rs_scales(2) = hl_gtk_entry_new(editable=TRUE)
+    rs_scales(2) = hl_gtk_entry_new(editable=TRUE, tooltip = &
+         & "Set a scaling factor for the Y values"//c_null_char)
     call hl_gtk_table_attach(jb, rs_scales(2), 1_c_int, 1_c_int)
 
+    rs_divide(2) = hl_gtk_check_button_new("Divide"//c_null_char, &
+         & initial_state = FALSE, tooltip = &
+         & "Check to divide rather than multiply the values"//c_null_char)
+    call hl_gtk_table_attach(jb, rs_divide(2), 2_c_int, 1_c_int)
+
     junk = gtk_label_new("Shift"//c_null_char)
-    call hl_gtk_table_attach(jb, junk, 2_c_int, 1_c_int)
-    rs_shifts(2) = hl_gtk_entry_new(editable=TRUE)
-    call hl_gtk_table_attach(jb, rs_shifts(2), 3_c_int, 1_c_int)
+    call hl_gtk_table_attach(jb, junk, 3_c_int, 1_c_int)
+    rs_shifts(2) = hl_gtk_entry_new(editable=TRUE, tooltip = &
+         & "Set a shift for the Y values"//c_null_char)
+    call hl_gtk_table_attach(jb, rs_shifts(2), 4_c_int, 1_c_int)
 
     if (pdefs%data(pdefs%cset)%type == 9) then
        junk = gtk_label_new("Z: Scaling"//c_null_char)
        call hl_gtk_table_attach(jb, junk, 0_c_int, 2_c_int)
-       rs_scales(3) = hl_gtk_entry_new(editable=TRUE)
+       rs_scales(3) = hl_gtk_entry_new(editable=TRUE, tooltip = &
+            & "Set a scaling factor for the Z values"//c_null_char)
        call hl_gtk_table_attach(jb, rs_scales(3), 1_c_int, 2_c_int)
 
+       rs_divide(3) = hl_gtk_check_button_new("Divide"//c_null_char, &
+            & initial_state = FALSE, tooltip = &
+            & "Check to divide rather than multiply the values"//c_null_char)
+       call hl_gtk_table_attach(jb, rs_divide(3), 2_c_int, 2_c_int)
+
        junk = gtk_label_new("Shift"//c_null_char)
-       call hl_gtk_table_attach(jb, junk, 2_c_int, 2_c_int)
-       rs_shifts(3) = hl_gtk_entry_new(editable=TRUE)
-       call hl_gtk_table_attach(jb, rs_shifts(3), 3_c_int, 2_c_int)
+       call hl_gtk_table_attach(jb, junk, 3_c_int, 2_c_int)
+       rs_shifts(3) = hl_gtk_entry_new(editable=TRUE, tooltip = &
+            & "Set a shift for the Z values"//c_null_char)
+       call hl_gtk_table_attach(jb, rs_shifts(3), 4_c_int, 2_c_int)
     else
        rs_scales(3) = c_null_ptr
+       rs_divide(3) = c_null_ptr
        rs_shifts(3) = c_null_ptr
     end if
 
@@ -126,6 +148,8 @@ contains
     type(graff_data), pointer :: data
     logical :: ok
     real(kind=real64), dimension(3) :: scales, shifts
+    logical, dimension(3) :: divide
+    
     integer :: i, ios
     character(len=40) :: text
     character(len=120) :: iom
@@ -143,6 +167,8 @@ contains
        do i = 1, 3
           if (.not. c_associated(rs_scales(i))) cycle
           call hl_gtk_entry_get_text(rs_scales(i), text)
+          divide(i) = c_f_logical(gtk_toggle_button_get_active(rs_divide(i)))
+          
           if (len_trim(text) > 0) then
              read(text, *, iostat=ios, iomsg=iom) scales(i)
              if (ios /= 0) then
@@ -152,8 +178,11 @@ contains
                 call gr_message(err_string)
                 ok = .false.
                 call gtk_entry_set_text(rs_scales(i), "Invalid"//c_null_char)
+             else if (divide(i)) then
+                scales(i) = 1._real64/scales(i)
              end if
           end if
+    
           call hl_gtk_entry_get_text(rs_shifts(i), text)
           if (len_trim(text) > 0) then
              read(text, *, iostat=ios, iomsg=iom) shifts(i)
