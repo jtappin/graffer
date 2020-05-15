@@ -43,6 +43,8 @@ module gr_plot
   use gr_text_utils
   use gr_interfaces
 
+  use ieee_arithmetic, only: ieee_is_finite
+  
   implicit none
 
   real(kind=plflt), parameter :: cm2pt = 72._plflt/2.54_plflt
@@ -442,7 +444,11 @@ contains
     logical :: xlog, ylog, xyall
     real(kind=plflt), parameter :: dtor = pl_pi/180._plflt
     real(kind=plflt) :: scale
-
+    integer :: nseg, iseg
+    integer, dimension(:,:), allocatable :: isegb
+    logical, dimension(:), allocatable :: invalid
+    
+    logical :: sflag
     data => pdefs%data(index)
     if (.not. allocated(data%xydata)) return
 
@@ -464,12 +470,48 @@ contains
        xyall = .false.
     end if
 
+    nseg = 1     ! single segment
+    
     allocate(x(data%ndata), y(data%ndata))
 
+    allocate(invalid(data%ndata))
+    invalid(:) = .false.
+    
     if (data%mode == 0) then
        x = xydata(1,:)
        if (xlog) x = log10(x)
        y = xydata(2,:)
+       
+       if (ieee_is_finite(data%min_val)) &
+            & invalid = invalid .or. y < data%min_val
+       if (ieee_is_finite(data%max_val)) &
+            & invalid = invalid .or. y > data%max_val
+       nseg=1 + count(invalid)  ! Upper limit
+       allocate(isegb(2, nseg))
+       
+       if (nseg > 1) then
+          sflag = .true.
+          iseg = 1
+          do i = 1, data%ndata
+             if (sflag .and. .not. invalid(i)) then
+                isegb(1,iseg) = i
+                sflag = .false.
+             else if (.not. sflag .and. invalid(i)) then
+                isegb(2,iseg) = i-1
+                sflag = .true.
+                iseg = iseg+1
+             end if
+          end do
+          if (sflag) then     ! We ended on an invalid point
+             nseg=iseg-1
+          else                ! We ended on a valid point
+             isegb(2,iseg) = data%ndata
+             nseg = iseg
+          end if
+       else
+          isegb(1,1) = 1
+          isegb(2,1) = data%ndata
+       end if
        if (ylog) y = log10(y)
     else
        if (data%mode == 1) then
@@ -477,7 +519,11 @@ contains
        else
           scale = dtor
        end if
-
+       
+       allocate(isegb(2,1))
+       isegb(1,1) = 1
+       isegb(2,1) = data%ndata
+       
        r => xydata(1,:)
        th => xydata(2,:)
        x = r * cos(th*scale)
@@ -496,9 +542,25 @@ contains
     call plwidth(data%thick)
     call gr_plot_linesty(data%line, scale=ceiling(sqrt(data%thick)))
 
+    ! Moved error bars  before the line so that
+    ! isegb doesn't get changed
+    
+    if (data%type > 0) then
+       if (data%mode == 0) then
+          do i = 1, nseg
+             call gr_plot_xy_errors(index, x(isegb(1,i):isegb(2,i)), &
+                  & y(isegb(1,i):isegb(2,i)), xydata(:,isegb(1,i):isegb(2,i)))
+          end do
+       else
+          call gr_plot_rt_errors(index)
+       end if
+    end if
+
     select case (data%pline)
     case(1)
-       call plline(x, y)
+       do i = 1, nseg
+          call plline(x(isegb(1,i):isegb(2,i)), y(isegb(1,i):isegb(2,i)))
+       end do
     case(2)
        allocate(xh(2*size(x)), yh(2*size(x)))
        do i = 1, size(x)
@@ -509,20 +571,17 @@ contains
        do i = 1, size(x)-1
           xh(2*i:2*i+1) = (x(i)+x(i+1))/2._real64
        end do
-       call plline(xh, yh)
+       isegb(1,:) = 2*isegb(1,:)-1
+       isegb(2,:) = 2*isegb(2,:)
+       do i = 1, nseg
+          call plline(xh(isegb(1,i):isegb(2,i)), yh(isegb(1,i):isegb(2,i)))
+       end do
     end select
 
-    if (data%type > 0) then
-       if (data%mode == 0) then
-          call gr_plot_xy_errors(index, x, y, xydata)
-       else
-          call gr_plot_rt_errors(index)
-       end if
-    end if
 
     if (data%psym /= 0) &
          & call gr_plot_symbol(x, y, data%psym, &
-         & data%symsize) 
+         & data%symsize, use = .not. invalid) 
 
     if (xyall) deallocate(xydata)
   end subroutine gr_1dd_plot

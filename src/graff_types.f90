@@ -191,4 +191,5 @@ module graff_types
        & 'XYyy  ', 'XYx   ', 'XYxx  ', 'XYxy  ', 'XYxyy ', 'XYxxy ', &
        & 'XYxxyy', 'Z     ']
 
+
 end module graff_types

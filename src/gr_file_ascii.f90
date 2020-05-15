@@ -1117,6 +1117,14 @@ contains
        end do
     end do main
 
+    ! If min_val and max_val are both zero then they should both be NaN
+
+    if (data%min_val == 0._real64 .and. data%max_val == 0._real64) then
+       data%min_val = d_nan
+       data%max_val = d_nan
+    end if
+
+ 
     if (.not. jflag) then
        select case(data%psym)
        case(10)

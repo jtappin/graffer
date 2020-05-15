@@ -48,9 +48,7 @@ contains
     character(len=2), dimension(3), parameter :: axnames = ['X ','Y ','Yr']
     logical, dimension(2), target :: iapply = [.false., .true.]
     type(graff_style), pointer :: axstyle
-    character(len=32) :: tvalue
-    real(kind=real64) :: tickstep
-    integer :: p10
+
     axstyle => pdefs%axsty(axis)
     iaxis = axis
 
@@ -117,10 +115,6 @@ contains
     logical, pointer :: apply
     type(graff_style), pointer :: axstyle
     character(len=32) :: tvalue
-    integer :: ios
-    real(kind=real64) :: xm
-    character(len=120) :: iom
-    character(len=160), dimension(2) :: err_string
 
     call c_f_pointer(data, apply)
 

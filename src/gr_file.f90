@@ -1037,6 +1037,14 @@ contains
 
        end select
     end do
+
+    ! If min_val and max_val are both zero then they should both be NaN
+
+    if (ds%min_val == 0._real64 .and. ds%max_val == 0._real64) then
+       ds%min_val = d_nan
+       ds%max_val = d_nan
+    end if
+
   end subroutine gr_read_ds
 
   subroutine gr_write(ok, auto, ascii)

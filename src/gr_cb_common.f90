@@ -47,6 +47,8 @@ module gr_cb_common
   use graff_version
   use gr_msg
 
+  use ieee_arithmetic, only: ieee_is_finite
+  
   use plplot, only: pi => pl_pi
 
   implicit none
@@ -56,13 +58,13 @@ module gr_cb_common
   ! Top - level gui
 
   type(c_ptr) :: y2_tab, y2_check
-  type(c_ptr) :: name_id		! The file name display
-  type(c_ptr) :: display_nb		! The notebook for 1d/2d
+  type(c_ptr) :: name_id                ! The file name display
+  type(c_ptr) :: display_nb             ! The notebook for 1d/2d
 
   ! 1 D dataset options
 
   type(c_ptr) :: colour_cbo, symbol_cbo, style_cbo, join_cbo, thick_ent, &
-       & size_ent, csys_cbo, xsort_id, clip_id, mouse_id
+       & size_ent, csys_cbo, xsort_id, clip_id, mouse_id, min_ent, max_ent
 
   integer(kind=c_int) :: custom_colour_index
   
@@ -371,6 +373,19 @@ contains
     call hl_gtk_spin_button_set_value(thick_ent, real(data%thick, c_double))
     call hl_gtk_spin_button_set_value(size_ent, real(data%symsize, c_double))
 
+    if (ieee_is_finite(data%min_val)) then
+       write(stext, "(g0.5)") data%min_val
+       call gtk_entry_set_text(min_ent, trim(stext)//c_null_char)
+    else
+       call gtk_entry_set_text(min_ent, c_null_char)
+    end if
+    if (ieee_is_finite(data%max_val)) then
+       write(stext, "(g0.5)") data%max_val
+       call gtk_entry_set_text(max_ent, trim(stext)//c_null_char)
+    else
+       call gtk_entry_set_text(max_ent, c_null_char)
+    end if
+    
     call gtk_check_menu_item_set_active(xsort_id, f_c_logical(data%sort))
     call gtk_check_menu_item_set_active(clip_id, f_c_logical(.not. data%noclip))
     call gtk_check_menu_item_set_active(mouse_id, f_c_logical(data%medit))

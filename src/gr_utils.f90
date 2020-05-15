@@ -69,9 +69,10 @@ module gr_utils
   integer, parameter :: origin_bit = 1, full_bit = 3, annot_bit = 2, &
        & yrot_bit=4, time_bit = 0
 
-  ! NaN value
+  ! NaN & Infinity values
   real(kind=real64), parameter :: d_nan=transfer(z'7ff8000000000000',1._real64)
-
+  real(kind=real64), parameter :: d_inf=transfer(z'7ff0000000000000',1._8)
+  
 contains
 
   ! Byte swapping routines.

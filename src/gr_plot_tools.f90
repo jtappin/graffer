@@ -345,11 +345,12 @@ contains
   ! *************************************************************
   !     SYMBOLS & LINESTYLES
 
-  subroutine gr_plot_symbol(x, y, index, symsize)
+  subroutine gr_plot_symbol(x, y, index, symsize, use)
     real(kind=plflt), intent(in), dimension(:) :: x, y
-    integer(kind=int16) :: index
-    real(kind=real64) :: symsize
-
+    integer(kind=int16), intent(in) :: index
+    real(kind=real64), intent(in) :: symsize
+    logical, dimension(:), intent(in), optional, target :: use
+    
     ! Plot symbols at data points
 
     real(kind=plflt) :: dx, dy
@@ -358,20 +359,28 @@ contains
     logical :: filled
     integer :: npoints, i
     real(kind=plflt) :: th
+    logical, dimension(:), pointer :: iuse
 
+    if (present(use)) then
+       iuse => use
+    else
+       allocate(iuse(size(x)))
+       iuse(:) = .true.
+    end if
+    
     call plgvpw(x0,x1,y0,y1)
 
     dx = abs(x1-x0)/100._plflt
     dy = abs(y1-y0)/100._plflt
 
     select case (index)
-    case(1)	! PLUS
+    case(1)     ! PLUS
        npoints = 5
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: 1., -1., 0., 0., 0.]*symsize
        ys = [real(kind=plflt) :: 0., 0., 0., 1., -1.]*symsize
        filled = .false.
-    case(2)	! Asterisk
+    case(2)     ! Asterisk
        npoints = 11
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: 1., -1., 0., 0., 0., 0., 1., -1., 0., &
@@ -379,36 +388,36 @@ contains
        ys = [real(kind=plflt) :: 0., 0., 0., 1., -1., 0., 1., -1., 0., &
             & 1., -1.]*symsize
        filled = .false.
-    case(3)	! Point
+    case(3)     ! Point
        npoints = 5
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: -.01, 0., .01, 0., -.01]
        ys = [real(kind=plflt) :: 0., .01, 0., -.01, 0.]
-    case(4)	! Diamond
+    case(4)     ! Diamond
        npoints = 5
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: 1., 0., -1., 0., 1.]*symsize
        ys = [real(kind=plflt) :: 0., 1., 0., -1., 0.]*symsize
        filled = .false.
-    case(5)	! Triangle
+    case(5)     ! Triangle
        npoints = 4
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: -1., 1., 0., -1]*symsize
        ys = [real(kind=plflt) :: -1., -1., 1., -1]*symsize
        filled = .false.
-    case(6)	! Square
+    case(6)     ! Square
        npoints = 5
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: 1., 1., -1., -1., 1.]*symsize
        ys = [real(kind=plflt) :: 1., -1., -1., 1., 1.]*symsize
        filled = .false.
-    case(7)	! Cross
+    case(7)     ! Cross
        npoints = 5
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: 1., -1., 0., -1., 1.]*symsize
        ys = [real(kind=plflt) :: 1., -1., 0, 1., -1.]*symsize
        filled = .false.
-    case(8)	! Circle
+    case(8)     ! Circle
        npoints = 31
        allocate(xs(npoints), ys(npoints))
        do i = 1, npoints
@@ -417,25 +426,25 @@ contains
           ys(i) = sin(th)*symsize
        end do
        filled = .false.
-    case(9)	! Filled diamond
+    case(9)     ! Filled diamond
        npoints = 4
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: 1., 0., -1., 0.]*symsize
        ys = [real(kind=plflt) :: 0., 1., 0., -1.]*symsize
        filled = .true.
-    case(10)	! Filled triangle
+    case(10)    ! Filled triangle
        npoints = 3
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: -1., 1., 0.]*symsize
        ys = [real(kind=plflt) :: -1., -1., 1.]*symsize
        filled = .true.
-    case(11)	! Filled square
+    case(11)    ! Filled square
        npoints = 4
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: 1., 1., -1., -1.]*symsize
        ys = [real(kind=plflt) :: 1., -1., -1., 1.]*symsize
        filled = .true.
-    case(12)	! Filled circle
+    case(12)    ! Filled circle
        npoints = 30
        allocate(xs(npoints), ys(npoints))
        do i = 1, npoints
@@ -444,13 +453,13 @@ contains
           ys(i) = sin(th)*symsize
        end do
        filled = .true.
-    case(13)	! inverted triangle
+    case(13)    ! inverted triangle
        npoints = 4
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: -1., 1., 0., -1]*symsize
        ys = [real(kind=plflt) :: 1., 1., -1., 1]*symsize
        filled = .false.
-    case(14)	! filled inverted triangle
+    case(14)    ! filled inverted triangle
        npoints = 3
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: -1., 1., 0.]*symsize
@@ -496,13 +505,18 @@ contains
     end select
 
     call gr_plot_linesty(0_int16)
+    
     do i = 1, size(x)
+       if (.not. iuse(i)) cycle
        if (filled) then
           call plfill(x(i)+xs*dx, y(i)+ys*dy)
        else
           call plline(x(i)+xs*dx, y(i)+ys*dy)
        end if
     end do
+
+    if (.not. present(use)) deallocate(iuse)
+    
   end subroutine gr_plot_symbol
 
   subroutine gr_plot_linesty(index, scale)

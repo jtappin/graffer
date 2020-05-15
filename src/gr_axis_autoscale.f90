@@ -28,6 +28,8 @@ module gr_axis_autoscale
   use gr_eval
   use gr_cb_common
 
+  use ieee_arithmetic, only: ieee_is_finite
+  
   use plplot, only: pi=>pl_pi
 
   implicit none
@@ -181,30 +183,41 @@ contains
     type(graff_data), intent(in) :: data
     real(kind=real64), intent(inout) :: axmin, axmax
 
+    logical, dimension(:), allocatable :: mask
+    
     ! Auto scale the Y axis for a rectangular coordinate DS
 
+    if (data%type >= 0 .and. data%type <= 8) then
+       allocate(mask(data%ndata))
+       mask(:) = .true.
+       if (ieee_is_finite(data%min_val)) &
+            & mask = mask .and. data%xydata(2,:) >= data%min_val
+       if (ieee_is_finite(data%max_val)) &
+            & mask =  mask .and. data%xydata(2,:) <= data%max_val
+    end if
+    
     select case (data%type)
     case(0,3,4)
-       axmin = min(axmin, minval(data%xydata(2,:)))
-       axmax = max(axmax, maxval(data%xydata(2,:)))
+       axmin = min(axmin, minval(data%xydata(2,:), mask))
+       axmax = max(axmax, maxval(data%xydata(2,:), mask))
     case(1)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:)))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(3,:)))
+       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:), mask))
+       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(3,:), mask))
     case(5)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:)))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:)))
+       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:), mask))
+       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:), mask))
     case(7)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:)))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:)))
+       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:), mask))
+       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:), mask))
     case(2)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:)))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:)))
+       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:), mask))
+       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:), mask))
     case(6)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:)))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:)))
+       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:), mask))
+       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:), mask))
     case(8)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:)))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(6,:)))
+       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:), mask))
+       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(6,:), mask))
     case(9)
        axmin = min(axmin, minval(data%zdata%y))
        axmax = max(axmax, maxval(data%zdata%y))
@@ -222,6 +235,8 @@ contains
        axmin = min(axmin, minval(data%xydata(2,:)))
        axmax = max(axmax, maxval(data%xydata(2,:)))
     end select
+
+     
   end subroutine gr_autoscale_y_rect
 
   subroutine gr_autoscale_x_polar(data, axmin, axmax)
