@@ -207,6 +207,7 @@ pro Gr_bin_save, pdefs, auto = auto
         
         graff_put_rec, ilu, 'ZCF', zopts.fill
         graff_put_rec, ilu, 'ZLI', zopts.label
+        graff_put_rec, ilu, 'ZLO', zopts.label_off
         graff_put_rec, ilu, 'ZCS', zopts.charsize
         graff_put_rec, ilu, 'ZCT', zopts.ctable
         graff_put_rec, ilu, 'ZCG', zopts.gamma
