@@ -34,6 +34,9 @@ module gr_axis_autoscale
 
   implicit none
 
+  private :: gr_autoscale_x_rect, gr_autoscale_x_polar, &
+       & gr_autoscale_y_rect, gr_autoscale_y_polar
+  
 contains
   subroutine gr_autoscale(axis, shrink, visible)
     integer, intent(in) :: axis
@@ -272,12 +275,14 @@ contains
     type(graff_data), intent(in), target :: data
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
-    
+
     ! Autoscale the X axis for a polar dataset.
 
     real(kind=real64) :: scale
-    real(kind=real64), dimension(:), allocatable :: r, th, x
+    real(kind=real64), dimension(:), allocatable :: r, th, x, y
     real(kind=real64), dimension(:,:), pointer :: xydata
+    logical, dimension (:), allocatable :: mask
+    real(kind=real64), pointer, dimension(:) :: par
 
     if (data%mode == 2) then
        scale = pi/180._real64
@@ -286,127 +291,309 @@ contains
     end if
 
     xydata => data%xydata
+    if (data%y_axis == 0) then
+       par => pdefs%axrange(:,2)
+    else
+       par => pdefs%axrange(:,3)
+    end if
 
-    allocate(r(data%ndata), th(data%ndata), x(data%ndata))
+    allocate(r(data%ndata), th(data%ndata), x(data%ndata), &
+         & mask(data%ndata))
+    if (visible) allocate(y(data%ndata))
     select case (data%type)
     case(:0)
        r = xydata(1,:)
        th = xydata(2,:)*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
     case(1)
        r = xydata(1,:)
        th = (xydata(2,:)-xydata(3,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        th = (xydata(2,:)+xydata(3,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
     case(2)
        r = xydata(1,:)
        th = (xydata(2,:)+xydata(3,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
        th = (xydata(2,:)+xydata(4,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
     case(3)
        r = xydata(1,:)-xydata(3,:)
        th = xydata(2,:)*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)+xydata(3,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
     case(4)
        r = xydata(1,:)-xydata(3,:)
        th = xydata(2,:)*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)+xydata(4,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
     case(5)
        r = xydata(1,:)-xydata(3,:)
        th = (xydata(2,:)-xydata(4,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)+xydata(3,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        th = (xydata(2,:)+xydata(4,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)-xydata(3,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
     case(6)
        r = xydata(1,:)-xydata(3,:)
        th = (xydata(2,:)-xydata(4,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)+xydata(3,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        th = (xydata(2,:)+xydata(5,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)-xydata(3,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
     case(7)
        r = xydata(1,:)-xydata(3,:)
        th = (xydata(2,:)-xydata(5,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)+xydata(4,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        th = (xydata(2,:)+xydata(5,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)-xydata(3,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
     case(8)
        r = xydata(1,:)-xydata(3,:)
        th = (xydata(2,:)-xydata(5,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)+xydata(4,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        th = (xydata(2,:)+xydata(6,:))*scale
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
        r = xydata(1,:)-xydata(3,:)
        x = r * cos(th)
-       axmin = min(axmin, minval(x))
-       axmax = max(axmax, maxval(x))
+       if (visible) then
+          y = r * sin(th)
+          mask = ieee_is_finite(x) .and. &
+               & y >= minval(par) .and. y <= maxval(par)
+       else
+          mask = ieee_is_finite(x)
+       end if
+       axmin = min(axmin, minval(x, mask))
+       axmax = max(axmax, maxval(x, mask))
     end select
 
   end subroutine gr_autoscale_x_polar
@@ -415,12 +602,14 @@ contains
     type(graff_data), intent(in), target :: data
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
-    
+
     ! Autoscale the Y axis for a polar dataset.
 
     real(kind=real64) :: scale
-    real(kind=real64), dimension(:), allocatable :: r, th, y
+    real(kind=real64), dimension(:), allocatable :: r, th, y, x
     real(kind=real64), dimension(:,:), pointer :: xydata
+    logical, dimension(:), allocatable :: mask
+    real(kind=real64), pointer, dimension(:) :: par
 
     if (data%mode == 2) then
        scale = pi/180._real64
@@ -429,127 +618,307 @@ contains
     end if
 
     xydata => data%xydata
+    par => pdefs%axrange(:,1)
 
-    allocate(r(data%ndata), th(data%ndata), y(data%ndata))
+    allocate(r(data%ndata), th(data%ndata), y(data%ndata), &
+         & mask(data%ndata))
+
+    if (visible) allocate(x(data%ndata))
+
     select case (data%type)
     case(:0)
        r = xydata(1,:)
        th = xydata(2,:)*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
     case(1)
        r = xydata(1,:)
        th = (xydata(2,:)-xydata(3,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        th = (xydata(2,:)+xydata(3,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
     case(2)
        r = xydata(1,:)
        th = (xydata(2,:)+xydata(3,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        th = (xydata(2,:)+xydata(4,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
     case(3)
        r = xydata(1,:)-xydata(3,:)
        th = xydata(2,:)*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)+xydata(3,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
     case(4)
        r = xydata(1,:)-xydata(3,:)
        th = xydata(2,:)*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)+xydata(4,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
     case(5)
        r = xydata(1,:)-xydata(3,:)
        th = (xydata(2,:)-xydata(4,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)+xydata(3,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        th = (xydata(2,:)+xydata(4,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)-xydata(3,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
     case(6)
        r = xydata(1,:)-xydata(3,:)
        th = (xydata(2,:)-xydata(4,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)+xydata(3,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        th = (xydata(2,:)+xydata(5,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)-xydata(3,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
     case(7)
        r = xydata(1,:)-xydata(3,:)
        th = (xydata(2,:)-xydata(5,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)+xydata(4,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        th = (xydata(2,:)+xydata(5,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)-xydata(3,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
     case(8)
        r = xydata(1,:)-xydata(3,:)
        th = (xydata(2,:)-xydata(5,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)+xydata(4,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        th = (xydata(2,:)+xydata(6,:))*scale
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
        r = xydata(1,:)-xydata(3,:)
        y = r * sin(th)
-       axmin = min(axmin, minval(y))
-       axmax = max(axmax, maxval(y))
+       if (visible) then
+          x = r * cos(th)
+          mask = ieee_is_finite(y) .and. &
+               & x >= minval(par) .and. x <= maxval(par)
+       else
+          mask = ieee_is_finite(y)
+       end if
+       axmin = min(axmin, minval(y, mask))
+       axmax = max(axmax, maxval(y, mask))
     end select
 
   end subroutine gr_autoscale_y_polar
