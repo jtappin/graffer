@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ program graffer
 
   call gtk_init()
 
-  call graffer_version%set(4, 8)
+  call graffer_version%set(4, 9)
   call graffer_version%string(gr_sversion)
 
   call gr_read_rc
