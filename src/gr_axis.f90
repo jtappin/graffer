@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -207,11 +207,19 @@ contains
          & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
          & tooltip = "Extend the axis to accomodate the data"//c_null_char)
     call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(1)))
 
     junk = hl_gtk_menu_item_new(smnu, "Extend or shrink"//c_null_char, &
          & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
          & tooltip = "Extend or shrink the axis to fit the data"//c_null_char)
     call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(2)))
+    call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(1)))
+
+    junk = hl_gtk_menu_item_new(smnu, "Visible only"//c_null_char, &
+         & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
+         & tooltip = "Extend or shrink the axis to fit the visible data"//c_null_char)
+    call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(2)))
 
     junk = hl_gtk_menu_item_new(jmnu, "Advanced"//c_null_char, &
          & activate=c_funloc(gr_axis_adv), data=c_loc(axis), &
@@ -490,16 +498,19 @@ contains
     ! Autoscale axis.
 
     integer, pointer :: axis
-    logical, pointer :: ishrink
-    type(c_ptr) :: cshrink
+    logical, pointer :: ishrink, ivisible
+    type(c_ptr) :: cshrink, cvisible
 
     if (.not. gui_active) return
 
     call c_f_pointer(data, axis)
+    
     cshrink = g_object_get_data(widget, "shrink"//c_null_char)
     call c_f_pointer(cshrink, ishrink)
-
-    call gr_autoscale(axis, shrink=ishrink)
+    cvisible = g_object_get_data(widget, "visible"//c_null_char)
+    call c_f_pointer(cvisible, ivisible)
+    
+    call gr_autoscale(axis, shrink=ishrink, visible=ivisible)
 
     call gr_plot_draw(.true.)
   end subroutine gr_auto_e
