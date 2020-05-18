@@ -25,7 +25,8 @@ module gr_eval
   use gtk_hl
 
   use gtk, only: GTK_MESSAGE_ERROR, GTK_MESSAGE_INFO
-
+  use g, only: g_usleep
+  
   use graff_globals
   use gr_msg
   use gr_utils
@@ -35,6 +36,8 @@ module gr_eval
   logical :: is_init=.false.
   logical :: gdl_found=.false.
 
+  integer(kind=c_long), private, parameter :: close_delay = 250000_c_long
+  
 contains
 
   function gr_have_gdl()
@@ -239,6 +242,8 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
+    call g_usleep(close_delay)
+    
     call execute_command_line(trim(pdefs%opts%gdl_command)//" "//pfile//&
          & ' > /dev/null 2> /dev/null', &
          & exitstat=status, cmdstat=cstatus)
@@ -296,6 +301,8 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
+    call g_usleep(close_delay)
+    
     call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2>/dev/null', &
          & exitstat=status, cmdstat=cstatus)
@@ -356,6 +363,8 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
+    call g_usleep(close_delay)
+    
     call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2> /dev/null', &
          & exitstat=status, cmdstat=cstatus)
@@ -419,6 +428,8 @@ contains
     write(punit, "(a)") 'close, 1'
     write(punit, "(a)") 'exit'
     close(punit)
+
+    call g_usleep(close_delay)
 
     call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2>/dev/null', &
