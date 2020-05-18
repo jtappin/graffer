@@ -64,6 +64,8 @@ contains
     t = hl_gtk_table_new()
     call hl_gtk_box_pack(fr, t, expand=FALSE)
 
+    ! Axis label
+    
     junk = gtk_label_new(trim(axname(axis))//" Label:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 0, 0, yopts=0)
 
@@ -76,7 +78,8 @@ contains
          & " axis"//c_null_char)
     call hl_gtk_table_attach(t, lbox(axis), 1, 0, xspan=3, yopts=0)
 
-
+    ! Axis options
+    
     menu = hl_gtk_menu_new()
     call hl_gtk_table_attach(t, menu, 1, 1, xspan=2, yopts=0)
 
@@ -225,6 +228,8 @@ contains
          & activate=c_funloc(gr_axis_adv), data=c_loc(axis), &
          & tooltip = "Advanced axis settings"//c_null_char)
 
+    ! Axis range
+    
     junk= gtk_label_new(axname//" Min:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 0,2, yopts=0)
 

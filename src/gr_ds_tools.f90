@@ -163,6 +163,8 @@ contains
 
     call move_alloc(xyvals, data%xydata)
 
+    call gr_plot_draw(.true.)
+    
   end subroutine gr_ds_xy_read
 
   subroutine gr_ds_z_read(file)

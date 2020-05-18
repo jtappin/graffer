@@ -160,8 +160,11 @@ contains
        cnew = int(hl_gtk_spin_button_get_value(widget), int16)
     end if
 
-    if (cnew /= pdefs%cset) call gr_set_values_dataset(select = cnew)
-
+    if (cnew /= pdefs%cset) then
+       call gr_set_values_dataset(select = cnew)
+       if (pdefs%transient%current_only) call gr_plot_draw(.false.)
+    end if
+    
   end subroutine gr_ds_advance
 
   subroutine gr_ds_new_cb(widget, data) bind(c)
@@ -180,7 +183,8 @@ contains
     ! Select a new current dataset
 
     call gr_ds_select
-
+    if (pdefs%transient%current_only) call gr_plot_draw(.false.)
+  
   end subroutine gr_ds_select_cb
 
   subroutine gr_ds_merge_cb(widget, data) bind(c)
@@ -189,6 +193,8 @@ contains
     ! Append one datset to another
 
     call gr_ds_merge
+    call gr_plot_draw(.true.)
+    
   end subroutine gr_ds_merge_cb
 
 
@@ -198,6 +204,7 @@ contains
     ! Reorder datasets.
 
     call gr_ds_sort_menu
+    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_sort
 
@@ -305,6 +312,7 @@ contains
 
     call gr_ds_new(.true.)
     call gr_ds_copy(current_ds)
+    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_copy_cb
 
