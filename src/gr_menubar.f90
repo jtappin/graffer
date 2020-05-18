@@ -83,13 +83,9 @@ contains
          & tooltip="Save the file to a new name, in ascii format."//c_null_char)
 
     junk = hl_gtk_menu_item_new(smnu, "Open"//c_null_char, &
-         & activate=c_funloc(gr_open_cb), data=c_loc(use_current(2)), &
+         & activate=c_funloc(gr_open_cb), &
          & accel_key="o"//c_null_char, accel_group=accel, &
-         & tooltip="Open an existing file"//c_null_char)
-    junk = hl_gtk_menu_item_new(smnu, "New"//c_null_char, &
-         & activate=c_funloc(gr_open_cb), data=c_loc(use_current(1)), &
-         & accel_key="n"//c_null_char, accel_group=accel, &
-         & tooltip="Create a new file"//c_null_char)
+         & tooltip="Open a new or existing file"//c_null_char)
 
     junk = hl_gtk_menu_item_new(smnu, "Quit"//c_null_char, &
          & activate=c_funloc(gr_exit), &
@@ -192,19 +188,15 @@ contains
 
     ! Callback to open/create a file
 
-    logical, pointer :: is_new
     logical :: ok
-    integer(kind=c_int) :: new_file, ipick, iresp
+    integer(kind=c_int) :: ipick, iresp
     character(len=256), dimension(:), allocatable :: files
     type(c_ptr) :: unsave_msg, junk
     character(len=8) :: gr_sversion
 
-    call c_f_pointer(data, is_new)
-    new_file = f_c_logical(is_new)
-
     ipick = hl_gtk_file_chooser_show(files, &
          & filter=["*.grf"], filter_name=["Graffer Files"], &
-         & edit_filters=TRUE, create=new_file, confirm_overwrite=TRUE, &
+         & edit_filters=TRUE, create=TRUE, confirm_overwrite=TRUE, &
          & parent=gr_window, initial_dir=trim(pdefs%dir)//c_null_char, &
          & initial_file=trim(pdefs%name)//c_null_char, &
          & title="Open a graffer file"//c_null_char)
