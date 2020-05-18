@@ -83,11 +83,11 @@ contains
          & tooltip="Save the file to a new name, in ascii format."//c_null_char)
 
     junk = hl_gtk_menu_item_new(smnu, "Open"//c_null_char, &
-         & activate=c_funloc(gr_open_cb), data=c_loc(use_current(1)), &
+         & activate=c_funloc(gr_open_cb), data=c_loc(use_current(2)), &
          & accel_key="o"//c_null_char, accel_group=accel, &
          & tooltip="Open an existing file"//c_null_char)
     junk = hl_gtk_menu_item_new(smnu, "New"//c_null_char, &
-         & activate=c_funloc(gr_open_cb), data=c_loc(use_current(2)), &
+         & activate=c_funloc(gr_open_cb), data=c_loc(use_current(1)), &
          & accel_key="n"//c_null_char, accel_group=accel, &
          & tooltip="Create a new file"//c_null_char)
 
