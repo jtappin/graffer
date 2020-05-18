@@ -25,7 +25,6 @@ module gr_eval
   use gtk_hl
 
   use gtk, only: GTK_MESSAGE_ERROR, GTK_MESSAGE_INFO
-  use g, only: g_usleep
   
   use graff_globals
   use gr_msg
@@ -33,31 +32,51 @@ module gr_eval
 
   implicit none
 
-  logical :: is_init=.false.
-  logical :: gdl_found=.false.
+  logical, private :: is_init=.false.
+  logical, private :: gdl_found=.false.
+  character(len=150), private :: gdl_command = ''
 
-  integer(kind=c_long), private, parameter :: close_delay = 250000_c_long
-  
 contains
-
-  function gr_have_gdl()
+  function gr_get_gdl_command()
+    character(len=len(gdl_command)) :: gr_get_gdl_command
+    
+    logical :: status
+    
+    if (.not. is_init) status = gr_have_gdl()
+    
+    gr_get_gdl_command = trim(gdl_command)
+    
+  end function gr_get_gdl_command
+  
+  function gr_have_gdl(command)
     logical :: gr_have_gdl
-
+    character(len=*), intent(in), optional :: command
     ! Find 'gdl' or 'idl' command
 
     integer :: status
     character(len=150) :: gdl_default_command
-    character(len=150) :: gdl_command
+    logical :: ok
+    
+    if (present(command)) then
+       ok = gr_find_program(command)
+       if (ok) then
+          gdl_command = command
+          is_init = .true.
+       end if
+       gr_have_gdl = ok
+       return
+    end if
 
     if (is_init) then
        gr_have_gdl = gdl_found
        return
     end if
 
-    if (pdefs%opts%gdl_command /= '') then
-       if (gr_find_program(pdefs%opts%gdl_command)) then
+   
+    if (gdl_command /= '') then
+       if (gr_find_program(gdl_command)) then
           call gr_message("Found gdl/idl at: "// &
-               & trim(pdefs%opts%gdl_command), type=GTK_MESSAGE_INFO)
+               & trim(gdl_command), type=GTK_MESSAGE_INFO)
           is_init = .true.
           gdl_found = .true.
           gr_have_gdl = .true.
@@ -74,7 +93,6 @@ contains
           is_init = .true.
           gdl_found = .true.
           gr_have_gdl = .true.
-          pdefs%opts%gdl_command = gdl_command
           return
        end if
     end if
@@ -85,7 +103,6 @@ contains
        is_init = .true.
        gdl_found = .true.
        gr_have_gdl = .true.
-       pdefs%opts%gdl_command = gdl_command
        return
     end if
 
@@ -95,7 +112,6 @@ contains
        is_init = .true.
        gdl_found = .true.
        gr_have_gdl = .true.
-       pdefs%opts%gdl_command = gdl_command
        return
     end if
 
@@ -104,7 +120,7 @@ contains
     gdl_found = .false.
     gr_have_gdl =.false.
     is_init = .true.
-    pdefs%opts%gdl_command = ''
+    gdl_command = ''
   end function gr_have_gdl
 
   function gr_evaluate(dsidx)
@@ -242,9 +258,7 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call g_usleep(close_delay)
-    
-    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//pfile//&
+    call execute_command_line(trim(gdl_command)//" "//pfile//&
          & ' > /dev/null 2> /dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -252,6 +266,7 @@ contains
        status=-cstatus
        return
     end if
+
     allocate(x(n),y(n))
     open(newunit=dunit, file=dfile, form='unformatted', action='read', &
          & access='stream', iostat=ios)
@@ -301,9 +316,7 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call g_usleep(close_delay)
-    
-    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
+    call execute_command_line(trim(gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2>/dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -363,9 +376,7 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call g_usleep(close_delay)
-    
-    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
+    call execute_command_line(trim(gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2> /dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -429,9 +440,7 @@ contains
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call g_usleep(close_delay)
-
-    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
+    call execute_command_line(trim(gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2>/dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -458,9 +467,10 @@ contains
 
   end subroutine gr_eval_fz
 
-  subroutine gr_make_gdl_names(dsidx, pfile, dfile)
+  subroutine gr_make_gdl_names(dsidx, pfile, dfile, ostem)
     integer(kind=int16), intent(in) :: dsidx
     character(len=*), intent(out) :: pfile, dfile
+    character(len=*), intent(out), optional :: ostem
 
     ! Generate the names for the program and its output.
 
@@ -474,6 +484,10 @@ contains
 
     write(pfile(idx:), "('_',i0,'.pro')") dsidx-1
     write(dfile(idx:), "('_',i0,'.fs')") dsidx-1
-
+    if (present(ostem)) then
+       ostem(:idx-1) = pdefs%name(:idx-1)
+       write(ostem(idx:), "('_',i0)") dsidx-1
+    end if
+    
   end subroutine gr_make_gdl_names
 end module gr_eval

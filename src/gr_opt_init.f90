@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -24,7 +24,8 @@ module gr_opt_init
 
   use graff_types
   use gr_utils
-
+  use gr_eval
+  
   implicit none
 
   type(graff_opts) :: default_options
@@ -67,7 +68,8 @@ contains
     character(len=32) :: key
     integer :: ival
     integer, dimension(2) :: ival2
-
+    logical :: found
+    
     ok = .true.
 
     open(newunit=unit, file=file, &
@@ -164,7 +166,12 @@ contains
           default_options%pdfviewer = trim(adjustl(keyval))
 
        case('gdl', 'idl')
-          default_options%gdl_command = trim(adjustl(keyval))
+          found = gr_have_gdl(adjustl(keyval))
+          if (.not. found) then
+             write(error_unit, "(a/t10,a)") &
+                  & "gr_parse_command: gdl/idl command not found in path", &
+                  & trim(keyval)
+          end if
 
        case('geometry')
           px = scan(keyval, 'xX')
@@ -177,6 +184,7 @@ contains
           else
              default_options%geometry = ival2
           end if
+          
        case default
           write(error_unit, "(2a/t10,a)") &
                & "gr_read_rc_file: Unknown item in file:", &
@@ -201,7 +209,7 @@ contains
     logical :: arg_plus
     integer :: ios
     character(len=120) :: iom
-    logical :: helped
+    logical :: helped, found
 
     nargs = command_argument_count()
 
@@ -303,9 +311,8 @@ contains
                   &  trim(key)
           else
              if (arg_plus) i = i+1
-             if (gr_find_program(keyval)) then
-                default_options%gdl_command = trim(keyval)
-             else
+             found = gr_have_gdl(keyval)
+             if (.not. found) then
                 write(error_unit, "(a/t10,a)") &
                      & "gr_parse_command: gdl/idl command not found in path", &
                      & trim(keyval)

@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -97,7 +97,9 @@ contains
     call hl_gtk_box_pack(jb, junk, expand=FALSE)
 
     opt_gdl_entry = hl_gtk_entry_new(value=&
-         & trim(pdefs%opts%gdl_command)//c_null_char, &
+         & gr_get_gdl_command()//c_null_char, &
+         & changed = c_funloc(gr_opt_gdl), &
+         & focus_out_event = c_funloc(gr_opt_gdl_e), &
          & tooltip="Set the command or path for the GDL or IDL interpreter" &
          & //c_null_char)
     call hl_gtk_box_pack(jb, opt_gdl_entry)
@@ -160,6 +162,27 @@ contains
 
   end subroutine gr_options_menu
 
+  subroutine gr_opt_gdl(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    character(len=150) :: cline
+    logical :: ok
+    
+    call hl_gtk_entry_get_text(widget, text=cline)
+    ok = gr_have_gdl(cline)
+    if (.not. ok) &
+         & call gtk_entry_set_text(widget, gr_get_gdl_command()//c_null_char)
+  end subroutine gr_opt_gdl
+
+  function gr_opt_gdl_e(widget, event, data) bind(c) result(rv)
+    integer(kind=c_int) :: rv
+    type(c_ptr), value :: widget, event, data
+
+    call gr_opt_gdl(widget, data)
+
+    rv = FALSE
+  end function gr_opt_gdl_e
+  
   recursive subroutine gr_opt_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
@@ -183,8 +206,7 @@ contains
             & int(gtk_combo_box_get_active(opt_ffam_cbo), int16)+1_int16
        pdefs%hardset%font_wg_sl  = &
             & int(gtk_combo_box_get_active(opt_fnt_cbo), int16)+1_int16
-       call hl_gtk_entry_get_text(opt_gdl_entry, text=pdefs%opts%gdl_command)
-
+  
        call gr_plot_draw(.true.)
     end if
 
