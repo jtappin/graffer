@@ -53,15 +53,15 @@ contains
     call gr_text_init
 
     iviewer = 0
-    if (pdefs%opts%pdfviewer /= '') then
+    if (sysopts%pdfviewer /= '') then
        do i = 1, size(viewnames)
-          if (pdefs%opts%pdfviewer == viewnames(i)) then
+          if (sysopts%pdfviewer == viewnames(i)) then
              iviewer = i
              exit
           end if
        end do
        if (iviewer == 0) then
-         if (gr_find_program(pdefs%opts%pdfviewer)) &
+         if (gr_find_program(sysopts%pdfviewer)) &
                & iviewer = size(viewnames)+1
        end if
     end if
@@ -85,7 +85,7 @@ contains
 
     if (iviewer > size(viewnames)) &
          & call hl_gtk_combo_box_add_text(opt_view_cbo, &
-         & trim(pdefs%opts%pdfviewer)//c_null_char)
+         & trim(sysopts%pdfviewer)//c_null_char)
 
     call gtk_combo_box_set_active(opt_view_cbo, iviewer-1)
     call hl_gtk_box_pack(jb, opt_view_cbo)
@@ -108,20 +108,20 @@ contains
     call hl_gtk_box_pack(base, jb, expand=FALSE)
 
     opt_2d_but = hl_gtk_check_button_new("Hide 2-D datasets"//c_null_char,&
-         & initial_state=f_c_logical(pdefs%opts%s2d), tooltip=&
+         & initial_state=f_c_logical(sysopts%s2d), tooltip=&
          & "Toggle whether to show or hide 2-D datasets"//c_new_line//&
          & "(useful if rendering is slow)"//c_null_char)
     call hl_gtk_box_pack(jb, opt_2d_but)
 
     opt_mouse_but = hl_gtk_check_button_new("Mouse editing"//c_null_char, &
-         & initial_state=f_c_logical(pdefs%opts%mouse), tooltip=&
+         & initial_state=f_c_logical(sysopts%mouse), tooltip=&
          & "Toggle whether mouse editing of data is allowed by default"//&
          & c_null_char)
     call hl_gtk_box_pack(jb, opt_mouse_but)
 
     opt_delete_f_but = hl_gtk_check_button_new("Delete funct files"&
          & //c_null_char,&
-         & initial_state=f_c_logical(pdefs%opts%delete_function_files), &
+         & initial_state=f_c_logical(sysopts%delete_function_files), &
          & tooltip="Select whether to delete temporary files used "//&
          & "in evaluating functions"//c_null_char)
     call hl_gtk_box_pack(jb, opt_delete_f_but)
@@ -194,14 +194,14 @@ contains
     call c_f_pointer(data, apply)
 
     if (apply) then
-       pdefs%opts%s2d = c_f_logical(gtk_toggle_button_get_active(opt_2d_but))
-       pdefs%opts%mouse = &
+       sysopts%s2d = c_f_logical(gtk_toggle_button_get_active(opt_2d_but))
+       sysopts%mouse = &
             & c_f_logical(gtk_toggle_button_get_active(opt_mouse_but))
-       pdefs%opts%delete_function_files = &
+       sysopts%delete_function_files = &
             & c_f_logical(gtk_toggle_button_get_active(opt_delete_f_but))
 
        vsel = hl_gtk_combo_box_get_active(opt_view_cbo, &
-            & ftext=pdefs%opts%pdfviewer)
+            & ftext=sysopts%pdfviewer)
        pdefs%hardset%font_family = &
             & int(gtk_combo_box_get_active(opt_ffam_cbo), int16)+1_int16
        pdefs%hardset%font_wg_sl  = &

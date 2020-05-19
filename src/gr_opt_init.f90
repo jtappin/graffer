@@ -25,10 +25,10 @@ module gr_opt_init
   use graff_types
   use gr_utils
   use gr_eval
+
+  use graff_globals
   
   implicit none
-
-  type(graff_opts) :: default_options
 
 contains
   subroutine gr_read_rc
@@ -116,7 +116,7 @@ contains
                   & "gr_read_rc_file: Invalid Autosave setting in file:", &
                   & trim(file), trim(keyval)
           else
-             default_options%auto_delay = ival
+             sysopts%auto_delay = ival
           end if
        case('supp2d')
           read(keyval, *, iostat=ios, iomsg=iom) ival
@@ -125,7 +125,7 @@ contains
                   & "gr_read_rc_file: Invalid Supp2D setting in file:", &
                   & trim(file), trim(keyval)
           else
-             default_options%s2d = c_f_logical(ival)
+             sysopts%s2d = c_f_logical(ival)
           end if
        case('mouseedit')
           read(keyval, *, iostat=ios, iomsg=iom) ival
@@ -134,7 +134,7 @@ contains
                   & "gr_read_rc_file: Invalid MouseEdit setting in file:", &
                   & trim(file), trim(keyval)
           else
-             default_options%mouse = c_f_logical(ival)
+             sysopts%mouse = c_f_logical(ival)
           end if
        case('colourmenu')
           read(keyval, *, iostat=ios, iomsg=iom) ival
@@ -143,7 +143,7 @@ contains
                   & "gr_read_rc_file: Invalid ColourMenu setting in file:", &
                   & trim(file), trim(keyval)
           else
-             default_options%colour_menu = c_f_logical(ival)
+             sysopts%colour_menu = c_f_logical(ival)
              write(error_unit, "(a)") &
                   & "Warning: colour menu is ignored in the Fortran version"
           end if
@@ -154,16 +154,16 @@ contains
                   & "gr_read_rc_file: Invalid Delete setting in file:", &
                   & trim(file), trim(keyval)
           else
-             default_options%delete_function_files = c_f_logical(ival)
+             sysopts%delete_function_files = c_f_logical(ival)
           end if
 
        case("colourdir")
-          default_options%colour_dir = trim(adjustl(keyval))
+          sysopts%colour_dir = trim(adjustl(keyval))
        case("colourname")
-          default_options%colour_stem = trim(adjustl(keyval))
+          sysopts%colour_stem = trim(adjustl(keyval))
 
        case('pdfview')
-          default_options%pdfviewer = trim(adjustl(keyval))
+          sysopts%pdfviewer = trim(adjustl(keyval))
 
        case('gdl', 'idl')
           found = gr_have_gdl(adjustl(keyval))
@@ -182,7 +182,7 @@ contains
                   & "gr_read_rc_file: Invalid Geometry setting in file:", &
                   & trim(file), trim(keyval)
           else
-             default_options%geometry = ival2
+             sysopts%geometry = ival2
           end if
           
        case default
@@ -255,24 +255,24 @@ contains
                      & "not valid", trim(keyval)
              else 
                 if (arg_plus) i = i+1
-                default_options%auto_delay = ival
+                sysopts%auto_delay = ival
              end if
           end if
 
        case('-m','--mouse')
-          default_options%mouse = .true.
+          sysopts%mouse = .true.
        case('-nom', '--nomouse')
-          default_options%mouse = .false.
+          sysopts%mouse = .false.
 
        case('-s2', '--suppress-2d')
-          default_options%s2d = .true.
+          sysopts%s2d = .true.
        case('-nos2', '--nosuppress-2d')
-          default_options%s2d = .false.
+          sysopts%s2d = .false.
 
        case('-d', '--delete')
-          default_options%delete_function_files = .true.
+          sysopts%delete_function_files = .true.
        case('-nod', '--nodelete')
-          default_options%delete_function_files = .false.
+          sysopts%delete_function_files = .false.
 
        case('-p', '--pdf')
           if (keyval == '') then
@@ -289,7 +289,7 @@ contains
           else
              if (arg_plus) i = i+1
              if (gr_find_program(keyval)) then
-                default_options%pdfviewer =trim(keyval)
+                sysopts%pdfviewer =trim(keyval)
              else 
                 write(error_unit, "(a/t10,a)") &
                      & "gr_parse_command: Pdf viewer not found in path", &
@@ -333,7 +333,7 @@ contains
                   &  trim(key)
           else
              if (arg_plus) i = i+1
-             default_options%colour_stem =trim(keyval)
+             sysopts%colour_stem =trim(keyval)
           end if
 
        case('-cd', '--colour-dir')
@@ -350,7 +350,7 @@ contains
                   &  trim(key)
           else
              if (arg_plus) i = i+1
-             default_options%colour_dir =trim(keyval)
+             sysopts%colour_dir =trim(keyval)
           end if
 
        case('-g', '--geometry')
@@ -380,7 +380,7 @@ contains
                         & "gr_parse_command: Value for x size is "//&
                         & "not valid", trim(keyval)
                 else
-                   default_options%geometry(1) = ival
+                   sysopts%geometry(1) = ival
                 end if
                 read(keyval(px+1:), *, iostat=ios, iomsg=iom) ival
                 if (ios /= 0) then
@@ -388,7 +388,7 @@ contains
                         & "gr_parse_command: Value for y size is "//&
                         & "not valid", trim(keyval)
                 else
-                   default_options%geometry(2) = ival
+                   sysopts%geometry(2) = ival
                 end if
              end if
           end if

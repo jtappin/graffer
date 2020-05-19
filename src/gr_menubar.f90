@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -328,8 +328,8 @@ contains
     character(len=256), dimension(:), allocatable :: file
     character(len=256) :: dir, base
     
-    if (pdefs%opts%colour_dir /= '') then
-       dir = pdefs%opts%colour_dir
+    if (sysopts%colour_dir /= '') then
+       dir = sysopts%colour_dir
     else
        dir = '.'
     end if
@@ -364,7 +364,7 @@ contains
 
     call c_f_pointer(data, type)
 
-    if (pdefs%opts%pdfviewer == "") then
+    if (sysopts%pdfviewer == "") then
        call gr_find_viewers(pdflist)
        if (.not. allocated(pdflist)) then
           iresp = hl_gtk_message_dialog_show( &
@@ -375,13 +375,13 @@ contains
                & parent=gr_window)
           return
        end if
-       pdefs%opts%pdfviewer = pdflist(1)
+       sysopts%pdfviewer = pdflist(1)
     end if
 
     if (type == 'ug') then
        do i = 1, size(docdir)
           if (file_exists(trim(docdir(i))//"/Graffer.pdf")) then
-             call execute_command_line(pdefs%opts%pdfviewer//' '//&
+             call execute_command_line(sysopts%pdfviewer//' '//&
                   & trim(docdir(i))//'/Graffer.pdf', wait=.false.)
              return
           end if
@@ -389,7 +389,7 @@ contains
     else
        do i = 1, size(docdir)
           if (file_exists(trim(docdir(i))//"/Format.pdf")) then
-             call execute_command_line(pdefs%opts%pdfviewer//' '//&
+             call execute_command_line(sysopts%pdfviewer//' '//&
                   & trim(docdir(i))//'/Format.pdf', wait=.false.)
              return
           end if

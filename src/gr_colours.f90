@@ -236,8 +236,8 @@ contains
 
     if (present(basename)) then
        datafile = basename
-    else if (pdefs%opts%colour_stem /= '') then
-       datafile = pdefs%opts%colour_stem
+    else if (sysopts%colour_stem /= '') then
+       datafile = sysopts%colour_stem
     else 
        datafile='colours.table'
     end if
@@ -255,9 +255,9 @@ contains
        end if
     end if
 
-    if (pdefs%opts%colour_dir /= '') then
-       if (file_exists(trim(pdefs%opts%colour_dir)//'/'//trim(datafile))) then
-          datafile = trim(pdefs%opts%colour_dir)//'/'//trim(datafile)
+    if (sysopts%colour_dir /= '') then
+       if (file_exists(trim(sysopts%colour_dir)//'/'//trim(datafile))) then
+          datafile = trim(sysopts%colour_dir)//'/'//trim(datafile)
           return
        end if
     end if

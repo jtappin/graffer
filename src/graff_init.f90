@@ -107,8 +107,6 @@ contains
     pdefs%hardset%pdfdev = ''
     pdefs%hardset%svgdev = '' 
 
-    pdefs%opts = default_options
-
     pdefs%key%x = 0._real64
     pdefs%key%y = 0._real64
 
@@ -179,7 +177,7 @@ contains
        data%zdata%gamma = 1._real32
        data%zdata%ctable = 0_int16
     else
-       data%medit = pdefs%opts%mouse
+       data%medit = sysopts%mouse
        data%zdata%gamma = pdefs%gamma
        data%zdata%ctable = pdefs%ctable
     end if

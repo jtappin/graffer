@@ -148,7 +148,7 @@ module graff_types
      character(len=120) :: pdfviewer=''
      character(len=256) :: colour_dir=''
      character(len=80) :: colour_stem=''
-     integer(kind=c_int), dimension(2) :: geometry = [600, 600]
+     integer(kind=c_int), dimension(2) :: geometry = [800, 800]
   end type graff_opts
 
   ! Top level plot structure
@@ -178,7 +178,7 @@ module graff_types
      character(len=120), dimension(:), allocatable :: remarks
      !     type(graff_ids) :: ids
      type(graff_hard) :: hardset
-     type(graff_opts) :: opts
+     !     type(graff_opts) :: opts
      character(len=120) :: ds_dir=''
      logical(kind=int8) :: chflag=.false., short_colour=.false., &
           & is_ascii=.false.

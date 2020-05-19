@@ -54,10 +54,6 @@ module gr_utils
      module procedure count_lines_unit
   end interface count_lines
 
-  interface minval_nz
-     module procedure minval_nz1
-     module procedure minval_nz2
-  end interface minval_nz
   
   integer(kind=int8), parameter, private, dimension(2) :: z1 = [0_int8, 1_int8]
   integer(kind=int16), parameter, private :: blv = transfer(z1, 0_int16)
@@ -66,8 +62,7 @@ module gr_utils
   private :: swap_8, swap_16, swap_32, swap_r32, swap_r64
   private :: little_8, little_16, little_32, little_r32, little_r64
   private :: count_lines_file, count_lines_unit
-  private :: minval_nz1, minval_nz2
-  
+   
   ! Axis style bits
 
   integer, parameter :: exact_bit = 0, extend_bit = 1, axis_bit = 2, &
@@ -660,34 +655,5 @@ contains
     end do
     pl=0
   end function last
-
-  function minval_nz1(x, mask)
-    real(kind=real64) :: minval_nz1
-    real(kind=real64), dimension(:), intent(in) :: x
-    logical, dimension(:), intent(in), optional :: mask
-
-    logical, dimension(:), allocatable :: pmask
-
-    pmask = x > 0._real64
-
-    if (present(mask)) pmask = pmask .and. mask
-
-    minval_nz1 = minval(x, pmask)
-
-  end function minval_nz1
-  function minval_nz2(x, mask)
-    real(kind=real64) :: minval_nz2
-    real(kind=real64), dimension(:,:), intent(in) :: x
-    logical, dimension(:,:), intent(in), optional :: mask
-
-    logical, dimension(:,:), allocatable :: pmask
-
-    pmask = x > 0._real64
-
-    if (present(mask)) pmask = pmask .and. mask
-
-    minval_nz2 = minval(x, pmask)
-
-  end function minval_nz2
-   
+  
 end module gr_utils

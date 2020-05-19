@@ -29,6 +29,10 @@ module graff_globals
 
   type(graff_pdefs), target :: pdefs
 
+  ! Display options
+
+  type(graff_opts), target :: sysopts
+  
   ! Widgets that may be needed outside the GUI-specifics
 
   type(c_ptr) :: gr_window = c_null_ptr         ! The top level window

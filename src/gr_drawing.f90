@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -54,7 +54,7 @@ contains
 
     ! Create the drawing area and attach the needed events.
 
-    area = hl_gtk_drawing_area_new(size=pdefs%opts%geometry, &
+    area = hl_gtk_drawing_area_new(size=sysopts%geometry, &
          & has_alpha=FALSE,  &
          & button_press_event=c_funloc(gr_draw_button), &
          & button_release_event=c_funloc(gr_draw_button), &

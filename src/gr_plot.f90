@@ -330,9 +330,9 @@ contains
        case(-3:-1)
           call gr_1df_plot(i)
        case(9)
-          if (.not. pdefs%opts%s2d .or. .not. gr_is_widget) call gr_2dd_plot(i)
+          if (.not. sysopts%s2d .or. .not. gr_is_widget) call gr_2dd_plot(i)
        case(-4)
-          if (.not. pdefs%opts%s2d .or. .not. gr_is_widget) call gr_2df_plot(i)
+          if (.not. sysopts%s2d .or. .not. gr_is_widget) call gr_2df_plot(i)
        case default
           write(error_str, "(a,i0,a)")"gr_plot_draw: ",&
                &  pdefs%data(i)%type, "is invalid"

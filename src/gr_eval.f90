@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -279,7 +279,7 @@ contains
 
     close(dunit)
 
-    if (pdefs%opts%delete_function_files) &
+    if (sysopts%delete_function_files) &
          & call execute_command_line("rm "//trim(pfile)//' '//trim(dfile))
 
   end subroutine gr_eval_fx
@@ -338,7 +338,7 @@ contains
 
     close(dunit)
 
-    if (pdefs%opts%delete_function_files) &
+    if (sysopts%delete_function_files) &
          & call execute_command_line("rm "//trim(pfile)//' '//trim(dfile))
 
   end subroutine gr_eval_fy
@@ -397,7 +397,7 @@ contains
     if (ios /= 0) status=ios
     close(dunit)
 
-    if (pdefs%opts%delete_function_files) &
+    if (sysopts%delete_function_files) &
          & call execute_command_line("rm "//trim(pfile)//' '//trim(dfile))
 
   end subroutine gr_eval_ft
@@ -462,7 +462,7 @@ contains
 
     close(dunit)
 
-    if (pdefs%opts%delete_function_files) &
+    if (sysopts%delete_function_files) &
          & call execute_command_line("rm "//trim(pfile)//' '//trim(dfile))
 
   end subroutine gr_eval_fz
