@@ -229,7 +229,7 @@ contains
        if (ieee_is_finite(data%max_val)) &
             & mask =  mask .and. data%xydata(2,:) <= data%max_val
        if (pdefs%axtype(data%y_axis+2) == 1) &
-            & mask = mask .and. data%xydata(2,:) >= 0._real64
+            & mask = mask .and. data%xydata(2,:) > 0._real64
          
     end if
     
