@@ -92,7 +92,7 @@ contains
          & "Logarithmic"//c_null_char, toggled=c_funloc(gr_set_log), &
          & data=c_loc(axis), &
          & initial_state=f_c_logical(pdefs%axtype(axis) /= 0), &
-         & sensitive = f_c_logical(pdefs%axrange(1,axis) > 0), &
+!!$         & sensitive = f_c_logical(pdefs%axrange(1,axis) > 0), &
          & tooltip = "Select Log or linear axis"//c_null_char)
 
     exact_chb(axis) = hl_gtk_check_menu_item_new(jmnu, &
@@ -584,15 +584,16 @@ contains
        end do
     end if
 
-    if (minval(pdefs%axrange(:,axis)) > 0.) then
-       call gtk_widget_set_sensitive(log_chb(axis), TRUE)
-    else if (pdefs%axtype(axis) == 1) then
+!!$    if (minval(pdefs%axrange(:,axis)) > 0.) then
+!!$       call gtk_widget_set_sensitive(log_chb(axis), TRUE)
+!!$    else
+    if (minval(pdefs%axrange(:,axis)) <= 0. .and. &
+         & pdefs%axtype(axis) == 1) then
        call hl_gtk_info_bar_message(gr_infobar, &
-            &"Setting a zero or negative limit for a log axis"//c_null_char)
-
+            & "Setting a zero or negative limit for a log axis"//c_null_char)
        return
-    else
-       call gtk_widget_set_sensitive(log_chb(axis), FALSE)
+!!$    else
+!!$       call gtk_widget_set_sensitive(log_chb(axis), FALSE)
     end if
     call gr_plot_draw(.true.)
   end subroutine gr_set_range

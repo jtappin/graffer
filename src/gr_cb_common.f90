@@ -260,7 +260,8 @@ contains
     integer :: i, j
     character(len=32) :: text
     character(len=8) :: gr_sversion
-
+    logical :: log_valid
+    
     gui_active = .false.
 
     call graffer_version%string(gr_sversion)
@@ -283,7 +284,9 @@ contains
     call hl_gtk_spin_button_set_value(linewidth_spin, &
          & real(pdefs%axthick, c_double))
 
-
+    log_valid = all(pdefs%data%mode == 0)
+    if (.not. log_valid) pdefs%axtype(:) = 0
+    
     do i = 1, 3
        call gtk_entry_set_text(lbox(i), trim(pdefs%axtitle(i))//c_null_char)
        do j = 1, 2
@@ -293,6 +296,8 @@ contains
 
        call gtk_check_menu_item_set_active(log_chb(i), &
             & int(pdefs%axtype(i), c_int))
+       call gtk_widget_set_sensitive(log_chb(i), f_c_logical(log_valid))
+
        call gtk_check_menu_item_set_active(exact_chb(i), &
             & f_c_logical(btest(pdefs%axsty(i)%idl, exact_bit)))
        call gtk_check_menu_item_set_active(ext_chb(i), &

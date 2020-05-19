@@ -282,14 +282,25 @@ contains
 
   subroutine gr_1d_set_coord(widget, data) bind(c)
     type(c_ptr), value :: widget, data
-
+    logical :: log_valid
+    integer :: i
+    
     ! Select rectangular or polar coordinates.
 
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%mode = &
          &int(gtk_combo_box_get_active(widget), int16)
+    
+    log_valid = all(pdefs%data%mode == 0)
+    if (.not. log_valid) pdefs%axtype(:) = 0
 
+    do i = 1,3
+       call gtk_check_menu_item_set_active(log_chb(i), &
+            & int(pdefs%axtype(i), c_int))
+       call gtk_widget_set_sensitive(log_chb(i), f_c_logical(log_valid))
+    end do
+    
     call gr_plot_draw(.true.)
   end subroutine gr_1d_set_coord
 

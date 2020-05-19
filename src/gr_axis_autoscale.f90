@@ -143,8 +143,8 @@ contains
        end select
     end do
 
-    call gtk_widget_set_sensitive(log_chb(axis), &
-         & f_c_logical(minval(pdefs%axrange(:,axis)) > 0.))
+!!$    call gtk_widget_set_sensitive(log_chb(axis), &
+!!$         & f_c_logical(minval(pdefs%axrange(:,axis)) > 0.))
 
     call gr_plot_draw(.true.)
   end subroutine gr_autoscale
@@ -174,6 +174,8 @@ contains
        else
           mask = ieee_is_finite(data%xydata(1,:))
        end if
+       if (pdefs%axtype(1) == 1) &
+            & mask = mask .and. data%xydata(1,:) > 0._real64
     end if
     
     select case (data%type)
@@ -226,6 +228,9 @@ contains
             & mask = mask .and. data%xydata(2,:) >= data%min_val
        if (ieee_is_finite(data%max_val)) &
             & mask =  mask .and. data%xydata(2,:) <= data%max_val
+       if (pdefs%axtype(data%y_axis+2) == 1) &
+            & mask = mask .and. data%xydata(2,:) >= 0._real64
+         
     end if
     
     select case (data%type)
