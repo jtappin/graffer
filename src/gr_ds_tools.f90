@@ -883,7 +883,7 @@ contains
 
     integer(kind=int16) :: idx
     type(graff_data), dimension(:), allocatable :: datasets
-    integer(kind=int16) :: i, j
+    integer(kind=int16) :: i, j, ikshift
     integer(kind=int32), dimension(:), allocatable :: klist
 
     if (present(index)) then
@@ -910,21 +910,29 @@ contains
     deallocate(pdefs%data)
     call move_alloc(datasets, pdefs%data)
     pdefs%nsets = pdefs%nsets - 1_int16
-    if (pdefs%cset == idx) pdefs%cset = max(pdefs%cset-1_int16, 1_int16)
-
+    if (pdefs%cset == idx) then
+       pdefs%cset = max(pdefs%cset-1_int16, 1_int16)
+       call gr_set_values_dataset()
+    end if
+    
     if (allocated(pdefs%key%list)) then
        if (any(pdefs%key%list == idx-1)) then
           allocate(klist(size(pdefs%key%list)-1))
           j = 1
+          ikshift = 0
           do i = 1, int(size(pdefs%key%list), int16)
-             if (pdefs%key%list(i) == idx-1) cycle
-             klist(j) = pdefs%key%list(i)
+             if (pdefs%key%list(i) == idx-1) then
+                ikshift = 1
+                cycle
+             end if
+             klist(j) = pdefs%key%list(i) - ikshift
              j = j+1_int16
           end do
           deallocate(pdefs%key%list)
           call move_alloc(klist, pdefs%key%list)
        end if
     end if
+
   end subroutine gr_ds_delete
 
   subroutine gr_ds_move(index, after)

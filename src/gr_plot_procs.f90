@@ -409,7 +409,7 @@ contains
     character(len=120) :: descr
 
     if (.not. allocated(pdefs%key%list)) return
-
+ 
     nkey = count(pdefs%data(pdefs%key%list+1)%colour /= -1)
     if (nkey == 0) return
     nrows = ceiling(real(nkey)/pdefs%key%cols)
