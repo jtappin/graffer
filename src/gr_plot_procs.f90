@@ -510,7 +510,7 @@ contains
 
        if (pdefs%data(i)%psym /= 0) then
           if (pdefs%key%one_point) then
-             call gr_plot_symbol([x0(icol)+x(2)], [y(irow)], &
+             call gr_plot_symbol([x0(icol)+x(2)], [y(irow) + ys], &
                   & pdefs%data(i)%psym, pdefs%data(i)%symsize)
           else
              call gr_plot_symbol(x0(icol)+x, y(irow)+ys, &
