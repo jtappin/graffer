@@ -115,9 +115,9 @@ contains
     call c_f_pointer(event, fevent)
     call gr_plot_coords_d_w(fevent%x, fevent%y, xw, yw)
 
-    write(tv, "(g0.5)") xw
+    write(tv, "(1pg0.5)") xw
     call gtk_entry_set_text(cursor_position(1), trim(tv)//c_null_char)
-    write(tv, "(g0.5)") yw
+    write(tv, "(1pg0.5)") yw
     call gtk_entry_set_text(cursor_position(2), trim(tv)//c_null_char)
 
     if (pdefs%transient%hairs) then

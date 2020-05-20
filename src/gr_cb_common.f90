@@ -290,7 +290,7 @@ contains
     do i = 1, 3
        call gtk_entry_set_text(lbox(i), trim(pdefs%axtitle(i))//c_null_char)
        do j = 1, 2
-          write(text, "(g0.5)") pdefs%axrange(j,i)
+          write(text, "(1pg0.5)") pdefs%axrange(j,i)
           call gtk_entry_set_text(rbox(j,i), trim(text)//c_null_char)
        end do
 
@@ -379,13 +379,13 @@ contains
     call hl_gtk_spin_button_set_value(size_ent, real(data%symsize, c_double))
 
     if (ieee_is_finite(data%min_val)) then
-       write(stext, "(g0.5)") data%min_val
+       write(stext, "(1pg0.5)") data%min_val
        call gtk_entry_set_text(min_ent, trim(stext)//c_null_char)
     else
        call gtk_entry_set_text(min_ent, c_null_char)
     end if
     if (ieee_is_finite(data%max_val)) then
-       write(stext, "(g0.5)") data%max_val
+       write(stext, "(1pg0.5)") data%max_val
        call gtk_entry_set_text(max_ent, trim(stext)//c_null_char)
     else
        call gtk_entry_set_text(max_ent, c_null_char)
@@ -414,7 +414,7 @@ contains
     
     if (allocated(data%zdata%levels)) then
        allocate(vtext(size(data%zdata%levels)))
-       write(vtext, "(g0.5)") data%zdata%levels
+       write(vtext, "(1pg0.5)") data%zdata%levels
        call hl_gtk_text_view_insert(clevel_view, vtext, replace=TRUE)
        deallocate(vtext)
     else
@@ -438,7 +438,7 @@ contains
     end if
     if (allocated(data%zdata%thick)) then
        allocate(vtext(size(data%zdata%thick)))
-       write(vtext, "(g0.5)") data%zdata%thick
+       write(vtext, "(1pg0.5)") data%zdata%thick
        call hl_gtk_text_view_insert(cthick_view, vtext, replace=TRUE)
        deallocate(vtext)
     else
@@ -456,7 +456,7 @@ contains
     call hl_gtk_listn_set_selection(cg_table_pick, &
          & int(data%zdata%ctable, c_int))
 
-    write(stext, "(g0.5)") data%zdata%missing
+    write(stext, "(1pg0.5)") data%zdata%missing
     call gtk_entry_set_text(cg_missing_entry, trim(stext)//c_null_char)
 
     call hl_gtk_spin_button_set_value(cg_gamma_entry, &
@@ -473,7 +473,7 @@ contains
          &  int(data%zdata%shade_levels, c_int))
 
     do i = 1, 2
-       write(stext, "(g0.5)") data%zdata%range(i)
+       write(stext, "(1pg0.5)") data%zdata%range(i)
        call gtk_entry_set_text(cg_range_entry(i), trim(stext)//c_null_char)
     end do
 

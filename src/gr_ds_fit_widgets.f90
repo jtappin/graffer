@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -383,17 +383,17 @@ contains
 
     fstring = wrap0
 
-    write(termstr,"(g0.8)") coeffs(1)
+    write(termstr,"(1pg0.8)") coeffs(1)
     termstr=adjustl(termstr)
     fstring = trim(fstring)//termstr
 
-    write(termstr,"(sp,g0.8)") coeffs(2)
+    write(termstr,"(sp,1pg0.8)") coeffs(2)
     termstr=adjustl(termstr)
     termstr = trim(termstr)//"*"//var
     fstring = trim(fstring)//termstr
 
     do i = 2, order
-       write(termstr,"(sp,g0.8)") coeffs(i+1)
+       write(termstr,"(sp,1pg0.8)") coeffs(i+1)
        termstr=adjustl(termstr)
        ipos = len_trim(termstr)+1
        write(termstr(ipos:), "('*',a,'^',i0)") trim(var), i
@@ -404,10 +404,10 @@ contains
 
     call gtk_entry_set_text(fit_soln_entry, trim(fstring)//c_null_char)
 
-    write(termstr, "(g0)") chi2/(size(x)-1-order)
+    write(termstr, "(1pg0)") chi2/(size(x)-1-order)
     call gtk_entry_set_text(fit_chi2_entry, trim(termstr)//c_null_char)
     prob = 1. - gammap(real(size(x)-1-order, real64)/2., chi2/2.)
-    write(termstr, "(g0)") prob
+    write(termstr, "(1pg0)") prob
     call gtk_entry_set_text(fit_prob_entry, trim(termstr)//c_null_char)
 
     curr_ds%type = oftype

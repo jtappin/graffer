@@ -101,7 +101,7 @@ contains
     call hl_gtk_table_attach(table, sbox, 0_c_int, 2_c_int, xpad=5_c_int)
     if (allocated(zdata%levels)) then
        allocate(txtvals(size(zdata%levels)))
-       write(txtvals, "(g0.5)") zdata%levels
+       write(txtvals, "(1pg0.5)") zdata%levels
        call hl_gtk_text_view_insert(clevel_view, txtvals, replace=TRUE)
        deallocate(txtvals)
     end if
@@ -156,7 +156,7 @@ contains
     call hl_gtk_table_attach(table, sbox, 2_c_int, 4_c_int, xpad=5_c_int)
     if (allocated(zdata%thick)) then
        allocate(txtvals(size(zdata%thick)))
-       write(txtvals, "(g0.5)") zdata%thick
+       write(txtvals, "(f0.2)") zdata%thick
        call hl_gtk_text_view_insert(cthick_view, txtvals, replace=TRUE)
        deallocate(txtvals)
     end if
@@ -230,7 +230,7 @@ contains
     call hl_gtk_table_attach(table, junk, 2_c_int, 2_c_int)
 
     do i = 1, 2
-       write(textval, "(g0.5)") zdata%range(i)
+       write(textval, "(1pg0.5)") zdata%range(i)
        cg_range_entry(i) = hl_gtk_entry_new(editable=TRUE, &
             & value=trim(adjustl(textval))//c_null_char, &
             & activate=c_funloc(gr_2d_set_range), data=c_loc(idx(i)), &
@@ -245,7 +245,7 @@ contains
     junk = gtk_label_new("Missing:"//c_null_char)
     call hl_gtk_table_attach(table, junk, 0_c_int, 3_c_int)
 
-    write(textval, "(g0.5)") zdata%missing
+    write(textval, "(1pg0.5)") zdata%missing
     cg_missing_entry = hl_gtk_entry_new(editable=TRUE, &
          & value=trim(adjustl(textval))//c_null_char, &
          & activate=c_funloc(gr_2d_set_missing),  &
@@ -411,7 +411,7 @@ contains
     if (rewrite) then
        deallocate(text)
        allocate(text(nlevels))
-       write(text, "(g0.5)") zdata%levels
+       write(text, "(1pg0.5)") zdata%levels
        call hl_gtk_text_view_insert(widget, text, replace=TRUE)
     end if
 
@@ -585,7 +585,7 @@ contains
     if (rewrite) then
        deallocate(text)
        allocate(text(nthick))
-       write(text, "(g0.5)") zdata%thick
+       write(text, "(f0.2)") zdata%thick
        call hl_gtk_text_view_insert(widget, text, replace=TRUE)
     end if
 
@@ -683,7 +683,7 @@ contains
     call hl_gtk_entry_get_text(widget, text)
     read(text, *, iostat=ios) value
     if (ios /= 0) then
-       write(text, "(g0.5)") zdata%range(idx)
+       write(text, "(1pg0.5)") zdata%range(idx)
        call gtk_entry_set_text(widget, trim(adjustl(text))//c_null_char)
     else
        zdata%range(idx) = value
@@ -717,7 +717,7 @@ contains
     call hl_gtk_entry_get_text(widget, text)
     read(text, *, iostat=ios) value
     if (ios /= 0) then
-       write(text, "(g0.5)") zdata%missing
+       write(text, "(1pg0.5)") zdata%missing
        call gtk_entry_set_text(widget, trim(adjustl(text))//c_null_char)
     else
        zdata%missing = value
@@ -752,7 +752,7 @@ contains
     call hl_gtk_entry_get_text(widget, text)
     read(text, *, iostat=ios) value
     if (ios /= 0) then
-       write(text, "(g0.5)") zdata%gamma
+       write(text, "(1pg0.5)") zdata%gamma
        call gtk_entry_set_text(widget, trim(adjustl(text))//c_null_char)
     else
        zdata%gamma = value

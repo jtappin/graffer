@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -108,22 +108,22 @@ contains
     end select
     call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int+iy, xopts=0)
 
-    write(text, "(g0.5)") data%funct%range(1,1)
+    write(text, "(1pg0.5)") data%funct%range(1,1)
     fun_range_entry(1,1) = hl_gtk_entry_new(value=trim(text)//c_null_char)
     call hl_gtk_table_attach(jb, fun_range_entry(1,1), 1_c_int, 1_c_int+iy)
 
-    write(text, "(g0.5)") data%funct%range(2,1)
+    write(text, "(1pg0.5)") data%funct%range(2,1)
     fun_range_entry(2,1) = hl_gtk_entry_new(value=trim(text)//c_null_char)
     call hl_gtk_table_attach(jb, fun_range_entry(2,1), 2_c_int, 1_c_int+iy)
 
     if (type == -4) then
        junk = gtk_label_new("Y range:"//c_null_char)
        call hl_gtk_table_attach(jb, junk, 0_c_int, 2_c_int+iy, xopts=0)
-       write(text, "(g0.5)") data%funct%range(1,2)
+       write(text, "(1pg0.5)") data%funct%range(1,2)
        fun_range_entry(1,2) = hl_gtk_entry_new(value=trim(text)//c_null_char)
        call hl_gtk_table_attach(jb, fun_range_entry(1,2), 1_c_int, 2_c_int+iy)
 
-       write(text, "(g0.5)") data%funct%range(2,2)
+       write(text, "(1pg0.5)") data%funct%range(2,2)
        fun_range_entry(2,2) = hl_gtk_entry_new(value=trim(text)//c_null_char)
        call hl_gtk_table_attach(jb, fun_range_entry(2,2), 2_c_int, 2_c_int+iy)
     end if

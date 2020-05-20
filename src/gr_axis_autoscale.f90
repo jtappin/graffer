@@ -114,7 +114,7 @@ contains
     end if
 
     do i = 1, 2
-       write(text, "(g0.5)") pdefs%axrange(i,axis)
+       write(text, "(1pg0.5)") pdefs%axrange(i,axis)
        call gtk_entry_set_text(rbox(i, axis), adjustl(trim(text))//c_null_char)
     end do
 

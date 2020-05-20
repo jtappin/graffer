@@ -233,7 +233,7 @@ contains
     junk= gtk_label_new(axname//" Min:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 0,2, yopts=0)
 
-    write(rtext, "(g0.5)") pdefs%axrange(1,axis)
+    write(rtext, "(1pg0.5)") pdefs%axrange(1,axis)
     rbox(1, axis) = hl_gtk_entry_new(editable=TRUE, &
          & activate=c_funloc(gr_set_range), data=c_loc(axis), & 
          & focus_out_event=c_funloc(gr_set_range_e), &
@@ -246,7 +246,7 @@ contains
     junk= gtk_label_new("Max:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 2,2, yopts=0)
 
-    write(rtext, "(g0.5)") pdefs%axrange(2,axis)
+    write(rtext, "(1pg0.5)") pdefs%axrange(2,axis)
     rbox(2, axis) = hl_gtk_entry_new(editable=TRUE, &
          & activate=c_funloc(gr_set_range), data=c_loc(axis), &  ! Needs tweak
          & focus_out_event=c_funloc(gr_set_range_e), &
@@ -554,7 +554,7 @@ contains
     call hl_gtk_entry_get_text(widget, text)
     read(text, *, iostat=ios) val
     if (ios /= 0) then
-       write(text, "(g0.5)") pdefs%axrange(mm,axis)
+       write(text, "(1pg0.5)") pdefs%axrange(mm,axis)
        call gtk_entry_set_text(widget, trim(text)//c_null_char)
     else if (val /= pdefs%axrange(mm,axis)) then
        pdefs%axrange(mm,axis) = val

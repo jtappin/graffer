@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -79,7 +79,7 @@ contains
        allocate(values(data%ndata))
        nfields = size(data%xydata(:,1))
        do i = 1, data%ndata
-          write(values(i), "(6(g0,2x))") data%xydata(:,i)
+          write(values(i), "(6(1pg0,2x))") data%xydata(:,i)
        end do
     else
        allocate(values(1))

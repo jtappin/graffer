@@ -173,7 +173,7 @@ contains
          & tooltip="Set the minimum value to plot in the dataset."//c_null_char)
     call hl_gtk_table_attach(table, min_ent, 1_c_int, 7_c_int, yopts=0_c_int)
     if (ieee_is_finite(pdefs%data(pdefs%cset)%min_val)) then
-       write(mmtext, "(g0.5)") pdefs%data(pdefs%cset)%min_val
+       write(mmtext, "(1pg0.5)") pdefs%data(pdefs%cset)%min_val
        call gtk_entry_set_text(min_ent, trim(mmtext)//c_null_char)
     end if
     
@@ -187,7 +187,7 @@ contains
          & tooltip="Set the maximum value to plot in the dataset."//c_null_char)
     call hl_gtk_table_attach(table, max_ent, 1_c_int, 8_c_int, yopts=0_c_int)
     if (ieee_is_finite(pdefs%data(pdefs%cset)%max_val)) then
-       write(mmtext, "(g0.5)") pdefs%data(pdefs%cset)%max_val
+       write(mmtext, "(1pg0.5)") pdefs%data(pdefs%cset)%max_val
        call gtk_entry_set_text(max_ent, trim(mmtext)//c_null_char)
     end if
  
@@ -404,7 +404,7 @@ contains
        read(tval, *, iostat=ios) val
        if (ios /= 0) then
           if (ieee_is_finite(current)) then
-             write(tval, "(g0.5)") current
+             write(tval, "(1pg0.5)") current
              call gtk_entry_set_text(widget, trim(tval)//c_null_char)
           else
              call gtk_entry_set_text(widget, c_null_char)

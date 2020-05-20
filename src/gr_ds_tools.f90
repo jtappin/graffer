@@ -527,9 +527,9 @@ contains
        ny = data%ndata2
        if (data%zdata%y_is_2d) ny = -ny
        write(unit, *) nx, ny
-       write(unit, "(6(g0,2x))") data%zdata%x
-       write(unit, "(6(g0,2x))") data%zdata%y
-       write(unit, "(6(g0,2x))") data%zdata%z
+       write(unit, "(6(1pg0,2x))") data%zdata%x
+       write(unit, "(6(1pg0,2x))") data%zdata%y
+       write(unit, "(6(1pg0,2x))") data%zdata%z
 
     else
        select case (etype)
@@ -553,7 +553,7 @@ contains
        end select
 
        do i = 1, data%ndata
-          write(unit, "(6(g0,2x))") data%xydata(:,i)
+          write(unit, "(6(1pg0,2x))") data%xydata(:,i)
        end do
     end if
 
