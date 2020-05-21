@@ -32,6 +32,9 @@ pro Graff_init, pdefs, file, version = version
 ;	version	int	input	The graffer version 2-elements, major
 ;				& minor version numbers, if pdefs exists,
 ;				then previous version is retained.
+;	/ttype		input	If set then the default annotation
+;				font is TrueType rather than
+;				Hershey/Hardware
 ;
 ; Note:
 ;	If pdefs exists, it is assumed to be a pre-existing pdefs
@@ -53,6 +56,8 @@ pro Graff_init, pdefs, file, version = version
 ;	Remove opts field from PDEFS: 21/5/20; SJT
 ;-
 
+  common graffer_options, optblock
+  
   if (n_elements(pdefs) ne 0) then begin
      version = pdefs.version
      idblock = pdefs.ids
@@ -62,7 +67,8 @@ pro Graff_init, pdefs, file, version = version
      ds_dir = pdefs.ds_dir
      graff_clear, pdefs
 
-  endif else gr_rc_get, optblock
+  endif
+  if n_elements(optblock) eq 0 then gr_rc_get, optblock
 
   if (n_elements(file) eq 0) then begin
      fc = ''
@@ -81,6 +87,9 @@ pro Graff_init, pdefs, file, version = version
   pdefs.Dir =       dir
   pdefs.Charsize =  1.0
   pdefs.Axthick =   1.
+  if keyword_set(ttype) then pdefs.fontopt = 1 $
+  else pdefs.fontopt = 0
+  
   pdefs.Xrange =    dindgen(2)
   pdefs.Yrange =    dindgen(2)
   pdefs.Yrange_r =  dindgen(2)
@@ -103,8 +112,7 @@ pro Graff_init, pdefs, file, version = version
 ; Set defaults for these hardcopy actions, but they will be
 ; overwritten if an old file existed.
 
-  pdefs.hardset.Action = ['lp ', '']
-; pdefs.hardset.viewer = [gr_find_viewer(/ps), ' &']
+  pdefs.hardset.action = ['lp ', '']
   pdefs.hardset.Size = [23., 18.]
   pdefs.hardset.Off = [3.35, 1.5]
 

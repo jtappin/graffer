@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2013-2020
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@ pro Graff_msg, message, help=help
 ; History:
 ;	Original: 18/8/95; SJT
 ;	Change to take widget ID as first argument: 12/5/95; SJT
+;	Just print the message (no widgets exist): ??/??/2013; SJT
 ;-
 
 print, message
