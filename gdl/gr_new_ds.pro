@@ -32,6 +32,7 @@ function gr_new_ds, pdefs
 ;
 ; History:
 ; 	Original: 10/1/12; SJT
+; 	Remove opts field from pdefs: 21/5/20; SJT
 ;-
 
   ds = {graff_data}
@@ -50,7 +51,7 @@ function gr_new_ds, pdefs
   ds.Zopts.Thick = ptr_new(1.)
   ds.Zopts.Pxsize =  0.5
 
-  ds.Medit = pdefs.opts.mouse
+  ds.Medit = 0
 
   return, ds
 

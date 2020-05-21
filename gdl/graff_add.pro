@@ -175,6 +175,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	z_log -> z_mode: 18/11/15: SJT
 ;	Add non-linear contour level maps: 12/10/16; SJT
 ;	Allow long/triple colours: 1/3/19; SJT
+;	Remove reference to pdefs.opts: 21/5/20; SJT
 ;-
 
 ;	Check that the necessary inputs are present
@@ -290,7 +291,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      (*pdefs.data)[pdefs.nsets].Symsize =  1.
      (*pdefs.data)[pdefs.nsets].Colour =   1
      (*pdefs.data)[pdefs.nsets].Thick =    1.
-     (*pdefs.data)[pdefs.nsets].Medit =    pdefs.opts.mouse
+     (*pdefs.data)[pdefs.nsets].Medit =    0
      pdefs.nsets = pdefs.nsets+1
   endif
 
