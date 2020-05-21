@@ -136,17 +136,7 @@ contains
           else
              sysopts%mouse = c_f_logical(ival)
           end if
-       case('colourmenu')
-          read(keyval, *, iostat=ios, iomsg=iom) ival
-          if (ios /= 0) then
-             write(error_unit, "(2a/t10,a)") &
-                  & "gr_read_rc_file: Invalid ColourMenu setting in file:", &
-                  & trim(file), trim(keyval)
-          else
-             sysopts%colour_menu = c_f_logical(ival)
-             write(error_unit, "(a)") &
-                  & "Warning: colour menu is ignored in the Fortran version"
-          end if
+
        case('delete')
           read(keyval, *, iostat=ios, iomsg=iom) ival
           if (ios /= 0) then

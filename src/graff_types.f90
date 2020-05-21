@@ -143,7 +143,7 @@ module graff_types
   ! General options
   type :: graff_opts
      real(kind=real32) :: auto_delay=300._real32
-     logical(kind=int8) :: s2d=.false., mouse=.false., colour_menu=.false., &
+     logical(kind=int8) :: s2d=.false., mouse=.false., &
           & delete_function_files=.false.
      character(len=120) :: pdfviewer=''
      character(len=256) :: colour_dir=''
