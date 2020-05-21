@@ -74,8 +74,9 @@ pro Gr_asc_save, pdefs
   printf, ilu, 'GC:', pdefs.charsize, ':GA:', pdefs.axthick, format = $
           "(a,f8.4,a,f7.3)"
   printf, ilu, 'GP:', pdefs.position, ':GR:', pdefs.aspect,  ':GI:', $
-          pdefs.isotropic, ':GHA:', pdefs.match, $
-          format = "(a,4f8.5,a,f9.5,f8.5,2(a,I1))"
+          pdefs.isotropic, ':GHA:', pdefs.match, ':GF', $
+          pdefs.fontopt, $
+          format = "(a,4f8.5,a,f9.5,f8.5,2(a,I1),a,i2)"
 
 ; X-axis information
 

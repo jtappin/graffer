@@ -44,22 +44,29 @@ pro Gr_bin_ds, data, nset, ilu, msgid
 ;	Add support for a second Y-scale: 22/12/11; SJT
 ;	V4 version: 6/1/12; SJT
 ;	Eliminate goto and redundant code: 11/1/12; SJT
+; 	Add min & max values: 4/3/15; SJT
+; 	Fix init of min & max: 2/6/15; SJT
+;	Add non-linear contour level maps: 12/10/16; SJT
+;	Add labelling offset: 2/5/17; SJT
 ;-
 
-tag = '   '
+  tag = '   '
 
-nflag = 0b
-nflag2 = 0b
-tflag = 0b
-dflag = 0b
-eflag = 0b
+  nflag = 0b
+  nflag2 = 0b
+  tflag = 0b
+  dflag = 0b
+  eflag = 0b
 
-elements = [2, 3, 4, 3, 4, 4, 5, 5, 6]
+  elements = [2, 3, 4, 3, 4, 4, 5, 5, 6]
 
-while (not eof(ilu)) do begin
-    
-    graff_get_rec, ilu, tag, value, tcode, nvals = nvals, ndims = ndims
-    
+  data[nset].min_val = !values.d_nan
+  data[nset].max_val = !values.d_nan
+
+  while (not eof(ilu)) do begin
+     
+     graff_get_rec, ilu, tag, value, tcode, nvals = nvals, ndims = ndims
+     
                                 ; Recognised tags:
                                 ; J - Joining option
                                 ; P - symbol
@@ -78,13 +85,15 @@ while (not eof(ilu)) do begin
                                 ; M - Mode
                                 ; K - noclip (both C & N are already
                                 ;     bagged)
+                                ; MN - Min value to plot.
+                                ; MX - Max value to plot.
                                 ; E - Mouse editing
                                 ; R - function range
                                 ; F, FX, FY - function specifiers
                                 ; VS, VE - start & end XY data.
                                 ; DE - end dataset
 
-    case (strtrim(tag)) of
+     case (strtrim(tag)) of
         
         'J': data[nset].pline = value
         
@@ -101,24 +110,24 @@ while (not eof(ilu)) do begin
 
         
         'N': begin
-            data[nset].ndata = value
-            if data[nset].ndata lt 0 then begin
-                x2flag = 1b
-                data[nset].ndata = abs(data[nset].ndata)
-            endif
-            nflag = 1b
+           data[nset].ndata = value
+           if data[nset].ndata lt 0 then begin
+              x2flag = 1b
+              data[nset].ndata = abs(data[nset].ndata)
+           endif
+           nflag = 1b
         end
         'N2': begin
-            data[nset].ndata2 = value
-            if data[nset].ndata2 lt 0 then begin
-                y2flag = 1b
-                data[nset].ndata2 = abs(data[nset].ndata2)
-            endif
-            nflag2 = 1b
+           data[nset].ndata2 = value
+           if data[nset].ndata2 lt 0 then begin
+              y2flag = 1b
+              data[nset].ndata2 = abs(data[nset].ndata2)
+           endif
+           nflag2 = 1b
         end
         'T': begin
-            data[nset].type = value
-            tflag = 1b
+           data[nset].type = value
+           tflag = 1b
         end
         'M': data[nset].mode = value
         
@@ -130,13 +139,15 @@ while (not eof(ilu)) do begin
         'ZF':  data[nset].zopts.format = value
         
         'ZNL': begin
-            data[nset].zopts.n_levels = value
-            data[nset].zopts.set_levels = 0b
+           data[nset].zopts.n_levels = value
+           data[nset].zopts.set_levels = 0b
         end
+        'ZLM': data[nset].zopts.lmap = value
+
         'ZL': begin
-            data[nset].zopts.levels = ptr_new(double(value))
-            data[nset].zopts.n_levels = nvals
-            data[nset].zopts.set_levels = 1b
+           data[nset].zopts.levels = ptr_new(double(value))
+           data[nset].zopts.n_levels = nvals
+           data[nset].zopts.set_levels = 1b
         end
 
         'ZC': begin
@@ -162,23 +173,24 @@ while (not eof(ilu)) do begin
                          "Raw colours found before indexed list."
            data[nset].zopts.raw_colours = ptr_new(fix(value))
         end
-  
+        
         'ZCT': data[nset].zopts.ctable = value
 
         'ZCG': data[nset].zopts.gamma = value
 
         'ZS': begin
-            data[nset].zopts.style = ptr_new(fix(value))
-            data[nset].zopts.n_sty = nvals
+           data[nset].zopts.style = ptr_new(fix(value))
+           data[nset].zopts.n_sty = nvals
         end
 
         'ZT': begin
-            data[nset].zopts.thick = ptr_new(float(value))
-            data[nset].zopts.n_thick = nvals
+           data[nset].zopts.thick = ptr_new(double(value))
+           data[nset].zopts.n_thick = nvals
         end
 
         'ZCF': data[nset].zopts.fill = value
         'ZLI': data[nset].zopts.label = value
+        'ZLO': data[nset].zopts.label_off = value
         'ZCS': data[nset].zopts.charsize = value
 
         'ZR': data[nset].zopts.range = value
@@ -199,50 +211,50 @@ while (not eof(ilu)) do begin
         'VS': xydata = double(value)
 
         'ZXS': begin
-            xv = double(value)
-            xydata.x_is_2d = ndims eq 2
-            xydata.x = ptr_new(xv)
+           xv = double(value)
+           xydata.x_is_2d = ndims eq 2
+           xydata.x = ptr_new(xv)
         end
         'ZYS': begin
-            yv = double(value)
-            xydata.y_is_2d = ndims eq 2
-            xydata.y = ptr_new(yv)
+           yv = double(value)
+           xydata.y_is_2d = ndims eq 2
+           xydata.y = ptr_new(yv)
         end
         'ZZS': begin
-            zv = double(value)
-            xydata.z = ptr_new(zv)
+           zv = double(value)
+           xydata.z = ptr_new(zv)
         end
         
         'DE': eflag = 1b
         
         Else: begin
-            graff_msg, msgid, "Unknown DS tag: " + $
-              tag + " Ignoring."
-            stop
+           graff_msg, msgid, "Unknown DS tag: " + $
+                      tag + " Ignoring."
+           stop
         end
-    endcase
-    
-    if eflag then break
+     endcase
+     
+     if eflag then break
 
-    if (nflag and tflag and not dflag) then begin
+     if (nflag and tflag and not dflag) then begin
         dflag = 1b
         case data[nset].type of
-            -4: xydata = {graff_zfunct}
-            -3: xydata = {graff_pfunct}
-            -2: xydata = {graff_funct}
-            -1: xydata = {graff_funct}
-            9: if (nflag2) then begin
-                xydata = {graff_zdata}
-            endif else dflag = 0b
-            
-            Else: 
+           -4: xydata = {graff_zfunct}
+           -3: xydata = {graff_pfunct}
+           -2: xydata = {graff_funct}
+           -1: xydata = {graff_funct}
+           9: if (nflag2) then begin
+              xydata = {graff_zdata}
+           endif else dflag = 0b
+           
+           Else: 
         endcase
-    endif
-    
-    New_line:
-    
-endwhile
+     endif
+     
+     New_line:
+     
+  endwhile
 
-data[nset].xydata = ptr_new(xydata)
+  data[nset].xydata = ptr_new(xydata)
 
 end

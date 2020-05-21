@@ -82,7 +82,8 @@ pro Gr_bin_save, pdefs, auto = auto
   graff_put_rec, ilu, 'GR ', pdefs.aspect
   graff_put_rec, ilu, 'GI ', pdefs.isotropic 
   graff_put_rec, ilu, 'GHA', pdefs.match
-
+  graff_put_rec, ilu, 'GF ', pdefs.fontopt
+  
 ; X-axis information
 
   graff_put_rec, ilu, 'XR ', pdefs.xrange
@@ -215,7 +216,10 @@ pro Gr_bin_save, pdefs, auto = auto
         if (zopts.set_levels and $
             ptr_valid(zopts.levels)) then $ ; Explicit levels
                graff_put_rec, ilu, 'ZL ', *(zopts.levels) $
-        else graff_put_rec, ilu, 'ZNL', zopts.n_levels
+        else begin
+           graff_put_rec, ilu, 'ZNL', zopts.n_levels
+           graff_put_rec, ilu, 'ZLM', zopts.lmap
+        endelse
         if zopts.n_cols gt 0 then begin
            graff_put_rec, ilu, 'ZC ', *(zopts.colours)
            if ptr_valid(zopts_raw_colours) then $
