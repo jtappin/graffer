@@ -35,6 +35,10 @@ pro Gr_get_ds, data, nset, ilu, msgid
 ;	Support colour inversion: 26/6/07; SJT
 ;	Add local colour table option: 17/11/11; SJT
 ;	Add support for a second Y-scale: 22/12/11; SJT
+; 	Add min & max values: 4/3/15; SJT
+; 	Fix init of min & max: 2/6/15; SJT
+;	Add non-linear contour level maps: 12/10/16; SJT
+;	Add labelling offset: 2/5/17; SJT
 ;-
 
   inline = ''
@@ -47,6 +51,9 @@ pro Gr_get_ds, data, nset, ilu, msgid
   jflag = 0b
 
   elements = [2, 3, 4, 3, 4, 4, 5, 5, 6]
+
+  data[nset].min_val = !values.d_nan
+  data[nset].max_val = !values.d_nan
 
   while (not eof(ilu)) do begin
      
@@ -70,6 +77,8 @@ pro Gr_get_ds, data, nset, ilu, msgid
                                 ;     for 2-D data.
                                 ; T - type
                                 ; M - Mode
+                                ; MN - Min value to plot
+                                ; MX - Max value to plot
                                 ; K - noclip (both C & N are already
                                 ;     bagged)
                                 ; E - Mouse editing
@@ -89,7 +98,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
            'S': data[nset].symsize = gr_flt_val(tag_val(itag+1), 1)
            'L': data[nset].line = gr_int_val(tag_val(itag+1), 1)
            'C': data[nset].colour = gr_int_val(tag_val(itag+1), 1)
-           'CV': data[nset].c_vals = gr_int_val(tag_val(itag+1), 3)
+           'CV': data[nset].c_vals = gr_byt_val(tag_val(itag+1), 3)
            'W': data[nset].thick = gr_int_val(tag_val(itag+1), 1)
            'O': data[nset].sort = gr_byt_val(tag_val(itag+1), 1)
            'K': data[nset].noclip = gr_byt_val(tag_val(itag+1), 1)
@@ -116,7 +125,9 @@ pro Gr_get_ds, data, nset, ilu, msgid
            'Y': data[nset].y_axis = gr_int_val(tag_val[itag+1], 1)
 
            'M': data[nset].mode = gr_int_val(tag_val(itag+1), 1)
-           
+           'MN': data[nset].min_val = gr_dbl_val(tag_val[itag+1], 1)
+           'MX': data[nset].max_val = gr_dbl_val(tag_val[itag+1], 1)
+
            'ZF':  data[nset].zopts.format = $
               gr_int_val(tag_val(itag+1), 1)
            
@@ -125,6 +136,9 @@ pro Gr_get_ds, data, nset, ilu, msgid
                  abs(gr_int_val(tag_val(itag+1), 1))
               cflag(0) = 1b
            end
+           'ZLM': data[nset].zopts.lmap = $
+              gr_int_val(tag_val[itag+1], 1)
+
            'ZL': if (cflag(0)) then begin
               levels = gr_dbl_val(tag_val(itag+1), $
                                   data[nset].zopts.n_levels) 
@@ -215,7 +229,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
               graff_msg, msgid, "** W A R N I N G ** Contour style " + $
                          "list given without count - ignored"
            
-           'ZNT': begin $
+           'ZNT': begin
               data[nset].zopts.n_thick = gr_int_val(tag_val(itag+1), 1)
               cflag(3) = 1b
            end
@@ -232,199 +246,193 @@ pro Gr_get_ds, data, nset, ilu, msgid
            endif else $
               graff_msg, msgid, "** W A R N I N G ** Contour thickness " + $
                          "list given without count - ignored"
-           $
-              'ZCF': data[nset].zopts.fill = $
-              gr_int_val(tag_val(itag+1), 1)
+           
+           'ZCF': data[nset].zopts.fill = gr_int_val(tag_val(itag+1), 1)
            'ZLI': data[nset].zopts.label = $
+              gr_int_val(tag_val(itag+1), 1)
+           'ZLO': data[nset].zopts.label_off = $
               gr_int_val(tag_val(itag+1), 1)
            'ZCS': data[nset].zopts.charsize = $
               gr_flt_val(tag_val(itag+1), 1)
-            $
-               'ZR': data[nset].zopts.range = gr_dbl_val(tag_val(itag+1), $
-                                                         2)
-            'ZP': data[nset].zopts.pxsize = $
-               gr_flt_val(tag_val(itag+1), 1)
-            'ZIL': data[nset].zopts.ilog = gr_byt_val(tag_val(itag+1), $
-                                                      $
-                                                      $
+
+           'ZR': data[nset].zopts.range = gr_dbl_val(tag_val(itag+1), 2)
+           'ZP': data[nset].zopts.pxsize = gr_flt_val(tag_val(itag+1), $
                                                       1)
-            'ZIN': data[nset].zopts.invert = $
-               gr_byt_val(tag_val(itag+1), 1)
-            'ZSM': data[nset].zopts.smooth = $
-               gr_byt_val(tag_val(itag+1), 1)
-            'ZSN': data[nset].zopts.shade_levels =  
-            gr_lob_val(tag_val(itag+1), 1)
+           'ZIL': data[nset].zopts.ilog = gr_byt_val(tag_val(itag+1), $
+                                                     1)
+           'ZIN': data[nset].zopts.invert = $
+              gr_byt_val(tag_val(itag+1), 1)
+           'ZSM': data[nset].zopts.smooth = $
+              gr_byt_val(tag_val(itag+1), 1)
+           'ZSN': data[nset].zopts.shade_levels =  
+           gr_lob_val(tag_val(itag+1), 1)
 
-            'ZM': data[nset].zopts.missing = $
-               gr_dbl_val(tag_val[itag+1], 1)
+           'ZM': data[nset].zopts.missing = $
+              gr_dbl_val(tag_val[itag+1], 1)
 
-            'R': begin
-               if (not dflag) then $
-                  graff_msg, msgid, "Range found before type defined " + $
-                             "- ignored" $
-               else if (data[nset].type ge 0) then $
-                  graff_msg, msgid, "Range found in XY data set - ignored" $
-               else if (data[nset].type eq -4) then $
-                  xydata.range = gr_dbl_val(tag_val(itag+1), 4) $
-               else $
-                  xydata.range = gr_dbl_val(tag_val(itag+1), 2)
-            end
-            'F': begin
-               if (not dflag) then $
-                  graff_msg, msgid, "Function found before type defined " + $
-                             "- ignored" $
-               else if (data[nset].type ge 0) then $
-                  graff_msg, msgid, "Function found in XY data set - ignored" $
-               else if (data[nset].type eq -3) then $
-                  graff_msg, msgid, "Plain function found in " + $
-                             "parametric set - ignored" $ 
-               else xydata.funct = gr_str_val(inline, 'F')
-               goto, new_line
-            end
-            'FX': begin
-               if (not dflag) then $
-                  graff_msg, msgid, "Function found before type defined " + $
-                             "- ignored" $
-               else if (data[nset].type ge 0) then $
-                  graff_msg, msgid, "Function found in XY data set - ignored" $
-               else if (data[nset].type ne -3) then $
-                  graff_msg, msgid, "X function found in " + $
-                             "plain function - ignored" $ 
-               else xydata.funct(0) = gr_str_val(inline, 'FX')
-               goto, new_line
-            end
-            'FY': begin
-               if (not dflag) then $
-                  graff_msg, msgid, "Function found before type defined " + $
-                             "- ignored" $
-               else if (data[nset].type ge 0) then $
-                  graff_msg, msgid, "Function found in XY data set - ignored" $
-               else if (data[nset].type ne -3) then $
-                  graff_msg, msgid, "Y function found in " + $
-                             "plain function - ignored" $ 
-               else xydata.funct(1) = gr_str_val(inline, 'FY')
-               goto, new_line
-            end
-            
-            'VS': begin
-               if (not dflag) then begin
-                  graff_msg, msgid, "Data found before type defined " + $
-                             "- ignored"
-                  repeat readf, ilu, inline  $
-                  until strpos(inline, 'VE:') ne -1
-               endif else if (data[nset].type lt 0) then begin
-                  graff_msg, msgid, "Data found in function dataset " + $
-                             "- ignored"
-                  repeat readf, ilu, inline  $
-                  until strpos(inline, 'VE:') ne -1
-               endif else if (data[nset].type gt 8) then begin
-                  graff_msg, msgid, '1-D Data found in 2-D dataset ' + $
-                             "- ignored"
-                  repeat readf, ilu, inline  $
-                  until strpos(inline, 'VE:') ne -1
-               endif else begin
-                  ncols = gr_int_val(tag_val(itag+1), 1)
-                  if (ncols ne elements(data[nset].type)) then $
-                     graff_msg, msgid,  $
-                                "WARNING Data columns wrong could get corrupt " + $
-                                "DS"
-                  readf, ilu, xydata
-                  readf, ilu, inline
-                  if (strpos(inline, 'VE:') eq -1) then $
-                     graff_msg, msgid, $
-                                "WARNING Data rows wrong could get corrupt " + $
-                                "DS"
-               endelse
-            end
-            'ZXS': begin
-               if (not dflag) then begin
-                  graff_msg, msgid, "Data found before type defined " + $
-                             "- ignored"
-                  repeat readf, ilu, inline  $
-                  until strpos(inline, 'ZXE:') ne -1
-               endif else if (data[nset].type ne 9) then begin
-                  graff_msg, msgid, $
-                             '2-D Data found in function Or 1-D dataset - ignored'
-                  repeat readf, ilu, inline  $
-                  until strpos(inline, 'ZXE:') ne -1
-               endif else begin
-                  if xydata.x_is_2d then xv = dblarr(data[nset].ndata, $
-                                                     $
-                                                     $
-                                                     data[nset].ndata2) $ 
-                  else xv = dblarr(data[nset].ndata)
-                  readf, ilu, xv
-                  xydata.x = ptr_new(xv)
-                  readf, ilu, inline
-                  if (strpos(inline, 'ZXE:') eq -1) then $
-                     graff_msg, msgid, $
-                                "WARNING Data X count wrong could get corrupt " + $
-                                "DS"
-               endelse
-            end
-            'ZYS': begin
-               if (not dflag) then begin
-                  graff_msg, msgid, "Data found before type defined " + $
-                             "- ignored"
-                  repeat readf, ilu, inline  $
-                  until strpos(inline, 'ZYE:') ne -1
-               endif else if (data[nset].type ne 9) then begin
-                  graff_msg, msgid, $
-                             '2-D Data found in function Or 1-D dataset - ignored'
-                  repeat readf, ilu, inline  $
-                  until strpos(inline, 'ZYE:') ne -1
-               endif else begin
-                  if xydata.y_is_2d then yv = dblarr(data[nset].ndata, $
-                                                     $
-                                                     $
-                                                     data[nset].ndata2) $ $
-                  else yv = dblarr(data[nset].ndata2)
-                  readf, ilu, yv
-                  xydata.y = ptr_new(yv)
-                  readf, ilu, inline
-                  if (strpos(inline, 'ZYE:') eq -1) then $
-                     graff_msg, msgid, $
-                                "WARNING Data Y count wrong could get corrupt " + $
-                                "DS"
-               endelse
-            end
-            'ZZS': begin
-               if (not dflag) then begin
-                  graff_msg, msgid, "Data found before type defined " + $
-                             "- ignored"
-                  repeat readf, ilu, inline  $
-                  until strpos(inline, 'ZZE:') ne -1
-               endif else if (data[nset].type ne 9) then begin
-                  graff_msg, msgid, $
-                             '2-D Data found in function Or 1-D dataset - ignored'
-                  repeat readf, ilu, inline  $
-                  until strpos(inline, 'ZZE:') ne -1
-               endif else begin
-                  zv = dblarr(data[nset].ndata, data[nset].ndata2)
-                  readf, ilu, zv
-                  xydata.z = ptr_new(zv)
-                  readf, ilu, inline
-                  if (strpos(inline, 'ZZE:') eq -1) then $
-                     graff_msg, msgid, $
-                                "WARNING Data Z count wrong could get corrupt " + $
-                                "DS"
-               endelse
-            end
-            
-            'ZX2': if ptr_valid(xydata.x) then graff_msg, msgid, $
-               "WARNING: 2-D X data requested after X data " + $
-               "acquired" $
-            else xydata.x_is_2d = gr_byt_val(tag_val(itag+1), 1)
-            'ZY2': if ptr_valid(xydata.x) then graff_msg, msgid, $
-               "WARNING: 2-D X data requested after X data " + $
-               "acquired" $
-            else xydata.y_is_2d = gr_byt_val(tag_val(itag+1), 1)
+           'R': begin
+              if (not dflag) then $
+                 graff_msg, msgid, "Range found before type defined " + $
+                            "- ignored" $
+              else if (data[nset].type ge 0) then $
+                 graff_msg, msgid, "Range found in XY data set - ignored" $
+              else if (data[nset].type eq -4) then $
+                 xydata.range = gr_dbl_val(tag_val(itag+1), 4) $
+              else $
+                 xydata.range = gr_dbl_val(tag_val(itag+1), 2)
+           end
+           'F': begin
+              if (not dflag) then $
+                 graff_msg, msgid, "Function found before type defined " + $
+                            "- ignored" $
+              else if (data[nset].type ge 0) then $
+                 graff_msg, msgid, "Function found in XY data set - ignored" $
+              else if (data[nset].type eq -3) then $
+                 graff_msg, msgid, "Plain function found in " + $
+                            "parametric set - ignored" $ 
+              else xydata.funct = gr_str_val(inline, 'F')
+              goto, new_line
+           end
+           'FX': begin
+              if (not dflag) then $
+                 graff_msg, msgid, "Function found before type defined " + $
+                            "- ignored" $
+              else if (data[nset].type ge 0) then $
+                 graff_msg, msgid, "Function found in XY data set - ignored" $
+              else if (data[nset].type ne -3) then $
+                 graff_msg, msgid, "X function found in " + $
+                            "plain function - ignored" $ 
+              else xydata.funct(0) = gr_str_val(inline, 'FX')
+              goto, new_line
+           end
+           'FY': begin
+              if (not dflag) then $
+                 graff_msg, msgid, "Function found before type defined " + $
+                            "- ignored" $
+              else if (data[nset].type ge 0) then $
+                 graff_msg, msgid, "Function found in XY data set - ignored" $
+              else if (data[nset].type ne -3) then $
+                 graff_msg, msgid, "Y function found in " + $
+                            "plain function - ignored" $ 
+              else xydata.funct(1) = gr_str_val(inline, 'FY')
+              goto, new_line
+           end
+           
+           'VS': begin
+              if (not dflag) then begin
+                 graff_msg, msgid, "Data found before type defined " + $
+                            "- ignored"
+                 repeat readf, ilu, inline  $
+                 until strpos(inline, 'VE:') ne -1
+              endif else if (data[nset].type lt 0) then begin
+                 graff_msg, msgid, "Data found in function dataset " + $
+                            "- ignored"
+                 repeat readf, ilu, inline  $
+                 until strpos(inline, 'VE:') ne -1
+              endif else if (data[nset].type gt 8) then begin
+                 graff_msg, msgid, '1-D Data found in 2-D dataset ' + $
+                            "- ignored"
+                 repeat readf, ilu, inline  $
+                 until strpos(inline, 'VE:') ne -1
+              endif else begin
+                 ncols = gr_int_val(tag_val(itag+1), 1)
+                 if (ncols ne elements(data[nset].type)) then $
+                    graff_msg, msgid,  $
+                               "WARNING Data columns wrong could get corrupt " + $
+                               "DS"
+                 readf, ilu, xydata
+                 readf, ilu, inline
+                 if (strpos(inline, 'VE:') eq -1) then $
+                    graff_msg, msgid, $
+                               "WARNING Data rows wrong could get corrupt " + $
+                               "DS"
+              endelse
+           end
+           'ZXS': begin
+              if (not dflag) then begin
+                 graff_msg, msgid, "Data found before type defined " + $
+                            "- ignored"
+                 repeat readf, ilu, inline  $
+                 until strpos(inline, 'ZXE:') ne -1
+              endif else if (data[nset].type ne 9) then begin
+                 graff_msg, msgid, $
+                            '2-D Data found in function Or 1-D dataset - ignored'
+                 repeat readf, ilu, inline  $
+                 until strpos(inline, 'ZXE:') ne -1
+              endif else begin
+                 if xydata.x_is_2d then xv = dblarr(data[nset].ndata, $
+                                                    data[nset].ndata2) $ 
+                 else xv = dblarr(data[nset].ndata)
+                 readf, ilu, xv
+                 xydata.x = ptr_new(xv)
+                 readf, ilu, inline
+                 if (strpos(inline, 'ZXE:') eq -1) then $
+                    graff_msg, msgid, $
+                               "WARNING Data X count wrong could get corrupt " + $
+                               "DS"
+              endelse
+           end
+           'ZYS': begin
+              if (not dflag) then begin
+                 graff_msg, msgid, "Data found before type defined " + $
+                            "- ignored"
+                 repeat readf, ilu, inline  $
+                 until strpos(inline, 'ZYE:') ne -1
+              endif else if (data[nset].type ne 9) then begin
+                 graff_msg, msgid, $
+                            '2-D Data found in function Or 1-D dataset - ignored'
+                 repeat readf, ilu, inline  $
+                 until strpos(inline, 'ZYE:') ne -1
+              endif else begin
+                 if xydata.y_is_2d then yv = dblarr(data[nset].ndata, $
+                                                    data[nset].ndata2) $ $
+                 else yv = dblarr(data[nset].ndata2)
+                 readf, ilu, yv
+                 xydata.y = ptr_new(yv)
+                 readf, ilu, inline
+                 if (strpos(inline, 'ZYE:') eq -1) then $
+                    graff_msg, msgid, $
+                               "WARNING Data Y count wrong could get corrupt " + $
+                               "DS"
+              endelse
+           end
+           'ZZS': begin
+              if (not dflag) then begin
+                 graff_msg, msgid, "Data found before type defined " + $
+                            "- ignored"
+                 repeat readf, ilu, inline  $
+                 until strpos(inline, 'ZZE:') ne -1
+              endif else if (data[nset].type ne 9) then begin
+                 graff_msg, msgid, $
+                            '2-D Data found in function Or 1-D dataset - ignored'
+                 repeat readf, ilu, inline  $
+                 until strpos(inline, 'ZZE:') ne -1
+              endif else begin
+                 zv = dblarr(data[nset].ndata, data[nset].ndata2)
+                 readf, ilu, zv
+                 xydata.z = ptr_new(zv)
+                 readf, ilu, inline
+                 if (strpos(inline, 'ZZE:') eq -1) then $
+                    graff_msg, msgid, $
+                               "WARNING Data Z count wrong could get corrupt " + $
+                               "DS"
+              endelse
+           end
+           
+           'ZX2': if ptr_valid(xydata.x) then graff_msg, msgid, $
+              "WARNING: 2-D X data requested after X data " + $
+              "acquired" $
+           else xydata.x_is_2d = gr_byt_val(tag_val(itag+1), 1)
+           'ZY2': if ptr_valid(xydata.x) then graff_msg, msgid, $
+              "WARNING: 2-D X data requested after X data " + $
+              "acquired" $
+           else xydata.y_is_2d = gr_byt_val(tag_val(itag+1), 1)
 
-            'DE': goto, ds_read
-            
-            Else: graff_msg, msgid, $
-                             "Unknown Dataset tag "+tag_val(itag)+" - ignored"
-         endcase
+           'DE': goto, ds_read
+           
+           Else: graff_msg, msgid, $
+                            "Unknown Dataset tag "+tag_val(itag)+" - ignored"
+        endcase
         
         
         if (nflag and tflag and not dflag) then begin
