@@ -53,6 +53,7 @@ while (not eof(ilu)) do begin
         
                                 ; Recognized tags for Text items
                                 ; C - colour
+                                ; CV - custom colour
                                 ; S - character size
                                 ; O - orientation (degrees
                                 ;     anticlockwise from the normal

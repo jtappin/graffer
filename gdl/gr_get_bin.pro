@@ -67,6 +67,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ; GP - Positions of corners
                                 ; GR - Aspect of plot.
                                 ; GI - Is plot isotropic?
+                                ; GF - Font selection.
 
         'GT ': pdefs.title = value
         'GS ': pdefs.subtitle = value
@@ -76,7 +77,8 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'GR ': pdefs.aspect = value
         'GI ': pdefs.isotropic = value
         'GHA': pdefs.match = value
-
+        'GF ': pdefs.fontopt = value
+        
                                 ; The X, Y and R keys are items relating
                                 ; to the X, Y and right-hand Y axes
                                 ; respectively  
@@ -186,7 +188,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'DN ': begin
            pdefs.nsets = value
            nds = pdefs.nsets > 1
-           data = replicate({graff_data}, nds)
+           data = gr_new_ds(pdefs, nds) ;replicate({graff_data}, nds)
            dflag = 1b
         end
         'DC ': pdefs.cset = value
@@ -249,6 +251,11 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ; HVB - The view command (up to
                                 ;       the filename)
                                 ; HVA - Any part of the view
+                                ;       command which follows the
+                                ;       filename. 
+                                ; HPB - The PDF view command (up to
+                                ;       the filename)
+                                ; HPA - Any part of the PDF view
                                 ;       command which follows the
                                 ;       filename. 
                                 ; HF - Font family.

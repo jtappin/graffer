@@ -92,7 +92,8 @@ while (not eof(ilu)) do begin
             'GR': pdefs.aspect = gr_flt_val(tag_val[itag+1], 2)
             'GI': pdefs.isotropic = gr_byt_val(tag_val[itag+1], 1)
             'GHA': pdefs.match = gr_byt_val(tag_val[itag+1], 1)
-
+            'GF': pdefs.fontopt =  gr_int_val(tag_val[itag+1], 1)
+            
                                 ; The X, Y and R keys are items relating
                                 ; to the X, Y and right-hand Y axes
                                 ; respectively  
@@ -236,7 +237,7 @@ while (not eof(ilu)) do begin
                 
                 pdefs.nsets = gr_int_val(tag_val[itag+1], 1)
                 nds = pdefs.nsets > 1
-                data = replicate({graff_data}, nds)
+                data =  gr_new_ds(pdefs, nds) ;replicate({graff_data}, nds)
                 dflag = 1b
             end
             'DC': pdefs.cset = gr_int_val(tag_val[itag+1], 1)
@@ -332,6 +333,11 @@ while (not eof(ilu)) do begin
                                 ; HVA - Any part of the view
                                 ;       command which follows the
                                 ;       filename. 
+                                ; HPB - The PDF view command (up to
+                                ;       the filename)
+                                ; HPA - Any part of the PDF view
+                                ;       command which follows the
+                                ;       filename. 
                                 ; HF - Font family.
                                 ; HWS - Font weight and slant (bit 0 is
                                 ;       on for bold, bit 1 for
@@ -380,7 +386,11 @@ while (not eof(ilu)) do begin
             'HFN':  begin
                 pdefs.hardset.name = gr_str_val(inline, 'HFN')
                 goto, new_line
-             end
+            end
+
+                                ; The values are only used in the
+                                ; Fortran version.
+            
             'HPS': begin
                pdefs.hardset.psdev = gr_str_val(inline, 'HPS')
                goto, new_line
@@ -467,11 +477,6 @@ pdefs.is_ascii = 1b
 free_lun, ilu
 
 pdefs.chflag = 0                ; Clear changes flag
-
-if (not keyword_set(no_set)) then begin
-    graff_set_vals, pdefs
-endif
-if ctflag then graff_colours, pdefs
 
 end
 
