@@ -223,7 +223,8 @@ contains
        select case (key)
        case('-h', '--help')
           call gr_cmd_help
-          stop
+          stop                       ! After help don't want to do
+                                     ! anything else.
 
        case('-a','--autosave')
           if (keyval == '') then
@@ -423,9 +424,12 @@ contains
          & "-ct --colour-table <name>: Specify the filename stem for the colour", &
          & "                        table files (default 'c_tables')", &
          & "-cd --colour-dir <dir>: Specify where the colour tables are installed", &
-         & "--gdl --idl <cmd>     : Specify the gdl or idl command to use", &
          & "                        default ${PREFIX}/share/graffer.", &
+         & "--gdl --idl <cmd>     : Specify the gdl or idl command to use,", &
+         & "                        default: search $PATH for 'gdl' then 'idl'.", &
          & "", &
-         & "<file>                : The graffer file to open or a directory to search"
+         & "<file>                : The graffer file to open or a directory to search", &
+         & "                        if not given, then a dialogue is opened in the", &
+         & "                        current directory."
   end subroutine gr_cmd_help
 end module gr_opt_init
