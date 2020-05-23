@@ -655,5 +655,28 @@ contains
     end do
     pl=0
   end function last
-  
+
+  function truth(str, default, status)
+    logical(kind=int8) :: truth
+    character(len=*), intent(in) :: str
+    logical(kind=int8), intent(in), optional :: default
+    integer, intent(out), optional :: status
+
+    status = 0
+    select case(lowcase(trim(str)))
+    case('t', 'true', 'y', 'yes', '1')
+       truth = .true.
+    case('f', 'false', 'n', 'no', '0' )
+       truth = .false.
+    case default
+       write(error_unit, *) "TRUTH:: Warning: Invalid input ", trim(str)
+       status = 1
+       if (present(default)) then
+          truth = default
+       else
+          truth = .false.
+       end if
+    end select
+  end function truth
+
 end module gr_utils

@@ -69,7 +69,7 @@ contains
     integer :: ival
     integer, dimension(2) :: ival2
     logical :: found
-    
+
     ok = .true.
 
     open(newunit=unit, file=file, &
@@ -119,32 +119,27 @@ contains
              sysopts%auto_delay = ival
           end if
        case('supp2d')
-          read(keyval, *, iostat=ios, iomsg=iom) ival
+          sysopts%s2d = truth(keyval, default=sysopts%s2d, status=ios)
           if (ios /= 0) then
              write(error_unit, "(2a/t10,a)") &
                   & "gr_read_rc_file: Invalid Supp2D setting in file:", &
                   & trim(file), trim(keyval)
-          else
-             sysopts%s2d = c_f_logical(ival)
           end if
        case('mouseedit')
-          read(keyval, *, iostat=ios, iomsg=iom) ival
+          sysopts%mouse = truth(keyval, default=sysopts%mouse, status=ios)
           if (ios /= 0) then
              write(error_unit, "(2a/t10,a)") &
                   & "gr_read_rc_file: Invalid MouseEdit setting in file:", &
                   & trim(file), trim(keyval)
-          else
-             sysopts%mouse = c_f_logical(ival)
           end if
 
        case('delete')
-          read(keyval, *, iostat=ios, iomsg=iom) ival
+          sysopts%delete_function_files = truth(keyval, default = &
+               & sysopts%delete_function_files, status=ios)
           if (ios /= 0) then
              write(error_unit, "(2a/t10,a)") &
                   & "gr_read_rc_file: Invalid Delete setting in file:", &
                   & trim(file), trim(keyval)
-          else
-             sysopts%delete_function_files = c_f_logical(ival)
           end if
 
        case("colourdir")
@@ -167,14 +162,14 @@ contains
           px = scan(keyval, 'xX')
           if (px > 0) keyval(px:px) = ' '
           read(keyval, *, iostat=ios, iomsg=iom) ival2
-                    if (ios /= 0) then
+          if (ios /= 0) then
              write(error_unit, "(2a/t10,a)") &
                   & "gr_read_rc_file: Invalid Geometry setting in file:", &
                   & trim(file), trim(keyval)
           else
              sysopts%geometry = ival2
           end if
-          
+
        case default
           write(error_unit, "(2a/t10,a)") &
                & "gr_read_rc_file: Unknown item in file:", &
