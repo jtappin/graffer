@@ -37,6 +37,11 @@ pro graff_2d__define
 ;	Extracted: 30/6/05; SJT
 ;	Support colour inversion: 26/6/07; SJT
 ;	Add local colour table option: 17/11/11; SJT
+;	Make colours a list: 7/10/16; SJT
+;	Add non-linear contour level maps: 12/10/16; SJT
+;	Add labelling offset: 2/5/17; SJT
+;	Revert colours to a pointer: 1/4/20; SJT
+;	Split indexed & custom colours: 2/4/20; SJT
 ;-
 
 Zopts = {graff_2d, $
@@ -62,7 +67,9 @@ Zopts = {graff_2d, $
          Gamma:       0.d0, $
          Fill:        0b, $
          ilog:        0b, $
-         invert:      0b $
+         invert:      0b, $
+         smooth:      0b, $
+         shade_levels: 0l $
         }
 
 end
