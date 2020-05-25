@@ -108,6 +108,7 @@ module gr_record
 
      procedure, public :: get_dimensions => gr_get_dimensions
      procedure, public :: get_tag => gr_get_tag
+     procedure, public :: print_rec => gr_print_rec
   end type graffer_record
 
   character(len=160), dimension(2), private :: error_str
@@ -564,6 +565,80 @@ contains
 
   end function gr_read_rec
 
+  subroutine gr_print_rec(this, meta)
+    class(graffer_record), intent(in) :: this
+    logical, intent(in), optional :: meta
+
+    logical :: full_vals
+
+    if (present(meta)) then
+       full_vals = .not. meta
+    else
+       full_vals = .false.
+    end if
+
+    print "(/'Tag:',a,' Type: ',i2,' N Dims: ',i1)", this%tag, this%tcode, &
+         & this%ndims
+    if (allocated(this%dims)) then
+       print "('Dimensions : ', 7I8)", this%dims
+    else
+       print "('Scalar value')"
+    end if
+    if (allocated(this%length)) &
+         & print "('Lengths : ', 7I8)", this%length
+
+    print "('Byte ', I3,' Int16 ',I5,' Int32 ',I10)", this%b_val, &
+         & this%i_val, this%l_val
+    print "('Real32 ', 1pg0, ' Real64 ',g0)", this%r_val, this%d_val
+
+    if (allocated(this%ba_val)) then
+       print "('Byte 1D: ', i6)", size(this%ba_val)
+       if (full_vals) print "(20i4)", this%ba_val
+    end if
+     if (allocated(this%ia_val)) then
+       print "('Int16 1D: ', i6)", size(this%ia_val)
+       if (full_vals) print "(10i7)", this%ia_val
+    end if
+    if (allocated(this%la_val)) then
+       print "('Int32 1D: ', i6)", size(this%la_val)
+       if (full_vals) print "(8i10)", this%la_val
+    end if
+     if (allocated(this%ra_val)) then
+       print "('Real 32 1D: ', i6)", size(this%ra_val)
+       if (full_vals) print "(1p,8g0)", this%ra_val
+    end if
+     if (allocated(this%da_val)) then
+       print "('Real 64 1D: ', i6)", size(this%da_val)
+       if (full_vals) print "(1p,5g0)", this%da_val
+    end if
+   
+    if (allocated(this%baa_val)) then
+       print "('Byte 2D: ', i6, '(',2i6,')')", size(this%baa_val), &
+            & shape(this%baa_val)
+       if (full_vals) print "(20i4)", this%baa_val
+    end if
+     if (allocated(this%iaa_val)) then
+       print "('Int16 2D: ', i6, '(',2i6,')')", size(this%iaa_val), &
+            & shape(this%iaa_val)
+       if (full_vals) print "(10i7)", this%iaa_val
+    end if
+    if (allocated(this%laa_val)) then
+       print "('Int32 2D: ', i6, '(',2i6,')')", size(this%laa_val), &
+            & shape(this%laa_val)
+       if (full_vals) print "(8i10)", this%laa_val
+    end if
+     if (allocated(this%raa_val)) then
+       print "('Real 32 2D: ', i6, '(',2i6,')')", size(this%raa_val), &
+            & shape(this%raa_val)
+       if (full_vals) print "(1p,8g0)", this%raa_val
+    end if
+     if (allocated(this%daa_val)) then
+       print "('Real 64 2D: ', i6, '(',2i6,')')", size(this%daa_val), &
+            & shape(this%daa_val)
+       if (full_vals) print "(1p,5g0)", this%daa_val
+    end if
+  end subroutine gr_print_rec
+  
   subroutine gr_get_int(this, ival, status)
     class(graffer_record), intent(in) :: this
     integer(kind=int16), intent(out) :: ival
@@ -1006,7 +1081,7 @@ contains
     case(idl_double) 
        dval(:mxi) = this%da_val(:mxi)
     case(idl_float)
-       dval(:mxi) = real(this%la_val(:mxi), real64)
+       dval(:mxi) = real(this%ra_val(:mxi), real64)
     case(idl_int)
        dval(:mxi) = real(this%ia_val(:mxi), real64)
     case(idl_long)
@@ -1110,7 +1185,7 @@ contains
        case(idl_double) 
           dval(:mxi,:mxj) = this%daa_val(:mxi,:mxj)
        case(idl_float) 
-          dval(:mxi,:mxj) = this%raa_val(:mxi,:mxj)
+          dval(:mxi,:mxj) = real(this%raa_val(:mxi,:mxj), real64)
        case default
           write(error_str, "(A, I0)") "GR_GET_DOUBLE_AA: Unknown type code: ", &
                & this%tcode
