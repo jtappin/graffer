@@ -73,7 +73,13 @@ module gr_utils
   ! NaN & Infinity values
   real(kind=real64), parameter :: d_nan=transfer(z'7ff8000000000000',1._real64)
   real(kind=real64), parameter :: d_inf=transfer(z'7ff0000000000000',1._8)
-  
+
+  ! Character limits
+
+  integer, parameter, private :: lcmin = iachar('a'), lcmax = iachar('z')
+  integer, parameter, private :: ucmin = iachar('A'), ucmax = iachar('Z')
+  integer, parameter, private :: case_diff = iachar('A')-iachar('a')
+
 contains
 
   ! Byte swapping routines.
@@ -251,12 +257,10 @@ contains
     character(len=*), intent(in) :: str
     character(len=len(str)) :: upcase
 
-    integer, parameter :: lcmin = iachar('a'), lcmax = iachar('z')
-    integer, parameter :: case_diff = iachar('A')-iachar('a')
     integer :: i,ic
 
     upcase = str
-    do i = 1, len(str)
+    do i = 1, len_trim(str)
        ic = iachar(str(i:i))
        if (ic >= lcmin .and. ic <= lcmax) upcase(i:i) = achar(ic+case_diff)
     end do
@@ -266,17 +270,36 @@ contains
     character(len=*), intent(in) :: str
     character(len=len(str)) :: lowcase
 
-    integer, parameter :: ucmin = iachar('A'), ucmax = iachar('Z')
-    integer, parameter :: case_diff = iachar('A')-iachar('a')
     integer :: i,ic
 
     lowcase = str
-    do i = 1, len(str)
+    do i = 1, len_trim(str)
        ic = iachar(str(i:i))
        if (ic >= ucmin .and. ic <= ucmax) lowcase(i:i) = achar(ic-case_diff)
     end do
   end function lowcase
 
+  ! Character test.
+
+  elemental function is_letters(str)
+    logical :: is_letters
+    character(len=*), intent(in) :: str
+
+    integer :: i, ic
+
+    is_letters = .true.
+
+    do i = 1, len_trim(str)
+       ic = iachar(str(i:i))
+       if ((ic < ucmin .or. ic > ucmax) .and. &
+            & (ic < lcmin .or. ic > lcmax)) then
+          is_letters = .false.
+          exit
+       end if
+    end do
+
+  end function is_letters
+  
   function file_exists(file)
     logical :: file_exists
     character(len=*), intent(in) :: file

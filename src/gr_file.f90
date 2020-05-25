@@ -653,7 +653,7 @@ contains
        case default
           call gr_message("GR_READ: unknown or obsolete tag: "// &
                & rec%get_tag()//" Skipping")
-          status = 2
+          if (.not. is_letters(rec%get_tag())) status = 2
 
        end select
 
@@ -769,7 +769,7 @@ contains
        case default
           call gr_message("Unknown text tag: "// &
                & rec%get_tag()//" Skipping.")
-          status = 2
+          if (.not. is_letters(rec%get_tag())) status = 2
        end select
 
     end do
@@ -1033,7 +1033,7 @@ contains
        case default
           call gr_message("GR_READ_DS: Unknown DS tag: "// &
                & rec%get_tag()//", Skipping.")
-          status = 2
+          if (.not. is_letters(rec%get_tag())) status = 2
 
        end select
     end do
