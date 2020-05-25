@@ -663,7 +663,7 @@ contains
     integer, intent(out), optional :: status
 
     status = 0
-    select case(lowcase(trim(str)))
+    select case(lowcase(trim(adjustl(str))))
     case('t', 'true', 'y', 'yes', '1')
        truth = .true.
     case('f', 'false', 'n', 'no', '0' )

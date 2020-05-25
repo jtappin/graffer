@@ -202,10 +202,22 @@ contains
     isdir=.false.
     helped = .false.
 
+    if (nargs == 0) return
+
+    call get_command_argument(nargs, file)
+
+    if (trim(file) == '-h' .or. trim(file) == '--help') then
+       call gr_cmd_help
+       stop                       ! After help don't want to do
+    end if
+    isdir = gr_is_dir(file)
+    if (file == '.' .or. file == '..') isdir = .true.
+
     i = 1
     do 
-       if (i > nargs) exit
+       if (i > nargs-1) exit
        call get_command_argument(i, argv)
+       
        poseq = index(argv, '=')
        if (poseq > 0) then
           key = trim(argv(:poseq-1))
@@ -347,6 +359,7 @@ contains
           else
              status = 0
           end if
+
           if (status /= 0) then
              write(error_unit, "(a/t10,a)") &
                   & "gr_parse_command: Failed to get a value for key: ",&
@@ -378,24 +391,19 @@ contains
                 end if
              end if
           end if
-
+          
        case default
-          if (i /= nargs) then
              write(error_unit, "(2a)") &
                   & "gr_parse_command: Unknown option: ", trim(key)
              if (.not. helped) then
                 call gr_cmd_help
                 helped = .true.
              end if
-          else
-             file = trim(argv)
-             isdir = gr_is_dir(file)
-             if (file == '.' .or. file == '..') isdir = .true.
-          end if
-       end select
+        end select
 
        i = i+1
-    end do 
+    end do
+    
   end subroutine gr_parse_command
 
   subroutine gr_cmd_help
