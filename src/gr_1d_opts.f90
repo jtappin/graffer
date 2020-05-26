@@ -93,16 +93,16 @@ contains
     call hl_gtk_table_attach(table, colour_cbo, 1_c_int, 0_c_int, yopts=0_c_int)
     custom_colour_index = ccindex
 
-    ! Plot symbol
+    ! Joining mode
     
-    junk = gtk_label_new("Symbol:"//c_null_char)
+    junk = gtk_label_new("Join:"//c_null_char)
     call hl_gtk_table_attach(table, junk, 0_c_int, 1_c_int, yopts=0_c_int)
 
-    symbol_cbo = hl_gtk_combo_box_new(initial_choices=sym_list, &
-         & changed=c_funloc(gr_1d_set_symbol), &
-         & active=int(pdefs%data(pdefs%cset)%psym, c_int),&
-         & tooltip="Select the symbol for the plot points"//c_null_char)
-    call hl_gtk_table_attach(table, symbol_cbo, 1_c_int, 1_c_int, yopts=0_c_int)
+    join_cbo = hl_gtk_combo_box_new(initial_choices=join_list, &
+         & changed=c_funloc(gr_1d_set_join), &
+         & active=int(pdefs%data(pdefs%cset)%pline, c_int), &
+         & tooltip="Select the connection format for the plot"//c_null_char)
+    call hl_gtk_table_attach(table, join_cbo, 1_c_int, 1_c_int, yopts=0_c_int)
 
     ! Line style
     
@@ -115,28 +115,28 @@ contains
          & tooltip="Select the linestyle for the plot"//c_null_char)
     call hl_gtk_table_attach(table, style_cbo, 1_c_int, 2_c_int, yopts=0_c_int)
 
-    ! Joining mode
-    
-    junk = gtk_label_new("Join:"//c_null_char)
-    call hl_gtk_table_attach(table, junk, 0_c_int, 3_c_int, yopts=0_c_int)
-
-    join_cbo = hl_gtk_combo_box_new(initial_choices=join_list, &
-         & changed=c_funloc(gr_1d_set_join), &
-         & active=int(pdefs%data(pdefs%cset)%pline, c_int), &
-         & tooltip="Select the connection format for the plot"//c_null_char)
-    call hl_gtk_table_attach(table, join_cbo, 1_c_int, 3_c_int, yopts=0_c_int)
-
     ! Line thickness
     
     junk = gtk_label_new("Thickness:"//c_null_char)
-    call hl_gtk_table_attach(table, junk, 0_c_int, 4_c_int, yopts=0_c_int)
+    call hl_gtk_table_attach(table, junk, 0_c_int, 3_c_int, yopts=0_c_int)
 
     thick_ent = hl_gtk_spin_button_new(0._c_double, 16._c_double,&
          & 0.1_c_double, &
          & initial_value=real(pdefs%data(pdefs%cset)%thick, c_double), &
          & value_changed=c_funloc(gr_1d_set_thick), tooltip = &
          & "Set the line thickness for the trace"//c_null_char)
-    call hl_gtk_table_attach(table, thick_ent, 1_c_int, 4_c_int, yopts=0_c_int)
+    call hl_gtk_table_attach(table, thick_ent, 1_c_int, 3_c_int, yopts=0_c_int)
+
+    ! Plot symbol
+    
+    junk = gtk_label_new("Symbol:"//c_null_char)
+    call hl_gtk_table_attach(table, junk, 0_c_int, 4_c_int, yopts=0_c_int)
+
+    symbol_cbo = hl_gtk_combo_box_new(initial_choices=sym_list, &
+         & changed=c_funloc(gr_1d_set_symbol), &
+         & active=int(pdefs%data(pdefs%cset)%psym, c_int),&
+         & tooltip="Select the symbol for the plot points"//c_null_char)
+    call hl_gtk_table_attach(table, symbol_cbo, 1_c_int, 4_c_int, yopts=0_c_int)
 
     ! Symbol size
     
