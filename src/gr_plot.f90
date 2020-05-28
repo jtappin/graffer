@@ -73,7 +73,7 @@ contains
     type(graff_hard), pointer :: hardset
     logical :: status
     integer :: plrc
-    
+
     if (gr_plot_is_open) return
 
     hardset => pdefs%hardset
@@ -81,7 +81,7 @@ contains
     plrc = plparseopts(PL_PARSE_SKIP)
 
     call gr_line_colours()
-    
+
     if (present(device)) then
        if (hardset%name == '') then
           pdot = index(pdefs%name, '.', back=.true.)
@@ -126,6 +126,10 @@ contains
           page_aspect = hardset%size(1)/hardset%size(2)
 
           call plsdev(driver)
+
+          ! This slightly bizarre looking page set up is needed to avoid
+          ! rotated plots.
+          
           call plsori(1)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
@@ -157,6 +161,22 @@ contains
                & int(hardset%off(1)*cm2pt), &
                & int(hardset%off(2)*cm2pt))
           call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.pdf')
+       case('epdf')
+          if (hardset%pdfdev == '') then
+             call gr_default_device('pdf', driver)
+          else
+             driver = hardset%pdfdev
+          end if
+
+          page_aspect = hardset%size(1)/hardset%size(2)
+
+          call plsdev(driver)
+          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
+          call plspage(0._plflt, 0._plflt, &
+               & int(hardset%size(1)*cm2pt), &
+               & int(hardset%size(2)*cm2pt), &
+               & 0, 0)
+          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.pdf')
        case('svg')
           if (hardset%svgdev == '') then
              call gr_default_device('svg', driver)
@@ -166,7 +186,7 @@ contains
           page_aspect = hardset%size(1)/hardset%size(2)
 
           call plsdev(driver)
-!          call plsori(1)
+          !          call plsori(1)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(2)*cm2pt), &
