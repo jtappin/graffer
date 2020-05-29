@@ -549,7 +549,7 @@ contains
     logical :: c2d, clall
     integer :: i, icc, icidx
     integer(kind=int16), dimension(3) :: icrc
-    
+
     real(kind=real64) :: zmin, zmax, xmin, xmax, ymin, ymax, ccol
     logical :: xlog, ylog
 
@@ -648,7 +648,8 @@ contains
     if (data%zdata%fill == 2_int8) call hl_gtk_info_bar_message(gr_infobar, &
          & "gr_contour: Contour ticks not (yet) supported"//c_null_char)
 
-   do i = 1, data%zdata%n_levels
+    call plsesc(ichar('#'))     ! Plplot default
+    do i = 1, data%zdata%n_levels
        if (data%zdata%label /= 0 .and. &
             & mod(i, max(data%zdata%label,1)) == data%zdata%label_off) then
           call pl_setcontlabelparam(real(0.006*data%zdata%charsize, plflt), &
@@ -657,7 +658,7 @@ contains
           call pl_setcontlabelparam(0.006_plflt, &
                & real(0.5*data%zdata%charsize, plflt), 0.25_plflt, 0)
        end if
-       
+
        ! I'm not convinced that this will do what it is supposed to do!
        ! It might have made sense in 2013, but I don't get it now.
        ! SJT 2/4/20
@@ -705,6 +706,8 @@ contains
           end if
        end if
     end do
+    call plsesc(ichar('!'))     ! Graffer strings
+    
     if (clall) deallocate(clevels)
 
   end subroutine gr_contour
@@ -719,7 +722,7 @@ contains
     real(kind=real64), dimension(:,:), allocatable :: x2, y2
     real(kind=real64), dimension(:), allocatable :: x1, y1
     logical :: c2d, xlog, ylog
-    integer :: i, nx, ny
+    integer :: i, j, nx, ny
     real(kind=real64) :: zmin, zmax, xmin, xmax, ymin, ymax
 
     data => pdefs%data(index)
@@ -754,8 +757,8 @@ contains
           zmax = log10(zmax)
        else
           call hl_gtk_info_bar_message(gr_infobar, &
-            & "Setting a zero or negative limit for a log mapping, "//&
-            & "using linear"//c_null_char)
+               & "Setting a zero or negative limit for a log mapping, "//&
+               & "using linear"//c_null_char)
        end if
     else if (data%zdata%ilog == 2_int16) then
        where(z /= 0.) z = z / sqrt(abs(z))
@@ -764,63 +767,125 @@ contains
     end if
 
     allocate(x1(nx+1), y1(ny+1))
+
     if (data%zdata%x_is_2d .or. data%zdata%y_is_2d) then
        allocate(x2(nx+1, ny+1), y2(nx+1, ny+1))
        if (data%zdata%x_is_2d) then
-          x2(:,1) = [data%zdata%x(1,1), &
-               & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
-               & data%zdata%x(nx,1)]
-          x2(:,ny+1) = [data%zdata%x(1,ny), &
-               & (data%zdata%x(1:nx-1,ny)+data%zdata%x(2:,ny))/2._real64, &
-               & data%zdata%x(nx,ny)]
+          x2(1,1) = data%zdata%x(1,1)
+          x2(nx+1,1) = data%zdata%x(nx,1)
+          x2(1,ny+1) = data%zdata%x(1,ny)
+          x2(nx+1,ny+1) = data%zdata%x(nx,ny)
           do i = 2, ny
-             x2(:,i) = ([data%zdata%x(1,i-1), &
-                  & (data%zdata%x(1:nx-1,i-1)+data%zdata%x(2:,i-1))/2._real64, &
-                  & data%zdata%x(nx,i-1)] + &
-                  & [data%zdata%x(1,i), &
-                  & (data%zdata%x(1:nx-1,i)+data%zdata%x(2:,i))/2._real64, &
-                  & data%zdata%x(nx,i)]) / 2._real64
+             x2(1,i) = (data%zdata%x(1,i-1) + data%zdata%x(1,i)) / &
+                  & 2._real64
+             x2(nx+1,i) = (data%zdata%x(nx,i-1) + data%zdata%x(nx,i)) / &
+                  & 2._real64
           end do
+          do j = 2, nx
+             x2(j,1) = (data%zdata%x(j-1,1) + data%zdata%x(j,1)) / &
+                  & 2._real64
+             x2(j,ny+1) = (data%zdata%x(j-1,ny) + data%zdata%x(j,ny)) / &
+                  & 2._real64
+             do i = 2, ny
+                x2(j,i) = (data%zdata%x(j-1,i-1) + data%zdata%x(j,i-1) + &
+                     & data%zdata%x(j-1,i) + data%zdata%x(j,i)) / 4._real64
+             end do
+          end do
+!!$          x2(:,1) = [data%zdata%x(1,1), &
+!!$               & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
+!!$               & data%zdata%x(nx,1)]
+!!$          x2(:,ny+1) = [data%zdata%x(1,ny), &
+!!$               & (data%zdata%x(1:nx-1,ny)+data%zdata%x(2:,ny))/2._real64, &
+!!$               & data%zdata%x(nx,ny)]
+!!$          do i = 2, ny
+!!$             x2(:,i) = ([data%zdata%x(1,i-1), &
+!!$                  & (data%zdata%x(1:nx-1,i-1)+data%zdata%x(2:,i-1))/2._real64, &
+!!$                  & data%zdata%x(nx,i-1)] + &
+!!$                  & [data%zdata%x(1,i), &
+!!$                  & (data%zdata%x(1:nx-1,i)+data%zdata%x(2:,i))/2._real64, &
+!!$                  & data%zdata%x(nx,i)]) / 2._real64
+!!$          end do
        else
-          x1 = [data%zdata%x(1,1), &
-               & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
-               & data%zdata%x(nx,1)]
+          x1(1) = data%zdata%x(1,1)
+          x1(nx+1) = data%zdata%x(nx,1)
+          do i = 2, nx
+             x1(i) = (data%zdata%x(i-1,1) + data%zdata%x(i,1)) / 2._real64
+          end do
+!!$          x1 = [data%zdata%x(1,1), &
+!!$               & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
+!!$               & data%zdata%x(nx,1)]
           do i = 1, ny+1
              x2(:,i) = x1
           end do
        end if
 
        if (data%zdata%y_is_2d) then
-          y2(1,:) = [data%zdata%y(1,1), &
-               & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
-               & data%zdata%y(1,ny)]
-          y2(nx+1,:) = [data%zdata%y(nx,1), &
-               & (data%zdata%y(nx,1:ny-1)+data%zdata%y(nx,2:))/2._real64, &
-               & data%zdata%y(nx,ny)]
-          do i = 2, nx
-             y2(i,:) = ([data%zdata%y(i-1,1), &
-                  & (data%zdata%y(i-1,1:ny-1)+data%zdata%y(i-1,2:))/2._real64, &
-                  & data%zdata%y(i-1,ny)] + &
-                  & [data%zdata%y(i,1), &
-                  & (data%zdata%y(i,1:ny-1)+data%zdata%y(i,2:))/2._real64, &
-                  & data%zdata%y(i,ny)]) / 2._real64
+          y2(1,1) = data%zdata%y(1,1)
+          y2(nx+1,1) = data%zdata%y(nx,1)
+          y2(1,ny+1) = data%zdata%y(1,ny)
+          y2(nx+1,ny+1) = data%zdata%y(nx,ny)
+          do i = 2, ny
+             y2(1,i) = (data%zdata%y(1,i-1) + data%zdata%y(1,i)) / &
+                  & 2._real64
+             y2(nx+1,i) = (data%zdata%y(nx,i-1) + data%zdata%y(nx,i)) / &
+                  & 2._real64
           end do
+          do j = 2, nx
+             y2(j,1) = (data%zdata%y(j-1,1) + data%zdata%y(j,1)) / &
+                  & 2._real64
+             y2(j,ny+1) = (data%zdata%y(j-1,ny) + data%zdata%y(j,ny)) / &
+                  & 2._real64
+             do i = 2, ny
+                y2(j,i) = (data%zdata%y(j-1,i-1) + data%zdata%y(j,i-1) + &
+                     & data%zdata%y(j-1,i) + data%zdata%y(j,i)) / 4._real64
+             end do
+          end do
+
+!!$          y2(1,:) = [data%zdata%y(1,1), &
+!!$               & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
+!!$               & data%zdata%y(1,ny)]
+!!$          y2(nx+1,:) = [data%zdata%y(nx,1), &
+!!$               & (data%zdata%y(nx,1:ny-1)+data%zdata%y(nx,2:))/2._real64, &
+!!$               & data%zdata%y(nx,ny)]
+!!$          do i = 2, nx
+!!$             y2(i,:) = ([data%zdata%y(i-1,1), &
+!!$                  & (data%zdata%y(i-1,1:ny-1)+data%zdata%y(i-1,2:))/2._real64, &
+!!$                  & data%zdata%y(i-1,ny)] + &
+!!$                  & [data%zdata%y(i,1), &
+!!$                  & (data%zdata%y(i,1:ny-1)+data%zdata%y(i,2:))/2._real64, &
+!!$                  & data%zdata%y(i,ny)]) / 2._real64
+!!$          end do
        else
-          y1 = [data%zdata%y(1,1), &
-               & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
-               & data%zdata%y(1,ny)]
+          y1(1) = data%zdata%y(1,1)
+          y1(ny+1) = data%zdata%y(1,ny)
+          do i = 2, ny
+             y1(i) = (data%zdata%y(1,i-1) + data%zdata%y(1,i)) / 2._real64
+          end do
+!!$          y1 = [data%zdata%y(1,1), &
+!!$               & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
+!!$               & data%zdata%y(1,ny)]
           do i = 1, nx+1
              y2(i,:) = y1
           end do
        end if
        c2d = .true.
     else
-       x1 = [data%zdata%x(1,1), &
-            & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
-            & data%zdata%x(nx,1)]
-       y1 = [data%zdata%y(1,1), &
-            & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
-            & data%zdata%y(1,ny)]
+       x1(1) = data%zdata%x(1,1)
+       x1(nx+1) = data%zdata%x(nx,1)
+       do i = 2, nx
+          x1(i) = (data%zdata%x(i-1,1) + data%zdata%x(i,1)) / 2._real64
+       end do
+!!$       x1 = [data%zdata%x(1,1), &
+!!$            & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
+!!$            & data%zdata%x(nx,1)]
+       y1(1) = data%zdata%y(1,1)
+       y1(ny+1) = data%zdata%y(1,ny)
+       do i = 2, ny
+          y1(i) = (data%zdata%y(1,i-1) + data%zdata%y(1,i)) / 2._real64
+       end do
+!!$       y1 = [data%zdata%y(1,1), &
+!!$            & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
+!!$            & data%zdata%y(1,ny)]
        c2d = .false.
     end if
 
@@ -858,6 +923,11 @@ contains
        call plimagefr(z, xmin, xmax, ymin, ymax, minval(z), maxval(z), &
             & zmin, zmax, x2, y2)
     else
+       xmin=0._plflt
+       xmax=0._plflt
+       ymin=0._plflt
+       ymax=0._plflt
+
        call plimagefr(z, xmin, xmax, ymin, ymax, minval(z), maxval(z), &
             & zmin, zmax, x1, y1)
     end if
