@@ -783,7 +783,6 @@ contains
 
     logical :: nflag, nflag2
     logical :: tflag
-    logical :: x2flag, y2flag
     type(graffer_record) :: rec
 
     integer, parameter, dimension(*) :: elements = [2, 3, 4, 3, 4, 4, 5, 5, 6]
@@ -825,7 +824,35 @@ contains
           ! E - Mouse editing
           ! R - function range
           ! F, FX, FY - function specifiers
-          ! VS, VE - start & end XY data.
+          ! VS - XY data.
+          !
+          ! MN - Minimum value to display
+          ! MX - Maximum value to display
+          ! Y - Which Y axis to use (if 2 are defined).
+          ! ZF - 2D dataset display format
+          ! ZNL - 2D dataset, number of contours
+          ! ZL - 2D: Contour levels
+          ! ZC - 2D: Contour colours
+          ! ZCR - 2D: Contour custom colours
+          ! ZCT - 2D: Colour table
+          ! ZCG - 2D: Gamma setting for colour display
+          ! ZS - 2D: Contour linestyles
+          ! ZT - 2D: Contour thicknesses.
+          ! ZCF - 2D: Contour fill style.
+          ! ZLI - 2D: Contour labelling interval
+          ! ZLO - 2D: Contour labelling offset.
+          ! ZCS - 2D: Contour label charsize
+          ! ZLM - 2D: Contour mapping.
+          ! ZR - 2D: Colour map data range.
+          ! ZP - 2D: Pixel size (IDL only)
+          ! ZIL - 2D: Colour mapping.
+          ! ZIN - 2D: Colour invert?
+          ! ZSM - 2D: Colour smooth display (FTN only)
+          ! ZSN - 2D: Smooth colour number of levels (FTN only)
+          ! ZM - 2D: Missing data value.
+          ! ZXS - 2D: Data X values.
+          ! ZYS - 2D: Data Y values
+          ! ZZS - 2D: Data Z values.
           ! DE - end dataset
 
        case ('J')
@@ -857,22 +884,10 @@ contains
           
        case('N')
           call rec%get_value(ds%ndata, status)
-          if (ds%ndata < 0) then 
-             x2flag = .true.
-             ds%ndata = abs(ds%ndata)
-          else
-             x2flag = .false.
-          endif
           nflag = .true.
 
        case('N2')
           call rec%get_value(ds%ndata2, status)
-          if (ds%ndata2 < 0) then
-             y2flag = .true.
-             ds%ndata2 = abs(ds%ndata2)
-          else
-             y2flag = .false.
-          end if
           nflag2 = .true.
 
        case('T')
@@ -1022,6 +1037,7 @@ contains
              allocate(ds%zdata%y(dims(1),dims(2)))
           end if
           call rec%get_value(ds%zdata%y, status)
+
        case('ZZS')
           if (allocated(ds%zdata%z)) deallocate(ds%zdata%z)
           allocate(ds%zdata%z(dims(1),dims(2)))
@@ -1041,10 +1057,15 @@ contains
     ! If min_val and max_val are both zero then they should both be NaN
 
     if (ds%min_val == 0._real64 .and. ds%max_val == 0._real64) then
-       ds%min_val = d_nan
-       ds%max_val = d_nan
+       ds%min_val = d_nan()
+       ds%max_val = d_nan()
     end if
 
+    ! For 2D dss, shade_levels can end up as zero which isn't sensible
+    if (ds%type == 9 .or. ds%type == -4) then
+       if (ds%zdata%shade_levels == 0) ds%zdata%shade_levels = 256
+    end if
+    
   end subroutine gr_read_ds
 
   subroutine gr_write(ok, auto, ascii)

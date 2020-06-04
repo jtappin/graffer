@@ -111,10 +111,6 @@ pro Gr_bin_ds_v3, data, nset, ilu, msgid, version
               data(nset).ndata = gr_int_rd(ilu, 1) $
            else $
               data(nset).ndata = gr_lon_rd(ilu, 1)
-           if data[nset].ndata lt 0 then begin
-              x2flag = 1b
-              data[nset].ndata = abs(data[nset].ndata)
-           endif
            nflag = 1b
         end
         'N2': begin
@@ -122,10 +118,6 @@ pro Gr_bin_ds_v3, data, nset, ilu, msgid, version
               data(nset).ndata2 = gr_int_rd(ilu, 1) $
            else $
               data(nset).ndata2 = gr_lon_rd(ilu, 1)
-           if data[nset].ndata2 lt 0 then begin
-              y2flag = 1b
-              data[nset].ndata2 = abs(data[nset].ndata2)
-           endif
            nflag2 = 1b
         end
         'T': begin

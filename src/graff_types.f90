@@ -65,7 +65,7 @@ module graff_types
      integer(kind=int8) :: fill=0_int8
      integer(kind=int16) :: ilog=0_int16
      logical(kind=int8) ::  invert=.false., smooth=.false.
-     integer(kind=int32) :: shade_levels
+     integer(kind=int32) :: shade_levels=256
   end type graff_zdata
 
   ! Function specific stuff

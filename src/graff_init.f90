@@ -166,8 +166,8 @@ contains
     data%line = 0_int16
     data%colour = 1_int16
     data%thick = 1._real32
-    data%min_val = d_nan
-    data%max_val = d_nan
+    data%min_val = d_nan()
+    data%max_val = d_nan()
     data%y_axis = 0_int16
     data%sort = .false.
     data%noclip = .false.

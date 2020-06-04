@@ -22,7 +22,8 @@ module gr_utils
 
   use iso_fortran_env
   use iso_c_binding
-
+  use ieee_arithmetic
+  
   use gtk_sup
 
   use gr_msg
@@ -69,10 +70,6 @@ module gr_utils
        & box_bit = 3
   integer, parameter :: origin_bit = 1, full_bit = 3, annot_bit = 2, &
        & yrot_bit=4, time_bit = 0
-
-  ! NaN & Infinity values
-  real(kind=real64), parameter :: d_nan=transfer(z'7ff8000000000000',1._real64)
-  real(kind=real64), parameter :: d_inf=transfer(z'7ff0000000000000',1._8)
 
   ! Character limits
 
@@ -702,4 +699,15 @@ contains
     end select
   end function truth
 
+  function d_inf()
+    real(kind=real64) :: d_inf
+
+    d_inf = ieee_value(d_inf, ieee_positive_inf)
+  end function d_inf
+  
+  function d_nan()
+    real(kind=real64) :: d_nan
+
+    d_nan = ieee_value(d_nan, ieee_quiet_nan)
+  end function d_nan
 end module gr_utils

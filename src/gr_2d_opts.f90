@@ -289,14 +289,14 @@ contains
 
     junk = gtk_label_new("Levels"//c_null_char)
     call hl_gtk_table_attach(table, junk, 2_c_int, 5_c_int)
-
+    
     gc_smooth_l_sb = hl_gtk_spin_button_new(3_c_int, 256_c_int, &
          & initial_value=int(zdata%shade_levels, c_int), &
          & value_changed=c_funloc(gr_2d_set_sm_levels), tooltip=&
          & "Set how many levels for smooth colour display"//c_null_char, &
          & sensitive=f_c_logical(zdata%invert))
     call hl_gtk_table_attach(table, gc_smooth_l_sb, 3_c_int, 5_c_int)
-
+    
     ! Hidden dataset
 
     junk = hl_gtk_box_new()

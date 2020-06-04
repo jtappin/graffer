@@ -39,7 +39,7 @@ module gr_colours
 
   type(gr_colour_table), dimension(:), allocatable :: tables
   integer, private :: ntables = 0
-  integer(kind=int32), parameter, private :: mask8 = Z'FF'
+  integer(kind=int32), parameter, private :: mask8 = 255_int32   ! Z'FF'
 
   character(len=*), dimension(*), parameter, private :: ctdirs = &
        & ['/usr/local/share/graffer/',&

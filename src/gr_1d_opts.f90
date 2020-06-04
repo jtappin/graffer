@@ -399,7 +399,7 @@ contains
     
     call hl_gtk_entry_get_text(widget, tval)
     if (len_trim(tval) == 0) then
-       val = d_nan
+       val = d_nan()
     else
        read(tval, *, iostat=ios) val
        if (ios /= 0) then

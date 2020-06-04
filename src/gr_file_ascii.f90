@@ -1120,8 +1120,8 @@ contains
     ! If min_val and max_val are both zero then they should both be NaN
 
     if (data%min_val == 0._real64 .and. data%max_val == 0._real64) then
-       data%min_val = d_nan
-       data%max_val = d_nan
+       data%min_val = d_nan()
+       data%max_val = d_nan()
     end if
 
  

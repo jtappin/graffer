@@ -404,7 +404,9 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 
      (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
      (*pdefs.data)[pdefs.cset].type = 9
-
+     
+     (*pdefs.data)[pdefs.cset].shade_levels = 256l
+     
      zflag = 1b
 
   endif else if keyword_set(func_file) then begin

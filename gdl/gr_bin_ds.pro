@@ -111,18 +111,10 @@ pro Gr_bin_ds, data, nset, ilu, msgid
         
         'N': begin
            data[nset].ndata = value
-           if data[nset].ndata lt 0 then begin
-              x2flag = 1b
-              data[nset].ndata = abs(data[nset].ndata)
-           endif
            nflag = 1b
         end
         'N2': begin
            data[nset].ndata2 = value
-           if data[nset].ndata2 lt 0 then begin
-              y2flag = 1b
-              data[nset].ndata2 = abs(data[nset].ndata2)
-           endif
            nflag2 = 1b
         end
         'T': begin

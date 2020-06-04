@@ -469,9 +469,10 @@ contains
          & f_c_logical(data%zdata%smooth))
     call gtk_widget_set_sensitive(gc_smooth_l_sb, &
          &  f_c_logical(data%zdata%smooth))
+    
     call hl_gtk_spin_button_set_value(gc_smooth_l_sb, &
          &  int(data%zdata%shade_levels, c_int))
-
+    
     do i = 1, 2
        write(stext, "(1pg0.5)") data%zdata%range(i)
        call gtk_entry_set_text(cg_range_entry(i), trim(stext)//c_null_char)
