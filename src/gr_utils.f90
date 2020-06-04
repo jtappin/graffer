@@ -699,13 +699,13 @@ contains
     end select
   end function truth
 
-  function d_inf()
+  pure function d_inf()
     real(kind=real64) :: d_inf
 
     d_inf = ieee_value(d_inf, ieee_positive_inf)
   end function d_inf
   
-  function d_nan()
+  pure function d_nan()
     real(kind=real64) :: d_nan
 
     d_nan = ieee_value(d_nan, ieee_quiet_nan)
