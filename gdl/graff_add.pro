@@ -405,7 +405,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
      (*pdefs.data)[pdefs.cset].type = 9
      
-     (*pdefs.data)[pdefs.cset].shade_levels = 256l
+     (*pdefs.data)[pdefs.cset].zopts.shade_levels = 256l
      
      zflag = 1b
 

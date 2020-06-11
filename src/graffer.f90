@@ -46,7 +46,7 @@ program graffer
 
   call gtk_init()
 
-  call graffer_version%set(4, 9)
+  call graffer_version%set(4, 10)
   call graffer_version%string(gr_sversion)
 
   call gr_read_rc
