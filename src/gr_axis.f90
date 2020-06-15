@@ -92,7 +92,6 @@ contains
          & "Logarithmic"//c_null_char, toggled=c_funloc(gr_set_log), &
          & data=c_loc(axis), &
          & initial_state=f_c_logical(pdefs%axtype(axis) /= 0), &
-!!$         & sensitive = f_c_logical(pdefs%axrange(1,axis) > 0), &
          & tooltip = "Select Log or linear axis"//c_null_char)
 
     exact_chb(axis) = hl_gtk_check_menu_item_new(jmnu, &
@@ -284,19 +283,30 @@ contains
     rv = FALSE
   end function gr_set_label_e
 
-  subroutine gr_set_log(widget, data) bind(c)
-    type(c_ptr), value :: widget, data
+  subroutine gr_set_log(widget, wdata) bind(c)
+    type(c_ptr), value :: widget, wdata
 
     ! Set log/linear scaling
 
     integer, pointer :: axis
-
+    type(graff_data), pointer :: data
+    integer :: i
+    
     if (.not. gui_active) return
 
-    call c_f_pointer(data, axis)
+    call c_f_pointer(wdata, axis)
     pdefs%axtype(axis) = int(gtk_check_menu_item_get_active(widget), int16)
-    if (minval(pdefs%axrange(:,axis)) <= 0.) &
-         & call gtk_widget_set_sensitive(widget, FALSE)
+    
+    do i = 1, pdefs%nsets
+       data => pdefs%data(i)
+       if (data%type == -1 .or. data%type == -4) data%funct%evaluated = .false.
+       if ((data%type == -2 .or. data%type == -4) .and. &
+            & (.not. pdefs%y_right .or. data%y_axis == axis-1)) &
+            & data%funct%evaluated = .false.
+    end do
+!!$    if (minval(pdefs%axrange(:,axis)) <= 0.) &
+!!$         & call gtk_widget_set_sensitive(widget, FALSE)
+    
     call gr_plot_draw(.true.)
   end subroutine gr_set_log
 

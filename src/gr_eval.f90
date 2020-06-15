@@ -36,6 +36,8 @@ module gr_eval
   logical, private :: gdl_found=.false.
   character(len=150), private :: gdl_command = ''
 
+  private :: gr_eval_fx, gr_eval_fy, gr_eval_ft, gr_eval_fz
+  
 contains
   function gr_get_gdl_command()
     character(len=len(gdl_command)) :: gr_get_gdl_command
@@ -136,7 +138,8 @@ contains
     integer :: status
     type(graff_data), pointer :: data
     character(len=120) :: err_buffer
-
+    logical :: y_is_log
+    
     data => pdefs%data(dsidx)
 
     if (data%funct%evaluated) then
@@ -149,40 +152,48 @@ contains
        frange = data%funct%range(:,1)
        if (frange(1) == frange(2)) frange = pdefs%axrange(:,1)
        call gr_eval_fx(data%funct%funct(1), &
-            & data%ndata, frange, &
-            & x, y, dsidx, status)
+            & data%ndata, frange, pdefs%axtype(1) == 1, dsidx, &
+            & x, y, status)
+       
     case(-2)
        frange = data%funct%range(:,1)
-       if (frange(1) == frange(2)) then
-          if (pdefs%y_right .and. data%y_axis == 1) then
-             frange = pdefs%axrange(:,3)
-          else
-             frange = pdefs%axrange(:,2)
-          end if
+
+       if (pdefs%y_right .and. data%y_axis == 1) then
+          if (frange(1) == frange(2)) frange = pdefs%axrange(:,3)
+          y_is_log = pdefs%axtype(3) == 1
+       else
+          if (frange(1) == frange(2)) frange = pdefs%axrange(:,2)
+          y_is_log = pdefs%axtype(2) == 1
        end if
+
        call gr_eval_fy(data%funct%funct(1), &
-            & data%ndata, frange, &
-            & x, y, dsidx, status)
+            & data%ndata, frange, y_is_log, dsidx, &
+            & x, y, status)
+       
     case(-3)
        frange = data%funct%range(:,1)
        if (frange(1) == frange(2)) frange = [0._real64, 1._real64]
        call gr_eval_ft(data%funct%funct, &
             & data%ndata, frange, &
-            & x, y, dsidx, status)
+            & dsidx, x, y, status)
+       
     case(-4)
        xr = data%funct%range(:,1)
        if (xr(1) == xr(2)) xr = pdefs%axrange(:,1)
+       
        yr = data%funct%range(:,2)
-       if (yr(1) == yr(2)) then
-          if (pdefs%y_right .and. data%y_axis == 1) then
-             yr = pdefs%axrange(:,3)
-          else
-             yr = pdefs%axrange(:,2)
-          end if
+       if (pdefs%y_right .and. data%y_axis == 1) then
+          if (yr(1) == yr(2)) yr = pdefs%axrange(:,3)
+          y_is_log = pdefs%axtype(3) == 1
+       else
+          if (yr(1) == yr(2))  yr = pdefs%axrange(:,2)
+          y_is_log = pdefs%axtype(2) == 1
        end if
+
        call gr_eval_fz(data%funct%funct(1), &
             & data%ndata, data%ndata2, &
-            & xr, yr, x, y, z, dsidx, status)
+            & xr, yr, pdefs%axtype(1) == 1, y_is_log, &
+            & dsidx, x, y, z, status)
 
     end select
 
@@ -226,12 +237,13 @@ contains
 
   end function gr_evaluate
 
-  subroutine gr_eval_fx(fun, n, xr, x, y, dsidx, status)
+  subroutine gr_eval_fx(fun, n, xr, x_is_log, dsidx, x, y, status)
     character(len=*), intent(in) :: fun
     integer(kind=int32), intent(in) :: n
     real(kind=real64), dimension(2), intent(in) :: xr
-    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
+    logical, intent(in) :: x_is_log
     integer(kind=int16), intent(in) :: dsidx
+    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     integer, intent(out) :: status
 
     ! Evaluate a function y = f(x)
@@ -248,9 +260,15 @@ contains
     call gr_make_gdl_names(dsidx, pfile, dfile)
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
-    write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x = ',xr(1), &
-         & '+dindgen(',n,')*(',xr(2)-xr(1), &
-         & ')/double(',n-1,')'
+    if (x_is_log) then
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x = ',xr(1), &
+            & '* exp(dindgen(',n,')*alog(',xr(2)/xr(1), &
+            & ')/double(',n-1,'))'
+    else
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x = ',xr(1), &
+            & '+dindgen(',n,')*(',xr(2)-xr(1), &
+            & ')/double(',n-1,')'
+    end if
     write(punit, "(2a)") 'y = ', trim(fun)
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
@@ -284,12 +302,13 @@ contains
 
   end subroutine gr_eval_fx
 
-  subroutine gr_eval_fy(fun, n, yr, x, y, dsidx, status)
+  subroutine gr_eval_fy(fun, n, yr, y_is_log, dsidx, x, y, status)
     character(len=*), intent(in) :: fun
     integer(kind=int32), intent(in) :: n
     real(kind=real64), dimension(2), intent(in) :: yr
-    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
+    logical, intent(in) :: y_is_log
     integer(kind=int16), intent(in) :: dsidx
+    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     integer, intent(out) :: status
 
     ! Evaluate a function x = f(y)
@@ -306,9 +325,15 @@ contains
     call gr_make_gdl_names(dsidx, pfile, dfile)
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
-    write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y = ',yr(1), &
-         & '+dindgen(',n,')*(',yr(2)-yr(1), &
-         & ')/double(',n-1,')'
+    if (y_is_log) then
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y = ',yr(1), &
+            & '* exp(dindgen(',n,')*alog(',yr(2)/yr(1), &
+            & ')/double(',n-1,'))'
+    else
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y = ',yr(1), &
+            & '+dindgen(',n,')*(',yr(2)-yr(1), &
+            & ')/double(',n-1,')'
+    end if
     write(punit, "(2a)") 'x = ', trim(fun)
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
@@ -343,12 +368,12 @@ contains
 
   end subroutine gr_eval_fy
 
-  subroutine gr_eval_ft(fun, n, tr, x, y, dsidx, status)
+  subroutine gr_eval_ft(fun, n, tr, dsidx, x, y, status)
     character(len=*), intent(in), dimension(2) :: fun
     integer(kind=int32), intent(in) :: n
     real(kind=real64), dimension(2), intent(in) :: tr
-    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     integer(kind=int16), intent(in) :: dsidx
+    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     integer, intent(out) :: status
 
     ! Evaluate a function x = f(t), y = g(t)
@@ -402,13 +427,15 @@ contains
 
   end subroutine gr_eval_ft
 
-  subroutine gr_eval_fz(fun, nx, ny, xr, yr, x, y, z, dsidx, status)
+  subroutine gr_eval_fz(fun, nx, ny, xr, yr, x_is_log, y_is_log, dsidx, &
+       & x, y, z, status)
     character(len=*), intent(in) :: fun
     integer(kind=int32), intent(in) :: nx, ny
     real(kind=real64), dimension(2), intent(in) :: xr, yr
+    logical, intent(in) :: x_is_log, y_is_log
+    integer(kind=int16), intent(in) :: dsidx
     real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     real(kind=real64), dimension(:,:), allocatable, intent(out) :: z
-    integer(kind=int16), intent(in) :: dsidx
     integer, intent(out) :: status
 
     ! Evaluate a function z = f(x,y)
@@ -425,13 +452,25 @@ contains
     call gr_make_gdl_names(dsidx, pfile, dfile)
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
-    write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x1 = ',xr(1), &
-         & '+dindgen(',nx,')*(',xr(2)-xr(1), &
-         & ')/double(',nx-1,')'
+    if (x_is_log) then
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x1 = ',xr(1), &
+            & '* exp(dindgen(',nx,')*alog(',xr(2)/xr(1), &
+            & ')/double(',nx-1,'))'
+    else
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x1 = ',xr(1), &
+            & '+dindgen(',nx,')*(',xr(2)-xr(1), &
+            & ')/double(',nx-1,')'
+    end if
     write(punit, "(a,i0,a)") 'x = x1[*,intarr(',ny,')]'
-    write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y1 = ',yr(1), &
-         & '+dindgen(1,',ny,')*(',yr(2)-yr(1), &
-         & ')/double(',ny-1,')'
+    if (y_is_log) then
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y1 = ',yr(1), &
+            & '* exp(dindgen(1,',ny,')*alog(',yr(2)/yr(1), &
+            & ')/double(',ny-1,'))'
+    else
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y1 = ',yr(1), &
+            & '+dindgen(1,',ny,')*(',yr(2)-yr(1), &
+            & ')/double(',ny-1,')'
+    end if
     write(punit, "(a,i0,a)") 'y = y1[intarr(',nx,'),*]'
     write(punit, "(2a)") 'z = ', trim(fun)
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
