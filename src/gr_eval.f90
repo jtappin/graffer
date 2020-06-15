@@ -249,8 +249,8 @@ contains
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
     write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x = ',xr(1), &
-         & '+dindgen(',n,')*',xr(2)-xr(1), &
-         & '/double(',n-1,')'
+         & '+dindgen(',n,')*(',xr(2)-xr(1), &
+         & ')/double(',n-1,')'
     write(punit, "(2a)") 'y = ', trim(fun)
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
@@ -307,8 +307,8 @@ contains
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
     write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y = ',yr(1), &
-         & '+dindgen(',n,')*',yr(2)-yr(1), &
-         & '/double(',n-1,')'
+         & '+dindgen(',n,')*(',yr(2)-yr(1), &
+         & ')/double(',n-1,')'
     write(punit, "(2a)") 'x = ', trim(fun)
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
@@ -366,8 +366,8 @@ contains
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
     write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 't = ',tr(1), &
-         & '+dindgen(',n,')*',tr(2)-tr(1), &
-         & '/double(',n-1,')'
+         & '+dindgen(',n,')*(',tr(2)-tr(1), &
+         & ')/double(',n-1,')'
     write(punit, "(2a)") 'x = ', trim(fun(1))
     write(punit, "(2a)") 'y = ', trim(fun(2))
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
@@ -426,12 +426,12 @@ contains
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
     write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x1 = ',xr(1), &
-         & '+dindgen(',nx,')*',xr(2)-xr(1), &
-         & '/double(',nx-1,')'
+         & '+dindgen(',nx,')*(',xr(2)-xr(1), &
+         & ')/double(',nx-1,')'
     write(punit, "(a,i0,a)") 'x = x1[*,intarr(',ny,')]'
     write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y1 = ',yr(1), &
-         & '+dindgen(1,',ny,')*',yr(2)-yr(1), &
-         & '/double(',ny-1,')'
+         & '+dindgen(1,',ny,')*(',yr(2)-yr(1), &
+         & ')/double(',ny-1,')'
     write(punit, "(a,i0,a)") 'y = y1[intarr(',nx,'),*]'
     write(punit, "(2a)") 'z = ', trim(fun)
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
