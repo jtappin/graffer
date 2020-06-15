@@ -260,6 +260,10 @@ contains
     call gr_make_gdl_names(dsidx, pfile, dfile)
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
+
+    ! For log axes, the evaluation points should be uniformly distributed
+    ! in log(x)
+    
     if (x_is_log) then
        write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x = ',xr(1), &
             & '* exp(dindgen(',n,')*alog(',xr(2)/xr(1), &
@@ -325,6 +329,10 @@ contains
     call gr_make_gdl_names(dsidx, pfile, dfile)
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
+    
+    ! For log axes, the evaluation points should be uniformly distributed
+    ! in log(y)
+    
     if (y_is_log) then
        write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y = ',yr(1), &
             & '* exp(dindgen(',n,')*alog(',yr(2)/yr(1), &
@@ -452,6 +460,10 @@ contains
     call gr_make_gdl_names(dsidx, pfile, dfile)
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
+
+    ! For log axes, the evaluation points should be uniformly distributed
+    ! in log(x)
+
     if (x_is_log) then
        write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x1 = ',xr(1), &
             & '* exp(dindgen(',nx,')*alog(',xr(2)/xr(1), &
@@ -462,6 +474,10 @@ contains
             & ')/double(',nx-1,')'
     end if
     write(punit, "(a,i0,a)") 'x = x1[*,intarr(',ny,')]'
+
+    ! For log axes, the evaluation points should be uniformly
+    ! distributed in log(y)
+
     if (y_is_log) then
        write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y1 = ',yr(1), &
             & '* exp(dindgen(1,',ny,')*alog(',yr(2)/yr(1), &

@@ -296,6 +296,9 @@ contains
 
     call c_f_pointer(wdata, axis)
     pdefs%axtype(axis) = int(gtk_check_menu_item_get_active(widget), int16)
+
+    ! A change of axis type requires new evaluation locations so flag
+    ! functions as not-evaluated.
     
     do i = 1, pdefs%nsets
        data => pdefs%data(i)
