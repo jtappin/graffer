@@ -229,7 +229,7 @@ contains
 
     ! Axis range
     
-    junk= gtk_label_new(axname//" Min:"//c_null_char)
+    junk= gtk_label_new(axname(axis)//" Min:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 0,2, yopts=0)
 
     write(rtext, "(1pg0.5)") pdefs%axrange(1,axis)
