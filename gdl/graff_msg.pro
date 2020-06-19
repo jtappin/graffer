@@ -15,25 +15,29 @@
 ; this program; see the files COPYING3 and COPYING.RUNTIME respectively.
 ; If not, see <http://www.gnu.org/licenses/>.
 
-pro Graff_msg, message, help=help
+pro Graff_msg, id, message, help=help
 
 ;+
 ; GRAFF_MSG
 ;	Display a message in the graffer message box
 ;
 ; Usage:
-;	graff_msg, mwid, message
+;	graff_msg[, id], message
 ;
 ; Arguments:
-;	mwid	long	input	Widget ID of message box
+;	id	long	input	Widget ID of message box -- redundant
 ;	message	string	input	The message
 ;
 ; History:
 ;	Original: 18/8/95; SJT
 ;	Change to take widget ID as first argument: 12/5/95; SJT
 ;	Just print the message (no widgets exist): ??/??/2013; SJT
+;	Add the ID argument back, but ignore it if it's there:
+;	19/6/20; SJT
 ;-
 
-print, message
+  if n_params() eq 2 then $
+     print, message $
+  else print, id
 
 end
