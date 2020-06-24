@@ -884,14 +884,17 @@ contains
     integer(kind=int16) :: idx
     type(graff_data), dimension(:), allocatable :: datasets
     integer(kind=int16) :: i, j, ikshift
-    integer(kind=int32), dimension(:), allocatable :: klist
-
+    integer :: nkey, nset0
+    logical, dimension(:), allocatable :: iskey
+    
     if (present(index)) then
        idx = index
     else
        idx = pdefs%cset
     end if
 
+    nset0 = pdefs%nsets
+    
     if (idx < 0 .or. idx > pdefs%nsets) return
     if (pdefs%nsets == 1) then
        call gr_ds_erase
@@ -916,21 +919,34 @@ contains
     end if
     
     if (allocated(pdefs%key%list)) then
-       if (any(pdefs%key%list == idx-1)) then
-          allocate(klist(size(pdefs%key%list)-1))
-          j = 1
-          ikshift = 0
-          do i = 1, int(size(pdefs%key%list), int16)
-             if (pdefs%key%list(i) == idx-1) then
-                ikshift = 1
-                cycle
-             end if
-             klist(j) = pdefs%key%list(i) - ikshift
-             j = j+1_int16
-          end do
-          deallocate(pdefs%key%list)
-          call move_alloc(klist, pdefs%key%list)
+       allocate(iskey(nset0))
+       iskey = .false.
+       iskey(pdefs%key%list+1) = .true.
+
+       if (iskey(idx)) then
+          nkey = size(pdefs%key%list)-1
+       else
+          nkey = size(pdefs%key%list)
        end if
+
+       deallocate(pdefs%key%list)
+       if (nkey >= 1) then
+          allocate(pdefs%key%list(nkey))
+          j=1_int16
+          do i = 1, idx-1_int16
+             if (iskey(i)) then
+                pdefs%key%list(j) = i-1
+                j = j+1
+             end if
+          end do
+          do i = idx+1_int16, nset0
+             if (iskey(i)) then
+                pdefs%key%list(j) = i-2
+                j = j+1
+             end if
+          end do
+          print *, pdefs%key%list
+        end if
     end if
 
   end subroutine gr_ds_delete
