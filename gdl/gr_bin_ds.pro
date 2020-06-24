@@ -224,7 +224,6 @@ pro Gr_bin_ds, data, nset, ilu, msgid
         Else: begin
            graff_msg, msgid, "Unknown DS tag: " + $
                       tag + " Ignoring."
-           stop
         end
      endcase
      

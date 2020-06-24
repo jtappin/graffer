@@ -162,10 +162,24 @@ contains
 
     logical, pointer :: apply
     integer(kind=c_int) :: i
+    integer :: kidx
+    integer(kind=int32), dimension(:), allocatable :: ktmp
     
     call c_f_pointer(data, apply)
 
-    if (apply) call gr_ds_move(int(sort_from, int16), int(sort_to, int16))
+    if (apply) then
+       call gr_ds_move(int(sort_from, int16), int(sort_to, int16))
+       if (allocated(pdefs%key%list)) then
+          kidx = first(pdefs%key%list == sort_from)
+          if (kidx > 0) then
+             pdefs%key%list(kidx) = sort_to
+             allocate(ktmp(size(pdefs%key%list)))
+             call sort(pdefs%key%list, ktmp)
+             pdefs%key%list=ktmp
+             deallocate(ktmp)
+          end if
+       end if
+    end if
 
     sort_active = .false.
 
