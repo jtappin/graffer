@@ -384,8 +384,6 @@ contains
 
     call plschr(0._plflt, cs)
 
-    print *, current_colour, current_rgb
-    
     if (current_colour >= 0) then
        call plcol0(int(current_colour, int32))
     else
