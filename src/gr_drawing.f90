@@ -120,44 +120,44 @@ contains
     write(tv, "(1pg0.5)") yw
     call gtk_entry_set_text(cursor_position(2), trim(tv)//c_null_char)
 
-    if (pdefs%transient%hairs) then
-       call plxormod(.true., xstatus)
-       if (xstatus) then
-          if (pdefs%transient%mode == 1) then
-             call gr_plot_linesty(2_int16)
-             call gr_plot_transform(full=.true._int8)
-
-             call gr_plot_coords_n_w(0._plflt, 0._plflt, xmin, ymin, &
-                  & nolog=.true.)
-             call gr_plot_coords_n_w(1._plflt, 1._plflt, xmax, ymax, &
-                  & nolog=.true.)
-
-          else
-             call gr_plot_linesty(0_int16)
-             call gr_plot_transform(full=.false._int8)
-
-             call gr_plot_coords_v_w(0._plflt, 0._plflt, xmin, ymin, &
-                  & nolog=.true.)
-             call gr_plot_coords_v_w(1._plflt, 1._plflt, xmax, ymax, &
-                  & nolog=.true.)
-          end if
-
-          if (xprev > 0. .or. yprev > 0.) then
-             call gr_plot_coords_n_w(xprev, yprev, xh, yh, nolog=.true.)
-             call pljoin(xh, ymin, xh, ymax)
-             call pljoin(xmin, yh, xmax, yh)
-          end if
-
-          call gr_plot_coords_d_w(fevent%x, fevent%y, xh, yh, nolog=.true.)
-          call pljoin(xh, ymin, xh, ymax)
-          call pljoin(xmin, yh, xmax, yh)
-
-          call gr_plot_coords_d_n(fevent%x, fevent%y, xprev, yprev)
-
-          call plxormod(.false., xstatus)
-          call gtk_widget_queue_draw(widget)
-       end if
-    end if
+!!$    if (pdefs%transient%hairs) then
+!!$       call plxormod(.true., xstatus)
+!!$       if (xstatus) then
+!!$          if (pdefs%transient%mode == 1) then
+!!$             call gr_plot_linesty(2_int16)
+!!$             call gr_plot_transform(full=.true._int8)
+!!$
+!!$             call gr_plot_coords_n_w(0._plflt, 0._plflt, xmin, ymin, &
+!!$                  & nolog=.true.)
+!!$             call gr_plot_coords_n_w(1._plflt, 1._plflt, xmax, ymax, &
+!!$                  & nolog=.true.)
+!!$
+!!$          else
+!!$             call gr_plot_linesty(0_int16)
+!!$             call gr_plot_transform(full=.false._int8)
+!!$
+!!$             call gr_plot_coords_v_w(0._plflt, 0._plflt, xmin, ymin, &
+!!$                  & nolog=.true.)
+!!$             call gr_plot_coords_v_w(1._plflt, 1._plflt, xmax, ymax, &
+!!$                  & nolog=.true.)
+!!$          end if
+!!$
+!!$          if (xprev > 0. .or. yprev > 0.) then
+!!$             call gr_plot_coords_n_w(xprev, yprev, xh, yh, nolog=.true.)
+!!$             call pljoin(xh, ymin, xh, ymax)
+!!$             call pljoin(xmin, yh, xmax, yh)
+!!$          end if
+!!$
+!!$          call gr_plot_coords_d_w(fevent%x, fevent%y, xh, yh, nolog=.true.)
+!!$          call pljoin(xh, ymin, xh, ymax)
+!!$          call pljoin(xmin, yh, xmax, yh)
+!!$
+!!$          call gr_plot_coords_d_n(fevent%x, fevent%y, xprev, yprev)
+!!$
+!!$          call plxormod(.false., xstatus)
+!!$          call gtk_widget_queue_draw(widget)
+!!$       end if
+!!$    end if
 
     rv = FALSE
   end function gr_draw_motion

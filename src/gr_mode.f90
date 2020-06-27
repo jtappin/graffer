@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -57,11 +57,11 @@ contains
          & tooltip="Select drawing or text mode"//c_null_char)
     call hl_gtk_box_pack(jb, junk)
 
-    xhair_but = hl_gtk_check_button_new("Cross Hairs"//c_null_char, &
-         & toggled=c_funloc(gr_cross_hairs), &
-         & initial_state=f_c_logical(pdefs%transient%hairs), &
-         & tooltip="Toggle display of cross hairs at the cursor"//c_nulL_char)
-    call hl_gtk_box_pack(jb, xhair_but)
+!!$    xhair_but = hl_gtk_check_button_new("Cross Hairs"//c_null_char, &
+!!$         & toggled=c_funloc(gr_cross_hairs), &
+!!$         & initial_state=f_c_logical(pdefs%transient%hairs), &
+!!$         & tooltip="Toggle display of cross hairs at the cursor"//c_nulL_char)
+!!$    call hl_gtk_box_pack(jb, xhair_but)
 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(table, jb)
@@ -90,17 +90,17 @@ contains
 
   end subroutine gr_text_mode
 
-  subroutine gr_cross_hairs(widget, data) bind(c)
-    type(c_ptr), value :: widget, data
-
-    ! Toggle cross hairs (not actually available, XOR mode doesn't
-    ! work in Cairo drivers).
-
-    if (.not. gui_active) return
-
-    pdefs%transient%hairs = &
-         & c_f_logical(gtk_toggle_button_get_active(widget))
-
-  end subroutine gr_cross_hairs
+!!$  subroutine gr_cross_hairs(widget, data) bind(c)
+!!$    type(c_ptr), value :: widget, data
+!!$
+!!$    ! Toggle cross hairs (not actually available, XOR mode doesn't
+!!$    ! work in Cairo drivers).
+!!$
+!!$    if (.not. gui_active) return
+!!$
+!!$    pdefs%transient%hairs = &
+!!$         & c_f_logical(gtk_toggle_button_get_active(widget))
+!!$
+!!$  end subroutine gr_cross_hairs
 
 end module gr_mode
