@@ -182,7 +182,6 @@ module graff_types
      character(len=120) :: ds_dir=''
      logical(kind=int8) :: chflag=.false., short_colour=.false., &
           & is_ascii=.false.
-     type(graff_trans) :: transient
   end type graff_pdefs
 
   character(len=6), dimension(-4:9), parameter :: typecodes = &

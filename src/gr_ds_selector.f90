@@ -132,7 +132,7 @@ contains
 
     junk = hl_gtk_check_button_new("Only show current DS"//c_null_char, &
          & toggled=c_funloc(gr_ds_current_only), initial_state=&
-         & f_c_logical(pdefs%transient%current_only), &
+         & f_c_logical(transient%current_only), &
          & tooltip="Toggle display if only the current dataset"//c_null_char)
     call hl_gtk_box_pack(fr, junk, expand=FALSE)
 
@@ -162,7 +162,7 @@ contains
 
     if (cnew /= pdefs%cset) then
        call gr_set_values_dataset(select = cnew)
-       if (pdefs%transient%current_only) call gr_plot_draw(.false.)
+       if (transient%current_only) call gr_plot_draw(.false.)
     end if
     
   end subroutine gr_ds_advance
@@ -183,7 +183,7 @@ contains
     ! Select a new current dataset
 
     call gr_ds_select
-    if (pdefs%transient%current_only) call gr_plot_draw(.false.)
+    if (transient%current_only) call gr_plot_draw(.false.)
   
   end subroutine gr_ds_select_cb
 
@@ -340,7 +340,7 @@ contains
 
     if (.not. gui_active) return
 
-    pdefs%transient%current_only = &
+    transient%current_only = &
          & c_f_logical(gtk_toggle_button_get_active(widget))
 
     call gr_plot_draw(.false.)

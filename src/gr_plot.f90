@@ -341,8 +341,8 @@ contains
     ! First the datasets
 
     do i = 1, pdefs%nsets
-       if (pdefs%transient%current_only .and. &
-            & (i /= pdefs%cset .or. pdefs%transient%mode == 1)) cycle
+       if (transient%current_only .and. &
+            & (i /= pdefs%cset .or. transient%mode == 1)) cycle
 
        select case (pdefs%data(i)%type)
        case(0:8)
@@ -362,10 +362,10 @@ contains
 
     ! The text annotations
 
-    if (.not. pdefs%transient%current_only .or. pdefs%transient%mode == 1) then
+    if (.not. transient%current_only .or. transient%mode == 1) then
        do i = 1, pdefs%ntext
           call gr_text_draw(i, anchor=gr_is_widget .and. &
-               & pdefs%transient%mode == 1)
+               & transient%mode == 1)
        end do
     end if
 

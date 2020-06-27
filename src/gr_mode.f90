@@ -53,13 +53,13 @@ contains
 
     junk = hl_gtk_combo_box_new(initial_choices=['Draw','Text'], &
          & changed=c_funloc(gr_text_mode), &
-         & active=int(pdefs%transient%mode, c_int), &
+         & active=int(transient%mode, c_int), &
          & tooltip="Select drawing or text mode"//c_null_char)
     call hl_gtk_box_pack(jb, junk)
 
 !!$    xhair_but = hl_gtk_check_button_new("Cross Hairs"//c_null_char, &
 !!$         & toggled=c_funloc(gr_cross_hairs), &
-!!$         & initial_state=f_c_logical(pdefs%transient%hairs), &
+!!$         & initial_state=f_c_logical(transient%hairs), &
 !!$         & tooltip="Toggle display of cross hairs at the cursor"//c_nulL_char)
 !!$    call hl_gtk_box_pack(jb, xhair_but)
 
@@ -84,7 +84,7 @@ contains
 
     if (.not. gui_active) return
 
-    pdefs%transient%mode = int(gtk_combo_box_get_active(widget), int16)
+    transient%mode = int(gtk_combo_box_get_active(widget), int16)
     call gr_draw_tips
     call gr_plot_draw(.false.)
 
@@ -98,7 +98,7 @@ contains
 !!$
 !!$    if (.not. gui_active) return
 !!$
-!!$    pdefs%transient%hairs = &
+!!$    transient%hairs = &
 !!$         & c_f_logical(gtk_toggle_button_get_active(widget))
 !!$
 !!$  end subroutine gr_cross_hairs

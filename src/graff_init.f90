@@ -78,9 +78,9 @@ contains
 
     call gr_pdefs_text_init(pdefs%text_options)
 
-    pdefs%transient%current_only = .false.
-    if (allocated(pdefs%transient%x_dev)) deallocate(pdefs%transient%x_dev)
-    if (allocated(pdefs%transient%y_dev)) deallocate(pdefs%transient%y_dev)
+    transient%current_only = .false.
+    if (allocated(transient%x_dev)) deallocate(transient%x_dev)
+    if (allocated(transient%y_dev)) deallocate(transient%y_dev)
 
     ! Hardcopy defaults (note that not all of these are relevant to
     ! plplot's way of doing hardcopy).
@@ -261,7 +261,7 @@ contains
 
     if (state) then
        pdefs%chflag = .true.
-       pdefs%transient%changes = pdefs%transient%changes + 1_int16
+       transient%changes = transient%changes + 1_int16
        if (c_associated(gr_window)) &
             & call gtk_window_set_title(gr_window, &
             & "Graffer V"//trim(gr_sversion)//&
@@ -274,7 +274,7 @@ contains
           auto_only = .false.
        end if
 
-       pdefs%transient%changes = 0_int16
+       transient%changes = 0_int16
        if (.not. auto_only) then
           pdefs%chflag = .false.
           if (c_associated(gr_window)) &

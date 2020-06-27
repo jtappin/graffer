@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -79,17 +79,17 @@ contains
        if (data%ndata == 0) then
           point_after = 0
        else if (fevent%state == GDK_SHIFT_MASK) then
-          dr0 = sqrt((fevent%x-pdefs%transient%x_dev(1))**2 + &
-               & (fevent%y-pdefs%transient%y_dev(1))**2)
-          dr1 = sqrt((fevent%x-pdefs%transient%x_dev(data%ndata))**2 + &
-               & (fevent%y-pdefs%transient%y_dev(data%ndata))**2)
+          dr0 = sqrt((fevent%x-transient%x_dev(1))**2 + &
+               & (fevent%y-transient%y_dev(1))**2)
+          dr1 = sqrt((fevent%x-transient%x_dev(data%ndata))**2 + &
+               & (fevent%y-transient%y_dev(data%ndata))**2)
           if (dr0 <= dr1) then
              point_after = 0
           else
              point_after = data%ndata
           end if
        else if (fevent%state == GDK_CONTROL_MASK) then
-          dr0 = gr_dist_seg(pdefs%transient%x_dev, pdefs%transient%y_dev, &
+          dr0 = gr_dist_seg(transient%x_dev, transient%y_dev, &
                & fevent%x, fevent%y, closest)
           if (dr0 > 5.) then
              point_after = -1
@@ -182,8 +182,8 @@ contains
        call gr_ds_device
        allocate(dr(data%ndata))
 
-       dr = sqrt((pdefs%transient%x_dev-fevent%x)**2 + &
-            & (pdefs%transient%y_dev-fevent%y)**2)
+       dr = sqrt((transient%x_dev-fevent%x)**2 + &
+            & (transient%y_dev-fevent%y)**2)
 
        if (minval(dr) > 5.) then
           point_after = -1
@@ -225,8 +225,8 @@ contains
        call gr_ds_device
        allocate(dr(data%ndata))
 
-       dr = sqrt((pdefs%transient%x_dev-fevent%x)**2 + &
-            & (pdefs%transient%y_dev-fevent%y)**2)
+       dr = sqrt((transient%x_dev-fevent%x)**2 + &
+            & (transient%y_dev-fevent%y)**2)
 
        if (minval(dr) > 5.) then
           point_after = -1

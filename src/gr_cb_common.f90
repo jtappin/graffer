@@ -506,8 +506,8 @@ contains
 
     data => pdefs%data(pdefs%cset)
 
-    if (allocated(pdefs%transient%x_dev)) deallocate(pdefs%transient%x_dev)
-    if (allocated(pdefs%transient%y_dev)) deallocate(pdefs%transient%y_dev)
+    if (allocated(transient%x_dev)) deallocate(transient%x_dev)
+    if (allocated(transient%y_dev)) deallocate(transient%y_dev)
 
     if (data%type < 0 .or. data%type == 9) return
     if (data%ndata == 0) return
@@ -528,12 +528,12 @@ contains
        y = data%xydata(1,:) * sin(data%xydata(2,:)*scale)
     end if
 
-    allocate(pdefs%transient%x_dev(data%ndata), &
-         & pdefs%transient%y_dev(data%ndata))
+    allocate(transient%x_dev(data%ndata), &
+         & transient%y_dev(data%ndata))
 
     do i = 1, data%ndata
-       call gr_plot_coords_w_d(x(i), y(i), pdefs%transient%x_dev(i), &
-            &  pdefs%transient%y_dev(i))
+       call gr_plot_coords_w_d(x(i), y(i), transient%x_dev(i), &
+            &  transient%y_dev(i))
     end do
   end subroutine gr_ds_device
 
@@ -545,9 +545,9 @@ contains
 
     logical :: ok
 
-    if (pdefs%transient%changes > 0) then
+    if (transient%changes > 0) then
        call gr_write(ok, auto=.TRUE.)
-       pdefs%transient%changes = 0
+       transient%changes = 0
     end if
 
     rv = TRUE
@@ -561,7 +561,7 @@ contains
 
     if (.not. c_associated(gr_drawing_area)) return
 
-    if (pdefs%transient%mode == 1) then
+    if (transient%mode == 1) then
        call gtk_widget_set_tooltip_text(gr_drawing_area, &
             & "Left = Add new annotation"//c_new_line//&
             & "Middle = Edit an existing annotation"//c_new_line//&

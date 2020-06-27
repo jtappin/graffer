@@ -684,7 +684,7 @@ contains
     end do
 
     call gr_set_changed(.false.)
-    pdefs%transient%backup = .false.
+    transient%backup = .false.
     pdefs%is_ascii = .true.
 
   end subroutine gr_get_asc
@@ -1238,9 +1238,9 @@ contains
 
     outfile = trim(pdefs%dir)//trim(pdefs%name)
 
-    if (.not. pdefs%transient%backup .and. file_exists(outfile)) then
+    if (.not. transient%backup .and. file_exists(outfile)) then
        call execute_command_line("cp "//trim(outfile)//" "//trim(outfile)//"~")
-       pdefs%transient%backup = .true.
+       transient%backup = .true.
     end if
 
     open(newunit=unit, file=outfile, form='formatted', action='write', &

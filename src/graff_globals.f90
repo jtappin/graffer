@@ -29,6 +29,10 @@ module graff_globals
 
   type(graff_pdefs), target :: pdefs
 
+  ! Transient, but global values.
+  
+  type(graff_trans), target :: transient
+  
   ! Display options
 
   type(graff_opts), target :: sysopts

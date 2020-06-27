@@ -676,7 +676,7 @@ contains
     if (pdefs%version(2) <= 6) call gr_font_remap
 
     call gr_set_changed(.false.)
-    pdefs%transient%backup = .false.
+    transient%backup = .false.
     pdefs%is_ascii = .false.
 
   end subroutine gr_read
@@ -1097,10 +1097,10 @@ contains
     else
        outfile = trim(pdefs%dir)//trim(pdefs%name)
        autofile = trim(pdefs%dir)//'#'//trim(pdefs%name)//'#'
-       if (.not. pdefs%transient%backup .and. file_exists(outfile)) then
+       if (.not. transient%backup .and. file_exists(outfile)) then
           call execute_command_line("cp "//trim(outfile)//" "//&
                & trim(outfile)//"~")
-          pdefs%transient%backup = .true.
+          transient%backup = .true.
        end if
        if (present(ascii)) then
           use_ascii = ascii

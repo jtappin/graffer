@@ -90,7 +90,7 @@ contains
     type(gdkeventbutton), pointer :: fevent
     call c_f_pointer(event, fevent)
 
-    if (pdefs%transient%mode == 0) then
+    if (transient%mode == 0) then
        call gr_drawing_plot(fevent)
     else
        call gr_drawing_text(fevent)
@@ -120,10 +120,10 @@ contains
     write(tv, "(1pg0.5)") yw
     call gtk_entry_set_text(cursor_position(2), trim(tv)//c_null_char)
 
-!!$    if (pdefs%transient%hairs) then
+!!$    if (transient%hairs) then
 !!$       call plxormod(.true., xstatus)
 !!$       if (xstatus) then
-!!$          if (pdefs%transient%mode == 1) then
+!!$          if (transient%mode == 1) then
 !!$             call gr_plot_linesty(2_int16)
 !!$             call gr_plot_transform(full=.true._int8)
 !!$
