@@ -744,8 +744,14 @@ contains
     z = data%zdata%z
 
     if (data%zdata%range(1) == data%zdata%range(2)) then
-       zmin = minval(z)
-       zmax = maxval(z)
+       zmin = minval(z, mask=ieee_is_finite(z))
+       zmax = maxval(z, mask=ieee_is_finite(z))
+       if (data%zdata%ilog == 1_int16 .and. zmin <= 0.) then
+          call hl_gtk_info_bar_message(gr_infobar, &
+               & "Data has negative values, scaling to positive only." &
+               & //c_null_char)
+          zmin = minval(z, mask = z > 0. .and. ieee_is_finite(z))
+       end if
     else
        zmin = data%zdata%range(1)
        zmax = data%zdata%range(2)
@@ -791,29 +797,12 @@ contains
                      & data%zdata%x(j-1,i) + data%zdata%x(j,i)) / 4._real64
              end do
           end do
-!!$          x2(:,1) = [data%zdata%x(1,1), &
-!!$               & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
-!!$               & data%zdata%x(nx,1)]
-!!$          x2(:,ny+1) = [data%zdata%x(1,ny), &
-!!$               & (data%zdata%x(1:nx-1,ny)+data%zdata%x(2:,ny))/2._real64, &
-!!$               & data%zdata%x(nx,ny)]
-!!$          do i = 2, ny
-!!$             x2(:,i) = ([data%zdata%x(1,i-1), &
-!!$                  & (data%zdata%x(1:nx-1,i-1)+data%zdata%x(2:,i-1))/2._real64, &
-!!$                  & data%zdata%x(nx,i-1)] + &
-!!$                  & [data%zdata%x(1,i), &
-!!$                  & (data%zdata%x(1:nx-1,i)+data%zdata%x(2:,i))/2._real64, &
-!!$                  & data%zdata%x(nx,i)]) / 2._real64
-!!$          end do
        else
           x1(1) = data%zdata%x(1,1)
           x1(nx+1) = data%zdata%x(nx,1)
           do i = 2, nx
              x1(i) = (data%zdata%x(i-1,1) + data%zdata%x(i,1)) / 2._real64
           end do
-!!$          x1 = [data%zdata%x(1,1), &
-!!$               & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
-!!$               & data%zdata%x(nx,1)]
           do i = 1, ny+1
              x2(:,i) = x1
           end do
@@ -841,29 +830,12 @@ contains
              end do
           end do
 
-!!$          y2(1,:) = [data%zdata%y(1,1), &
-!!$               & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
-!!$               & data%zdata%y(1,ny)]
-!!$          y2(nx+1,:) = [data%zdata%y(nx,1), &
-!!$               & (data%zdata%y(nx,1:ny-1)+data%zdata%y(nx,2:))/2._real64, &
-!!$               & data%zdata%y(nx,ny)]
-!!$          do i = 2, nx
-!!$             y2(i,:) = ([data%zdata%y(i-1,1), &
-!!$                  & (data%zdata%y(i-1,1:ny-1)+data%zdata%y(i-1,2:))/2._real64, &
-!!$                  & data%zdata%y(i-1,ny)] + &
-!!$                  & [data%zdata%y(i,1), &
-!!$                  & (data%zdata%y(i,1:ny-1)+data%zdata%y(i,2:))/2._real64, &
-!!$                  & data%zdata%y(i,ny)]) / 2._real64
-!!$          end do
        else
           y1(1) = data%zdata%y(1,1)
           y1(ny+1) = data%zdata%y(1,ny)
           do i = 2, ny
              y1(i) = (data%zdata%y(1,i-1) + data%zdata%y(1,i)) / 2._real64
           end do
-!!$          y1 = [data%zdata%y(1,1), &
-!!$               & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
-!!$               & data%zdata%y(1,ny)]
           do i = 1, nx+1
              y2(i,:) = y1
           end do
@@ -875,17 +847,6 @@ contains
        do i = 2, nx
           x1(i) = (data%zdata%x(i-1,1) + data%zdata%x(i,1)) / 2._real64
        end do
-!!$       x1 = [data%zdata%x(1,1), &
-!!$            & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
-!!$            & data%zdata%x(nx,1)]
-       y1(1) = data%zdata%y(1,1)
-       y1(ny+1) = data%zdata%y(1,ny)
-       do i = 2, ny
-          y1(i) = (data%zdata%y(1,i-1) + data%zdata%y(1,i)) / 2._real64
-       end do
-!!$       y1 = [data%zdata%y(1,1), &
-!!$            & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
-!!$            & data%zdata%y(1,ny)]
        c2d = .false.
     end if
 
@@ -949,7 +910,7 @@ contains
     logical :: c2d
     integer :: i
     real(kind=real64) :: zmin, zmax, xmin, xmax, ymin, ymax, z0, z1
-    logical :: xlog, ylog, zflag
+    logical :: xlog, ylog
 
     data => pdefs%data(index)
     if (.not. allocated(data%zdata%z)) return
@@ -965,17 +926,22 @@ contains
     allocate(z(data%ndata, data%ndata2))
     z = data%zdata%z
 
-    z0 = minval(z)
-    z1 = maxval(z)
+    z0 = minval(z, mask=ieee_is_finite(z))
+    z1 = maxval(z, mask=ieee_is_finite(z))
     if (data%zdata%range(1) == data%zdata%range(2)) then
        zmin = z0
        zmax = z1
+       if (data%zdata%ilog == 1_int16 .and. zmin <= 0.) then
+          call hl_gtk_info_bar_message(gr_infobar, &
+               & "Data has negative values, scaling to positive only." &
+               & //c_null_char)
+          zmin = minval(z, mask = z > 0. .and. ieee_is_finite(z))
+       end if
     else
        zmin = data%zdata%range(1)
        zmax = data%zdata%range(2)
     end if
 
-    zflag = .false.
     if (data%zdata%ilog == 1_int16) then
        if (min(zmin, zmax) > 0.) then
           z = log10(z)
@@ -985,7 +951,6 @@ contains
           call hl_gtk_info_bar_message(gr_infobar, &
             & "Setting a zero or negative limit for a log mapping, "//&
             & "using linear"//c_null_char)
-          zflag = .true.
        end if
     else if (data%zdata%ilog == 2_int16) then
        where(z /= 0.) z = z / sqrt(abs(z))
@@ -1001,7 +966,6 @@ contains
     do i = 1, size(clevels)
        clevels(i) = zmin + real(i-1)*(zmax - zmin)/real(size(clevels)-1)
     end do
-!    if (.not. zflag .and. data%zdata%ilog) clevels = 10.**clevels
     clevels(1) = min(clevels(1), z0)
     clevels(size(clevels)) = max(clevels(size(clevels)), z1)
 
