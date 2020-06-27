@@ -114,8 +114,7 @@ contains
          & ["Polynomial      ", &
          &  "Exponential     ", &
          &  "Logarithmic     ", &
-         &  "Power law       ", &
-         &  "Piecewise linear"], active=-1_c_int, tooltip = &
+         &  "Power law       "], active=-1_c_int, tooltip = &
          & "Select the type of fit to make"//c_null_char)
     call hl_gtk_table_attach(jb, fit_type_cbo, 1_c_int, 0_c_int, &
          & yopts=0_c_int)
@@ -371,7 +370,7 @@ contains
        wrap0 = 'exp('
        wrap1 = ')'
     case(4)
-       print *, "Not yet implemented"
+       write(error_unit, *) "Piecewise fitting is not yet implemented."
        return
     end select
 

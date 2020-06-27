@@ -886,7 +886,7 @@ contains
     integer(kind=int16) :: i, j, ikshift
     integer :: nkey, nset0
     logical, dimension(:), allocatable :: iskey
-    
+
     if (present(index)) then
        idx = index
     else
@@ -894,7 +894,7 @@ contains
     end if
 
     nset0 = pdefs%nsets
-    
+
     if (idx < 0 .or. idx > pdefs%nsets) return
     if (pdefs%nsets == 1) then
        call gr_ds_erase
@@ -917,7 +917,7 @@ contains
        pdefs%cset = max(pdefs%cset-1_int16, 1_int16)
        call gr_set_values_dataset()
     end if
-    
+
     if (allocated(pdefs%key%list)) then
        allocate(iskey(nset0))
        iskey = .false.
@@ -945,8 +945,7 @@ contains
                 j = j+1
              end if
           end do
-          print *, pdefs%key%list
-        end if
+       end if
     end if
 
   end subroutine gr_ds_delete
