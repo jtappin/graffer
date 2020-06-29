@@ -23,7 +23,6 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
                thick, neval = neval, description = description, frange $
                = frange, sort = sort, errtype = $
                errtype, funcz = funcz, ascii = ascii, noclip = noclip, $
-               $
                min_val = min_val, max_val = max_val, $
                mouse = mouse, z_format = z_format, z_nlevels = $
                z_nlevels, z_levels = z_levels, z_colours = z_colours, $
@@ -241,7 +240,8 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
             ~keyword_set(xy_file) && $
             ~keyword_set(z_file) && $
             ~keyword_set(func_file)) then $
-               message, "Must give data arrays, data file or a function specification"
+               message, "Must give data arrays, data file or a " + $
+                        "function specification"
      2: begin
         sx = size(a1)
         if sx[0] eq 2 &&  (sx[1] eq 2 || sx[2] eq 2) then begin
@@ -316,14 +316,24 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      
      if (keyword_set(errors)) then begin
         se = size(errors)
-        if (se(0) eq 1) then begin
+        if (se[0] eq 1) then begin
            nt = 3
-           nerr = se(1)
+           nerr = se[1]
            errs = double(transpose(errors))
-        endif else if (se(0) eq 2 and se(1) le 6) then begin
-           nt = se(1)+2
-           nerr = se(2)
-           errs = errors
+        endif else if se[0] eq 2 then begin
+           if se[2] eq nx && se[1] le 4) then begin
+              nt = se[1]+2
+              nerr = se[2]
+              errs = errors
+           endif else if se[1] eq nx && se[2] le 4 then begin
+              nt = se[2]+2
+              nerr = se[1]
+              errs = double(transpose(errors))
+           endif else begin
+              message, 'Must have the same number of ' + $
+                       'errors as X-values, and 4 or fewer error ' + $
+                       'values.'
+           endelse
         endif else message, "Invalid dimensions for ERRORS"
         if (nerr ne nx) then message, 'Must have the same number of ' + $
                                       'errors as X-values'
@@ -497,7 +507,6 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 
   if (n_elements(mouse) ne 0) then (*pdefs.data)[pdefs.cset].medit = mouse
   if (n_elements(y_axis) ne 0) then (*pdefs.data)[pdefs.cset].y_axis = $
-     $
      y_axis
 
   if (keyword_set(rescale)) then begin
