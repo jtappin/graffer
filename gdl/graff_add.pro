@@ -321,7 +321,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
            nerr = se[1]
            errs = double(transpose(errors))
         endif else if se[0] eq 2 then begin
-           if se[2] eq nx && se[1] le 4) then begin
+           if se[2] eq nx && se[1] le 4 then begin
               nt = se[1]+2
               nerr = se[2]
               errs = errors
