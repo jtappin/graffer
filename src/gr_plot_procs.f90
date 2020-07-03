@@ -70,6 +70,7 @@ contains
     allocate(elo(data%ndata), &
          & ehi(data%ndata))
 
+    call plsmin(0._plflt, data%symsize)
     select case (data%type)
     case(1)
        elo = xydata(2,:)-xydata(3,:)
@@ -172,7 +173,8 @@ contains
        call plerry (x, elo, ehi)
 
     end select
-
+    call plsmin(0._plflt, 1._plflt)
+    
   end subroutine gr_plot_xy_errors
 
   subroutine gr_plot_rt_errors(index)
@@ -846,6 +848,11 @@ contains
        x1(nx+1) = data%zdata%x(nx,1)
        do i = 2, nx
           x1(i) = (data%zdata%x(i-1,1) + data%zdata%x(i,1)) / 2._real64
+       end do
+       y1(1) = data%zdata%y(1,1)
+       y1(ny+1) = data%zdata%y(1,ny)
+       do i = 2, ny
+          y1(i) = (data%zdata%y(1,i-1) + data%zdata%y(1,i)) / 2._real64
        end do
        c2d = .false.
     end if
