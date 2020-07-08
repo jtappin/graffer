@@ -399,7 +399,6 @@ contains
                 j = j+1
              end do
           end select
-
        else
           allocate(wt(fit_ds%ndata))
 
@@ -428,6 +427,7 @@ contains
                   & (2._real64/(fit_ds%xydata(5,:)+fit_ds%xydata(6,:)))**2)
           end select
        endif
+       where (.not. ieee_is_finite(wt)) wt = 0._real64
     end if
 
     if (idir == 0) then
