@@ -18,9 +18,10 @@
 module gr_ds_fit_widgets
   ! Fitting a function to a dataset.
 
-  use iso_fortran_env
-  use iso_c_binding
-
+  use, intrinsic :: iso_fortran_env
+  use, intrinsic :: iso_c_binding
+  use, intrinsic :: ieee_arithmetic
+  
   use gtk_hl
   use gtk_sup
 
@@ -282,17 +283,18 @@ contains
     real(kind=real64), dimension(:), pointer :: x, y
     real(kind=real64) :: chi2, prob
 
-    integer :: order, neval,i,ipos
+    integer :: order, neval,i,ipos, nf_data, j
     integer(kind=int16) :: oftype
     integer(kind=c_int), dimension(:), allocatable :: isel
     integer(kind=c_int) :: itype, idir, nsel, idx
 
-    logical :: use_wt
+    logical :: use_wt, nan_flag
     character(len=10) :: var
     character(len=5) :: wrap0, wrap1
     character(len=256) :: fstring
     character(len=32) :: termstr
     type(graff_data), pointer :: fit_ds, curr_ds
+    logical, dimension(:), allocatable :: valid_data
 
     nsel = hl_gtk_listn_get_selections(fit_list, &
          & indices = isel)
@@ -309,35 +311,123 @@ contains
     neval = int(hl_gtk_spin_button_get_value(fit_neval_sb))
     idir = gtk_combo_box_get_active(fit_dir_cbo)
     itype = gtk_combo_box_get_active(fit_type_cbo)
-    allocate(x(fit_ds%ndata), y(fit_ds%ndata), coeffs(order+1))
-    xr = fit_ds%xydata(1,:)
-    yr = fit_ds%xydata(2,:)
+
+    allocate(coeffs(order+1))
+
+    ! Need to eliminate any NaN values otherwise fit will be NaN.
+
+    nan_flag=any(.not. (ieee_is_finite(fit_ds%xydata(1,:)) .and. &
+         & ieee_is_finite(fit_ds%xydata(2,:))))
+
+    if (nan_flag) then
+       allocate(valid_data(fit_ds%ndata))
+       valid_data = ieee_is_finite(fit_ds%xydata(1,:)) .and. &
+            & ieee_is_finite(fit_ds%xydata(2,:))
+       nf_data = count(valid_data)
+       allocate(xr(nf_data), yr(nf_data))
+       j = 1
+       do i = 1, fit_ds%ndata
+          if (.not. valid_data(i)) cycle
+          xr(j) = fit_ds%xydata(1,i)
+          yr(j) = fit_ds%xydata(2,i)
+          j = j+1
+       end do
+    else
+       allocate(xr(fit_ds%ndata), yr(fit_ds%ndata))
+       xr = fit_ds%xydata(1,:)
+       yr = fit_ds%xydata(2,:)
+    end if
 
     if (use_wt) then
-       allocate(wt(fit_ds%ndata))
+       if (nan_flag) then
+          allocate(wt(nf_data))
 
-       select case (fit_ds%type)
-       case(1)
-          wt = 1._real64/fit_ds%xydata(3,:)
-       case(2)
-          wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
-       case(3)
-          wt = 1._real64/fit_ds%xydata(3,:)
-       case(4)
-          wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
-       case(5)
-          wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
-               & (1._real64/fit_ds%xydata(4,:))**2)
-       case(6)
-          wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
-               & (2._real64/(fit_ds%xydata(4,:)+fit_ds%xydata(5,:)))**2)
-       case(7)
-          wt = sqrt((2._real64/(fit_ds%xydata(3,:)+fit_ds%xydata(4,:)))**2 + &
-               & (1._real64/fit_ds%xydata(5,:))**2)
-       case(8)
-          wt = sqrt((2._real64/(fit_ds%xydata(3,:)+fit_ds%xydata(4,:)))**2 + &
-               & (2._real64/(fit_ds%xydata(5,:)+fit_ds%xydata(5,:)))**2)
-       end select
+          j = 1
+          select case (fit_ds%type)
+          case(1)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = 1._real64/fit_ds%xydata(3,i)
+                j = j+1
+             end do
+          case(2)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = 2._real64 / (fit_ds%xydata(3,i) + fit_ds%xydata(4,i))
+                j = j+1
+             end do
+          case(3)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = 1._real64/fit_ds%xydata(3,i)
+                j = j+1
+             end do
+          case(4)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = 2._real64 / (fit_ds%xydata(3,i) + fit_ds%xydata(4,i))
+                j = j+1
+             end do
+          case(5)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = sqrt((1._real64/fit_ds%xydata(3,i))**2 + &
+                     & (1._real64/fit_ds%xydata(4,i))**2)
+                j = j+1
+             end do
+          case(6)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = sqrt((1._real64/fit_ds%xydata(3,i))**2 + &
+                     & (2._real64/(fit_ds%xydata(4,i)+fit_ds%xydata(5,i)))**2)
+                j = j+1
+             end do
+          case(7)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = sqrt((2._real64/(fit_ds%xydata(3,i)+ &
+                     & fit_ds%xydata(4,i)))**2 + &
+                     & (1._real64/fit_ds%xydata(5,i))**2)
+                j = j+1
+             end do
+          case(8)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = sqrt((2._real64/(fit_ds%xydata(3,i)+ &
+                     & fit_ds%xydata(4,i)))**2 + &
+                     & (2._real64/(fit_ds%xydata(5,i)+fit_ds%xydata(6,i)))**2)
+                j = j+1
+             end do
+          end select
+
+       else
+          allocate(wt(fit_ds%ndata))
+
+          select case (fit_ds%type)
+          case(1)
+             wt = 1._real64/fit_ds%xydata(3,:)
+          case(2)
+             wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
+          case(3)
+             wt = 1._real64/fit_ds%xydata(3,:)
+          case(4)
+             wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
+          case(5)
+             wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
+                  & (1._real64/fit_ds%xydata(4,:))**2)
+          case(6)
+             wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
+                  & (2._real64/(fit_ds%xydata(4,:)+fit_ds%xydata(5,:)))**2)
+          case(7)
+             wt = sqrt((2._real64/(fit_ds%xydata(3,:)+ &
+                  & fit_ds%xydata(4,:)))**2 + &
+                  & (1._real64/fit_ds%xydata(5,:))**2)
+          case(8)
+             wt = sqrt((2._real64/(fit_ds%xydata(3,:)+ &
+                  & fit_ds%xydata(4,:)))**2 + &
+                  & (2._real64/(fit_ds%xydata(5,:)+fit_ds%xydata(6,:)))**2)
+          end select
+       endif
     end if
 
     if (idir == 0) then
