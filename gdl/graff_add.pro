@@ -595,7 +595,8 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
         = z_label
 
      if keyword_set(z_charsize) then $
-        (*pdefs.data)[pdefs.cset].zopts.charsize = z_charsize
+        (*pdefs.data)[pdefs.cset].zopts.charsize = z_charsize $
+     else  (*pdefs.data)[pdefs.cset].zopts.charsize = 1.
 
      if keyword_set(z_pxsize) then $
         (*pdefs.data)[pdefs.cset].zopts.pxsize = z_pxsize $
