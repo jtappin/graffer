@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -66,7 +66,8 @@ contains
 
     key_use(:) = .false.
     if (allocated(pdefs%key%list)) key_use(pdefs%key%list+1) = .true.
-
+    if (pdefs%key%csize == 0._real64) pdefs%key%csize = 1._real64
+       
     allocate(key_indices(n1d))
     j = 1
     do i = 1, pdefs%nsets
