@@ -338,6 +338,29 @@ contains
        yr = fit_ds%xydata(2,:)
     end if
 
+    select case (itype)
+    case(1)                ! Exponential fit, -ve Y values invalid
+       if (any(yr <= 0.)) then
+          call gr_message("Exp fit: Y contains negative or zero values, using polynomial")
+          itype = 0
+          call gtk_combo_box_set_active(fit_type_cbo, 0_c_int)
+       end if
+
+    case(2)                ! Log fit, -ve X values are invalid
+       if (any(xr <= 0.)) then
+          call gr_message("Log fit: X contains negative or zero values, using polynomial")
+          itype = 0
+          call gtk_combo_box_set_active(fit_type_cbo, 0_c_int)
+       end if
+
+    case(3)                ! Power law, -ve X or Y values are invalid
+       if (any(xr <= 0.) .or. any(yr <= 0)) then
+          call gr_message("Power fit: X or Y contains negative or zero values, using polynomial")
+          itype = 0
+          call gtk_combo_box_set_active(fit_type_cbo, 0_c_int)
+       end if
+    end select
+    
     if (use_wt) then
        if (nan_flag) then
           allocate(wt(nf_data))
@@ -460,7 +483,7 @@ contains
        wrap0 = 'exp('
        wrap1 = ')'
     case(4)
-       write(error_unit, *) "Piecewise fitting is not yet implemented."
+       call gr_message("Piecewise fitting is not yet implemented.")
        return
     end select
 
