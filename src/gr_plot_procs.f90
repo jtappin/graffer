@@ -655,7 +655,7 @@ contains
        if (data%zdata%label /= 0 .and. &
             & mod(i, max(data%zdata%label,1)) == data%zdata%label_off) then
           call pl_setcontlabelparam(real(0.006*data%zdata%charsize, plflt), &
-               & real(0.5*data%zdata%charsize, plflt), 0.5_plflt, 1)
+               & real(0.5*data%zdata%charsize, plflt), 0.25_plflt, 1)
        else
           call pl_setcontlabelparam(0.006_plflt, &
                & real(0.5*data%zdata%charsize, plflt), 0.25_plflt, 0)

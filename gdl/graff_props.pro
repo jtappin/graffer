@@ -46,8 +46,8 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
                  = $
                  h_cmyk, ctable = ctable, h_print = h_print, h_viewer $
                  = h_viewer, h_file = h_file, h_psdev = h_psdev, $
-                 h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, h_pdfdev = $
-                 h_pdfdev, h_pdfviewer = h_pdfviewer
+                 h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, $
+                 h_pdfviewer = h_pdfviewer
 ;+
 ; GRAFF_PROPS
 ;	User-callable interface to set global properties of a graffer
