@@ -33,7 +33,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
                z_file, z_lmap = z_lmap, $
                func_file = func_file, y_axis = y_axis, $
                z_missing = z_missing, z_charsize = z_charsize, z_mode $
-               = zmode
+               = z_mode
 
 ;+
 ; GRAFF_ADD
@@ -606,9 +606,10 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      if (n_elements(z_missing) ne 0) then $
         (*pdefs.data)[pdefs.cset].zopts.missing = z_missing
      (*pdefs.data)[pdefs.cset].zopts.fill = keyword_set(z_fill)
-     if n_elements(z_mode) ne 0 then $
-        (*pdefs.data)[pdefs.cset].zopts.ilog = z_mode $
-     else if n_elements(z_log) ne 0 then begin
+
+     if n_elements(z_mode) ne 0 then begin
+        (*pdefs.data)[pdefs.cset].zopts.ilog = z_mode
+     endif else if n_elements(z_log) ne 0 then begin
         (*pdefs.data)[pdefs.cset].zopts.ilog = z_log
         print, "Z_LOG is now deprecated, use Z_MODE"
      endif else (*pdefs.data)[pdefs.cset].zopts.ilog = 0
