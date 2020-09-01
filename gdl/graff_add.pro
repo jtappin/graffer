@@ -175,6 +175,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	Add non-linear contour level maps: 12/10/16; SJT
 ;	Allow long/triple colours: 1/3/19; SJT
 ;	Remove reference to pdefs.opts: 21/5/20; SJT
+;	Treat single 2-D array as a Z dataset: 1/9/20; SJT
 ;-
 
 ;	Check that the necessary inputs are present
@@ -213,25 +214,26 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      endelse
   endif
   
-  if (n_params() ge 2 and (keyword_set(x_func) or keyword_set(y_func) or $
+  if (n_params() ge 2 && (keyword_set(x_func) || keyword_set(y_func) || $
                            keyword_set(z_func))) $
   then message, "May not specify both data and a function"
-  if n_params() ge 2 and (keyword_set(xy_file) or keyword_set(z_file) or $
+  if n_params() ge 2 && (keyword_set(xy_file) || keyword_set(z_file) || $
                           keyword_set(func_file)) $
   then message, "May not specify both data and a data file"
 
-  if ((keyword_set(x_func) or keyword_set(y_func)) and keyword_set(z_func)) $
+  if ((keyword_set(x_func) || keyword_set(y_func)) && keyword_set(z_func)) $
   then message, "May not mix 1 & 2 D function specifiers"
 
-  if (keyword_set(xy_file) and keyword_set(z_file)) then $
+  if (keyword_set(xy_file) && keyword_set(z_file)) then $
      message, "May not specify both 1 & 2 D files"
 
-  if (keyword_set(x_func) or keyword_set(y_func) or $
-      keyword_set(z_func)) and $
-     (keyword_set(xy_file) or keyword_set(z_file) or $
+  if (keyword_set(x_func) || keyword_set(y_func) || $
+      keyword_set(z_func)) && $
+     (keyword_set(xy_file) || keyword_set(z_file) || $
       keyword_set(func_file)) then $ 
          message, "May not specify a function and a data file"
 
+  z1flag = 0b
   case (n_params()) of
      0: message, "Must specify a GRAFFER file"
      1: if (~keyword_set(x_func) && $
@@ -244,13 +246,18 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
                         "function specification"
      2: begin
         sx = size(a1)
-        if sx[0] eq 2 &&  (sx[1] eq 2 || sx[2] eq 2) then begin
+        if sx[0] eq 2 then begin
            if sx[1] eq 2 then begin
               x = double(reform(a1[0, *]))
               y = double(reform(a1[1, *]))
-           endif else begin
+           endif else if sx[2] eq 2 then begin
               x = double(a1[*, 0])
               y = double(a1[*, 1])
+           endif else begin
+              z = double(a1)
+              x = dindgen(sx[1])
+              y = dindgen(sx[2])
+              z1flag = 1b
            endelse
         endif else if sx[sx[0]+1] eq 6 || sx[sx[0]+1] eq 9 then begin
            x = double(real_part(a1))
@@ -285,7 +292,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      return
   endif
 
-  if (pdefs.nsets gt 1 or (*pdefs.data)[0].ndata ne 0) then begin
+  if (pdefs.nsets gt 1 || (*pdefs.data)[0].ndata ne 0) then begin
      *pdefs.data = [*pdefs.data, {graff_data}]
      (*pdefs.data)[pdefs.nsets].Pline =    1
      (*pdefs.data)[pdefs.nsets].Symsize =  1.
@@ -308,7 +315,53 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      if (istat eq 0) then message, "Failed to add dataset from: ", $
                                    z_file
      
-  endif else if (n_params() eq 3 or n_params() eq 2) then begin ; Ordinary data
+  endif else if (n_params() eq 4) || z1flag then begin ; 2-D dataset
+     
+     sz = size(z)
+     if (sz(0) ne 2) then message, "Z array must be 2-D"
+     nx = sz(1)
+     ny = sz(2)
+     sx = size(x)
+     if sx[0] eq 1 then begin
+        if (n_elements(x) ne sz(1)) then $
+           message, "X-array doesn't match X-size of Z-array"
+        x2d = 0b
+     endif else if sx[0] eq 2 then begin
+        if (sx[1] ne sz[1] || sx[2] ne sz[2]) then $
+           message, "X-array doesn't match size of Z-array"
+        x2d = 1b
+     endif else message, "X array must have 1 or 2 dimensions"
+
+     sy = size(y)
+     if sy[0] eq 1 then begin
+        if (n_elements(y) ne sz(2)) then $
+           message, "Y-array doesn't match Y-size of Z-array"
+        y2d = 0b
+     endif else if (sy[0] eq 2) then begin
+        if (sy[1] ne sz[1] || sy[2] ne sz[2]) then $
+           message, "Y-array doesn't match size of Z-array"
+        y2d = 1b
+     endif else message, "Y array must have 1 or 2 dimensions"
+
+     
+     xydata = {graff_zdata}
+     xydata.Z = ptr_new(z)
+     xydata.X = ptr_new(x)
+     xydata.Y = ptr_new(y)
+     xydata.x_is_2d = x2d
+     xydata.y_is_2d = y2d
+
+     (*pdefs.data)[pdefs.cset].ndata = nx
+     (*pdefs.data)[pdefs.cset].ndata2 = ny
+
+     (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
+     (*pdefs.data)[pdefs.cset].type = 9
+     
+     (*pdefs.data)[pdefs.cset].zopts.shade_levels = 256l
+     
+     zflag = 1b
+
+  endif else if (n_params() eq 3 || n_params() eq 2) then begin ; Ordinary data
      
      nx = n_elements(x)
      ny = n_elements(y)
@@ -373,52 +426,6 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      (*pdefs.data)[pdefs.cset].type = ety
      (*pdefs.data)[pdefs.cset].ndata = nx
 
-  endif else if (n_params() eq 4) then begin ; 2-D dataset
-     
-     sz = size(z)
-     if (sz(0) ne 2) then message, "Z array must be 2-D"
-     nx = sz(1)
-     ny = sz(2)
-     sx = size(x)
-     if sx[0] eq 1 then begin
-        if (n_elements(x) ne sz(1)) then $
-           message, "X-array doesn't match X-size of Z-array"
-        x2d = 0b
-     endif else if sx[0] eq 2 then begin
-        if (sx[1] ne sz[1] or sx[2] ne sz[2]) then $
-           message, "X-array doesn't match size of Z-array"
-        x2d = 1b
-     endif else message, "X array must have 1 or 2 dimensions"
-
-     sy = size(y)
-     if sy[0] eq 1 then begin
-        if (n_elements(y) ne sz(2)) then $
-           message, "Y-array doesn't match Y-size of Z-array"
-        y2d = 0b
-     endif else if (sy[0] eq 2) then begin
-        if (sy[1] ne sz[1] or sy[2] ne sz[2]) then $
-           message, "Y-array doesn't match size of Z-array"
-        y2d = 1b
-     endif else message, "Y array must have 1 or 2 dimensions"
-
-     
-     xydata = {graff_zdata}
-     xydata.Z = ptr_new(z)
-     xydata.X = ptr_new(x)
-     xydata.Y = ptr_new(y)
-     xydata.x_is_2d = x2d
-     xydata.y_is_2d = y2d
-
-     (*pdefs.data)[pdefs.cset].ndata = nx
-     (*pdefs.data)[pdefs.cset].ndata2 = ny
-
-     (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
-     (*pdefs.data)[pdefs.cset].type = 9
-     
-     (*pdefs.data)[pdefs.cset].zopts.shade_levels = 256l
-     
-     zflag = 1b
-
   endif else if keyword_set(func_file) then begin
      istat = gr_fun_read(pdefs, func_file)
      if istat eq 0 then $
@@ -441,7 +448,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
         else (*pdefs.data)[pdefs.cset].ndata2 = 25
         
         zflag = 1b
-     endif else if (keyword_set(x_func) and keyword_set(y_func)) then begin ;
+     endif else if (keyword_set(x_func) && keyword_set(y_func)) then begin ;
                                 ; parametric
         if (not keyword_set(frange)) then frange = dindgen(2)
         xydata = {graff_pfunct}
@@ -474,8 +481,8 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      
   endelse
 
-  if (keyword_set(polar) and ((*pdefs.data)[pdefs.cset].type ge -3 and $
-                              (*pdefs.data)[pdefs.cset].type le 8)) then $
+  if (keyword_set(polar) && ((*pdefs.data)[pdefs.cset].type ge -3 && $
+                             (*pdefs.data)[pdefs.cset].type le 8)) then $
                                  (*pdefs.data)[pdefs.cset].mode = polar
   if (n_elements(psym) ne 0) then  (*pdefs.data)[pdefs.cset].psym = psym
   if (n_elements(join) ne 0) then (*pdefs.data)[pdefs.cset].pline = join
