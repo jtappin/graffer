@@ -119,13 +119,13 @@ contains
 
     junk = hl_gtk_menu_item_new(smnu, "Print (Embeddable PDF)"//c_null_char, &
          & activate=c_funloc(gr_print), data=c_loc(devices(4)), &
+         & accel_key='e'//c_null_char, &
+         & accel_mods=ior(GDK_CONTROL_MASK, GDK_SHIFT_MASK), &
+         & accel_group=accel, &
          & tooltip="Print to an embeddable PDF file"//c_null_char)
 
     junk = hl_gtk_menu_item_new(smnu, "Generate SVG"//c_null_char, &
          & activate=c_funloc(gr_print), data=c_loc(devices(5)), &
-         & accel_key='s'//c_null_char, &
-         & accel_mods=ior(GDK_CONTROL_MASK, GDK_SHIFT_MASK), &
-         & accel_group=accel, &
          & tooltip="Output to an SVG file"//c_null_char)
 
     jmnu = hl_gtk_menu_submenu_new(smnu, "Dump screen"//c_null_char)
