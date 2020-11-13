@@ -27,7 +27,8 @@ module gr_menu_hc_widgets
   use gtk, only: gtk_combo_box_get_active, gtk_combo_box_set_active, &
        & gtk_container_add, gtk_expander_new, gtk_expander_set_expanded, &
        & gtk_label_new, gtk_toggle_button_get_active, gtk_widget_destroy, &
-       & gtk_widget_set_tooltip_text, gtk_widget_show_all, TRUE, FALSE
+       & gtk_widget_set_tooltip_text, gtk_widget_show_all, &
+       & gtk_entry_set_text, TRUE, FALSE
 
   use graff_types
   use graff_globals
@@ -190,7 +191,11 @@ contains
     hc_name_entry = hl_gtk_entry_new(value=trim(hardset%name)//c_null_char, &
          & tooltip="Enter the name stem for the output file"//c_null_char)
     call hl_gtk_table_attach(jb, hc_name_entry, 1_c_int, 0_c_int, &
-         & xspan=3_c_int)
+         & xspan=2_c_int)
+    junk = hl_gtk_button_new("Clear"//c_null_char, &
+         & clicked=c_funloc(gr_hc_name_clear), &
+         & tooltip="Clear the name entry so the default is used."//c_null_char)
+    call hl_gtk_table_attach(jb, junk, 3_c_int, 0_c_int)
 
     junk = gtk_label_new("Print cmd:"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int)
@@ -474,4 +479,11 @@ contains
     hardset%svgdev = ''
 
   end subroutine gr_hc_defdev
+
+  subroutine gr_hc_name_clear(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    call gtk_entry_set_text(hc_name_entry, c_null_char)
+
+  end subroutine gr_hc_name_clear
 end module gr_menu_hc_widgets
