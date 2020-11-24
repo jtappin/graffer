@@ -44,6 +44,7 @@ pro Gr_as_xr, data, yrange, ytype, range, visible = visible, positive $
 ;	Add visible key: 31/5/16; SJT
 ;	Ignore undisplayed datasets: 13/10/16; SJT
 ;	Add positive keyword: 12/2/18; SJT
+;	Work around apparent GDL segfault bug: 24/11/20; SJT
 ;-
 
 ; Ignore undisplayed datasets
@@ -57,19 +58,22 @@ pro Gr_as_xr, data, yrange, ytype, range, visible = visible, positive $
   fv = 0.                       ; Just create the variable
 
   case (data.type) of
-     -1: if ((*data.xydata).range(0) ne (*data.xydata).range(1)) then $
-        begin                   ;Y = F(x)
-        range(0) = range(0) < (*data.xydata).range(0)
-        range(1) = range(1) > (*data.xydata).range(1)
-     endif
+     -1: begin
+        tmp_r = (*data.xydata).range
+        if (tmp_r[0] ne tmp_r[1]) then begin                   ;Y = F(x)
+           range[0] <= tmp_r[0]
+           range[1] >= tmp_r[1]
+        endif
+     end
      
      -2: begin                  ; X = f(y)
-        if ((*data.xydata).range(0) ne (*data.xydata).range(1)) then begin
-           amin = yrange(0) > (*data.xydata).range(0)
-           amax = yrange(1) < (*data.xydata).range(1)
+        tmp_r = (*data.xydata).range
+        if (tmp_r[0] ne tmp_r[1]) then begin
+           amin = yrange[0] > tmp_r[0]
+           amax = yrange[1] < tmp_r[1]
         endif else begin
-           amin = yrange(0)
-           amax = yrange(1)
+           amin = yrange[0]
+           amax = yrange[1]
         endelse
         if (ytype) then begin
            amin = alog10(amin)
@@ -90,11 +94,12 @@ pro Gr_as_xr, data, yrange, ytype, range, visible = visible, positive $
      end
      
      -3: begin                  ; x = f(t), y = f(t)
+        tmp_r = (*data.xydata).range
         t = dindgen(data.ndata) *  $
-            ((*data.xydata).range(1)-(*data.xydata).range(0)) $
-            /  double(data.ndata-1) + (*data.xydata).range(0)
+            (tmp_r[1]-tmp_r[0]) $
+            /  double(data.ndata-1) + tmp_r[0]
         
-        iexe = execute('fv = '+(*data.xydata).funct(0))
+        iexe = execute('fv = '+(*data.xydata).funct[0])
         
         if keyword_set(positive) then begin
            fvmn = gr_min_nz(fv, max = fvmx)
@@ -104,11 +109,13 @@ pro Gr_as_xr, data, yrange, ytype, range, visible = visible, positive $
         range[1] = range[1] > fvmx
      end
      
-     -4: if ((*data.xydata).range(0, 0) ne (*data.xydata).range(1, 0)) then $
-        begin                   ; z = f(x,y)
-        range[0] = range[0] < (*data.xydata).range[0, 0]
-        range[1] = range[1] > (*data.xydata).range[1, 0]
-     endif
+     -4: begin
+        tmp_r = (*data.xydata).range
+        if tmp_r[0, 0] ne tmp_r[1, 0] then begin ; z = f(x,y)
+           range[0] <= tmp_r[0, 0]
+           range[1] >= tmp_r[1, 0]
+        endif
+     end
      
      9: begin                   ; Surface data 
         if keyword_set(positive) then begin

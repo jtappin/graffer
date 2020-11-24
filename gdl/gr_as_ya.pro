@@ -36,6 +36,7 @@ pro Gr_as_ya, data, xrange, yrange, range, visible = visible
 ;	Change handles to pointers: 27/6/05; SJT
 ;	Add visible key: 31/5/16; SJT
 ;	Ignore undisplayed datasets: 13/10/16; SJT
+;	Work around apparent GDL segfault bug: 24/11/20; SJT
 ;-
 
 ; Ignore undisplayed datasets
@@ -51,9 +52,10 @@ pro Gr_as_ya, data, xrange, yrange, range, visible = visible
 
   case (data.type) of
      -1: begin                  ; th = f(r)
-        if ((*data.xydata).range(0) ne (*data.xydata).range(1)) then begin
-           amin = (*data.xydata).range(0)
-           amax = (*data.xydata).range(1) < maxrange
+        tmp_r = (*data.xydata).range
+        if (tmp_r[0] ne tmp_r[1]) then begin
+           amin = tmp_r[0]
+           amax = tmp_r[1] < maxrange
         endif else begin
            amin = 0
            amax = maxrange
@@ -71,9 +73,10 @@ pro Gr_as_ya, data, xrange, yrange, range, visible = visible
      end
      
      -2: begin                  ; X = f(y)
-        if ((*data.xydata).range(0) ne (*data.xydata).range(1)) then begin
-           amin = (*data.xydata).range(0)
-           amax = (*data.xydata).range(1)
+        tmp_r = (*data.xydata).range
+        if (tmp_r[0] ne tmp_r[1]) then begin
+           amin = tmp_r[0]
+           amax = tmp_r[1]
         endif else begin
            amin = 0.
            if (data.mode eq 2) then amax = 360. $
@@ -92,14 +95,15 @@ pro Gr_as_ya, data, xrange, yrange, range, visible = visible
      end
      
      -3: begin                  ; x = f(t), y = f(t)
+        tmp_r = (*data.xydata).range
         t = dindgen(data.ndata) *  $
-            ((*data.xydata).range(1)-(*data.xydata).range(0)) $
-            /  double(data.ndata-1) + (*data.xydata).range(0)
+            (tmp_r[1]-tmp_r[0]) $
+            /  double(data.ndata-1) + tmp_r[0]
         
         fr = 0.
         ft = 0.
-        iexe = execute('fr = '+(*data.xydata).funct(0))
-        iexe = execute('ft = '+(*data.xydata).funct(1))
+        iexe = execute('fr = '+(*data.xydata).funct[0])
+        iexe = execute('ft = '+(*data.xydata).funct[1])
         
         if (data.mode eq 2) then ft = ft*!Dtor
         gr_pol_rect, fr, ft, xx, yy
