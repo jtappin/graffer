@@ -407,14 +407,16 @@ contains
     real(kind=plflt), dimension(:), allocatable :: y, x0
     real(kind=plflt), dimension(:), allocatable :: x, ys, xx
 
-    integer :: nkey, nrows, i, j, irow, icol
+    integer :: nkey, nkeyd, nrows, i, j, irow, icol, ikey
     character(len=120) :: descr
 
     if (.not. allocated(pdefs%key%list)) return
- 
-    nkey = count(pdefs%data(pdefs%key%list+1)%colour /= -1)
-    if (nkey == 0) return
-    nrows = ceiling(real(nkey)/pdefs%key%cols)
+
+    nkey = size(pdefs%key%list)
+    nkeyd = count(pdefs%data(pdefs%key%list+1)%colour /= -1)
+    if (nkeyd == 0) return
+
+    nrows = ceiling(real(nkeyd)/pdefs%key%cols)
 
     if (pdefs%key%one_point) then
        allocate(x(3), ys(3))
@@ -492,11 +494,14 @@ contains
 
     call plschr(0._plflt, csize)
 
+    ikey = 1
     do j = 1, nkey
        i = pdefs%key%list(j)+1
 
-       irow = nrows - mod((j-1), nrows)
-       icol = (j-1) / nrows + 1
+       if (pdefs%data(i)%colour < 0) cycle
+       
+       irow = nrows - mod((ikey-1), nrows)
+       icol = (ikey-1) / nrows + 1
 
        call gr_plot_linesty(pdefs%data(i)%line, &
             & scale = ceiling(sqrt(pdefs%data(i)%thick)))
@@ -532,6 +537,8 @@ contains
        call plcol0(1)
        call plptex(x0(icol)+tx, y(irow)+sum(ys)/real(size(ys)), &
             & 1._plflt, 0._plflt, 0._plflt, descr)
+
+       ikey=ikey+1
     end do
   end subroutine gr_key_draw
 
