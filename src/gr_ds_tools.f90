@@ -672,7 +672,10 @@ contains
        data_to%symsize = data_from%symsize
        data_to%line = data_from%line
        data_to%colour = data_from%colour
+       data_to%c_vals = data_from%c_vals
        data_to%thick = data_from%thick
+       data_to%min_val = data_from%min_val
+       data_to%max_val = data_from%max_val
        data_to%sort = data_from%sort
        data_to%noclip = data_from%noclip
        data_to%medit = data_from%medit
