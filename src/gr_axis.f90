@@ -210,18 +210,28 @@ contains
          & tooltip = "Extend the axis to accomodate the data"//c_null_char)
     call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(1)))
     call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(2)))
 
     junk = hl_gtk_menu_item_new(smnu, "Extend or shrink"//c_null_char, &
          & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
          & tooltip = "Extend or shrink the axis to fit the data"//c_null_char)
     call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(2)))
     call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(2)))
+
+    junk = hl_gtk_menu_item_new(smnu, "X-Y data only"//c_null_char, &
+         & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
+         & tooltip = "Extend or shrink the axis to fit the data"//c_null_char)
+    call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(2)))
+    call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(1)))
 
     junk = hl_gtk_menu_item_new(smnu, "Visible only"//c_null_char, &
          & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
          & tooltip = "Extend or shrink the axis to fit the visible data"//c_null_char)
     call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(1)))
     call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(2)))
+    call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(2)))
 
     junk = hl_gtk_menu_item_new(jmnu, "Advanced"//c_null_char, &
          & activate=c_funloc(gr_axis_adv), data=c_loc(axis), &
@@ -516,8 +526,8 @@ contains
     ! Autoscale axis.
 
     integer, pointer :: axis
-    logical, pointer :: ishrink, ivisible
-    type(c_ptr) :: cshrink, cvisible
+    logical, pointer :: ishrink, ivisible, ifunction
+    type(c_ptr) :: cshrink, cvisible, cfunction
 
     if (.not. gui_active) return
 
@@ -527,8 +537,11 @@ contains
     call c_f_pointer(cshrink, ishrink)
     cvisible = g_object_get_data(widget, "visible"//c_null_char)
     call c_f_pointer(cvisible, ivisible)
+    cfunction = g_object_get_data(widget, "function"//c_null_char)
+    call c_f_pointer(cfunction, ifunction)
     
-    call gr_autoscale(axis, shrink=ishrink, visible=ivisible)
+    call gr_autoscale(axis, shrink=ishrink, visible=ivisible, &
+         & functions=ifunction)
 
     call gr_plot_draw(.true.)
   end subroutine gr_auto_e

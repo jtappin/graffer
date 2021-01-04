@@ -38,16 +38,16 @@ module gr_axis_autoscale
        & gr_autoscale_y_rect, gr_autoscale_y_polar
   
 contains
-  subroutine gr_autoscale(axis, shrink, visible)
+  subroutine gr_autoscale(axis, shrink, visible, functions)
     integer, intent(in) :: axis
-    logical, intent(in), optional :: shrink, visible
+    logical, intent(in), optional :: shrink, visible, functions
 
     ! Auto scale an Axis
 
     real(kind=real64) :: axmin, axmax
     type(graff_data), pointer :: data
     integer :: status
-    logical :: ishrink, vis_only
+    logical :: ishrink, vis_only, xy_only
     character(len=32) :: text
     integer(kind=int16) :: i
 
@@ -65,12 +65,20 @@ contains
        vis_only = .false.
     end if
 
+    if (present(functions)) then
+       xy_only = .not. functions
+    else
+       xy_only = .false.
+    end if
+    
     axmin = huge(1._real64)
     axmax = -huge(1._real64)
 
     do i = 1, pdefs%nsets
        data => pdefs%data(i)
 
+       if (xy_only .and. data%type < 0) cycle
+       
        select case (data%type)
        case(-4)
           if (vis_only .and. data%zdata%format == 2) cycle
