@@ -221,7 +221,7 @@ contains
 
     junk = hl_gtk_menu_item_new(smnu, "X-Y data only"//c_null_char, &
          & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
-         & tooltip = "Extend or shrink the axis to fit the data"//c_null_char)
+         & tooltip = "Extend or shrink the axis to fit the data (ignoring functions)"//c_null_char)
     call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(2)))
     call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(1)))
     call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(1)))
