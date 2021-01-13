@@ -578,7 +578,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      endelse
 
      if n_elements(z_ctable) ne 0 then $
-        (*pdefs.data)[pdefs.cset].zopts.ctable = z_ctable+1
+        (*pdefs.data)[pdefs.cset].zopts.ctable = z_ctable ;;+1
 
      if keyword_set(z_style) then begin
         (*pdefs.data)[pdefs.cset].zopts.N_sty = n_elements(z_style)
