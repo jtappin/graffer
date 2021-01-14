@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -93,11 +93,12 @@ module gr_cb_common
 
   ! DS data
 
-  type(c_ptr) :: ds_y_axis_cbo, ds_rescale_id
+  type(c_ptr) :: ds_y_axis_cbo
 
   ! DS selector
 
-  type(c_ptr) :: ds_name_id, ds_idx_id, ds_as_data_id
+  type(c_ptr) :: ds_name_id, ds_idx_id, ds_rescale_id, ds_as_data_id, &
+       & ds_transpose_id
 
   ! General
 
@@ -485,6 +486,7 @@ contains
     call gtk_entry_set_text(ds_name_id, trim(data%descript)//c_null_char)
     call hl_gtk_spin_button_set_value(ds_idx_id, int(pdefs%cset, c_int))
     call gtk_widget_set_sensitive(ds_as_data_id, f_c_logical(data%type < 0))
+    call gtk_widget_set_sensitive(ds_transpose_id, f_c_logical(data%type >= 0))
 
     call gr_ds_device
 

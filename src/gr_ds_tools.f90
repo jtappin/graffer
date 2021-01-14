@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -1003,4 +1003,93 @@ contains
     end if
 
   end subroutine gr_ds_move
+
+  subroutine gr_ds_transpose
+    type(graff_data), pointer :: data
+    real(kind=real64), allocatable, dimension(:,:) :: xyvals
+    real(kind=plflt), dimension(:,:), allocatable :: x,y,z
+    real(kind=real64), allocatable, dimension(:) :: x1, y1
+    integer, dimension(2) :: sz
+    logical(kind=int8) :: x2, y2
+    integer :: nx, ny
+
+    data => pdefs%data(pdefs%cset)
+
+    if (data%type < 0) return
+
+    if ( data%type == 9) then
+       if (.not. allocated(data%zdata%z)) return
+       sz = shape(data%zdata%z)
+       allocate(z(sz(2),sz(1)))
+       z = transpose(data%zdata%z)
+       nx = sz(2)
+       ny = sz(1)
+       
+       sz = shape(data%zdata%x)
+       allocate(y(sz(2), sz(1)))
+       y = transpose(data%zdata%x)
+       y2 = sz(2) /= 1
+       
+       sz = shape(data%zdata%y)
+       allocate(x(sz(2), sz(1)))
+       x = transpose(data%zdata%y)
+       x2 = sz(1) /= 1
+
+       deallocate(data%zdata%x)
+       deallocate(data%zdata%y)
+       deallocate(data%zdata%z)
+       
+       data%ndata = nx
+       data%ndata2 = ny
+       data%zdata%x_is_2d = x2
+       data%zdata%y_is_2d = y2
+       
+       call move_alloc(x, data%zdata%x)
+       call move_alloc(y, data%zdata%y)
+       call move_alloc(z, data%zdata%z)
+    else
+       select case (data%type)
+       case(0)              ! No error bars
+          data%xydata = data%xydata([2,1],:)
+
+       case(1)              ! Y errors, become X
+          data%xydata = data%xydata([2,1,3],:)
+          data%type = 3
+
+       case(2)              ! YY errors, become XX
+          data%xydata = data%xydata([2,1,3,4],:)
+          data%type = 4
+
+       case(3)              ! X errors, become Y
+          data%xydata = data%xydata([2,1,3],:)
+          data%type = 1
+
+       case(4)              ! XX errors, become YY
+          data%xydata = data%xydata([2,1,3,4],:)
+          data%type = 2
+
+       case(5)              ! XY errors exchange
+          data%xydata = data%xydata([2,1,4,3],:)
+
+       case(6)              ! XYY → XXY
+          data%xydata = data%xydata([2,1,4,5,3],:)
+          data%type = 7
+
+       case(7)              ! XXY → XYY
+          data%xydata = data%xydata([2,1,5,3,4],:)
+          data%type = 6
+
+       case(8)
+          data%xydata = data%xydata([2,1,5,6,3,4],:)
+
+       case default
+          write(err_string, "(A,i0)") "gr_ds_transpose: Invalid type code: ", &
+            & data%type
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
+          return
+       end select
+    end if
+    call gr_plot_draw(.true.)
+  end subroutine gr_ds_transpose
+  
 end module gr_ds_tools

@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -80,11 +80,6 @@ contains
     junk = hl_gtk_menu_item_new(jmnu, "Copy ..."//c_null_char, &
          & activate=c_funloc(gr_ds_copy_from_2d), &
          & tooltip="Copy data from another dataset"//c_null_char)
-
-    ds_rescale_id = hl_gtk_menu_item_new(smnu, "Rescale Current"//c_null_char, &
-         & activate=c_funloc(gr_ds_rescale_cb), &
-         & tooltip="Scale and/or shift the current dataset"//c_null_char, &
-         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
 
 
     ! Functions
@@ -306,16 +301,6 @@ contains
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_copy_from_2d
-
-  subroutine gr_ds_rescale_cb(widget, data) bind(c)
-    type(c_ptr), value :: widget, data
-
-    ! Scale/shift data.
-
-    call gr_ds_rescale
-    call gr_plot_draw(.true.)
-
-  end subroutine gr_ds_rescale_cb
 
   subroutine gr_ds_fun(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata

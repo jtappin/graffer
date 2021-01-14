@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -73,18 +73,16 @@ contains
     smnu = hl_gtk_menu_submenu_new(mnu, "Other ▼"//c_null_char, &
          & tooltip="Other dataset options"//c_null_char)
 
-    junk = hl_gtk_menu_item_new(smnu, "Select..."//c_null_char, &
-         & activate=c_funloc(gr_ds_select_cb), tooltip=&
-         & "Select a dataset"//c_null_char)
+    ds_rescale_id = hl_gtk_menu_item_new(smnu, "Rescale Current"//c_null_char, &
+         & activate=c_funloc(gr_ds_rescale_cb), &
+         & tooltip="Scale and/or shift the current dataset"//c_null_char, &
+         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
 
-    junk = hl_gtk_menu_item_new(smnu, "Merge..."//c_null_char, &
-         & activate=c_funloc(gr_ds_merge_cb), tooltip=&
-         & "Merge two datasets"//c_null_char)
-
-    junk = hl_gtk_menu_item_new(smnu, "Sort..."//c_null_char, &
-         & activate=c_funloc(gr_ds_sort), tooltip=&
-         & "Reorder the datasets"//c_null_char)
-
+    ds_transpose_id =  hl_gtk_menu_item_new(smnu, "Transpose"//c_null_char, &
+         & activate=c_funloc(gr_ds_transpose_cb), &
+         & tooltip="Exchange X & Y axes of the current dataset"//c_null_char, &
+         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
+    
     junk = hl_gtk_menu_item_new(smnu, "Erase"//c_null_char, &
          & activate=c_funloc(gr_ds_erase_cb), tooltip=&
          & "Erase the contents of the current dataset"//c_null_char)
@@ -106,6 +104,19 @@ contains
     junk = hl_gtk_menu_item_new(smnu, "Copy"//c_null_char, &
          & activate=c_funloc(gr_ds_copy_cb), tooltip=&
          & "Copy the current dataset to a new one"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Select..."//c_null_char, &
+         & activate=c_funloc(gr_ds_select_cb), tooltip=&
+         & "Select a dataset"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Sort..."//c_null_char, &
+         & activate=c_funloc(gr_ds_sort), tooltip=&
+         & "Reorder the datasets"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Merge..."//c_null_char, &
+         & activate=c_funloc(gr_ds_merge_cb), tooltip=&
+         & "Merge two datasets"//c_null_char)
+
 
 
     jb = hl_gtk_box_new(horizontal=TRUE)
@@ -345,5 +356,26 @@ contains
 
     call gr_plot_draw(.false.)
   end subroutine gr_ds_current_only
+
+  subroutine gr_ds_rescale_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Scale/shift data.
+
+    call gr_ds_rescale
+    call gr_plot_draw(.true.)
+
+  end subroutine gr_ds_rescale_cb
+
+  subroutine gr_ds_transpose_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Scale/shift data.
+
+    call gr_ds_transpose
+    call gr_plot_draw(.true.)
+
+  end subroutine gr_ds_transpose_cb
+
 
 end module gr_ds_selector
