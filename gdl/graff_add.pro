@@ -176,6 +176,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	Allow long/triple colours: 1/3/19; SJT
 ;	Remove reference to pdefs.opts: 21/5/20; SJT
 ;	Treat single 2-D array as a Z dataset: 1/9/20; SJT
+;	Remove spurious +1 in ctable handling: 13/1/21; SJT
 ;-
 
 ;	Check that the necessary inputs are present
@@ -578,7 +579,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      endelse
 
      if n_elements(z_ctable) ne 0 then $
-        (*pdefs.data)[pdefs.cset].zopts.ctable = z_ctable ;;+1
+        (*pdefs.data)[pdefs.cset].zopts.ctable = z_ctable
 
      if keyword_set(z_style) then begin
         (*pdefs.data)[pdefs.cset].zopts.N_sty = n_elements(z_style)
