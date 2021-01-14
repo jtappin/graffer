@@ -684,6 +684,7 @@ contains
           data_to%zdata%format = data_from%zdata%format
           data_to%zdata%set_levels = data_from%zdata%set_levels
           data_to%zdata%n_levels = data_from%zdata%n_levels
+          data_to%zdata%lmap = data_from%zdata%lmap
           data_to%zdata%n_cols = data_from%zdata%n_cols
           data_to%zdata%n_sty = data_from%zdata%n_sty
           data_to%zdata%n_thick = data_from%zdata%n_thick
@@ -727,15 +728,29 @@ contains
                 data_to%zdata%colours(:) = data_from%zdata%colours
              end if
           end if
+          if (allocated(data_from%zdata%raw_colours)) then
+             if (realloc) then
+                call move_alloc(data_from%zdata%raw_colours, &
+                     & data_to%zdata%raw_colours)
+             else
+                nn2 = shape(data_from%zdata%raw_colours)
+                allocate(data_to%zdata%raw_colours(nn2(1),nn2(2)))
+                data_to%zdata%raw_colours(:,:) = data_from%zdata%raw_colours
+             end if
+          end if
+          data_to%zdata%range = data_from%zdata%range
           data_to%zdata%missing = data_from%zdata%missing
           data_to%zdata%pxsize = data_from%zdata%pxsize
           data_to%zdata%charsize = data_from%zdata%charsize
           data_to%zdata%gamma = data_from%zdata%gamma
           data_to%zdata%label = data_from%zdata%label
+          data_to%zdata%label_off = data_from%zdata%label_off
           data_to%zdata%ctable = data_from%zdata%ctable
           data_to%zdata%fill = data_from%zdata%fill
           data_to%zdata%ilog = data_from%zdata%ilog
           data_to%zdata%invert = data_from%zdata%invert
+          data_to%zdata%smooth = data_from%zdata%smooth
+          data_to%zdata%shade_levels = data_to%zdata%shade_levels
        end if
     end if
 
