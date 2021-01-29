@@ -103,7 +103,7 @@ contains
           else
              call gr_autoscale_x_polar(data, axmin, axmax, vis_only)
           end if
-       else
+       else if (data%y_axis == axis-2) then
           if (data%mode == 0) then
              call gr_autoscale_y_rect(data, axmin, axmax, vis_only)
           else
