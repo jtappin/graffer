@@ -177,6 +177,8 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	Remove reference to pdefs.opts: 21/5/20; SJT
 ;	Treat single 2-D array as a Z dataset: 1/9/20; SJT
 ;	Remove spurious +1 in ctable handling: 13/1/21; SJT
+;	Force Y_right to be enabled if a DS on the right axis is
+;	added: 29/1/21; SJT
 ;-
 
 ;	Check that the necessary inputs are present
@@ -514,9 +516,11 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
   else (*pdefs.data)[pdefs.cset].max_val = !values.d_nan
 
   if (n_elements(mouse) ne 0) then (*pdefs.data)[pdefs.cset].medit = mouse
-  if (n_elements(y_axis) ne 0) then (*pdefs.data)[pdefs.cset].y_axis = $
-     y_axis
-
+  if (n_elements(y_axis) ne 0) then begin
+     (*pdefs.data)[pdefs.cset].y_axis = y_axis
+     if y_axis eq 1 then pdefs.y_right = 1b
+  endif
+  
   if (keyword_set(rescale)) then begin
      gr_autoscale, pdefs, /xaxis, /ignore
      gr_autoscale, pdefs, /yaxis, /ignore
