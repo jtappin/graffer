@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -56,6 +56,9 @@ module gr_plot
   real(kind=plflt) :: xprev, yprev
   character(len=80) :: selected_device
   character(len=160), private :: error_str
+
+  character(len=120), private :: local_name
+  
 contains
 
   subroutine gr_plot_open(device, area)
@@ -86,10 +89,12 @@ contains
        if (hardset%name == '') then
           pdot = index(pdefs%name, '.', back=.true.)
           if (pdot == 0) then
-             hardset%name = pdefs%name
+             local_name = pdefs%name
           else
-             hardset%name = pdefs%name(:pdot-1)
+             local_name = pdefs%name(:pdot-1)
           end if
+       else
+          local_name = hardset%name
        end if
 
        select case (device)
@@ -116,7 +121,7 @@ contains
                & int(hardset%off(1)*cm2pt), &
                & int(hardset%off(2)*cm2pt))
 
-          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.ps')
+          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.ps')
        case('eps')
           if (hardset%epsdev == '') then
              call gr_default_device('eps', driver)
@@ -136,7 +141,7 @@ contains
                & int(hardset%size(2)*cm2pt), &
                & int(hardset%size(1)*cm2pt), &
                & 0, 0)
-          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.eps')
+          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.eps')
        case('pdf')
           if (hardset%pdfdev == '') then
              call gr_default_device('pdf', driver)
@@ -160,7 +165,7 @@ contains
                & int(hardset%size(2)*cm2pt), &
                & int(hardset%off(1)*cm2pt), &
                & int(hardset%off(2)*cm2pt))
-          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.pdf')
+          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.pdf')
        case('epdf')
           if (hardset%pdfdev == '') then
              call gr_default_device('pdf', driver)
@@ -176,7 +181,7 @@ contains
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
                & 0, 0)
-          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.pdf')
+          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.pdf')
        case('svg')
           if (hardset%svgdev == '') then
              call gr_default_device('svg', driver)
@@ -192,7 +197,7 @@ contains
                & int(hardset%size(2)*cm2pt), &
                & int(hardset%size(1)*cm2pt), &
                & 0, 0)
-          call plsfnam(trim(pdefs%dir)//'/'//trim(hardset%name)//'.svg')
+          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.svg')
 
        end select
 
@@ -278,12 +283,12 @@ contains
 
     if (selected_device == 'pscairo' .and. hardset%action(1) /= '') then
        call execute_command_line(trim(hardset%action(1))//' '//&
-            & trim(hardset%name)//'.ps '//trim(hardset%action(2)))
+            & trim(local_name)//'.ps '//trim(hardset%action(2)))
     else if ((selected_device == 'epsqt' .or. &
          & selected_device == 'epscairo') .and. &
          & hardset%viewer(1) /= '') then
        call execute_command_line(trim(hardset%viewer(1))//' '//&
-            & trim(hardset%name)//'.eps '//&
+            & trim(local_name)//'.eps '//&
             & trim(hardset%viewer(2)), &
             & wait=.false.)
     end if
