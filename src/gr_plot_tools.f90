@@ -321,7 +321,7 @@ contains
   subroutine gr_plot_viewport
 
     ! Set up viewport.
-
+    
     if (pdefs%transform%viewport(1) == pdefs%transform%viewport(2)) then
        call plvasp(pdefs%transform%vp_aspect)
        call plgvpd(pdefs%transform%viewport(1), &
@@ -334,7 +334,7 @@ contains
             & pdefs%transform%viewport(3), &
             & pdefs%transform%viewport(4))
     else
-      call plvpas(pdefs%transform%viewport(1), &
+       call plvpas(pdefs%transform%viewport(1), &
             & pdefs%transform%viewport(2), &
             & pdefs%transform%viewport(3), &
             & pdefs%transform%viewport(4), &

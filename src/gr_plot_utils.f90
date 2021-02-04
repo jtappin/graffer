@@ -234,7 +234,8 @@ contains
           corners = 0._plflt
        end if
        aspect = real(pdefs%aspect(1), plflt)
-    else if (pdefs%position(1) > 0.) then
+    else if (pdefs%position(1) /= pdefs%position(3) .and. &
+         &   pdefs%position(2) /= pdefs%position(4)) then
        corners = real(pdefs%position([1,3,2,4]), plflt)
        aspect = 0._plflt
     else
