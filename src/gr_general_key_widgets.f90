@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -47,19 +47,25 @@ module gr_general_key_widgets
   integer, dimension(:), allocatable, target :: key_indices
   logical, dimension(:), allocatable :: key_use
 
+  type(graff_key), private :: key_save
+  logical, private :: reenter
+  
 contains
   subroutine gr_key_menu
 
     ! Set up a key or legend.
 
-    logical, dimension(2), target :: iapply = [.false., .true.]
-    type(c_ptr) :: base, junk, jb, cbase, stab
+    integer, dimension(3), target :: iapply = [0, 1, 2]
+    Type(c_ptr) :: base, junk, jb, cbase, stab
     real(kind=c_double) :: xcmin, xcmax, xcstep,  ycmin, ycmax, ycstep
     logical, dimension(:), allocatable :: usable
     integer :: n1d, i, j
     integer(kind=c_int) :: ix, iy
     character(len=120) :: klabel
 
+    key_save = pdefs%key
+    reenter = .false.
+    
     allocate(usable(pdefs%nsets), key_use(pdefs%nsets))
     usable = pdefs%data%type >= -3 .and. pdefs%data%type <= 8
     n1d = count(usable)
@@ -259,6 +265,10 @@ contains
          & clicked=c_funloc(gr_key_quit), data=c_loc(iapply(2)), &
          & tooltip="Apply the changes and destroy the widget"//c_null_char)
     call hl_gtk_box_pack(jb, junk)
+    junk = hl_gtk_button_new("Update"//c_null_char, &
+         & clicked=c_funloc(gr_key_quit), data=c_loc(iapply(3)), &
+         & tooltip="Apply the changes but do not destroy the widget"//c_null_char)
+    call hl_gtk_box_pack(jb, junk)
 
     junk = hl_gtk_button_new("Cancel "//c_null_char, &
          & clicked=c_funloc(gr_key_quit), data=c_loc(iapply(1)), &
@@ -275,12 +285,15 @@ contains
 
     ! Quit setting up key
 
-    logical, pointer :: apply
+    integer, pointer :: apply
     integer :: nuse, i, j
 
-    call c_f_pointer(data, apply)
+    if (reenter) return
 
-    if (apply) then
+    reenter = .true.
+    call c_f_pointer(data, apply)
+    
+    if (apply /= 0) then
        pdefs%key%use = c_f_logical(gtk_toggle_button_get_active(key_enable_but))
 
        pdefs%key%norm = knorm
@@ -321,13 +334,17 @@ contains
           j = j+1
        end do
 
-       call gr_plot_draw(.true.)
+    else
+       pdefs%key = key_save
+    end if 
+    call gr_plot_draw(.true.)
+
+    if (apply /= 2) then
+       if (allocated(key_ds_but)) deallocate(key_ds_but, key_indices, key_use)
+       if (allocated(key_save%list)) deallocate(key_save%list)
+       call gtk_widget_destroy(key_window)
     end if
-
-     if (allocated(key_ds_but)) deallocate(key_ds_but, key_indices, key_use)
-
-     call gtk_widget_destroy(key_window)
-
+    reenter = .false.
   end subroutine gr_key_quit
 
   subroutine gr_key_enable(widget, data) bind(c)
