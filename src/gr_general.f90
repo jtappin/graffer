@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -133,13 +133,16 @@ contains
 
   subroutine gr_set_title(widget, data) bind(c)
     type(c_ptr), value :: widget, data
-
+    character(len=120) :: wvalue
+    
     ! Change plot title
 
     if (.not. gui_active) return
 
-    call hl_gtk_entry_get_text(widget, pdefs%title)
+    call hl_gtk_entry_get_text(widget, wvalue)
+    if (wvalue == pdefs%title) return
 
+    pdefs%title = wvalue
     call gr_plot_draw(.true.)
   end subroutine gr_set_title
   function gr_set_title_e(widget, event, data) bind(c) result(rv)
@@ -152,13 +155,16 @@ contains
 
   subroutine gr_set_stitle(widget, data) bind(c)
     type(c_ptr), value :: widget, data
-
+    character(len=120) :: wvalue
+ 
     ! Change plot subtitle
 
     if (.not. gui_active) return
 
-    call hl_gtk_entry_get_text(widget, pdefs%subtitle)
+    call hl_gtk_entry_get_text(widget, wvalue)
+    if (wvalue == pdefs%subtitle) return
 
+    pdefs%subtitle = wvalue
     call gr_plot_draw(.true.)
   end subroutine gr_set_stitle
   function gr_set_stitle_e(widget, event, data) bind(c) result(rv)

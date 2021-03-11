@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -384,6 +384,7 @@ contains
     character(len=32) :: tval
     real(kind=real64) :: val, current
     integer :: ios
+    logical :: is_set
     
     ! Set plotting limit
 
@@ -396,9 +397,11 @@ contains
     else
        current = pdefs%data(pdefs%cset)%max_val
     end if
+    is_set = ieee_is_finite(current)
     
     call hl_gtk_entry_get_text(widget, tval)
     if (len_trim(tval) == 0) then
+       if (.not. is_set) return
        val = d_nan()
     else
        read(tval, *, iostat=ios) val
@@ -411,6 +414,7 @@ contains
           end if
           return
        end if
+       if (val == current) return
     end if
     if (limit == 1) then
        pdefs%data(pdefs%cset)%min_val = val
