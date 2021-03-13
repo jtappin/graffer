@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -403,7 +403,12 @@ contains
     end do
     nlevels = i-1
 
-    if (allocated(zdata%levels)) deallocate(zdata%levels)
+    if (allocated(zdata%levels)) then
+       if (size(zdata%levels) == nlevels .and. &
+            & all(zdata%levels == levels(:nlevels))) return
+       deallocate(zdata%levels)
+    end if
+    
     allocate(zdata%levels(nlevels))
     zdata%levels(:) = levels(:nlevels)
     zdata%n_levels = int(nlevels, int16)
@@ -431,7 +436,7 @@ contains
     integer(kind=int16), dimension(:,:), allocatable :: raw_colours
 
     integer :: ncols, ios, i, j, nsub
-    logical :: rewrite
+    logical :: rewrite, changed
     type(graff_zdata), pointer :: zdata
 
     rv = FALSE
@@ -469,9 +474,15 @@ contains
     end do
     ncols = i-1
 
+    if (allocated(zdata%colours) .and. allocated(zdata%raw_colours)) then
+       if (zdata%n_cols == ncols .and. &
+           & all(zdata%colours == colours) .and. &
+           & all(zdata%raw_colours == raw_colours)) return
+    end if
     if (allocated(zdata%colours)) deallocate(zdata%colours)
     if (allocated(zdata%raw_colours)) deallocate(zdata%raw_colours)
     allocate(zdata%colours(ncols), zdata%raw_colours(3, ncols))
+    
     zdata%colours(:) = colours(:ncols)
     zdata%raw_colours(:,:) = raw_colours(:,:ncols)
     zdata%n_cols = int(ncols, int16)
@@ -527,7 +538,11 @@ contains
     end do
     nsty = i-1
 
-    if (allocated(zdata%style)) deallocate(zdata%style)
+    if (allocated(zdata%style)) then
+       if (zdata%n_sty == nsty .and. &
+            & all(zdata%style == styles(:nsty))) return
+       deallocate(zdata%style)
+    end if
     allocate(zdata%style(nsty))
     zdata%style(:) = styles(:nsty)
     zdata%n_sty = int(nsty, int16)
@@ -577,8 +592,13 @@ contains
     end do
     nthick = i-1
 
-    if (allocated(zdata%thick)) deallocate(zdata%thick)
+    if (allocated(zdata%thick)) then
+       if (zdata%n_thick == nthick .and. &
+            & all(zdata%thick == thick(:nthick))) return
+       deallocate(zdata%thick)
+    end if
     allocate(zdata%thick(nthick))
+    
     zdata%thick(:) = thick(:nthick)
     zdata%n_thick = int(nthick, int16)
 
@@ -685,11 +705,14 @@ contains
     if (ios /= 0) then
        write(text, "(1pg0.5)") zdata%range(idx)
        call gtk_entry_set_text(widget, trim(adjustl(text))//c_null_char)
+    else if (zdata%range(idx) == value) then
+       return
     else
        zdata%range(idx) = value
     end if
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_range
+  
   function gr_2d_set_range_e(widget, event, data) bind(c) result(rv)
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data
@@ -719,9 +742,12 @@ contains
     if (ios /= 0) then
        write(text, "(1pg0.5)") zdata%missing
        call gtk_entry_set_text(widget, trim(adjustl(text))//c_null_char)
+    else if (zdata%missing == value) then
+       return
     else
        zdata%missing = value
     end if
+    
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_missing
 
@@ -754,6 +780,8 @@ contains
     if (ios /= 0) then
        write(text, "(1pg0.5)") zdata%gamma
        call gtk_entry_set_text(widget, trim(adjustl(text))//c_null_char)
+    else if (zdata%gamma == value) then
+       return
     else
        zdata%gamma = value
     end if
