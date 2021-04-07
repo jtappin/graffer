@@ -70,7 +70,7 @@ contains
     allocate(elo(data%ndata), &
          & ehi(data%ndata))
 
-    call plsmin(0._plflt, data%symsize)
+    !    call plsmin(0._plflt, data%symsize)
     select case (data%type)
     case(1)
        elo = xydata(2,:)-xydata(3,:)
@@ -79,8 +79,8 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
-
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
     case(2)
        elo = xydata(2,:)-xydata(3,:)
        ehi = xydata(2,:)+xydata(4,:)
@@ -88,7 +88,8 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
 
     case(3)
        elo = xydata(1,:)-xydata(3,:)
@@ -97,7 +98,8 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
 
     case(4)
        elo = xydata(1,:)-xydata(3,:)
@@ -106,7 +108,8 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
 
     case(5)
        elo = xydata(1,:)-xydata(3,:)
@@ -115,14 +118,16 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
        elo = xydata(2,:)-xydata(4,:)
        ehi = xydata(2,:)+xydata(4,:)
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
 
     case(6)
        elo = xydata(1,:)-xydata(3,:)
@@ -131,15 +136,17 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
        elo = xydata(2,:)-xydata(4,:)
        ehi = xydata(2,:)+xydata(5,:)
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
-
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
+       
     case(7)
        elo = xydata(1,:)-xydata(3,:)
        ehi = xydata(1,:)+xydata(4,:)
@@ -147,14 +154,16 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
        elo = xydata(2,:)-xydata(5,:)
        ehi = xydata(2,:)+xydata(5,:)
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
 
     case(8)
        elo = xydata(1,:)-xydata(3,:)
@@ -163,20 +172,112 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
        elo = xydata(2,:)-xydata(5,:)
        ehi = xydata(2,:)+xydata(6,:)
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
 
     end select
-    call plsmin(0._plflt, 1._plflt)
+    !    call plsmin(0._plflt, 1._plflt)
     
   end subroutine gr_plot_xy_errors
 
+  subroutine gr_rect_errors(x, y, elo, ehi, bsize, isx)
+    real(kind=plflt), dimension(:), intent(in) :: x, y, elo, ehi
+    real(kind=plflt), intent(in) :: bsize
+    logical, intent(in) :: isx
+
+    ! Draw a set of error bars on rectangular plots. (Replaces plerry
+    ! and plerrx, so as to handle limits).
+    
+    integer :: i
+    real(kind=plflt) :: wxmin, wxmax, wymin, wymax
+    real(kind=plflt) :: wxrange, wyrange, xcap, ycap, rinf
+    real(kind=plflt), dimension(6) :: sx, sy
+
+    ! find the axis range to size the caps and also the length of
+    ! limit arrows.
+
+    call plgvpw(wxmin, wxmax, wymin, wymax)
+    wxrange = wxmax-wxmin
+    wyrange = wymax-wymin
+
+    xcap = wxrange * bsize / 100.
+    ycap = wyrange * bsize / 100.
+    if (isx) then
+       rinf = wxrange / 15.
+    else
+       rinf = wyrange / 15.
+    end if
+
+    if (isx) then
+       ! Error bars in X
+
+       do i = 1, size(x)
+          if (ieee_is_finite(elo(i))) then
+             sx(2) = elo(i)
+             sx(1) = elo(i)
+             sx(3) = elo(i)
+          else
+             sx(2) = x(i) - rinf
+             sx(1) = sx(2) + xcap
+             sx(3) = sx(1)
+          end if
+          if (ieee_is_finite(ehi(i))) then
+             sx(5) = ehi(i)
+             sx(4) = ehi(i)
+             sx(6) = ehi(i)
+          else
+             sx(5) = x(i) + rinf
+             sx(4) = sx(5) - xcap
+             sx(6) = sx(4)
+          end if
+          sy = [y(i) - ycap, y(i), y(i) + ycap, &
+               & y(i) - ycap, y(i), y(i) + ycap]
+
+          call plline(sx(:3), sy(:3))
+          call plline(sx(4:), sy(4:))
+          call pljoin(sx(2), sy(2), sx(5), sy(5))
+       end do
+    else
+       ! Error bars in Y
+
+       do i = 1, size(x)
+          if (ieee_is_finite(elo(i))) then
+             sy(2) = elo(i)
+             sy(1) = elo(i)
+             sy(3) = elo(i)
+          else
+             sy(2) = y(i) - rinf
+             sy(1) = sy(2) + ycap
+             sy(3) = sy(1)
+          end if
+          if (ieee_is_finite(ehi(i))) then
+             sy(5) = ehi(i)
+             sy(4) = ehi(i)
+             sy(6) = ehi(i)
+          else
+             sy(5) = y(i) + rinf
+             sy(4) = sy(5) - ycap
+             sy(6) = sy(4)
+          end if
+          sx = [x(i) - xcap, x(i), x(i) + xcap, &
+               & x(i) - xcap, x(i), x(i) + xcap]
+
+          call plline(sx(:3), sy(:3))
+          call plline(sx(4:), sy(4:))
+          call pljoin(sx(2), sy(2), sx(5), sy(5))
+       end do
+    end if
+
+  end subroutine gr_rect_errors
+  
   subroutine gr_plot_rt_errors(index)
     integer, intent(in) :: index
 
