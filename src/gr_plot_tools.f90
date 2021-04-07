@@ -179,7 +179,7 @@ contains
        if (pdefs%axtype(iaxis) == 1) yout = 10._plflt ** yout
     end if
 
-   if (present(y_axis)) call gr_plot_transform()
+    if (present(y_axis)) call gr_plot_transform()
 
   end subroutine gr_plot_coords_v_w
 
@@ -298,7 +298,7 @@ contains
 
     if (.not. pdefs%transform%viewport_enabled) &
          & call gr_plot_viewport
- 
+
     call plwind(pdefs%transform%world(1, widx), &
          & pdefs%transform%world(2, widx), &
          & pdefs%transform%world(3, widx), &
@@ -321,7 +321,7 @@ contains
   subroutine gr_plot_viewport
 
     ! Set up viewport.
-    
+
     if (pdefs%transform%viewport(1) == pdefs%transform%viewport(2)) then
        call plvasp(pdefs%transform%vp_aspect)
        call plgvpd(pdefs%transform%viewport(1), &
@@ -339,21 +339,38 @@ contains
             & pdefs%transform%viewport(3), &
             & pdefs%transform%viewport(4), &
             & pdefs%transform%vp_aspect)
-   end if
- end subroutine gr_plot_viewport
+    end if
+  end subroutine gr_plot_viewport
 
   ! *************************************************************
   !     SYMBOLS & LINESTYLES
 
+
+  function gr_vp_aspect()
+    real(kind=plflt) :: gr_vp_aspect
+
+    ! Return the physical aspect ratio of the viewport,
+    ! for use to make sure symbols, error caps etc. aren't squashed.
+
+    real(kind=plflt) :: p_xp, p_yp, p_xmin, p_xmax, p_ymin, p_ymax
+    integer :: p_xleng, p_yleng, p_xoff, p_yoff
+    
+    call plgpage(p_xp, p_yp, p_xleng, p_yleng, p_xoff, p_yoff)
+    call plgvpd(p_xmin, p_xmax, p_ymin, p_ymax)
+
+    gr_vp_aspect = p_yleng*(p_ymax-p_ymin) / &
+         & (p_xleng*(p_xmax-p_xmin))
+  end function gr_vp_aspect
+    
   subroutine gr_plot_symbol(x, y, index, symsize, use)
     real(kind=plflt), intent(in), dimension(:) :: x, y
     integer(kind=int16), intent(in) :: index
     real(kind=real64), intent(in) :: symsize
     logical, dimension(:), intent(in), optional, target :: use
-    
+
     ! Plot symbols at data points
 
-    real(kind=plflt) :: dx, dy
+    real(kind=plflt) :: dx, dy, aspect
     real(kind=plflt) :: x0, x1, y0, y1
     real(kind=plflt), dimension(:), allocatable :: xs, ys
     logical :: filled
@@ -367,12 +384,18 @@ contains
        allocate(iuse(size(x)))
        iuse(:) = .true.
     end if
-    
-    call plgvpw(x0,x1,y0,y1)
 
+    call plgvpw(x0,x1,y0,y1)
+    aspect = gr_vp_aspect()
+    
     dx = abs(x1-x0)/100._plflt
     dy = abs(y1-y0)/100._plflt
-
+    if (aspect > 1._plflt) then
+       dx = dx*aspect
+    else if (aspect < 1._plflt) then
+       dy = dy / aspect
+    end if
+    
     select case (index)
     case(1)     ! PLUS
        npoints = 5
@@ -489,23 +512,23 @@ contains
        xs = [real(kind=plflt) :: -1., 1.]*symsize
        ys = 0._plflt 
        filled = .false.
-     case(18)    ! Vertical bar
+    case(18)    ! Vertical bar
        npoints = 2
        allocate(xs(npoints), ys(npoints))
        xs = 0._plflt 
        ys = [real(kind=plflt) :: -1., 1.]*symsize
        filled = .false.
-     case default
+    case default
        npoints = 7
        allocate(xs(npoints), ys(npoints))
        xs = [real(kind=plflt) :: 0., 0., .8, .8, .6, -.6, -.8] * symsize
        ys = [real(kind=plflt) :: -1., -.2, .2, .7, .9, .9, .7] * symsize
        filled = .false.
- 
+
     end select
 
     call gr_plot_linesty(0_int16)
-    
+
     do i = 1, size(x)
        if (.not. iuse(i)) cycle
        if (filled) then
@@ -516,7 +539,7 @@ contains
     end do
 
     if (.not. present(use)) deallocate(iuse)
-    
+
   end subroutine gr_plot_symbol
 
   subroutine gr_plot_linesty(index, scale)

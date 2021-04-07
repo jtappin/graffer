@@ -198,18 +198,26 @@ contains
     
     integer :: i
     real(kind=plflt) :: wxmin, wxmax, wymin, wymax
-    real(kind=plflt) :: wxrange, wyrange, xcap, ycap, rinf
+    real(kind=plflt) :: wxrange, wyrange, xcap, ycap, rinf, aspect
     real(kind=plflt), dimension(6) :: sx, sy
 
     ! find the axis range to size the caps and also the length of
     ! limit arrows.
 
     call plgvpw(wxmin, wxmax, wymin, wymax)
+    aspect = gr_vp_aspect()
+    
     wxrange = wxmax-wxmin
     wyrange = wymax-wymin
 
     xcap = wxrange * bsize / 100.
     ycap = wyrange * bsize / 100.
+    if (aspect > 1._plflt) then
+       xcap = xcap * aspect
+    else if (aspect < 1._plflt) then
+       ycap = ycap / aspect
+    end if
+    
     if (isx) then
        rinf = wxrange / 15.
     else
