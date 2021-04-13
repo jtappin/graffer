@@ -162,7 +162,7 @@ contains
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
     
-    logical, dimension(:), allocatable :: mask
+    logical, dimension(:), allocatable :: mask, maske
     real(kind=real64), pointer, dimension(:) :: par
     
     ! Auto scale the X axis for a rectangular coordinate DS
@@ -184,18 +184,31 @@ contains
        end if
        if (pdefs%axtype(1) == 1) &
             & mask = mask .and. data%xydata(1,:) > 0._real64
-    end if
-    
-    select case (data%type)
-    case(0:2)
+       if (count(mask) == 0) return
+
        axmin = min(axmin, minval(data%xydata(1,:), mask))
        axmax = max(axmax, maxval(data%xydata(1,:), mask))
+
+    end if
+
+    select case (data%type)
     case(3,5,6)
-       axmin = min(axmin, minval(data%xydata(1,:)-data%xydata(3,:), mask))
-       axmax = max(axmax, maxval(data%xydata(1,:)+data%xydata(3,:), mask))
+       allocate(maske(data%ndata))
+       maske = ieee_is_finite(data%xydata(3,:)) .and. mask
+       if (count(maske) > 0) then
+          axmin = min(axmin, minval(data%xydata(1,:)-data%xydata(3,:), maske))
+          axmax = max(axmax, maxval(data%xydata(1,:)+data%xydata(3,:), maske))
+       end if
     case(4,7,8)
-       axmin = min(axmin, minval(data%xydata(1,:)-data%xydata(3,:), mask))
-       axmax = max(axmax, maxval(data%xydata(1,:)+data%xydata(4,:), mask))
+       allocate(maske(data%ndata))
+       maske = ieee_is_finite(data%xydata(3,:)) .and. mask
+       if (count(maske) > 0) &
+            & axmin = min(axmin, minval(data%xydata(1,:)-data%xydata(3,:), &
+            & maske))
+       maske = ieee_is_finite(data%xydata(4,:)) .and. mask
+       if (count(maske) > 0) &
+            & axmax = max(axmax, maxval(data%xydata(1,:)+data%xydata(4,:), &
+            & maske))
     case(9)
        axmin = min(axmin, minval(data%zdata%x))
        axmax = max(axmax, maxval(data%zdata%x))
@@ -215,7 +228,7 @@ contains
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
     
-    logical, dimension(:), allocatable :: mask
+    logical, dimension(:), allocatable :: mask, maske
     real(kind=real64), pointer, dimension(:) :: par
 
     ! Auto scale the Y axis for a rectangular coordinate DS
@@ -238,31 +251,65 @@ contains
             & mask =  mask .and. data%xydata(2,:) <= data%max_val
        if (pdefs%axtype(data%y_axis+2) == 1) &
             & mask = mask .and. data%xydata(2,:) > 0._real64
-         
+
+       if (count(mask) == 0) return
+
+       axmin = min(axmin, minval(data%xydata(2,:), mask))
+       axmax = max(axmax, maxval(data%xydata(2,:), mask))
     end if
     
     select case (data%type)
-    case(0,3,4)
-       axmin = min(axmin, minval(data%xydata(2,:), mask))
-       axmax = max(axmax, maxval(data%xydata(2,:), mask))
     case(1)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:), mask))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(3,:), mask))
+       allocate(maske(data%ndata))
+       maske = ieee_is_finite(data%xydata(3,:)) .and. mask
+       if (count(maske) > 0) then 
+          axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:), maske))
+          axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(3,:), maske))
+       end if
     case(5)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:), mask))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:), mask))
+       allocate(maske(data%ndata))
+       maske = ieee_is_finite(data%xydata(4,:)) .and. mask
+       if (count(maske) > 0) then 
+          axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:), maske))
+          axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:), maske))
+       end if
     case(7)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:), mask))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:), mask))
+       allocate(maske(data%ndata))
+       maske = ieee_is_finite(data%xydata(5,:)) .and. mask
+       if (count(maske) > 0) then 
+          axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:), maske))
+          axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:), maske))
+       end if
     case(2)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:), mask))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:), mask))
+       allocate(maske(data%ndata))
+       maske = ieee_is_finite(data%xydata(3,:)) .and. mask
+       if (count(maske) > 0) &
+            & axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:), &
+            & maske))
+       maske = ieee_is_finite(data%xydata(4,:)) .and. mask
+       if (count(maske) > 0) &
+            & axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:), &
+            & maske))
     case(6)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:), mask))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:), mask))
+       allocate(maske(data%ndata))
+       maske = ieee_is_finite(data%xydata(4,:)) .and. mask
+       if (count(maske) > 0) &
+            & axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:), &
+            & maske))
+       maske = ieee_is_finite(data%xydata(5,:)) .and. mask
+       if (count(maske) > 0) &
+            & axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:), &
+            & maske))
     case(8)
-       axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:), mask))
-       axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(6,:), mask))
+       allocate(maske(data%ndata))
+       maske = ieee_is_finite(data%xydata(5,:)) .and. mask
+       if (count(maske) > 0) &
+            & axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:), &
+            & maske))
+       maske = ieee_is_finite(data%xydata(6,:)) .and. mask
+       if (count(maske) > 0) &
+            & axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(6,:), &
+            & maske))
     case(9)
        axmin = min(axmin, minval(data%zdata%y))
        axmax = max(axmax, maxval(data%zdata%y))
