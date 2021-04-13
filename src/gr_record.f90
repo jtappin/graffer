@@ -1242,7 +1242,7 @@ contains
 
        select case (this%tcode)
        case(idl_byte) 
-          ival(:mxi,:mxj) = iand(int(this%iaa_val(:mxi,:mxj), int16), bmask)
+          ival(:mxi,:mxj) = iand(int(this%baa_val(:mxi,:mxj), int16), bmask)
        case(idl_int, idl_objref) 
           ival(:mxi,:mxj) = this%iaa_val(:mxi,:mxj)
        case(idl_long)
