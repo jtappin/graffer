@@ -378,7 +378,21 @@ contains
                 status = 1
                 return
              end if
-             if (endims == 0) then
+             if (endims == 1) then
+                read(unit, iostat=ios, iomsg=iomsg) edims
+                if (ios /= 0) then
+                   write(error_str, "(A)") &
+                        & "GR_READ_REC: Failed to read list element", &
+                        & trim(iomsg)
+                   call gr_message(error_str)
+                   status = 1
+                   return
+                end if
+             else
+                edims = 1
+             end if
+             
+             if (edims == 1) then
                 select case (etcode)
                 case(idl_byte)
                    read(unit, iostat=ios, iomsg=iomsg) ebval
@@ -416,15 +430,6 @@ contains
                 this%iaa_val(:,i) = 0_int16
 
              else
-                read(unit, iostat=ios, iomsg=iomsg) edims
-                if (ios /= 0) then
-                   write(error_str, "(A)") &
-                        & "GR_READ_REC: Failed to read list element", &
-                        & trim(iomsg)
-                   call gr_message(error_str)
-                   status = 1
-                   return
-                end if
                 if (edims /= 3) then
                    write(error_str, "(A,i0,a)") &
                         & "GR_READ_REC: Array element of list has ", &
@@ -470,6 +475,7 @@ contains
                 this%ia_val(i) = -2
              end if
           end do
+          
        case default
           write(error_str, "(A, i0)") &
                & "GR_READ_REC: Unknown/inappropriate type code, ", this%tcode
