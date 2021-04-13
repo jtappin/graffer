@@ -1012,9 +1012,14 @@ contains
 
        case ('VS')
           if (allocated(ds%xydata)) deallocate(ds%xydata)
-          allocate(ds%xydata(dims(1), dims(2)))
+          if (size(dims) == 2) then
+             allocate(ds%xydata(dims(1), dims(2)))
+             ds%ndata = dims(2)
+          else
+             allocate(ds%xydata(dims(1), 1))
+             ds%ndata = 1
+          end if
           call rec%get_value(ds%xydata, status)
-          ds%ndata = dims(2)
 
        case('ZXS')
           if (allocated(ds%zdata%x)) deallocate(ds%zdata%x)
