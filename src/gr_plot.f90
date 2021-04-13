@@ -176,6 +176,7 @@ contains
           page_aspect = hardset%size(1)/hardset%size(2)
 
           call plsdev(driver)
+          call plsori(0)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(1)*cm2pt), &
@@ -191,11 +192,11 @@ contains
           page_aspect = hardset%size(1)/hardset%size(2)
 
           call plsdev(driver)
-          !          call plsori(1)
+          call plsori(0)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
-               & int(hardset%size(2)*cm2pt), &
                & int(hardset%size(1)*cm2pt), &
+               & int(hardset%size(2)*cm2pt), &
                & 0, 0)
           call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.svg')
 
