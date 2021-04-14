@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -143,6 +143,8 @@ contains
 
     if (apply) then
        call gr_ds_copy(from=cf_from, to=pdefs%cset)
+       call gtk_entry_set_text(ds_type_id, &
+            & trim(typedescrs(pdefs%data(pdefs%cset)%type))//c_null_char)
        call gr_plot_draw(.true.)
     end if
 

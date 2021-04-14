@@ -159,6 +159,9 @@ contains
 
     data%ndata = nlines
     data%type = int(tp, int16)
+    call gtk_entry_set_text(ds_type_id, &
+         & trim(typedescrs(data%type))//c_null_char)
+
     call  gtk_notebook_set_current_page(display_nb, 0)
 
     call move_alloc(xyvals, data%xydata)
@@ -259,6 +262,8 @@ contains
     data%ndata2 = ny
     data%zdata%x_is_2d = x2
     data%zdata%y_is_2d = y2
+    call gtk_entry_set_text(ds_type_id, &
+         & trim(typedescrs(data%type))//c_null_char)
 
     call move_alloc(x, data%zdata%x)
     call move_alloc(y, data%zdata%y)
@@ -390,6 +395,8 @@ contains
     data%ndata = neval
     data%ndata2 = neval2
     data%type = type
+    call gtk_entry_set_text(ds_type_id, &
+         & trim(typedescrs(data%type))//c_null_char)
 
     if (data%type == -4 .or. data%type == 9) then
        call  gtk_notebook_set_current_page(display_nb, 1)

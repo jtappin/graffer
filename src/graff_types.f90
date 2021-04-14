@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -189,5 +189,21 @@ module graff_types
        & 'XYyy  ', 'XYx   ', 'XYxx  ', 'XYxy  ', 'XYxyy ', 'XYxxy ', &
        & 'XYxxyy', 'Z     ']
 
-
+  character(len=34), dimension(-4:9), parameter :: typedescrs =&
+       & [character(len=34) :: &
+       & "Function z = f(x,y)", &
+       & "Function: x = f(t), y = g(t)", &
+       & "Function: x = f(y)", &
+       & "Function: y = f(x)", &
+       & "Data: X, Y", &
+       & "Data: X, Y, errors: ±Y", &
+       & "Data: X, Y, errors: -Y, +Y", &
+       & "Data: X, Y, errors: ±X", &
+       & "Data: X, Y, errors: -X, +X", &
+       & "Data: X, Y, errors: ±X, ±Y", &
+       & "Data: X, Y, errors: ±X, -Y, +Y", &
+       & "Data: X, Y, errors: -X, +X, ±Y", &
+       & "Data: X, Y, errors: -X, +X, -Y, +Y", &
+       & "Data: Z, X, Y"]
+  
 end module graff_types

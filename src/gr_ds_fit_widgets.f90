@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -529,6 +529,8 @@ contains
     curr_ds%funct%funct(1) = fstring
     curr_ds%funct%funct(2) = ''
     curr_ds%funct%evaluated = .false.
+    call gtk_entry_set_text(ds_type_id, &
+         & trim(typedescrs(curr_ds%type))//c_null_char)
 
     if (allocated(curr_ds%xydata)) deallocate(curr_ds%xydata)
     call  gtk_notebook_set_current_page(display_nb, 0)

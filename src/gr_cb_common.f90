@@ -98,7 +98,7 @@ module gr_cb_common
   ! DS selector
 
   type(c_ptr) :: ds_name_id, ds_idx_id, ds_rescale_id, ds_as_data_id, &
-       & ds_transpose_id
+       & ds_transpose_id, ds_type_id
 
   ! General
 
@@ -408,7 +408,7 @@ contains
     call hl_gtk_spin_button_set_value(clevels_entry, int(data%zdata%n_levels))
     call gtk_widget_set_sensitive(clevels_entry, &
          & f_c_logical(.not. data%zdata%set_levels))
-     call gtk_widget_set_sensitive(cldist_cbo, &
+    call gtk_widget_set_sensitive(cldist_cbo, &
          & f_c_logical(.not. data%zdata%set_levels))
     call gtk_widget_set_sensitive(clevel_view, &
          & f_c_logical(data%zdata%set_levels))
@@ -485,6 +485,10 @@ contains
 
     call gtk_entry_set_text(ds_name_id, trim(data%descript)//c_null_char)
     call hl_gtk_spin_button_set_value(ds_idx_id, int(pdefs%cset, c_int))
+    
+    call gtk_entry_set_text(ds_type_id, &
+         & trim(typedescrs(data%type))//c_null_char)
+    
     call gtk_widget_set_sensitive(ds_as_data_id, f_c_logical(data%type < 0))
     call gtk_widget_set_sensitive(ds_transpose_id, f_c_logical(data%type >= 0))
 

@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -223,6 +223,8 @@ contains
 
           data%ndata = nlines
           data%type = int(hl_gtk_radio_menu_group_get_select(error_grp), int16)
+          call gtk_entry_set_text(ds_type_id, &
+               & trim(typedescrs(data%type))//c_null_char)
           call move_alloc(xyvals, data%xydata)
 
           call gr_plot_draw(.true.)

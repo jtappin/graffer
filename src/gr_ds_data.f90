@@ -165,6 +165,7 @@ contains
     if (.not. c_f_logical(iresp)) return
 
     call gr_ds_xy_read(files(1))
+
     call gr_plot_draw(.true.)
     
   end subroutine gr_ds_file
@@ -197,6 +198,7 @@ contains
     end if
 
     call gr_ds_editor
+
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_edit
@@ -228,6 +230,7 @@ contains
     end if
 
     call gr_ds_copy_from_menu(1)
+
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_copy_from
@@ -267,6 +270,7 @@ contains
     if (.not. c_f_logical(iresp)) return
 
     call gr_ds_z_read(files(1))
+
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_file_2d
@@ -298,6 +302,7 @@ contains
     end if
 
     call gr_ds_copy_from_menu(2)
+
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_copy_from_2d
@@ -332,6 +337,7 @@ contains
     end if
 
     call gr_ds_fun_menu(ftype)
+
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_fun
@@ -403,6 +409,7 @@ contains
     end if
 
     call gr_ds_copy_from_menu(3)
+
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_copy_from_fn
@@ -433,6 +440,7 @@ contains
     end if
 
     call gr_fit_menu
+
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_fit

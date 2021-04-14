@@ -33,7 +33,7 @@ module gr_ds_selector
   use gr_cb_common
   use gr_ds_tools
   use gr_ds_widgets
-
+  
   implicit none
 
 contains
@@ -45,7 +45,8 @@ contains
 
     type(c_ptr) :: jb, mnu, smnu, junk
     integer(kind=int16), dimension(2), target :: direct = [-1_int16, 1_int16]
-
+    character(len=32) :: typet
+    
     fr = hl_gtk_box_new()
 
     jb = hl_gtk_box_new(horizontal=TRUE)
@@ -141,11 +142,22 @@ contains
          & wrap = TRUE)
     call hl_gtk_box_pack(jb, ds_idx_id)
 
+    jb = hl_gtk_box_new(horizontal=TRUE)
+    call hl_gtk_box_pack(fr, jb, expand=FALSE)
+
+    junk = gtk_label_new("Type:"//c_null_char)
+    call hl_gtk_box_pack(jb, junk, expand=FALSE)
+    
+    ds_type_id =hl_gtk_entry_new(editable=FALSE, &
+         & size=34_c_int, value = &
+         & trim(typedescrs(pdefs%data(pdefs%cset)%type))//c_null_char)
+    call hl_gtk_box_pack(jb, ds_type_id, expand=FALSE)
+    
     junk = hl_gtk_check_button_new("Only show current DS"//c_null_char, &
          & toggled=c_funloc(gr_ds_current_only), initial_state=&
          & f_c_logical(transient%current_only), &
          & tooltip="Toggle display if only the current dataset"//c_null_char)
-    call hl_gtk_box_pack(fr, junk, expand=FALSE)
+    call hl_gtk_box_pack(jb, junk, expand=FALSE)
 
   end function gr_ds_selector_new
 

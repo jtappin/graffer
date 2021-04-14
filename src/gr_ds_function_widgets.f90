@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -171,6 +171,8 @@ contains
        data => pdefs%data(pdefs%cset)
 
        data%type = fun_type
+       call gtk_entry_set_text(ds_type_id, &
+            & trim(typedescrs(data%type))//c_null_char)
 
        call hl_gtk_entry_get_text(fun_entry(1), text=data%funct%funct(1))
        data%ndata = int(hl_gtk_spin_button_get_value(neval_spin(1)), int32)
