@@ -156,7 +156,7 @@ contains
     junk = hl_gtk_check_button_new("Only show current DS"//c_null_char, &
          & toggled=c_funloc(gr_ds_current_only), initial_state=&
          & f_c_logical(transient%current_only), &
-         & tooltip="Toggle display if only the current dataset"//c_null_char)
+         & tooltip="Toggle display of only the current dataset"//c_null_char)
     call hl_gtk_box_pack(jb, junk, expand=FALSE)
 
   end function gr_ds_selector_new

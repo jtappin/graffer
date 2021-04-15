@@ -268,8 +268,10 @@ contains
     call move_alloc(x, data%zdata%x)
     call move_alloc(y, data%zdata%y)
     call move_alloc(z, data%zdata%z)
-    call  gtk_notebook_set_current_page(display_nb, 1)
+    call gtk_notebook_set_current_page(display_nb, 1)
 
+    call gr_plot_draw(.true.)
+    
   end subroutine gr_ds_z_read
 
   subroutine gr_ds_fun_read(file)
@@ -403,6 +405,8 @@ contains
     else
        call  gtk_notebook_set_current_page(display_nb, 0)
     end if
+
+    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_fun_read
 

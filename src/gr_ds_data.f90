@@ -199,8 +199,6 @@ contains
 
     call gr_ds_editor
 
-    call gr_plot_draw(.true.)
-
   end subroutine gr_ds_edit
 
   subroutine gr_ds_copy_from(widget, gdata) bind(c)
@@ -230,8 +228,6 @@ contains
     end if
 
     call gr_ds_copy_from_menu(1)
-
-    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_copy_from
 
@@ -303,8 +299,6 @@ contains
 
     call gr_ds_copy_from_menu(2)
 
-    call gr_plot_draw(.true.)
-
   end subroutine gr_ds_copy_from_2d
 
   subroutine gr_ds_fun(widget, gdata) bind(c)
@@ -337,8 +331,6 @@ contains
     end if
 
     call gr_ds_fun_menu(ftype)
-
-    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_fun
 
@@ -410,8 +402,6 @@ contains
 
     call gr_ds_copy_from_menu(3)
 
-    call gr_plot_draw(.true.)
-
   end subroutine gr_ds_copy_from_fn
 
   subroutine gr_ds_fit(widget, gdata) bind(c)
@@ -427,10 +417,10 @@ contains
     if (data%type >= 0 .and. data%ndata > 0) then
 
        iresp = hl_gtk_message_dialog_show(&
-            & ['TYPE CHANGE                         ', &
-            &  'Current data set is not a function  ', &
-            &  'copying a function will overwrite it', &
-            &  'Do you really want to do this?      '], &
+            & ['TYPE CHANGE                        ', &
+            &  'Current data set is not a function ', &
+            &  'fitting a dataset will overwrite it', &
+            &  'Do you really want to do this?     '], &
             & GTK_BUTTONS_YES_NO, &
             & type=GTK_MESSAGE_QUESTION, title= &
             & "Overwrite warning"//c_null_char, &
@@ -440,8 +430,6 @@ contains
     end if
 
     call gr_fit_menu
-
-    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_fit
 

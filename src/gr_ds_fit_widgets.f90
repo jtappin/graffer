@@ -21,7 +21,7 @@ module gr_ds_fit_widgets
   use, intrinsic :: iso_fortran_env
   use, intrinsic :: iso_c_binding
   use, intrinsic :: ieee_arithmetic
-  
+
   use gtk_hl
   use gtk_sup
 
@@ -38,14 +38,17 @@ module gr_ds_fit_widgets
   use gr_plot
   use gr_cb_common
   use gr_msg
-
+  use gr_ds_tools
+  
   implicit none
 
   type(c_ptr), private :: fit_window, fit_list, fit_type_cbo, fit_order_sb, &
        & fit_dir_cbo, fit_soln_entry, fit_prob_entry, fit_wt_but, &
        & fit_neval_sb, fit_chi2_entry
-  type(graff_fdata), private :: oldfun
-  integer(kind=int16), private :: oldtype
+
+  type(graff_data), private :: old_ds
+  
+  logical, private :: have_changed
 
 contains
   subroutine gr_fit_menu
@@ -62,13 +65,8 @@ contains
        return
     end if
 
-    if (pdefs%data(pdefs%cset)%type < 0) then
-       oldfun = pdefs%data(pdefs%cset)%funct
-       oldtype = pdefs%data(pdefs%cset)%type
-    else 
-       oldtype = 10
-    end if
-
+    call gr_ds_copy(from=pdefs%cset, destination = old_ds)
+    
     fit_window = hl_gtk_window_new("Fitting"//c_null_char, &
          & destroy=c_funloc(gr_fit_quit), &
          & parent=gr_window, modal=TRUE)
@@ -183,13 +181,11 @@ contains
          & "Compute the fit, and show the result"//c_null_char)
     call hl_gtk_box_pack(jb, junk)
 
-    if (pdefs%data(pdefs%cset)%type < 0) then
-       junk = hl_gtk_button_new("Cancel"//c_null_char, &
-            & clicked=c_funloc(gr_fit_clear), tooltip=&
-            & "Clear the fit, restore the previous function, "//&
-            & "quit the dialogue"//c_null_char)
-       call hl_gtk_box_pack(jb, junk)
-    end if
+    junk = hl_gtk_button_new("Cancel"//c_null_char, &
+         & clicked=c_funloc(gr_fit_clear), tooltip=&
+         & "Clear the fit, restore the previous function, "//&
+         & "quit the dialogue"//c_null_char)
+    call hl_gtk_box_pack(jb, junk)
 
     junk = hl_gtk_button_new("Quit"//c_null_char, &
          & clicked=c_funloc(gr_fit_quit), tooltip=&
@@ -206,6 +202,9 @@ contains
     ! Quit fitting menu
 
     call gtk_widget_destroy(fit_window)
+
+    call gr_plot_draw(have_changed)
+
   end subroutine gr_fit_quit
 
   subroutine gr_fit_select(widget, gdata) bind(c)
@@ -264,12 +263,10 @@ contains
 
     ! Cancel changes
 
-    if (oldtype < 0) then
-       pdefs%data(pdefs%cset)%funct = oldfun
-       pdefs%data(pdefs%cset)%type = oldtype
-       call gtk_widget_destroy(fit_window)
-    end if
-
+    call gr_ds_copy(source=old_ds, to=pdefs%cset, move=.true.)
+    have_changed = .false.
+    call gtk_widget_destroy(fit_window)
+ 
   end subroutine gr_fit_clear
 
   subroutine gr_fit_update(widget, gdata) bind(c)
@@ -360,7 +357,7 @@ contains
           call gtk_combo_box_set_active(fit_type_cbo, 0_c_int)
        end if
     end select
-    
+
     if (use_wt) then
        if (nan_flag) then
           allocate(wt(nf_data))
@@ -535,6 +532,7 @@ contains
     if (allocated(curr_ds%xydata)) deallocate(curr_ds%xydata)
     call  gtk_notebook_set_current_page(display_nb, 0)
 
-    call gr_plot_draw(.true.)
+    call gr_plot_draw(.false.)
+    have_changed = .true.
   end subroutine gr_fit_update
 end module gr_ds_fit_widgets

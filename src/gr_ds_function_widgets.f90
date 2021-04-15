@@ -205,6 +205,7 @@ contains
        else
           call  gtk_notebook_set_current_page(display_nb, 0)
        end if
+       
        call gr_plot_draw(.true.)
     end if
 
