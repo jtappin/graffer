@@ -216,7 +216,6 @@ contains
     ! Append one datset to another
 
     call gr_ds_merge
-    call gr_plot_draw(.true.)
     
   end subroutine gr_ds_merge_cb
 
@@ -227,7 +226,6 @@ contains
     ! Reorder datasets.
 
     call gr_ds_sort_menu
-    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_sort
 
@@ -341,12 +339,16 @@ contains
 
   subroutine gr_ds_rename(widget, data) bind(c)
     type(c_ptr), value :: widget, data
-
+    character(len=120) :: newdesc
+    
     ! Change the name of the current dataset.
 
-    call hl_gtk_entry_get_text(widget, pdefs%data(pdefs%cset)%descript)
-    call gr_plot_draw(.true.)
-
+    call hl_gtk_entry_get_text(widget, newdesc)
+    if (newdesc /= pdefs%data(pdefs%cset)%descript) then
+       pdefs%data(pdefs%cset)%descript = newdesc
+       call gr_plot_draw(.true.)
+    end if
+    
   end subroutine gr_ds_rename
   function gr_ds_rename_e(widget, event, data) bind(c) result(rv)
     integer(kind=c_int) :: rv
@@ -375,7 +377,6 @@ contains
     ! Scale/shift data.
 
     call gr_ds_rescale
-    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_rescale_cb
 
@@ -385,7 +386,6 @@ contains
     ! Scale/shift data.
 
     call gr_ds_transpose
-    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_transpose_cb
 
