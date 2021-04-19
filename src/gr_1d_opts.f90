@@ -24,7 +24,7 @@ module gr_1d_opts
   use gtk_hl
   use gtk_sup
 
-  use gtk, only: gtk_check_menu_item_get_active, gtk_combo_box_get_active, &
+  use gtk, only: gtk_toggle_button_get_active, gtk_combo_box_get_active, &
        & gtk_label_new, gtk_spin_button_get_value, FALSE
 
   use graff_types
@@ -54,7 +54,7 @@ contains
 
     ! Define the options panel for 1-D datasets.
 
-    type(c_ptr) :: junk, mnu, table, smnu
+    type(c_ptr) :: junk, mnu, table, smnu, xtab
     character(len=20), dimension(19) :: sym_list = [character(len=20) :: &
          & 'No symbol', 'Plus', 'Asterisk', 'Dot', 'Diamond', 'Triangle', &
          & 'Square', 'Cross', 'Circle', 'Filled Diamond', 'Filled Triangle', &
@@ -194,29 +194,53 @@ contains
     
     ! Extra settings
     
-    mnu = hl_gtk_menu_new()
-    call hl_gtk_table_attach(table, mnu, 0_c_int, 9_c_int, xspan=2_c_int,&
+!!$    mnu = hl_gtk_menu_new()
+!!$    call hl_gtk_table_attach(table, mnu, 0_c_int, 9_c_int, xspan=2_c_int,&
+!!$         & yopts=0_c_int)
+!!$
+!!$    smnu = hl_gtk_menu_submenu_new(mnu, "Extras ▼"//c_null_char, &
+!!$         & tooltip="Extra settings"//c_null_char)
+!!$
+!!$    xsort_id = hl_gtk_check_menu_item_new(smnu, &
+!!$         & "Sort X Axis?"//c_null_char, &
+!!$         & initial_state=f_c_logical(pdefs%data(pdefs%cset)%sort), &
+!!$         & toggled=c_funloc(gr_1d_set_sort), tooltip= &
+!!$         & "Select whether to sort the X axis before plotting"//c_null_char)
+!!$    clip_id = hl_gtk_check_menu_item_new(smnu, &
+!!$         & "Clip to box?"//c_null_char, &
+!!$         & initial_state=f_c_logical(.not. pdefs%data(pdefs%cset)%noclip), &
+!!$         & toggled=c_funloc(gr_1d_set_clip), tooltip= &
+!!$         & "Select whether to clip the data to the region"//c_null_char)
+!!$    mouse_id = hl_gtk_check_menu_item_new(smnu, &
+!!$         & "Mouse editing?"//c_null_char, &
+!!$         & initial_state=f_c_logical(pdefs%data(pdefs%cset)%medit), &
+!!$         & toggled=c_funloc(gr_1d_set_mouse), tooltip= &
+!!$         & "Select whether to allow editing with the mouse"//c_null_char)
+
+    xtab = hl_gtk_table_new()
+    call hl_gtk_table_attach(table, xtab, 0_c_int, 9_c_int, xspan=2_c_int, &
          & yopts=0_c_int)
 
-    smnu = hl_gtk_menu_submenu_new(mnu, "Extras ▼"//c_null_char, &
-         & tooltip="Extra settings"//c_null_char)
-
-    xsort_id = hl_gtk_check_menu_item_new(smnu, &
-         & "Sort X Axis?"//c_null_char, &
+    xsort_id = hl_gtk_check_button_new("Sort X Axis?"//c_null_char, &
          & initial_state=f_c_logical(pdefs%data(pdefs%cset)%sort), &
          & toggled=c_funloc(gr_1d_set_sort), tooltip= &
          & "Select whether to sort the X axis before plotting"//c_null_char)
-    clip_id = hl_gtk_check_menu_item_new(smnu, &
-         & "Clip to box?"//c_null_char, &
+    call hl_gtk_table_attach(xtab, xsort_id, 0_c_int, 0_c_int, &
+         & yopts=0_c_int)
+    
+    clip_id = hl_gtk_check_button_new("Clip to box?"//c_null_char, &
          & initial_state=f_c_logical(.not. pdefs%data(pdefs%cset)%noclip), &
          & toggled=c_funloc(gr_1d_set_clip), tooltip= &
          & "Select whether to clip the data to the region"//c_null_char)
-    mouse_id = hl_gtk_check_menu_item_new(smnu, &
-         & "Mouse editing?"//c_null_char, &
+    call hl_gtk_table_attach(xtab, clip_id, 1_c_int, 0_c_int, &
+         & yopts=0_c_int)
+    mouse_id = hl_gtk_check_button_new("Mouse editing?"//c_null_char, &
          & initial_state=f_c_logical(pdefs%data(pdefs%cset)%medit), &
          & toggled=c_funloc(gr_1d_set_mouse), tooltip= &
          & "Select whether to allow editing with the mouse"//c_null_char)
-
+    call hl_gtk_table_attach(xtab, mouse_id, 2_c_int, 0_c_int, &
+         & yopts=0_c_int)
+   
   end function gr_1d_opts_new
 
   subroutine gr_1d_set_colour(widget, data) bind(c)
@@ -338,7 +362,7 @@ contains
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%sort = &
-         & c_f_logical(gtk_check_menu_item_get_active(widget))
+         & c_f_logical(gtk_toggle_button_get_active(widget))
 
     call gr_plot_draw(.true.)
   end subroutine gr_1d_set_sort
@@ -351,7 +375,7 @@ contains
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%noclip = &
-         & .not. c_f_logical(gtk_check_menu_item_get_active(widget))
+         & .not. c_f_logical(gtk_toggle_button_get_active(widget))
 
     call gr_plot_draw(.true.)
   end subroutine gr_1d_set_clip
@@ -364,7 +388,7 @@ contains
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%medit = &
-         & c_f_logical(gtk_check_menu_item_get_active(widget))
+         & c_f_logical(gtk_toggle_button_get_active(widget))
     call gr_draw_tips
     call gr_set_changed(.true.)
   end subroutine gr_1d_set_mouse

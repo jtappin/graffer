@@ -392,10 +392,12 @@ contains
        call gtk_entry_set_text(max_ent, c_null_char)
     end if
     
-    call gtk_check_menu_item_set_active(xsort_id, f_c_logical(data%sort))
-    call gtk_check_menu_item_set_active(clip_id, f_c_logical(.not. data%noclip))
-    call gtk_check_menu_item_set_active(mouse_id, f_c_logical(data%medit))
-
+    call gtk_toggle_button_set_active(xsort_id, f_c_logical(data%sort))
+    call gtk_toggle_button_set_active(clip_id, f_c_logical(.not. data%noclip))
+    call gtk_toggle_button_set_active(mouse_id, f_c_logical(data%medit))
+    call gtk_widget_set_sensitive(xsort_id, f_c_logical(data%type >= 0))
+    call gtk_widget_set_sensitive(mouse_id, f_c_logical(data%type >= 0))
+    
     call gtk_notebook_set_current_page(fmt_nbook, &
          & int(data%zdata%format, c_int))
 
