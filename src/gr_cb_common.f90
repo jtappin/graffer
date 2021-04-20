@@ -487,10 +487,15 @@ contains
 
     call gtk_entry_set_text(ds_name_id, trim(data%descript)//c_null_char)
     call hl_gtk_spin_button_set_value(ds_idx_id, int(pdefs%cset, c_int))
-    
-    call gtk_entry_set_text(ds_type_id, &
-         & trim(typedescrs(data%type))//c_null_char)
-    
+
+    if (data%type == 0 .and. data%ndata == 0) then
+       call gtk_entry_set_text(ds_type_id, &
+            & "Unset"//c_null_char)
+    else
+       call gtk_entry_set_text(ds_type_id, &
+            & trim(typedescrs(data%type))//c_null_char)
+    end if
+
     call gtk_widget_set_sensitive(ds_as_data_id, f_c_logical(data%type < 0))
     call gtk_widget_set_sensitive(ds_transpose_id, f_c_logical(data%type >= 0))
 
