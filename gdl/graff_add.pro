@@ -23,6 +23,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
                thick, neval = neval, description = description, frange $
                = frange, sort = sort, errtype = $
                errtype, funcz = funcz, ascii = ascii, noclip = noclip, $
+               $
                min_val = min_val, max_val = max_val, $
                mouse = mouse, z_format = z_format, z_nlevels = $
                z_nlevels, z_levels = z_levels, z_colours = z_colours, $
@@ -179,6 +180,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	Remove spurious +1 in ctable handling: 13/1/21; SJT
 ;	Force Y_right to be enabled if a DS on the right axis is
 ;	added: 29/1/21; SJT
+;	Treat single 1×n array as 1-D: 8/5/21; SJT
 ;-
 
 ;	Check that the necessary inputs are present
@@ -218,10 +220,10 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
   endif
   
   if (n_params() ge 2 && (keyword_set(x_func) || keyword_set(y_func) || $
-                           keyword_set(z_func))) $
+                          keyword_set(z_func))) $
   then message, "May not specify both data and a function"
   if n_params() ge 2 && (keyword_set(xy_file) || keyword_set(z_file) || $
-                          keyword_set(func_file)) $
+                         keyword_set(func_file)) $
   then message, "May not specify both data and a data file"
 
   if ((keyword_set(x_func) || keyword_set(y_func)) && keyword_set(z_func)) $
@@ -250,7 +252,10 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      2: begin
         sx = size(a1)
         if sx[0] eq 2 then begin
-           if sx[1] eq 2 then begin
+           if sx[1] eq 1 then begin
+              y = reform(double(a1))
+              x = dindgen(sx[2])
+           endif else if sx[1] eq 2 then begin
               x = double(reform(a1[0, *]))
               y = double(reform(a1[1, *]))
            endif else if sx[2] eq 2 then begin
@@ -486,7 +491,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 
   if (keyword_set(polar) && ((*pdefs.data)[pdefs.cset].type ge -3 && $
                              (*pdefs.data)[pdefs.cset].type le 8)) then $
-                                 (*pdefs.data)[pdefs.cset].mode = polar
+                                (*pdefs.data)[pdefs.cset].mode = polar
   if (n_elements(psym) ne 0) then  (*pdefs.data)[pdefs.cset].psym = psym
   if (n_elements(join) ne 0) then (*pdefs.data)[pdefs.cset].pline = join
   if (n_elements(symsize) ne 0) then  (*pdefs.data)[pdefs.cset].symsize $
@@ -509,9 +514,11 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
   if (n_elements(noclip)  ne 0) then (*pdefs.data)[pdefs.cset].noclip $
      = noclip
   if n_elements(min_val) ne 0 then (*pdefs.data)[pdefs.cset].min_val = $
+     $
      min_val $
   else (*pdefs.data)[pdefs.cset].min_val = !values.d_nan
   if n_elements(max_val) ne 0 then (*pdefs.data)[pdefs.cset].max_val = $
+     $
      max_val $
   else (*pdefs.data)[pdefs.cset].max_val = !values.d_nan
 
