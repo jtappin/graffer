@@ -206,7 +206,6 @@ contains
     ! Select a new current dataset
 
     call gr_ds_select
-    if (transient%current_only) call gr_plot_draw(.false.)
   
   end subroutine gr_ds_select_cb
 

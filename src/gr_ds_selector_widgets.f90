@@ -108,7 +108,7 @@ contains
        nsel = hl_gtk_listn_get_selections(sel_list, indices=isel)
        if (nsel > 0) then
           call gr_set_values_dataset(int(isel(1)+1, int16))
-          call gr_plot_draw(.true.)
+          call gr_plot_draw(.false.)
        end if
     end if
 
