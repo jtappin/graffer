@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -137,13 +137,15 @@ contains
   end subroutine gr_pdefs_data_init_all
 
 
-  subroutine gr_pdefs_data_init(dataset, index)
+  subroutine gr_pdefs_data_init(dataset, index, minimal)
     type(graff_data), intent(inout), optional, target :: dataset
     integer(kind=int16), intent(in), optional :: index
+    logical, intent(in), optional :: minimal
 
     ! Initialize a Graffer dataset.
 
     type(graff_data), pointer :: data
+    logical :: init_settings
 
     if (present(dataset)) then
        data => dataset
@@ -155,51 +157,60 @@ contains
        return
     end if
 
+    if (present(minimal)) then
+       init_settings = .not. minimal
+    else
+       init_settings = .true.
+    end if
+
     data%ndata = 0_int32
     data%ndata2 = 0_int32
     data%type = 0_int16
     data%mode = 0_int16
-    data%descript = ''
-    data%pline = 1_int16
-    data%psym = 0_int16
-    data%symsize = 1._real32
-    data%line = 0_int16
-    data%colour = 1_int16
-    data%thick = 1._real32
-    data%min_val = d_nan()
-    data%max_val = d_nan()
-    data%y_axis = 0_int16
-    data%sort = .false.
-    data%noclip = .false.
+    if (init_settings) then
+       data%descript = ''
+       data%pline = 1_int16
+       data%psym = 0_int16
+       data%symsize = 1._real32
+       data%line = 0_int16
+       data%colour = 1_int16
+       data%thick = 1._real32
 
-    if (present(dataset)) then
-       data%medit = .false.
-       data%zdata%gamma = 1._real32
-       data%zdata%ctable = 0_int16
-    else
-       data%medit = sysopts%mouse
-       data%zdata%gamma = pdefs%gamma
-       data%zdata%ctable = pdefs%ctable
+       data%min_val = d_nan()
+       data%max_val = d_nan()
+       data%y_axis = 0_int16
+       data%sort = .false.
+       data%noclip = .false.
+
+       if (present(dataset)) then
+          data%medit = .false.
+          data%zdata%gamma = 1._real32
+          data%zdata%ctable = 0_int16
+       else
+          data%medit = sysopts%mouse
+          data%zdata%gamma = pdefs%gamma
+          data%zdata%ctable = pdefs%ctable
+       end if
+
+       data%zdata%format = 0
+       data%zdata%set_levels = .false.
+       data%zdata%n_levels = 6_int16
+       data%zdata%n_cols = 0_int16
+       data%zdata%n_sty = 0_int16
+       data%zdata%n_thick = 0_int16
+
+       data%zdata%range = 0._real64
+       data%zdata%missing = 0._real64
+       data%zdata%pxsize = 0.1_real32
+       data%zdata%charsize = 1._real32
+       data%zdata%label = 0_int16
+       data%zdata%fill = 0_int8
+       data%zdata%ilog = 0_int16
+       data%zdata%invert = .false.
+       data%zdata%smooth = .false.
+       data%zdata%shade_levels = 256
     end if
-
-    data%zdata%format = 0
-    data%zdata%set_levels = .false.
-    data%zdata%n_levels = 6_int16
-    data%zdata%n_cols = 0_int16
-    data%zdata%n_sty = 0_int16
-    data%zdata%n_thick = 0_int16
-
-    data%zdata%range = 0._real64
-    data%zdata%missing = 0._real64
-    data%zdata%pxsize = 0.1_real32
-    data%zdata%charsize = 1._real32
-    data%zdata%label = 0_int16
-    data%zdata%fill = 0_int8
-    data%zdata%ilog = 0_int16
-    data%zdata%invert = .false.
-    data%zdata%smooth = .false.
-    data%zdata%shade_levels = 256
-
+    
     if (allocated(data%xydata)) deallocate(data%xydata)
 
     if (allocated(data%zdata%x)) deallocate(data%zdata%x)

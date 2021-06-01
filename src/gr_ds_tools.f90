@@ -664,7 +664,7 @@ contains
     
     ! First we clear the target
 
-    call gr_pdefs_data_init(dataset=data_to)
+    call gr_pdefs_data_init(dataset=data_to, minimal=.true.)
 
     ! Copies common to all
 
@@ -673,11 +673,12 @@ contains
     data_to%type = data_from%type
     data_to%mode = data_from%mode
 
-    data_to%descript = data_from%descript
     data_to%y_axis = data_from%y_axis
 
     ! We don't copy the formatting options unless requested
     if (fcopy) then
+       data_to%descript = trim(data_from%descript) // ' (copy)'
+
        data_to%pline = data_from%pline
        data_to%psym = data_from%psym
        data_to%symsize = data_from%symsize
@@ -856,7 +857,7 @@ contains
     if (pdefs%data(index)%ndata == 0) return
 
     if (pdefs%data(dest)%ndata == 0) then
-       call gr_ds_copy(from=index, to=dest, copy_format=.true.)
+       call gr_ds_copy(from=index, to=dest, copy_format=.false.)
        return
     end if
 
