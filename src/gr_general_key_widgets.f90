@@ -337,7 +337,7 @@ contains
     else
        pdefs%key = key_save
     end if 
-    call gr_plot_draw(.true.)
+    call gr_plot_draw(apply == 1)
 
     if (apply /= 2) then
        if (allocated(key_ds_but)) deallocate(key_ds_but, key_indices, key_use)
