@@ -596,12 +596,13 @@ contains
   end subroutine gr_ds_new
 
   subroutine gr_ds_copy(from, to, source, destination, copy_format, &
-       & move, no_housekeeping)
+       & move, no_housekeeping, append)
     integer(kind=int16), intent(in), optional :: from, to
     type(graff_data), target, intent(inout), optional :: source
     type(graff_data), target, intent(out), optional :: destination
     logical, intent(in), optional :: copy_format, move, no_housekeeping
-
+    character(len=*), intent(in), optional :: append
+    
     ! Make a copy of a dataset
 
     integer(kind=int16) :: dest
@@ -677,8 +678,12 @@ contains
 
     ! We don't copy the formatting options unless requested
     if (fcopy) then
-       data_to%descript = trim(data_from%descript) // ' (copy)'
-
+       if (present(append)) then
+          data_to%descript = trim(data_from%descript) // trim(append)
+       else
+          data_to%descript = data_from%descript
+       end if
+       
        data_to%pline = data_from%pline
        data_to%psym = data_from%psym
        data_to%symsize = data_from%symsize

@@ -331,7 +331,7 @@ contains
     current_ds = pdefs%cset
 
     call gr_ds_new(.true.)
-    call gr_ds_copy(current_ds)
+    call gr_ds_copy(current_ds, append=' (copy)')
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_copy_cb
