@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -274,6 +274,7 @@ contains
             & ')/double(',n-1,')'
     end if
     write(punit, "(2a)") 'y = ', trim(fun)
+    write(punit, "(a)") 'if size(y, /type) ne 7 then y = double(y)'
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
     write(punit, "(a)") 'close, 1'
@@ -343,6 +344,7 @@ contains
             & ')/double(',n-1,')'
     end if
     write(punit, "(2a)") 'x = ', trim(fun)
+    write(punit, "(a)") 'if size(x, /type) ne 7 then x = double(x)'
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
     write(punit, "(a)") 'close, 1'
@@ -403,6 +405,8 @@ contains
          & ')/double(',n-1,')'
     write(punit, "(2a)") 'x = ', trim(fun(1))
     write(punit, "(2a)") 'y = ', trim(fun(2))
+    write(punit, "(a)") 'if size(x, /type) ne 7 then x = double(x)'
+    write(punit, "(a)") 'if size(y, /type) ne 7 then y = double(y)'
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
     write(punit, "(a)") 'close, 1'
@@ -489,6 +493,7 @@ contains
     end if
     write(punit, "(a,i0,a)") 'y = y1[intarr(',nx,'),*]'
     write(punit, "(2a)") 'z = ', trim(fun)
+    write(punit, "(a)") 'if size(z, /type) ne 7 then z = double(z)'
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x1, y1, z'
     write(punit, "(a)") 'close, 1'
