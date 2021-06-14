@@ -769,6 +769,8 @@ contains
           data_to%zdata%smooth = data_from%zdata%smooth
           data_to%zdata%shade_levels = data_to%zdata%shade_levels
        end if
+    else if (present(append)) then
+       data_to%descript = trim(data_from%descript) // trim(append)
     end if
 
     select case (data_to%type)
