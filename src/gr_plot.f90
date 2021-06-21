@@ -406,7 +406,7 @@ contains
     call gr_axis_box(2, yopt, ymajor, yminor)
     if (pdefs%y_right) call gr_axis_box(3, ropt, rmajor, rminor)
 
-    if (any(pdefs%axsty%format /= '')) &
+    if (any(pdefs%axsty%format /= '') .or. any(pdefs%axsty%is_big_log)) &
          & call plslabelfunc(gr_format_labels)
 
     call plcol0(1)

@@ -40,7 +40,7 @@ module gr_axis
   implicit none
 
   character(len=2), dimension(3), parameter :: axname = ['X ','Y ', 'Yr']
-
+  
 contains
   function gr_axis_new(axis, sensitive) result(fr)
     type(c_ptr) :: fr
@@ -233,8 +233,9 @@ contains
     call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(2)))
     call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(2)))
 
-    junk = hl_gtk_menu_item_new(jmnu, "Advanced"//c_null_char, &
+    ax_adv_item(axis) = hl_gtk_menu_item_new(jmnu, "Advanced..."//c_null_char, &
          & activate=c_funloc(gr_axis_adv), data=c_loc(axis), &
+         & sensitive=f_c_logical(pdefs%axtype(axis) == 0), &
          & tooltip = "Advanced axis settings"//c_null_char)
 
     ! Axis range
@@ -308,7 +309,9 @@ contains
 
     call c_f_pointer(wdata, axis)
     pdefs%axtype(axis) = int(gtk_check_menu_item_get_active(widget), int16)
-
+    call gtk_widget_set_sensitive(ax_adv_item(axis), &
+         & f_c_logical(pdefs%axtype(axis) == 0))
+    
     ! A change of axis type requires new evaluation locations so flag
     ! functions as not-evaluated.
     

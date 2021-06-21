@@ -171,7 +171,28 @@ contains
     if (axsty%minor /= 1)  options = trim(options)//'s'
     nminor = axsty%minor
 
-    if (axsty%major /= 0) then
+    axsty%is_big_log = .false.
+    
+    if (pdefs%axtype(axis) == 1) then
+       p10=int(abs(log10(pdefs%axrange(2,axis)/pdefs%axrange(1,axis))))
+       if (p10 > 6) then
+          axsty%is_big_log = .true.
+          options = trim(options)//'o'
+          if (p10 <= 15) then
+             spacing = 2._real64
+             nminor = 2
+          else if (p10 <= 30) then
+             spacing = 5._real64
+             nminor = 5
+          else
+             spacing = 0._real64
+             nminor = 0
+          end if
+       else
+          options = trim(options)//'l'
+       end if
+       spacing = 0._plflt
+    else if (axsty%major /= 0) then
        spacing = abs(pdefs%axrange(2,axis)- pdefs%axrange(1,axis))/&
             & real(axsty%major)
        p10 = floor(log10(spacing))
@@ -192,7 +213,6 @@ contains
        spacing = 0._plflt
     end if
     
-    if (pdefs%axtype(axis) == 1) options = trim(options)//'l'
 
     if (.not. btest(axsty%extra, annot_bit)) then
        if (axis == 3) then
@@ -273,7 +293,10 @@ contains
        iaxis = 3
     end if
 
-    if (btest(pdefs%axsty(iaxis)%time, time_bit)) then
+    if (pdefs%axsty(iaxis)%is_big_log) then
+       write(label, "('10#u',i0,'#d')", iostat=ios, iomsg=iom) nint(value)
+       if (ios /= 0) label = ''
+    else if (btest(pdefs%axsty(iaxis)%time, time_bit)) then
        call gr_format_time(iaxis, value, label)
     else
        write(label, pdefs%axsty(iaxis)%format, iostat=ios, iomsg=iom) value
@@ -284,7 +307,7 @@ contains
        end if
     end if
   end subroutine gr_format_labels
-
+ 
   subroutine gr_format_time(axis, value, label)
     integer, intent(in) :: axis
     real(kind=plflt), intent(in) :: value

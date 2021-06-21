@@ -87,7 +87,7 @@ module gr_cb_common
 
   type(c_ptr), dimension(3) :: lbox, log_chb, &
        & exact_chb, ext_chb, ax_chb, bax_chb, minor_chb, ann_chb, time_chb, &
-       & origin_grp, grid_grp, rot_chb
+       & origin_grp, grid_grp, rot_chb, ax_adv_item
 
   type(c_ptr), dimension(2,3) :: rbox
 
@@ -298,6 +298,8 @@ contains
        call gtk_check_menu_item_set_active(log_chb(i), &
             & int(pdefs%axtype(i), c_int))
        call gtk_widget_set_sensitive(log_chb(i), f_c_logical(log_valid))
+       call gtk_widget_set_sensitive(ax_adv_item(i), &
+            & f_c_logical(pdefs%axtype(i) == 0))
 
        call gtk_check_menu_item_set_active(exact_chb(i), &
             & f_c_logical(btest(pdefs%axsty(i)%idl, exact_bit)))

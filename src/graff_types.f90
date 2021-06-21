@@ -32,6 +32,7 @@ module graff_types
      integer(kind=int32) :: tzero=0_int32
      integer(kind=int16) :: minor=0_int16, major=0_int16
      character(len=40) :: format=''
+     logical :: is_big_log
      real(kind=real64), dimension(:), allocatable :: values
   end type graff_style
 
