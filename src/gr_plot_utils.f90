@@ -190,8 +190,8 @@ contains
           end if
        else
           options = trim(options)//'l'
+          spacing = 0._plflt
        end if
-       spacing = 0._plflt
     else if (axsty%major /= 0) then
        spacing = abs(pdefs%axrange(2,axis)- pdefs%axrange(1,axis))/&
             & real(axsty%major)
