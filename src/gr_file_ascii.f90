@@ -433,7 +433,9 @@ contains
           case('XFM')
              call gr_str_val(inln, 'XFM', pdefs%axsty(1)%format)
              exit
-
+          case('XLL')
+             pdefs%axsty(1)%log_bands =gr_int_val(tag_val(itag+1), 3)
+             
           case('XVL')
              if (nxt == 0) exit
              pdefs%axsty(1)%values = gr_dbl_val(tag_val(itag+1), nxt)
@@ -470,7 +472,9 @@ contains
           case('YFM')
              call gr_str_val(inln, 'YFM', pdefs%axsty(2)%format)
              exit
-
+          case('YLL')
+             pdefs%axsty(2)%log_bands =gr_int_val(tag_val(itag+1), 3)
+             
           case('YVL')
              if (nxt == 0) exit
              pdefs%axsty(2)%values = gr_dbl_val(tag_val(itag+1), nxt)
@@ -507,7 +511,9 @@ contains
           case('RFM')
              call gr_str_val(inln, 'RFM', pdefs%axsty(3)%format)
              exit
-
+          case('RLL')
+             pdefs%axsty(3)%log_bands =gr_int_val(tag_val(itag+1), 3)
+             
           case('RVL')
              if (nxt == 0) exit
              pdefs%axsty(3)%values = gr_dbl_val(tag_val(itag+1), nxt)
@@ -1275,7 +1281,8 @@ contains
     write(unit, "(a,i0,a,i0)") "XMJ:", pdefs%axsty(1)%major, &
          &  ":XMN:", pdefs%axsty(1)%minor
     write(unit, "(2a)") "XFM:", trim(pdefs%axsty(1)%format)
-
+    write(unit, "(a,3(i0,' '))") "XLL:", pdefs%axsty(1)%log_bands
+    
     if (allocated(pdefs%axsty(1)%values)) then
        nvals = size(pdefs%axsty(1)%values)
        write(unit, "(a,i0)") "XNV:", nvals
@@ -1295,7 +1302,8 @@ contains
     write(unit, "(a,i0,a,i0)") "YMJ:", pdefs%axsty(2)%major, &
          & ":YMN:", pdefs%axsty(2)%minor
     write(unit, "(2a)") "YFM:", trim(pdefs%axsty(2)%format)
-
+    write(unit, "(a,3(i0,' '))") "YLL:", pdefs%axsty(2)%log_bands
+    
     if (allocated(pdefs%axsty(2)%values)) then
        nvals = size(pdefs%axsty(2)%values)
        write(unit, "(a,i0)") "YNV:", nvals
@@ -1313,7 +1321,8 @@ contains
     write(unit, "(a,i0,a,i0)") "RMJ:", pdefs%axsty(3)%major&
          &, ":RMN:", pdefs%axsty(3)%minor
     write(unit, "(2a)") "RFM:", trim(pdefs%axsty(3)%format)
-
+    write(unit, "(a,3(i0,' '))") "RLL:", pdefs%axsty(3)%log_bands
+    
     if (allocated(pdefs%axsty(3)%values)) then
        nvals = size(pdefs%axsty(3)%values)
        write(unit, "(a,i0)") "RNV:", nvals

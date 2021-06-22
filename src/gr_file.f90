@@ -358,7 +358,9 @@ contains
           call rec%get_value(pdefs%axsty(1)%major, status)
        case ('XFM')
           call rec%get_value(pdefs%axsty(1)%format, status)
-
+       case('XLL')
+          call rec%get_value(pdefs%axsty(1)%log_bands, status)
+          
        case('XVL')
           if (allocated(pdefs%axsty(1)%values)) &
                & deallocate(pdefs%axsty(1)%values)
@@ -392,6 +394,9 @@ contains
           call rec%get_value(pdefs%axsty(2)%major, status)
        case ('YFM')
           call rec%get_value(pdefs%axsty(2)%format, status)
+       case('YLL')
+          call rec%get_value(pdefs%axsty(2)%log_bands, status)
+
        case('YVL')
           if (allocated(pdefs%axsty(2)%values)) &
                & deallocate(pdefs%axsty(2)%values)
@@ -427,6 +432,9 @@ contains
           call rec%get_value(pdefs%axsty(3)%major, status)
        case ('RFM')
           call rec%get_value(pdefs%axsty(3)%format, status)
+       case('RLL')
+          call rec%get_value(pdefs%axsty(3)%log_bands, status)
+
        case('RVL')
           if (allocated(pdefs%axsty(3)%values)) &
                & deallocate(pdefs%axsty(3)%values)
@@ -1155,6 +1163,8 @@ contains
     call rec%set_value('XSZ', pdefs%axsty(1)%tzero, unit)
     call rec%set_value('XMJ', pdefs%axsty(1)%major, unit)
     call rec%set_value('XFM', pdefs%axsty(1)%format, unit)
+    call rec%set_value('XLL', pdefs%axsty(1)%log_bands, unit)
+    
     call rec%set_value('XMN', pdefs%axsty(1)%minor, unit)
     if (allocated(pdefs%axsty(1)%values)) &
          &  call rec%set_value('XVL', pdefs%axsty(1)%values, unit)
@@ -1172,6 +1182,8 @@ contains
     call rec%set_value('YSZ', pdefs%axsty(2)%tzero, unit)
     call rec%set_value('YMJ', pdefs%axsty(2)%major, unit)
     call rec%set_value('YFM', pdefs%axsty(2)%format, unit)
+    call rec%set_value('YLL', pdefs%axsty(2)%log_bands, unit)
+    
     call rec%set_value('YMN', pdefs%axsty(2)%minor, unit)
     if (allocated(pdefs%axsty(2)%values)) &
          & call rec%set_value('YVL', pdefs%axsty(2)%values, unit)
@@ -1188,6 +1200,8 @@ contains
     call rec%set_value('RSZ', pdefs%axsty(3)%tzero, unit)
     call rec%set_value('RMJ', pdefs%axsty(3)%major, unit)
     call rec%set_value('RFM', pdefs%axsty(3)%format, unit)
+    call rec%set_value('RLL', pdefs%axsty(3)%log_bands, unit)
+    
     call rec%set_value('RMN', pdefs%axsty(3)%minor, unit)
     if (allocated(pdefs%axsty(3)%values)) &
          & call rec%set_value('RVL', pdefs%axsty(3)%values, unit)

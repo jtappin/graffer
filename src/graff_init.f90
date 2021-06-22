@@ -58,6 +58,8 @@ contains
        pdefs%axsty(i)%minor = 0_int16
        pdefs%axsty(i)%major = 0_int16
        pdefs%axsty(i)%format = ""
+       pdefs%axsty(i)%log_bands = [6, 15, 30]
+       pdefs%axsty(i)%is_big_log = .false.
     end do
 
     pdefs%ctable = 0_int16

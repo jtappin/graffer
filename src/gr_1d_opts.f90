@@ -323,8 +323,6 @@ contains
        call gtk_check_menu_item_set_active(log_chb(i), &
             & int(pdefs%axtype(i), c_int))
        call gtk_widget_set_sensitive(log_chb(i), f_c_logical(log_valid))
-       call gtk_widget_set_sensitive(ax_adv_item(i), &
-            & f_c_logical(pdefs%axtype(i) == 0))
     end do
     
     call gr_plot_draw(.true.)
