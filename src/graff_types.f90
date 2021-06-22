@@ -186,6 +186,10 @@ module graff_types
           & is_ascii=.false.
   end type graff_pdefs
 
+  ! Key parameter values used globally
+
+  ! Dataset types
+  
   character(len=6), dimension(-4:9), parameter :: typecodes = &
        & ['f(x,y)', 'f(t)  ', 'f(y)  ', 'f(x)  ', 'XY    ', 'XYy   ', &
        & 'XYyy  ', 'XYx   ', 'XYxx  ', 'XYxy  ', 'XYxyy ', 'XYxxy ', &
@@ -208,4 +212,11 @@ module graff_types
        & "Data: X, Y, errors: -X, +X, -Y, +Y", &
        & "Data: Z, X, Y"]
   
+  ! Axis style bits
+
+  integer, parameter :: exact_bit = 0, extend_bit = 1, axis_bit = 2, &
+       & box_bit = 3
+  integer, parameter :: origin_bit = 1, full_bit = 3, annot_bit = 2, &
+       & yrot_bit=4, time_bit = 0
+
 end module graff_types

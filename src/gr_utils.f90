@@ -64,13 +64,6 @@ module gr_utils
   private :: little_8, little_16, little_32, little_r32, little_r64
   private :: count_lines_file, count_lines_unit
    
-  ! Axis style bits
-
-  integer, parameter :: exact_bit = 0, extend_bit = 1, axis_bit = 2, &
-       & box_bit = 3
-  integer, parameter :: origin_bit = 1, full_bit = 3, annot_bit = 2, &
-       & yrot_bit=4, time_bit = 0
-
   ! Character limits
 
   integer, parameter, private :: lcmin = iachar('a'), lcmax = iachar('z')
