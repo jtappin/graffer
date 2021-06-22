@@ -120,11 +120,21 @@ contains
 
     if (btest(pdefs%axsty(axis)%idl, extend_bit)) then
        if (pdefs%axtype(axis) == 1) then
-          a0 = 0.9*a0
-          a1 = a0/0.9
+          if (a1 >= a0) then
+             a0 = 0.9*a0
+             a1 = a1/0.9
+          else
+             a0 = a0/0.9
+             a1 = 0.9*a1
+          end if
        else
-          a0 = a0 - 0.05_plflt * diff
-          a1 = a1 + 0.05_plflt * diff
+          if (a1 >= a0) then
+             a0 = a0 - 0.05_plflt * diff
+             a1 = a1 + 0.05_plflt * diff
+          else
+             a0 = a0 + 0.05_plflt * diff
+             a1 = a1 - 0.05_plflt * diff
+          end if
        end if
     end if
 
@@ -245,7 +255,7 @@ contains
        corners = 0._plflt
        dx = pdefs%transform%world(2,1)- pdefs%transform%world(1,1)
        dy = pdefs%transform%world(4,1)- pdefs%transform%world(3,1)
-       aspect = dy/dx
+       aspect = abs(dy/dx)
     else if (pdefs%aspect(1) > 0.) then
        if (pdefs%aspect(2) > 0.) then
           corners = real([pdefs%aspect(2), 1.-pdefs%aspect(2), &
