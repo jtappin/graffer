@@ -1,4 +1,4 @@
-; Copyright (C) 2020
+; Copyright (C) 1995-2021
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -52,6 +52,7 @@ pro Gr_asc_save, pdefs
 ;	Add non-linear contour level maps: 12/10/16; SJT
 ;	Add labelling offset: 2/5/17; SJT
 ;	Font option: 11/2/20; SJT
+;	Add log_bands values: 24/6/21; SJT
 ;-
 
   file = pdefs.dir+pdefs.name
@@ -88,7 +89,9 @@ pro Gr_asc_save, pdefs
   printf, ilu, 'XMJ:', pdefs.xsty.major, ':XMN:', pdefs.xsty.minor, $
           format = "(2(a,i5))"
   printf, ilu, 'XFM:', pdefs.xsty.format, format = "(2a)"
-
+  printf, ilu, 'XLL:', pdefs.xsty.log_bands, format = $
+          "(a,3i4)"
+  
   if ptr_valid(pdefs.xsty.values) then begin
      nvals =  n_elements(*pdefs.xsty.values)
      printf, ilu, 'XNV:', nvals, format = $
@@ -109,6 +112,9 @@ pro Gr_asc_save, pdefs
   printf, ilu, 'YMJ:', pdefs.ysty.major, ':YMN:', pdefs.ysty.minor, $
           format = "(2(a,i5))"
   printf, ilu, 'YFM:', pdefs.ysty.format, format = "(2a)"
+  printf, ilu, 'YLL:', pdefs.ysty.log_bands, format = $
+          "(a,3i4)"
+  
   if ptr_valid(pdefs.ysty.values) then begin
      nvals =  n_elements(*pdefs.ysty.values)
      printf, ilu, 'YNV:', nvals, format = $
@@ -128,6 +134,9 @@ pro Gr_asc_save, pdefs
   printf, ilu, 'RMJ:', pdefs.ysty_r.major, ':RMN:', pdefs.ysty_r.minor, $
           format = "(2(a,i5))"
   printf, ilu, 'RFM:', pdefs.ysty_r.format, format = "(2a)"
+  printf, ilu, 'RLL:', pdefs.ysty_r.log_bands, format = $
+          "(a,3i4)"
+  
   if ptr_valid(pdefs.ysty_r.values) then begin
      nvals =  n_elements(*pdefs.ysty_r.values)
      printf, ilu, 'RNV:', nvals, format = $

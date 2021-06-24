@@ -1,4 +1,4 @@
-; Copyright (C) 2013-2020
+; Copyright (C) 1995-2021
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -50,6 +50,7 @@ pro Gr_get_asc, pdefs, ilu, no_set = no_set
 ;	Convert to procedure for Graffer V4: 6/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
 ;	Add options for plplot drivers: 29/11/13; SJT
+;	Add log_band values: 24/6/21; SJT
 ;-
 
 
@@ -126,7 +127,9 @@ while (not eof(ilu)) do begin
                pdefs.xsty.format = gr_str_val(inline, 'XFM')
                goto, new_line
             end
-
+            'XLL': pdefs.xsty.log_bands = $
+               gr_int_val(tag_val[itag+1], 3)
+            
             'XVL': begin
                if nxt eq 0 then goto, new_line
                vals = gr_dbl_val(tag_val[itag+1], nxt)
@@ -159,6 +162,9 @@ while (not eof(ilu)) do begin
                pdefs.ysty.format = gr_str_val(inline, 'YFM')
                goto, new_line
             end
+            'YLL': pdefs.ysty.log_bands = $
+               gr_int_val(tag_val[itag+1], 3)
+            
             'YNV': nyt = gr_int_val(tag_val[itag+1], 1)
             'YVL': begin
                if nyt eq 0 then goto, new_line
@@ -192,6 +198,9 @@ while (not eof(ilu)) do begin
                pdefs.ysty_r.format = gr_str_val(inline, 'RFM')
                goto, new_line
             end
+            'RLL': pdefs.ysty_r.log_bands = $
+               gr_int_val(tag_val[itag+1], 3)
+            
             'RNV': nrt = gr_int_val(tag_val[itag+1], 1)
             'RVL': begin
                if nrt eq 0 then goto, new_line

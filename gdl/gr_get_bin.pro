@@ -1,4 +1,4 @@
-; Copyright (C) 2013-2020
+; Copyright (C) 1996-2021
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -44,6 +44,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
 ;	V4 version: 6/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
 ;	Add options for plplot drivers: 29/11/13; SJT
+;	Add log_band values: 24/6/21; SJT
 ;-
 
 
@@ -107,7 +108,8 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'XMN': pdefs.xsty.minor = value
         'XMJ': pdefs.xsty.major = value
         'XFM': pdefs.xsty.format = value
-
+        'XLL': pdefs.xsty.log_bands = value
+        
         'XVL': begin
            if ptr_valid(pdefs.xsty.values) then $
               ptr_free, pdefs.xsty.values 
@@ -131,6 +133,8 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'YMN': pdefs.ysty.minor = value
         'YMJ': pdefs.ysty.major = value
         'YFM': pdefs.ysty.format = value
+        'YLL': pdefs.ysty.log_bands = value
+
         'YVL': begin
            if ptr_valid(pdefs.ysty.values) then $
               ptr_free, pdefs.ysty.values 
@@ -155,6 +159,8 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'RMN': pdefs.ysty_r.minor = value
         'RMJ': pdefs.ysty_r.major = value
         'RFM': pdefs.ysty_r.format = value
+        'RLL': pdefs.ysty_r.log_bands = value
+        
         'RVL': begin
            if ptr_valid(pdefs.ysty_r.values) then $
               ptr_free, pdefs.ysty_r.values 
