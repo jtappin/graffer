@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -96,15 +96,6 @@ contains
        if (iviewer_pdf == 0) then
           if (gr_find_program(hardset%pdfviewer(1))) &
                & iviewer_pdf = size(viewnames)+1
-       end if
-    end if
-
-    if (hardset%name == '') then
-       pdot = index(pdefs%name, '.', back=.true.)
-       if (pdot == 0) then
-          hardset%name = pdefs%name
-       else
-          hardset%name = pdefs%name(:pdot-1)
        end if
     end if
 

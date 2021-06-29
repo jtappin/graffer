@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -296,20 +296,23 @@ contains
     character(len=4) :: filetype
     type(c_ptr) :: pixb
     integer :: pdot
-
+    character(len=120) :: local_name
+    
     call c_f_string(data, filetype)
 
     pixb = hl_gtk_drawing_area_get_gdk_pixbuf(gr_drawing_area)
     if (pdefs%hardset%name == '') then
        pdot = index(pdefs%name, '.', back=.true.)
        if (pdot == 0) then
-          pdefs%hardset%name = pdefs%name
+          local_name = pdefs%name
        else
-          pdefs%hardset%name = pdefs%name(:pdot-1)
+          local_name = pdefs%name(:pdot-1)
        end if
+    else
+       local_name  =pdefs%hardset%name
     end if
     call hl_gdk_pixbuf_save(pixb, trim(pdefs%dir)//'/'//&
-         & trim(pdefs%hardset%name)//'.'//&
+         & trim(local_name)//'.'//&
          & trim(filetype)//c_null_char)
 
   end subroutine gr_dump
