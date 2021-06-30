@@ -24,7 +24,7 @@
 \setlength{\oddsidemargin}{5mm}
 \setlength{\evensidemargin}{5mm}
 \pagestyle{myheadings}
-\markboth{GRAFFER}{Version 4.08}
+\markboth{GRAFFER}{Version 4.13}
 
 \begin{document}
 
@@ -34,9 +34,9 @@ Version 4.08\\
 File Format Description}
 
 \author{\textsf{\textbf{\Large James Tappin}}\\
-\texttt{\textbf{\Large jtappin@nso.edu}}}
+\texttt{\textbf{\Large jtappin at gmail dot com}}}
 
-\date{\textsf{\textbf{\large November 2013}}}
+\date{\textsf{\textbf{\large June 2020}}}
 
 \maketitle
 
@@ -266,6 +266,8 @@ to the whole file.
   XMS & Double & 1 & The spacing of the major intervals on the
   X-axis. (Not implemented in IDL).\\
   XMN & Int & 1 & The number of minor intervals to use on the X-axis.\\
+  XLL & Long & 3 & Threshold for changing tick format in logarithmic
+  plots (only used by Fortran).\\
   XFM & String & 1 & The format specifier to use (Overridden by time
   labelling options) \\
   XNV & Int & 1 & The number of tick values used (ascii files only).\\
