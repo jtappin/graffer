@@ -262,9 +262,9 @@ contains
     integer(kind=c_int) :: iresp
 
     iresp = hl_gtk_message_dialog_show(&
-         & ["This will destroy all data in", &
-         &  "the current dataset          ",&
-         &  "Do you want to continue?     "],&
+         & ["This will destroy all data and ", &
+         &  "settings in the current dataset", &
+         &  "Do you want to continue?       "],&
          & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION, &
          & parent=gr_window)
 
