@@ -422,8 +422,9 @@ contains
     character(len=120) :: iom
     character(len=32), dimension(:), allocatable :: fields 
     logical :: start_flag
-
-    nlines = count(lines /= '')
+    character(len=*), parameter :: white_space = ' 	'
+    
+    nlines = count(verify(lines, white_space) /= 0)
 
     if (nlines == 0) then
        call gr_message("gr_xy_decode: No non-empty lines.")
@@ -434,7 +435,7 @@ contains
     j = 1
     start_flag = .true.
     do i = 1, size(lines)
-       if (lines(i) == '') cycle
+       if (verify(lines(i), white_space) == 0) cycle
        if (start_flag) then
           call split(lines(i), " 	,", fields, count=nfields)
           allocate(xyvals(max(nfields, 2), nlines))
