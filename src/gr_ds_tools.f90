@@ -896,9 +896,10 @@ contains
 
   end subroutine gr_ds_append
 
-  subroutine gr_ds_erase(index)
+  subroutine gr_ds_erase(index, data_only)
     integer(kind=int16), intent(in), optional :: index
-
+    logical, intent(in), optional :: data_only
+    
     ! Erase the contents of a dataset
 
     integer(kind=int16) :: idx
@@ -909,7 +910,7 @@ contains
        idx = pdefs%cset
     end if
 
-    call gr_pdefs_data_init(index=idx)
+    call gr_pdefs_data_init(index=idx, minimal=data_only)
 
   end subroutine gr_ds_erase
 

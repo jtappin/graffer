@@ -86,6 +86,10 @@ contains
     
     junk = hl_gtk_menu_item_new(smnu, "Erase"//c_null_char, &
          & activate=c_funloc(gr_ds_erase_cb), tooltip=&
+         & "Erase the data of the current dataset"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Erase all"//c_null_char, &
+         & activate=c_funloc(gr_ds_erase_all_cb), tooltip=&
          & "Erase the contents of the current dataset"//c_null_char)
 
     junk = hl_gtk_menu_item_new(smnu, "Delete"//c_null_char, &
@@ -245,10 +249,31 @@ contains
 
     if (iresp /= GTK_RESPONSE_YES) return
 
-    call gr_ds_erase
+    call gr_ds_erase(data_only=.true.)
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_erase_cb
+  
+  subroutine gr_ds_erase_all_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Erase the current dataset
+
+    integer(kind=c_int) :: iresp
+
+    iresp = hl_gtk_message_dialog_show(&
+         & ["This will destroy all data in", &
+         &  "the current dataset          ",&
+         &  "Do you want to continue?     "],&
+         & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION, &
+         & parent=gr_window)
+
+    if (iresp /= GTK_RESPONSE_YES) return
+
+    call gr_ds_erase(data_only=.false.)
+    call gr_plot_draw(.true.)
+
+  end subroutine gr_ds_erase_all_cb
 
   subroutine gr_ds_delete_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
