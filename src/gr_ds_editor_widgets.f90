@@ -96,7 +96,7 @@ contains
 
     mnu = hl_gtk_menu_new()
     call hl_gtk_box_pack(base, mnu, expand=FALSE)
-    smnu = hl_gtk_menu_submenu_new(mnu, "Error bars"//c_null_char)
+    smnu = hl_gtk_menu_submenu_new(mnu, "Error bars ▼"//c_null_char)
 
     error_grp = c_null_ptr
     if (data%mode == 0) then
