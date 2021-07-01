@@ -238,6 +238,7 @@ to the whole file.
   GI & Byte & 1 & Whether the plot has isotropic axes.\\
   GHA & Byte & 1 & Whether the screen plot should use the hard copy
   aspect ratio.\\
+  GF & Int & 1 & Font family for annotations (used in IDL only).\\
   \hline \multicolumn{4}{|c|}{The next group of tags are responsible
     for
     defining the X-axis properties}\\
@@ -280,10 +281,12 @@ to the whole file.
     with Y for the Y axis, and R for the secondary Y axis}\\
   \hline
   YIR & Byte & 1 & Whether the secondary Y axis is to be displayed.\\
-  \hline ZT& Int& 1& Colour table number for 2-D datasets displayed as
+  \hline
+  ZT& Int& 1& Colour table number for 2-D datasets displayed as
   colour plots (IDL colour table indices), as of Version 3.08 this is a
   default used to initialize the table for the dataset or if the
-  display is 8-bit.\\
+  display is 8-bit. Not to be confused with the ``ZT'' key in a datset,
+  which is contour thicknesses.\\
   ZG& Float& 1& Gamma setting for the colour table (since version 3.08
   this is a
   default setting).\\
@@ -328,7 +331,8 @@ to the whole file.
   HVA& String& 1&
   The part of the view command after the filename.\\
   HFN& String & 1 & The filename for the hardcopy output.\\
-  HPS & String & 1 & The device for producing PostScript output.\\
+  HPS & String & 1 & The device for producing PostScript output. This
+  and the other devices are only used in Fortran.\\
   HEP & String & 1 & The device for producing encapsulated PostScript output.\\
   HPD & String & 1 & The device for producing PDF output.\\
   HSV & String & 1 & The device for producing SVG output.\\
