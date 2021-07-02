@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -83,7 +83,7 @@ contains
     integer(kind=c_int) :: isel
     
     text_ready = .false.
-    call gr_text_init
+!!$    call gr_text_init
 
     call plgchr(csd, css)
 

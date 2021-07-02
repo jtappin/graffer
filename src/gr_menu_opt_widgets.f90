@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -50,7 +50,7 @@ contains
     logical, dimension(2), target :: iapply = [.false., .true.]
 
     if (.not. allocated(viewnames)) call gr_find_viewers(viewnames)
-    call gr_text_init
+!!$    call gr_text_init
 
     iviewer = 0
     if (sysopts%pdfviewer /= '') then
