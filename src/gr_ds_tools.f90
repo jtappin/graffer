@@ -410,22 +410,30 @@ contains
 
   end subroutine gr_ds_fun_read
 
-  subroutine gr_xy_decode(lines, xyvals, nlines, nfields, ok)
+  subroutine gr_xy_decode(lines, xyvals, nlines, nfields, ok, skip)
     character(len=*), dimension(:), intent(in) :: lines
     real(kind=int64), dimension(:,:), allocatable, intent(out) :: xyvals
     integer, intent(out) :: nlines, nfields
     logical, intent(out) :: ok
-
+    logical, intent(in), optional :: skip
+    
     ! Decode an XY dataset.
 
-    integer :: i, j, ios
+    integer :: i, j, ios, nskip
     character(len=120) :: iom
     character(len=32), dimension(:), allocatable :: fields 
-    logical :: start_flag
+    logical :: start_flag, skip_bad
+    real(kind=int64), dimension(:,:), allocatable :: xytemp
+    
     character(len=*), parameter :: white_space = ' 	'
     
-    nlines = count(verify(lines, white_space) /= 0)
+    if (present(skip)) then
+       skip_bad = skip
+    else
+       skip_bad = .false.
+    end if
 
+    nlines = count(verify(lines, white_space) /= 0)
     if (nlines == 0) then
        call gr_message("gr_xy_decode: No non-empty lines.")
        ok = .false.
@@ -434,6 +442,7 @@ contains
 
     j = 1
     start_flag = .true.
+    nskip = 0
     do i = 1, size(lines)
        if (verify(lines(i), white_space) == 0) cycle
        if (start_flag) then
@@ -449,17 +458,40 @@ contains
           read(lines(i), *, iostat=ios, iomsg=iom) xyvals(:,j)
        end if
        if (ios /= 0) then
-          write(err_string, "(a,i0/a)") &
-               & "gr_xy_decode: Failed to read line ",i, &
-               & trim(iom)
-          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
-          ok  = .false.
-          return
+          if (skip_bad) then
+             nskip = nskip+1
+             cycle
+          else
+             write(err_string, "(a,i0/a)") &
+                  & "gr_xy_decode: Failed to read line ",i, &
+                  & trim(iom)
+             call gr_message(err_string, type=GTK_MESSAGE_ERROR)
+             ok  = .false.
+             return
+          end if
        end if
        j = j+1
     end do
 
     ok = .true.
+
+    if (nskip /= 0) then
+       if (j == 1) then
+          err_string(1) = "gr_xy_decode: no valid lines found"
+          err_string(2) = ''
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
+          ok = .false.
+       else
+          call move_alloc(xyvals, xytemp)
+          allocate(xyvals(max(nfields, 2), j-1))
+          xyvals = xytemp(:,:j-1)
+          nlines = j-1
+          deallocate(xytemp)
+          write(err_string, "(a,i0,a/a)") "gr_xy_decode: skipped ", nskip, &
+               &" undecodable lines.", ""
+          call gr_message(err_string, type=GTK_MESSAGE_WARNING)
+       end if
+    end if
   end subroutine gr_xy_decode
 
   subroutine gr_ds_write(file, as_data)
