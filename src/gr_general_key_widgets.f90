@@ -39,7 +39,7 @@ module gr_general_key_widgets
 
   type(c_ptr), private :: key_window, key_base, key_csize_sb, key_cols_sb, &
        & key_side_but, key_points_sb, key_title_entry, key_enable_but, &
-       & key_frame_but
+       & key_frame_but, key_reverse_but
   type(c_ptr), dimension(2,2), private :: key_bound_sb
   type(c_ptr), dimension(:), allocatable :: key_ds_but
 
@@ -197,7 +197,7 @@ contains
 
     key_cols_sb = hl_gtk_spin_button_new(1_c_int, 5_c_int, &
          & initial_value=int(pdefs%key%cols, c_int), tooltip=&
-         & "Number of columns to use to display the key"//c_null_char)
+         & "Number of columns to use to display the key."//c_null_char)
     call hl_gtk_table_attach(jb, key_cols_sb, 1_c_int, 1_c_int)
 
     junk = gtk_label_new("Number of points:"//c_null_char)
@@ -205,17 +205,24 @@ contains
 
     key_points_sb = hl_gtk_spin_button_new(1_c_int, 2_c_int, &
          & initial_value=2_c_int-f_c_logical(pdefs%key%one_point), tooltip=&
-         & "Number of points to  use to display the key traces"//c_null_char, &
+         & "Number of points to  use to display the key traces."//c_null_char, &
          & wrap=TRUE)
     call hl_gtk_table_attach(jb, key_points_sb, 3_c_int, 1_c_int)
 
 
     key_frame_but = hl_gtk_check_button_new("Draw a box around the key?"&
          & //c_null_char, initial_state = f_c_logical(pdefs%key%frame), &
-         & tooltip="Toggle drawing a frame around the key area"//c_null_char)
+         & tooltip="Toggle drawing a frame around the key area."//c_null_char)
     call hl_gtk_table_attach(jb, key_frame_but, 0_c_int, 2_c_int, &
          & xspan=2_c_int)
 
+    key_reverse_but = hl_gtk_check_button_new("Reverse order of key?"&
+         &//c_null_char, initial_state = f_c_logical(pdefs%key%reverse), &
+         & tooltip="Toggle showing key in reverse order of datasets."&
+         &//c_null_char)
+    call hl_gtk_table_attach(jb, key_reverse_but, 2_c_int, 2_c_int, &
+         & xspan=2_c_int)
+    
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(cbase, jb)
 
@@ -320,6 +327,8 @@ contains
 
        pdefs%key%frame = &
             & c_f_logical(gtk_toggle_button_get_active(key_frame_but))
+       pdefs%key%reverse = &
+            & c_f_logical(gtk_toggle_button_get_active(key_reverse_but))
 
        call hl_gtk_entry_get_text(key_title_entry, pdefs%key%title)
 

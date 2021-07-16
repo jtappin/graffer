@@ -605,7 +605,11 @@ contains
 
     ikey = 1
     do j = 1, nkey
-       i = pdefs%key%list(j)+1
+       if (pdefs%key%reverse) then
+          i = pdefs%key%list(nkey-j+1)+1
+       else
+          i = pdefs%key%list(j)+1
+       end if
 
        if (pdefs%data(i)%colour < 0) cycle
        

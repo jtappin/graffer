@@ -115,7 +115,7 @@ module graff_types
      integer(kind=int16) :: norm=2_int16, cols=1_int16
      integer(kind=int32), dimension(:), allocatable :: list
      logical(kind=int8) :: frame=.false., one_point=.false., &
-          & use=.false., side=.false.
+          & use=.false., side=.false., reverse=.false.
      character(len=120) :: title=''
   end type graff_key
 

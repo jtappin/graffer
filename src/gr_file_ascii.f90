@@ -664,6 +664,8 @@ contains
              pdefs%key%cols = gr_int_val(tag_val(itag+1))
           case('KF')
              pdefs%key%frame = gr_log_val(tag_val(itag+1))
+          case('KR')
+             pdefs%key%reverse = gr_log_val(tag_val(itag+1))
           case('KP')
              pdefs%key%one_point = gr_log_val(tag_val(itag+1))
           case('KT')
@@ -1485,10 +1487,11 @@ contains
          & ":F:", text%font, ":W:", text%thick
     write(unit, "(a)") "TTE:"
 
-    write(unit, "(5(a,i0))") "KU:", f_c_logical(pdefs%key%use), &
+    write(unit, "(6(a,i0))") "KU:", f_c_logical(pdefs%key%use), &
          & ":KN:", pdefs%key%norm, ":KC:", pdefs%key%cols, &
          & ":KF:", f_c_logical(pdefs%key%frame), ":KP:", &
-         & f_c_logical(pdefs%key%one_point)
+         & f_c_logical(pdefs%key%one_point), &
+         & ":KR:", f_c_logical(pdefs%key%reverse)
 
     write(unit, "(2(a,2(g0,1x)),a,g0)") "KX:", pdefs%key%x, ":KY:", &
          & pdefs%key%y, ":KS:", pdefs%key%csize
