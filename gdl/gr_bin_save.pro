@@ -301,6 +301,7 @@ pro Gr_bin_save, pdefs, auto = auto
   graff_put_rec, ilu, 'KN ', pdefs.key.norm
   graff_put_rec, ilu, 'KC ', pdefs.key.cols
   graff_put_rec, ilu, 'KF ', pdefs.key.frame
+  graff_put_rec, ilu, 'KR ', pdefs.key.reverse
   graff_put_rec, ilu, 'KP ', pdefs.key.one_point
   graff_put_rec, ilu, 'KS ', pdefs.key.csize
   graff_put_rec, ilu, 'KT ', pdefs.key.title

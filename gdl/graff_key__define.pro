@@ -48,6 +48,7 @@ Key = {graff_key, $
        List:      ptr_new(),  $
        Frame:     0b, $
        One_point: 0b, $
+       reverse:   0b, $
        Use:       0b, $
        side:      0b, $
        title: '' $

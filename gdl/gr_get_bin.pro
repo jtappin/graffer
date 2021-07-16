@@ -318,6 +318,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'KN ': pdefs.key.norm = value
         'KC ': pdefs.key.cols = value
         'KF ': pdefs.key.frame = value
+        'KR ': pdefs.key.reverse = value
         'KP ': pdefs.key.one_point = value
         'KT ': pdefs.key.title = value
         'KL ': begin

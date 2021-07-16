@@ -443,6 +443,7 @@ while (not eof(ilu)) do begin
             'KN': pdefs.key.norm = gr_int_val(tag_val[itag+1], 1)
             'KC': pdefs.key.cols = gr_int_val(tag_val[itag+1], 1)
             'KF': pdefs.key.frame = gr_byt_val(tag_val[itag+1], 1)
+            'KR': pdefs.key.reverse = gr_byt_val(tag_val[itag+1], 1)
             'KP': pdefs.key.one_point = gr_byt_val(tag_val[itag+1], 1)
             'KT': begin
                 pdefs.key.title = gr_str_val(inline, 'KT')

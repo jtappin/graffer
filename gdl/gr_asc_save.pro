@@ -346,7 +346,8 @@ pro Gr_asc_save, pdefs
 
   printf, ilu, 'KU:', pdefs.key.use, ':KN:', pdefs.key.norm, ':KC:', $
           pdefs.key.cols, ':KF:', pdefs.key.frame, ':KP:', $
-          pdefs.key.one_point, format = "(a,i2,a,i2,a,i3,2(a,i2))"
+          pdefs.key.one_point, ':KR:', pdefs.key.reverse, $
+          format = "(a,i2,a,i2,a,i3,3(a,i2))"
   printf, ilu, 'KX:', pdefs.key.x, ':KY:', pdefs.key.y, ':KS:', $
           pdefs.key.csize, format =  "(3(a,2g19.12))"
   printf, ilu, 'KT:', pdefs.key.title, format = "(2a)"
