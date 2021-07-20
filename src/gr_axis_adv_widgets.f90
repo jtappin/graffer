@@ -54,6 +54,7 @@ contains
     iaxis = axis
 
     log_bands = axstyle%log_bands
+    if (all(log_bands == 0)) log_bands = [6, 15, 30]
     
     adv_window = hl_gtk_window_new("Advanced "//trim(axnames(axis))//&
          & "-axis settings"//c_null_char, destroy=c_funloc(gr_adv_quit), &
@@ -132,6 +133,13 @@ contains
 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(base, jb, expand=FALSE)
+    junk = hl_gtk_button_new("Reset"//c_null_char, &
+         & clicked=c_funloc(gr_adv_reset), &
+         & tooltip="Reset the default ranges."//c_null_char)
+    call hl_gtk_box_pack(jb, junk)
+
+    jb = hl_gtk_box_new(horizontal=TRUE)
+    call hl_gtk_box_pack(base, jb, expand=FALSE)
 
     junk = hl_gtk_button_new("Apply"//c_null_char, &
          & clicked=c_funloc(gr_adv_quit), data=c_loc(iapply(2)), &
@@ -185,6 +193,19 @@ contains
 
   end subroutine gr_adv_quit
 
+  subroutine gr_adv_reset(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    log_bands = [6, 15, 30]
+    call hl_gtk_spin_button_set_int(adv_log2_sb, &
+         & int(log_bands(1),c_int))
+    call hl_gtk_spin_button_set_int(adv_log5_sb, &
+         & int(log_bands(2),c_int))
+    call hl_gtk_spin_button_set_int(adv_logx_sb, &
+         & int(log_bands(3),c_int))
+
+  end subroutine gr_adv_reset
+    
   subroutine gr_adv_log2_ch(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 

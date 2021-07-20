@@ -182,16 +182,16 @@ contains
     nminor = axsty%minor
 
     axsty%is_big_log = .false.
-    
+
     if (pdefs%axtype(axis) == 1) then
        p10=int(abs(log10(pdefs%axrange(2,axis)/pdefs%axrange(1,axis))))
        if (p10 > axsty%log_bands(1)) then
           axsty%is_big_log = .true.
           options = trim(options)//'o'
-          if (p10 <= axsty%log_bands(2)) then
+          if (p10 < axsty%log_bands(2)) then
              spacing = 2._real64
              nminor = 2
-          else if (p10 <= axsty%log_bands(3)) then
+          else if (p10 < axsty%log_bands(3)) then
              spacing = 5._real64
              nminor = 5
           else
@@ -202,6 +202,7 @@ contains
           options = trim(options)//'l'
           spacing = 0._plflt
        end if
+       
     else if (axsty%major /= 0) then
        spacing = abs(pdefs%axrange(2,axis)- pdefs%axrange(1,axis))/&
             & real(axsty%major)
