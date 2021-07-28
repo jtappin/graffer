@@ -108,7 +108,14 @@ pro Graff_init, pdefs, file, version = version
   pdefs.transient.hairs = 1b
 
   pdefs.Ds_dir =       ds_dir
+  
+; Since these (Fortran-specific) axis options are non-zero by default,
+; we need to set the defaults here
 
+  pdefs.xsty.log_bands = [6, 15, 30]
+  pdefs.ysty.log_bands = [6, 15, 30]
+  pdefs.ysty_r.log_bands = [6, 15, 30]
+  
 ; Set defaults for these hardcopy actions, but they will be
 ; overwritten if an old file existed.
 
