@@ -542,7 +542,8 @@ contains
        else
           call gr_message("No PDF device found", GTK_MESSAGE_ERROR)
        end if
-    case ('svg')
+    case ('svg')    ! Prefer qt device over cairo here as the cairo device
+       ! does not generate character strings properly.
        if (gr_plot_has_device('svgqt')) then
           device = 'svgqt'
        else if (gr_plot_has_device('svgcairo')) then
