@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@ module gr_general_key_widgets
 
   type(c_ptr), private :: key_window, key_base, key_csize_sb, key_cols_sb, &
        & key_side_but, key_points_sb, key_title_entry, key_enable_but, &
-       & key_frame_but
+       & key_frame_but, key_reverse_but
   type(c_ptr), dimension(2,2), private :: key_bound_sb
   type(c_ptr), dimension(:), allocatable :: key_ds_but
 
@@ -47,26 +47,33 @@ module gr_general_key_widgets
   integer, dimension(:), allocatable, target :: key_indices
   logical, dimension(:), allocatable :: key_use
 
+  type(graff_key), private :: key_save
+  logical, private :: reenter
+  
 contains
   subroutine gr_key_menu
 
     ! Set up a key or legend.
 
-    logical, dimension(2), target :: iapply = [.false., .true.]
-    type(c_ptr) :: base, junk, jb, cbase, stab
+    integer, dimension(3), target :: iapply = [0, 1, 2]
+    Type(c_ptr) :: base, junk, jb, cbase, stab
     real(kind=c_double) :: xcmin, xcmax, xcstep,  ycmin, ycmax, ycstep
     logical, dimension(:), allocatable :: usable
     integer :: n1d, i, j
     integer(kind=c_int) :: ix, iy
     character(len=120) :: klabel
 
+    key_save = pdefs%key
+    reenter = .false.
+    
     allocate(usable(pdefs%nsets), key_use(pdefs%nsets))
     usable = pdefs%data%type >= -3 .and. pdefs%data%type <= 8
     n1d = count(usable)
 
     key_use(:) = .false.
     if (allocated(pdefs%key%list)) key_use(pdefs%key%list+1) = .true.
-
+    if (pdefs%key%csize == 0._real64) pdefs%key%csize = 1._real64
+       
     allocate(key_indices(n1d))
     j = 1
     do i = 1, pdefs%nsets
@@ -190,7 +197,7 @@ contains
 
     key_cols_sb = hl_gtk_spin_button_new(1_c_int, 5_c_int, &
          & initial_value=int(pdefs%key%cols, c_int), tooltip=&
-         & "Number of columns to use to display the key"//c_null_char)
+         & "Number of columns to use to display the key."//c_null_char)
     call hl_gtk_table_attach(jb, key_cols_sb, 1_c_int, 1_c_int)
 
     junk = gtk_label_new("Number of points:"//c_null_char)
@@ -198,17 +205,24 @@ contains
 
     key_points_sb = hl_gtk_spin_button_new(1_c_int, 2_c_int, &
          & initial_value=2_c_int-f_c_logical(pdefs%key%one_point), tooltip=&
-         & "Number of points to  use to display the key traces"//c_null_char, &
+         & "Number of points to  use to display the key traces."//c_null_char, &
          & wrap=TRUE)
     call hl_gtk_table_attach(jb, key_points_sb, 3_c_int, 1_c_int)
 
 
     key_frame_but = hl_gtk_check_button_new("Draw a box around the key?"&
          & //c_null_char, initial_state = f_c_logical(pdefs%key%frame), &
-         & tooltip="Toggle drawing a frame around the key area"//c_null_char)
+         & tooltip="Toggle drawing a frame around the key area."//c_null_char)
     call hl_gtk_table_attach(jb, key_frame_but, 0_c_int, 2_c_int, &
          & xspan=2_c_int)
 
+    key_reverse_but = hl_gtk_check_button_new("Reverse order of key?"&
+         &//c_null_char, initial_state = f_c_logical(pdefs%key%reverse), &
+         & tooltip="Toggle showing key in reverse order of datasets."&
+         &//c_null_char)
+    call hl_gtk_table_attach(jb, key_reverse_but, 2_c_int, 2_c_int, &
+         & xspan=2_c_int)
+    
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(cbase, jb)
 
@@ -258,6 +272,10 @@ contains
          & clicked=c_funloc(gr_key_quit), data=c_loc(iapply(2)), &
          & tooltip="Apply the changes and destroy the widget"//c_null_char)
     call hl_gtk_box_pack(jb, junk)
+    junk = hl_gtk_button_new("Update"//c_null_char, &
+         & clicked=c_funloc(gr_key_quit), data=c_loc(iapply(3)), &
+         & tooltip="Apply the changes but do not destroy the widget"//c_null_char)
+    call hl_gtk_box_pack(jb, junk)
 
     junk = hl_gtk_button_new("Cancel "//c_null_char, &
          & clicked=c_funloc(gr_key_quit), data=c_loc(iapply(1)), &
@@ -274,12 +292,15 @@ contains
 
     ! Quit setting up key
 
-    logical, pointer :: apply
+    integer, pointer :: apply
     integer :: nuse, i, j
 
-    call c_f_pointer(data, apply)
+    if (reenter) return
 
-    if (apply) then
+    reenter = .true.
+    call c_f_pointer(data, apply)
+    
+    if (apply /= 0) then
        pdefs%key%use = c_f_logical(gtk_toggle_button_get_active(key_enable_but))
 
        pdefs%key%norm = knorm
@@ -306,6 +327,8 @@ contains
 
        pdefs%key%frame = &
             & c_f_logical(gtk_toggle_button_get_active(key_frame_but))
+       pdefs%key%reverse = &
+            & c_f_logical(gtk_toggle_button_get_active(key_reverse_but))
 
        call hl_gtk_entry_get_text(key_title_entry, pdefs%key%title)
 
@@ -320,13 +343,17 @@ contains
           j = j+1
        end do
 
-       call gr_plot_draw(.true.)
+    else
+       pdefs%key = key_save
+    end if 
+    call gr_plot_draw(apply == 1)
+
+    if (apply /= 2) then
+       if (allocated(key_ds_but)) deallocate(key_ds_but, key_indices, key_use)
+       if (allocated(key_save%list)) deallocate(key_save%list)
+       call gtk_widget_destroy(key_window)
     end if
-
-     if (allocated(key_ds_but)) deallocate(key_ds_but, key_indices, key_use)
-
-     call gtk_widget_destroy(key_window)
-
+    reenter = .false.
   end subroutine gr_key_quit
 
   subroutine gr_key_enable(widget, data) bind(c)

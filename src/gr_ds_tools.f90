@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -159,10 +159,15 @@ contains
 
     data%ndata = nlines
     data%type = int(tp, int16)
+    call gtk_entry_set_text(ds_type_id, &
+         & trim(typedescrs(data%type))//c_null_char)
+
     call  gtk_notebook_set_current_page(display_nb, 0)
 
     call move_alloc(xyvals, data%xydata)
 
+    call gr_plot_draw(.true.)
+    
   end subroutine gr_ds_xy_read
 
   subroutine gr_ds_z_read(file)
@@ -257,12 +262,16 @@ contains
     data%ndata2 = ny
     data%zdata%x_is_2d = x2
     data%zdata%y_is_2d = y2
+    call gtk_entry_set_text(ds_type_id, &
+         & trim(typedescrs(data%type))//c_null_char)
 
     call move_alloc(x, data%zdata%x)
     call move_alloc(y, data%zdata%y)
     call move_alloc(z, data%zdata%z)
-    call  gtk_notebook_set_current_page(display_nb, 1)
+    call gtk_notebook_set_current_page(display_nb, 1)
 
+    call gr_plot_draw(.true.)
+    
   end subroutine gr_ds_z_read
 
   subroutine gr_ds_fun_read(file)
@@ -388,6 +397,8 @@ contains
     data%ndata = neval
     data%ndata2 = neval2
     data%type = type
+    call gtk_entry_set_text(ds_type_id, &
+         & trim(typedescrs(data%type))//c_null_char)
 
     if (data%type == -4 .or. data%type == 9) then
        call  gtk_notebook_set_current_page(display_nb, 1)
@@ -395,23 +406,34 @@ contains
        call  gtk_notebook_set_current_page(display_nb, 0)
     end if
 
+    call gr_plot_draw(.true.)
+
   end subroutine gr_ds_fun_read
 
-  subroutine gr_xy_decode(lines, xyvals, nlines, nfields, ok)
+  subroutine gr_xy_decode(lines, xyvals, nlines, nfields, ok, skip)
     character(len=*), dimension(:), intent(in) :: lines
     real(kind=int64), dimension(:,:), allocatable, intent(out) :: xyvals
     integer, intent(out) :: nlines, nfields
     logical, intent(out) :: ok
-
+    logical, intent(in), optional :: skip
+    
     ! Decode an XY dataset.
 
-    integer :: i, j, ios
+    integer :: i, j, ios, nskip
     character(len=120) :: iom
     character(len=32), dimension(:), allocatable :: fields 
-    logical :: start_flag
+    logical :: start_flag, skip_bad
+    real(kind=int64), dimension(:,:), allocatable :: xytemp
+    
+    character(len=*), parameter :: white_space = ' 	'
+    
+    if (present(skip)) then
+       skip_bad = skip
+    else
+       skip_bad = .false.
+    end if
 
-    nlines = count(lines /= '')
-
+    nlines = count(verify(lines, white_space) /= 0)
     if (nlines == 0) then
        call gr_message("gr_xy_decode: No non-empty lines.")
        ok = .false.
@@ -420,8 +442,9 @@ contains
 
     j = 1
     start_flag = .true.
+    nskip = 0
     do i = 1, size(lines)
-       if (lines(i) == '') cycle
+       if (verify(lines(i), white_space) == 0) cycle
        if (start_flag) then
           call split(lines(i), " 	,", fields, count=nfields)
           allocate(xyvals(max(nfields, 2), nlines))
@@ -435,17 +458,40 @@ contains
           read(lines(i), *, iostat=ios, iomsg=iom) xyvals(:,j)
        end if
        if (ios /= 0) then
-          write(err_string, "(a,i0/a)") &
-               & "gr_xy_decode: Failed to read line ",i, &
-               & trim(iom)
-          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
-          ok  = .false.
-          return
+          if (skip_bad) then
+             nskip = nskip+1
+             cycle
+          else
+             write(err_string, "(a,i0/a)") &
+                  & "gr_xy_decode: Failed to read line ",i, &
+                  & trim(iom)
+             call gr_message(err_string, type=GTK_MESSAGE_ERROR)
+             ok  = .false.
+             return
+          end if
        end if
        j = j+1
     end do
 
     ok = .true.
+
+    if (nskip /= 0) then
+       if (j == 1) then
+          err_string(1) = "gr_xy_decode: no valid lines found"
+          err_string(2) = ''
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
+          ok = .false.
+       else
+          call move_alloc(xyvals, xytemp)
+          allocate(xyvals(max(nfields, 2), j-1))
+          xyvals = xytemp(:,:j-1)
+          nlines = j-1
+          deallocate(xytemp)
+          write(err_string, "(a,i0,a/a)") "gr_xy_decode: skipped ", nskip, &
+               &" undecodable lines.", ""
+          call gr_message(err_string, type=GTK_MESSAGE_WARNING)
+       end if
+    end if
   end subroutine gr_xy_decode
 
   subroutine gr_ds_write(file, as_data)
@@ -525,9 +571,9 @@ contains
        ny = data%ndata2
        if (data%zdata%y_is_2d) ny = -ny
        write(unit, *) nx, ny
-       write(unit, "(6(g0,2x))") data%zdata%x
-       write(unit, "(6(g0,2x))") data%zdata%y
-       write(unit, "(6(g0,2x))") data%zdata%z
+       write(unit, "(6(1pg0,2x))") data%zdata%x
+       write(unit, "(6(1pg0,2x))") data%zdata%y
+       write(unit, "(6(1pg0,2x))") data%zdata%z
 
     else
        select case (etype)
@@ -551,7 +597,7 @@ contains
        end select
 
        do i = 1, data%ndata
-          write(unit, "(6(g0,2x))") data%xydata(:,i)
+          write(unit, "(6(1pg0,2x))") data%xydata(:,i)
        end do
     end if
 
@@ -582,17 +628,19 @@ contains
     call gr_set_values_dataset()
   end subroutine gr_ds_new
 
-  subroutine gr_ds_copy(from, to, source, destination, copy_format, move)
+  subroutine gr_ds_copy(from, to, source, destination, copy_format, &
+       & move, no_housekeeping, append)
     integer(kind=int16), intent(in), optional :: from, to
     type(graff_data), target, intent(inout), optional :: source
     type(graff_data), target, intent(out), optional :: destination
-    logical, intent(in), optional :: copy_format, move
-
+    logical, intent(in), optional :: copy_format, move, no_housekeeping
+    character(len=*), intent(in), optional :: append
+    
     ! Make a copy of a dataset
 
     integer(kind=int16) :: dest
     type(graff_data), pointer :: data_from, data_to
-    logical :: fcopy, realloc
+    logical :: fcopy, realloc, update_hk
     integer :: nn
     integer, dimension(2) :: nn2
 
@@ -642,10 +690,15 @@ contains
     end if
     if (realloc) fcopy = .true.
 
-
+    if (present(no_housekeeping)) then
+       update_hk = .not. no_housekeeping
+    else
+       update_hk = .true.
+    end if
+    
     ! First we clear the target
 
-    call gr_pdefs_data_init(dataset=data_to)
+    call gr_pdefs_data_init(dataset=data_to, minimal=.true.)
 
     ! Copies common to all
 
@@ -654,17 +707,25 @@ contains
     data_to%type = data_from%type
     data_to%mode = data_from%mode
 
-    data_to%descript = data_from%descript
     data_to%y_axis = data_from%y_axis
 
     ! We don't copy the formatting options unless requested
     if (fcopy) then
+       if (present(append)) then
+          data_to%descript = trim(data_from%descript) // trim(append)
+       else
+          data_to%descript = data_from%descript
+       end if
+       
        data_to%pline = data_from%pline
        data_to%psym = data_from%psym
        data_to%symsize = data_from%symsize
        data_to%line = data_from%line
        data_to%colour = data_from%colour
+       data_to%c_vals = data_from%c_vals
        data_to%thick = data_from%thick
+       data_to%min_val = data_from%min_val
+       data_to%max_val = data_from%max_val
        data_to%sort = data_from%sort
        data_to%noclip = data_from%noclip
        data_to%medit = data_from%medit
@@ -673,6 +734,7 @@ contains
           data_to%zdata%format = data_from%zdata%format
           data_to%zdata%set_levels = data_from%zdata%set_levels
           data_to%zdata%n_levels = data_from%zdata%n_levels
+          data_to%zdata%lmap = data_from%zdata%lmap
           data_to%zdata%n_cols = data_from%zdata%n_cols
           data_to%zdata%n_sty = data_from%zdata%n_sty
           data_to%zdata%n_thick = data_from%zdata%n_thick
@@ -716,16 +778,32 @@ contains
                 data_to%zdata%colours(:) = data_from%zdata%colours
              end if
           end if
+          if (allocated(data_from%zdata%raw_colours)) then
+             if (realloc) then
+                call move_alloc(data_from%zdata%raw_colours, &
+                     & data_to%zdata%raw_colours)
+             else
+                nn2 = shape(data_from%zdata%raw_colours)
+                allocate(data_to%zdata%raw_colours(nn2(1),nn2(2)))
+                data_to%zdata%raw_colours(:,:) = data_from%zdata%raw_colours
+             end if
+          end if
+          data_to%zdata%range = data_from%zdata%range
           data_to%zdata%missing = data_from%zdata%missing
           data_to%zdata%pxsize = data_from%zdata%pxsize
           data_to%zdata%charsize = data_from%zdata%charsize
           data_to%zdata%gamma = data_from%zdata%gamma
           data_to%zdata%label = data_from%zdata%label
+          data_to%zdata%label_off = data_from%zdata%label_off
           data_to%zdata%ctable = data_from%zdata%ctable
           data_to%zdata%fill = data_from%zdata%fill
           data_to%zdata%ilog = data_from%zdata%ilog
           data_to%zdata%invert = data_from%zdata%invert
+          data_to%zdata%smooth = data_from%zdata%smooth
+          data_to%zdata%shade_levels = data_to%zdata%shade_levels
        end if
+    else if (present(append)) then
+       data_to%descript = trim(data_from%descript) // trim(append)
     end if
 
     select case (data_to%type)
@@ -788,14 +866,16 @@ contains
        data_to%zdata%y_is_2d = data_from%zdata%y_is_2d
     end select
 
-    call gr_set_values_dataset()
-    if (pdefs%data(pdefs%cset)%type == -4 .or. &
-         & pdefs%data(pdefs%cset)%type == 9) then
-       call  gtk_notebook_set_current_page(display_nb, 1)
-    else
-       call  gtk_notebook_set_current_page(display_nb, 0)
+    if (update_hk) then
+       call gr_set_values_dataset()
+       if (pdefs%data(pdefs%cset)%type == -4 .or. &
+            & pdefs%data(pdefs%cset)%type == 9) then
+          call  gtk_notebook_set_current_page(display_nb, 1)
+       else
+          call  gtk_notebook_set_current_page(display_nb, 0)
+       end if
     end if
-
+    
   end subroutine gr_ds_copy
 
   subroutine gr_ds_append(index, append_to)
@@ -817,7 +897,7 @@ contains
     if (pdefs%data(index)%ndata == 0) return
 
     if (pdefs%data(dest)%ndata == 0) then
-       call gr_ds_copy(from=index, to=dest, copy_format=.true.)
+       call gr_ds_copy(from=index, to=dest, copy_format=.false.)
        return
     end if
 
@@ -849,9 +929,10 @@ contains
 
   end subroutine gr_ds_append
 
-  subroutine gr_ds_erase(index)
+  subroutine gr_ds_erase(index, data_only)
     integer(kind=int16), intent(in), optional :: index
-
+    logical, intent(in), optional :: data_only
+    
     ! Erase the contents of a dataset
 
     integer(kind=int16) :: idx
@@ -862,7 +943,7 @@ contains
        idx = pdefs%cset
     end if
 
-    call gr_pdefs_data_init(index=idx)
+    call gr_pdefs_data_init(index=idx, minimal=data_only)
 
   end subroutine gr_ds_erase
 
@@ -873,14 +954,17 @@ contains
 
     integer(kind=int16) :: idx
     type(graff_data), dimension(:), allocatable :: datasets
-    integer(kind=int16) :: i, j
-    integer(kind=int32), dimension(:), allocatable :: klist
+    integer(kind=int16) :: i, j, ikshift
+    integer :: nkey, nset0
+    logical, dimension(:), allocatable :: iskey
 
     if (present(index)) then
        idx = index
     else
        idx = pdefs%cset
     end if
+
+    nset0 = pdefs%nsets
 
     if (idx < 0 .or. idx > pdefs%nsets) return
     if (pdefs%nsets == 1) then
@@ -900,21 +984,41 @@ contains
     deallocate(pdefs%data)
     call move_alloc(datasets, pdefs%data)
     pdefs%nsets = pdefs%nsets - 1_int16
-    if (pdefs%cset == idx) pdefs%cset = max(pdefs%cset-1_int16, 1_int16)
+    if (pdefs%cset == idx) then
+       pdefs%cset = max(pdefs%cset-1_int16, 1_int16)
+       call gr_set_values_dataset()
+    end if
 
     if (allocated(pdefs%key%list)) then
-       if (any(pdefs%key%list == idx-1)) then
-          allocate(klist(size(pdefs%key%list)-1))
-          j = 1
-          do i = 1, int(size(pdefs%key%list), int16)
-             if (pdefs%key%list(i) == idx-1) cycle
-             klist(j) = pdefs%key%list(i)
-             j = j+1_int16
+       allocate(iskey(nset0))
+       iskey = .false.
+       iskey(pdefs%key%list+1) = .true.
+
+       if (iskey(idx)) then
+          nkey = size(pdefs%key%list)-1
+       else
+          nkey = size(pdefs%key%list)
+       end if
+
+       deallocate(pdefs%key%list)
+       if (nkey >= 1) then
+          allocate(pdefs%key%list(nkey))
+          j=1_int16
+          do i = 1, idx-1_int16
+             if (iskey(i)) then
+                pdefs%key%list(j) = i-1
+                j = j+1
+             end if
           end do
-          deallocate(pdefs%key%list)
-          call move_alloc(klist, pdefs%key%list)
+          do i = idx+1_int16, nset0
+             if (iskey(i)) then
+                pdefs%key%list(j) = i-2
+                j = j+1
+             end if
+          end do
        end if
     end if
+
   end subroutine gr_ds_delete
 
   subroutine gr_ds_move(index, after)
@@ -935,19 +1039,22 @@ contains
     iskey = .false.
     if (allocated(pdefs%key%list)) iskey(pdefs%key%list+1) = .true.
 
-    call gr_ds_copy(index, destination=tmpdata, move=.true.)
+    call gr_ds_copy(index, destination=tmpdata, move=.true., &
+         & no_housekeeping=.true.)
     tmpkey = iskey(index)
 
     if (after > index) then
        do i = index+1_int16, after
-          call gr_ds_copy(i, to=i-1_int16, move=.true.)
+          call gr_ds_copy(i, to=i-1_int16, move=.true., &
+               & no_housekeeping=.true.)
           iskey(i-1) = iskey(i)
        end do
        call gr_ds_copy(source=tmpdata, to=after, move=.true.)
        iskey(after) = tmpkey
     else
        do i = index-1_int16, after+1_int16, -1_int16
-          call gr_ds_copy(i, to=i+1_int16, move=.true.)
+          call gr_ds_copy(i, to=i+1_int16, move=.true., &
+               & no_housekeeping=.true.)
           iskey(i+1) = iskey(i)
        end do
        call gr_ds_copy(source=tmpdata, to=after+1_int16, move=.true.)
@@ -964,4 +1071,93 @@ contains
     end if
 
   end subroutine gr_ds_move
+
+  subroutine gr_ds_transpose
+    type(graff_data), pointer :: data
+    real(kind=real64), allocatable, dimension(:,:) :: xyvals
+    real(kind=plflt), dimension(:,:), allocatable :: x,y,z
+    real(kind=real64), allocatable, dimension(:) :: x1, y1
+    integer, dimension(2) :: sz
+    logical(kind=int8) :: x2, y2
+    integer :: nx, ny
+
+    data => pdefs%data(pdefs%cset)
+
+    if (data%type < 0) return
+
+    if ( data%type == 9) then
+       if (.not. allocated(data%zdata%z)) return
+       sz = shape(data%zdata%z)
+       allocate(z(sz(2),sz(1)))
+       z = transpose(data%zdata%z)
+       nx = sz(2)
+       ny = sz(1)
+       
+       sz = shape(data%zdata%x)
+       allocate(y(sz(2), sz(1)))
+       y = transpose(data%zdata%x)
+       y2 = sz(2) /= 1
+       
+       sz = shape(data%zdata%y)
+       allocate(x(sz(2), sz(1)))
+       x = transpose(data%zdata%y)
+       x2 = sz(1) /= 1
+
+       deallocate(data%zdata%x)
+       deallocate(data%zdata%y)
+       deallocate(data%zdata%z)
+       
+       data%ndata = nx
+       data%ndata2 = ny
+       data%zdata%x_is_2d = x2
+       data%zdata%y_is_2d = y2
+       
+       call move_alloc(x, data%zdata%x)
+       call move_alloc(y, data%zdata%y)
+       call move_alloc(z, data%zdata%z)
+    else
+       select case (data%type)
+       case(0)              ! No error bars
+          data%xydata = data%xydata([2,1],:)
+
+       case(1)              ! Y errors, become X
+          data%xydata = data%xydata([2,1,3],:)
+          data%type = 3
+
+       case(2)              ! YY errors, become XX
+          data%xydata = data%xydata([2,1,3,4],:)
+          data%type = 4
+
+       case(3)              ! X errors, become Y
+          data%xydata = data%xydata([2,1,3],:)
+          data%type = 1
+
+       case(4)              ! XX errors, become YY
+          data%xydata = data%xydata([2,1,3,4],:)
+          data%type = 2
+
+       case(5)              ! XY errors exchange
+          data%xydata = data%xydata([2,1,4,3],:)
+
+       case(6)              ! XYY → XXY
+          data%xydata = data%xydata([2,1,4,5,3],:)
+          data%type = 7
+
+       case(7)              ! XXY → XYY
+          data%xydata = data%xydata([2,1,5,3,4],:)
+          data%type = 6
+
+       case(8)
+          data%xydata = data%xydata([2,1,5,6,3,4],:)
+
+       case default
+          write(err_string, "(A,i0)") "gr_ds_transpose: Invalid type code: ", &
+            & data%type
+          call gr_message(err_string, type=GTK_MESSAGE_ERROR)
+          return
+       end select
+    end if
+    call gr_plot_draw(.true.)
+  end subroutine gr_ds_transpose
+  
 end module gr_ds_tools

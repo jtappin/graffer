@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -120,11 +120,21 @@ contains
 
     if (btest(pdefs%axsty(axis)%idl, extend_bit)) then
        if (pdefs%axtype(axis) == 1) then
-          a0 = 0.9*a0
-          a1 = a0/0.9
+          if (a1 >= a0) then
+             a0 = 0.9*a0
+             a1 = a1/0.9
+          else
+             a0 = a0/0.9
+             a1 = 0.9*a1
+          end if
        else
-          a0 = a0 - 0.05_plflt * diff
-          a1 = a1 + 0.05_plflt * diff
+          if (a1 >= a0) then
+             a0 = a0 - 0.05_plflt * diff
+             a1 = a1 + 0.05_plflt * diff
+          else
+             a0 = a0 + 0.05_plflt * diff
+             a1 = a1 - 0.05_plflt * diff
+          end if
        end if
     end if
 
@@ -143,7 +153,7 @@ contains
     ! Create the plbox axis codes based on the requested options.
 
     type(graff_style), pointer :: axsty
-    integer :: other_axis
+    integer :: other_axis, p10
 
     axsty => pdefs%axsty(axis)
 
@@ -171,9 +181,49 @@ contains
     if (axsty%minor /= 1)  options = trim(options)//'s'
     nminor = axsty%minor
 
-    spacing = axsty%xmajor
+    axsty%is_big_log = .false.
 
-    if (pdefs%axtype(axis) == 1) options = trim(options)//'l'
+    if (pdefs%axtype(axis) == 1) then
+       p10=int(abs(log10(pdefs%axrange(2,axis)/pdefs%axrange(1,axis))))
+       if (p10 > axsty%log_bands(1)) then
+          axsty%is_big_log = .true.
+          options = trim(options)//'o'
+          if (p10 < axsty%log_bands(2)) then
+             spacing = 2._real64
+             nminor = 2
+          else if (p10 < axsty%log_bands(3)) then
+             spacing = 5._real64
+             nminor = 5
+          else
+             spacing = 0._real64
+             nminor = 0
+          end if
+       else
+          options = trim(options)//'l'
+          spacing = 0._plflt
+       end if
+       
+    else if (axsty%major /= 0) then
+       spacing = abs(pdefs%axrange(2,axis)- pdefs%axrange(1,axis))/&
+            & real(axsty%major)
+       p10 = floor(log10(spacing))
+       spacing = spacing/(10._real64**p10)
+       if (spacing < 1.5) then
+          spacing = 1.0_real64
+       else if (spacing < 2.5) then
+          spacing = 2.0_real64
+       else if (spacing < 4.0) then
+          spacing = 3.0_real64
+       else if (spacing < 7.0) then
+          spacing = 5.0_real64
+       else
+          spacing = 10.0_real64
+       end if
+       spacing = spacing * 10._real64 ** p10
+    else
+       spacing = 0._plflt
+    end if
+    
 
     if (.not. btest(axsty%extra, annot_bit)) then
        if (axis == 3) then
@@ -206,7 +256,7 @@ contains
        corners = 0._plflt
        dx = pdefs%transform%world(2,1)- pdefs%transform%world(1,1)
        dy = pdefs%transform%world(4,1)- pdefs%transform%world(3,1)
-       aspect = dy/dx
+       aspect = abs(dy/dx)
     else if (pdefs%aspect(1) > 0.) then
        if (pdefs%aspect(2) > 0.) then
           corners = real([pdefs%aspect(2), 1.-pdefs%aspect(2), &
@@ -215,7 +265,8 @@ contains
           corners = 0._plflt
        end if
        aspect = real(pdefs%aspect(1), plflt)
-    else if (pdefs%position(1) > 0.) then
+    else if (pdefs%position(1) /= pdefs%position(3) .and. &
+         &   pdefs%position(2) /= pdefs%position(4)) then
        corners = real(pdefs%position([1,3,2,4]), plflt)
        aspect = 0._plflt
     else
@@ -253,7 +304,10 @@ contains
        iaxis = 3
     end if
 
-    if (btest(pdefs%axsty(iaxis)%time, time_bit)) then
+    if (pdefs%axsty(iaxis)%is_big_log) then
+       write(label, "('10#u',i0,'#d')", iostat=ios, iomsg=iom) nint(value)
+       if (ios /= 0) label = ''
+    else if (btest(pdefs%axsty(iaxis)%time, time_bit)) then
        call gr_format_time(iaxis, value, label)
     else
        write(label, pdefs%axsty(iaxis)%format, iostat=ios, iomsg=iom) value
@@ -264,7 +318,7 @@ contains
        end if
     end if
   end subroutine gr_format_labels
-
+ 
   subroutine gr_format_time(axis, value, label)
     integer, intent(in) :: axis
     real(kind=plflt), intent(in) :: value
@@ -488,7 +542,8 @@ contains
        else
           call gr_message("No PDF device found", GTK_MESSAGE_ERROR)
        end if
-    case ('svg')
+    case ('svg')    ! Prefer qt device over cairo here as the cairo device
+       ! does not generate character strings properly.
        if (gr_plot_has_device('svgqt')) then
           device = 'svgqt'
        else if (gr_plot_has_device('svgcairo')) then

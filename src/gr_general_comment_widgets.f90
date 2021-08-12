@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -85,11 +85,10 @@ contains
        if (allocated(pdefs%remarks)) deallocate(pdefs%remarks)
 
        if (nch /= 0) call hl_gtk_text_view_get_text(comm_view, pdefs%remarks)
+       call gr_set_changed(.true.)
     end if
 
     call gtk_widget_destroy(comm_window)
-
-    call gr_set_changed(.true.)
 
   end subroutine gr_comment_quit
 end module gr_general_comment_widgets

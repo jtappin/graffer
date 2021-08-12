@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 1996-2021
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -44,6 +44,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
 ;	V4 version: 6/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
 ;	Add options for plplot drivers: 29/11/13; SJT
+;	Add log_band values: 24/6/21; SJT
 ;-
 
 
@@ -67,6 +68,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ; GP - Positions of corners
                                 ; GR - Aspect of plot.
                                 ; GI - Is plot isotropic?
+                                ; GF - Font selection.
 
         'GT ': pdefs.title = value
         'GS ': pdefs.subtitle = value
@@ -76,7 +78,8 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'GR ': pdefs.aspect = value
         'GI ': pdefs.isotropic = value
         'GHA': pdefs.match = value
-
+        'GF ': pdefs.fontopt = value
+        
                                 ; The X, Y and R keys are items relating
                                 ; to the X, Y and right-hand Y axes
                                 ; respectively  
@@ -104,9 +107,9 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         end
         'XMN': pdefs.xsty.minor = value
         'XMJ': pdefs.xsty.major = value
-        'XMS': pdefs.xsty.xmajor = value
         'XFM': pdefs.xsty.format = value
-
+        'XLL': pdefs.xsty.log_bands = value
+        
         'XVL': begin
            if ptr_valid(pdefs.xsty.values) then $
               ptr_free, pdefs.xsty.values 
@@ -129,8 +132,9 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         end
         'YMN': pdefs.ysty.minor = value
         'YMJ': pdefs.ysty.major = value
-        'YMS': pdefs.ysty.xmajor = value
         'YFM': pdefs.ysty.format = value
+        'YLL': pdefs.ysty.log_bands = value
+
         'YVL': begin
            if ptr_valid(pdefs.ysty.values) then $
               ptr_free, pdefs.ysty.values 
@@ -154,8 +158,9 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         end
         'RMN': pdefs.ysty_r.minor = value
         'RMJ': pdefs.ysty_r.major = value
-        'RMS': pdefs.ysty_r.xmajor = value
         'RFM': pdefs.ysty_r.format = value
+        'RLL': pdefs.ysty_r.log_bands = value
+        
         'RVL': begin
            if ptr_valid(pdefs.ysty_r.values) then $
               ptr_free, pdefs.ysty_r.values 
@@ -189,7 +194,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'DN ': begin
            pdefs.nsets = value
            nds = pdefs.nsets > 1
-           data = replicate({graff_data}, nds)
+           data = gr_new_ds(pdefs, nds) ;replicate({graff_data}, nds)
            dflag = 1b
         end
         'DC ': pdefs.cset = value
@@ -254,6 +259,11 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
                                 ; HVA - Any part of the view
                                 ;       command which follows the
                                 ;       filename. 
+                                ; HPB - The PDF view command (up to
+                                ;       the filename)
+                                ; HPA - Any part of the PDF view
+                                ;       command which follows the
+                                ;       filename. 
                                 ; HF - Font family.
                                 ; HWS - Font weight and slant (bit 0 is
                                 ;       on for bold, bit 1 for
@@ -273,6 +283,8 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'HAA': pdefs.hardset.action[1] = value
         'HVB': pdefs.hardset.viewer[0] = value
         'HVA': pdefs.hardset.viewer[1] = value
+        'HPB': pdefs.hardset.pdfviewer[0] = value
+        'HPA': pdefs.hardset.pdfviewer[1] = value
         
         'HF ': pdefs.hardset.font.family = value
         'HWS': pdefs.hardset.font.wg_sl = value
@@ -306,6 +318,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'KN ': pdefs.key.norm = value
         'KC ': pdefs.key.cols = value
         'KF ': pdefs.key.frame = value
+        'KR ': pdefs.key.reverse = value
         'KP ': pdefs.key.one_point = value
         'KT ': pdefs.key.title = value
         'KL ': begin

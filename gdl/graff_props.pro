@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2013-2020
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -19,13 +19,15 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
                  charsize = charsize, thick = thick, corners = $
                  corners, $
                  aspect = aspect, comment = comment, xtitle = xtitle, $
-                 xrange = xrange, xlog = xlog, xexact = xexact, $
+                 xrange = xrange, xlog = xlog, xl_bands = xl_bands, $
+                 xexact = xexact, $
                  xextend = xextend, xaxes = xaxes, xbox = xbox, $
                  xminor = xminor, xtime = xtime, xorigin = xorigin, $
                  xgrid = xgrid, xauto = xauto, xannotate = xannotate, $
                  xmajor = xmajor, xtickv = xtickv, $
                  ytitle = ytitle, $
-                 yrange = yrange, ylog = ylog, yexact = yexact, $
+                 yrange = yrange, ylog = ylog, yl_bands = yl_bands, $
+                 yexact = yexact, $
                  yextend = yextend, yaxes = yaxes, ybox = ybox, $
                  yminor = yminor, ytime = ytime, yorigin = yorigin, $
                  ygrid = ygrid, yauto = yauto, yannotate = yannotate, $
@@ -33,8 +35,10 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
                  yr_enable = yr_enable, $
                  yrtitle = yrtitle, $
                  yrmajor = yrmajor, yrtickv = yrtickv, $
-                 yrrange = yrrange, yrlog = yrlog, yrexact = yrexact, $
-                 yrextend = yrextend, yraxes = yraxes, $ $
+                 yrrange = yrrange, yrlog = yrlog, yrl_bands = $
+                 yrl_bands, $
+                 yrexact = yrexact, $
+                 yrextend = yrextend, yraxes = yraxes,  $
                  yrminor = yrminor, yrtime = yrtime, yrorigin = $
                  yrorigin, $
                  yrgrid = yrgrid, yrauto = yrauto, yrannotate = $
@@ -46,8 +50,9 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
                  = $
                  h_cmyk, ctable = ctable, h_print = h_print, h_viewer $
                  = h_viewer, h_file = h_file, h_psdev = h_psdev, $
-                 h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, h_pdfdev = $
-                 h_pdfdev
+                 h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, $
+                 h_pdfviewer = h_pdfviewer
+
 ;+
 ; GRAFF_PROPS
 ;	User-callable interface to set global properties of a graffer
@@ -58,13 +63,15 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;                 charsize = charsize, thick = thick, corners = $
 ;                 corners, $
 ;                 aspect = aspect, comment = comment, xtitle = xtitle, $
-;                 xrange = xrange, xlog = xlog, xexact = xexact, $
+;                 xrange = xrange, xlog = xlog, xl_bands = xl_bands, $
+;                 xexact = xexact, $
 ;                 xextend = xextend, xaxes = xaxes, xbox = xbox, $
 ;                 xminor = xminor, xtime = xtime, xorigin = xorigin, $
 ;                 xgrid = xgrid, xauto = xauto, xannotate = xannotate, $
 ;                 xmajor = xmajor, xtickv = xtickv, $
 ;                 ytitle = ytitle, $
-;                 yrange = yrange, ylog = ylog, yexact = yexact, $
+;                 yrange = yrange, ylog = ylog, xl_bands = xl_bands, $
+;                 yexact = yexact, $
 ;                 yextend = yextend, yaxes = yaxes, ybox = ybox, $
 ;                 yminor = yminor, ytime = ytime, yorigin = yorigin, $
 ;                 ygrid = ygrid, yauto = yauto, yannotate = yannotate, $
@@ -72,7 +79,8 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;                 yr_enable = yr_enable, $
 ;                 yrtitle = yrtitle, $
 ;                 yrmajor = xmajor, yrtickv = xtickv, $
-;                 yrrange = yrrange, yrlog = yrlog, yrexact = yrexact, $
+;                 yrrange = yrrange, yrlog = yrlog, xl_bands = $
+;                 xl_bands, yrexact = yrexact, $
 ;                 yrextend = yrextend, yraxes = yraxes, $ $
 ;                 yrminor = yrminor, yrtime = yrtime, yrorigin = yrorigin, $
 ;                 yrgrid = yrgrid, yrauto = yrauto, yrannotate = $
@@ -115,6 +123,9 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;				(2-element array).
 ; 	[xyyr]log		input	Set or unset the use of logarithmic
 ; 				axes.
+; 	[xyyr]l_bands	input	A 3-element array controlling the
+; 				transitions of log axis labelling. [6,
+; 				15, 30]
 ; 	[xyyr]exact	input	Set or unset the exact range bit of
 ; 				the IDL axis style setting
 ; 	[xyyr]extend	input	Set or unset the extended range bit of
@@ -320,6 +331,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      else pdefs.xsty.extra = pdefs.xsty.extra or 4
   endif
 
+  if n_elements(xl_bands) ne 0 then $
+     pdefs.xsty.log_bands = xl_bands $
+  else if max(pdefs.xsty.log_bands) eq 0 then $
+     pdefs.xsty.log_bands = [6, 15, 30]
+  
 ;	time labelling
 
   if (n_elements(xtime) ne 0) then begin
@@ -393,6 +409,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      else pdefs.ysty.extra = pdefs.ysty.extra or 4
   endif
 
+  if n_elements(yl_bands) ne 0 then $
+     pdefs.ysty.log_bands = yl_bands $
+  else if max(pdefs.ysty.log_bands) eq 0 then $
+     pdefs.ysty.log_bands = [6, 15, 30]
+  
 ;	time labelling
 
   if (n_elements(ytime) ne 0) then begin
@@ -465,6 +486,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      else pdefs.ysty_r.extra = pdefs.ysty_r.extra or 4
   endif
 
+  if n_elements(yrl_bands) ne 0 then $
+     pdefs.ysty_r.log_bands = yrl_bands $
+  else if max(pdefs.ysty_r.log_bands) eq 0 then $
+     pdefs.ysty_r.log_bands = [6, 15, 30]
+  
 ;	time labelling
 
   if (n_elements(yrtime) ne 0) then begin

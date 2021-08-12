@@ -24,7 +24,7 @@
 \setlength{\oddsidemargin}{5mm}
 \setlength{\evensidemargin}{5mm}
 \pagestyle{myheadings}
-\markboth{GRAFFER}{Version 4.08}
+\markboth{GRAFFER}{Version 4.13}
 
 \begin{document}
 
@@ -34,9 +34,9 @@ Version 4.08\\
 File Format Description}
 
 \author{\textsf{\textbf{\Large James Tappin}}\\
-\texttt{\textbf{\Large jtappin@nso.edu}}}
+\texttt{\textbf{\Large jtappin at gmail dot com}}}
 
-\date{\textsf{\textbf{\large November 2013}}}
+\date{\textsf{\textbf{\large June 2020}}}
 
 \maketitle
 
@@ -238,6 +238,7 @@ to the whole file.
   GI & Byte & 1 & Whether the plot has isotropic axes.\\
   GHA & Byte & 1 & Whether the screen plot should use the hard copy
   aspect ratio.\\
+  GF & Int & 1 & Font family for annotations (used in IDL only).\\
   \hline \multicolumn{4}{|c|}{The next group of tags are responsible
     for
     defining the X-axis properties}\\
@@ -266,6 +267,8 @@ to the whole file.
   XMS & Double & 1 & The spacing of the major intervals on the
   X-axis. (Not implemented in IDL).\\
   XMN & Int & 1 & The number of minor intervals to use on the X-axis.\\
+  XLL & Long & 3 & Threshold for changing tick format in logarithmic
+  plots (only used by Fortran).\\
   XFM & String & 1 & The format specifier to use (Overridden by time
   labelling options) \\
   XNV & Int & 1 & The number of tick values used (ascii files only).\\
@@ -278,10 +281,12 @@ to the whole file.
     with Y for the Y axis, and R for the secondary Y axis}\\
   \hline
   YIR & Byte & 1 & Whether the secondary Y axis is to be displayed.\\
-  \hline ZT& Int& 1& Colour table number for 2-D datasets displayed as
+  \hline
+  ZT& Int& 1& Colour table number for 2-D datasets displayed as
   colour plots (IDL colour table indices), as of Version 3.08 this is a
   default used to initialize the table for the dataset or if the
-  display is 8-bit.\\
+  display is 8-bit. Not to be confused with the ``ZT'' key in a datset,
+  which is contour thicknesses.\\
   ZG& Float& 1& Gamma setting for the colour table (since version 3.08
   this is a
   default setting).\\
@@ -326,7 +331,8 @@ to the whole file.
   HVA& String& 1&
   The part of the view command after the filename.\\
   HFN& String & 1 & The filename for the hardcopy output.\\
-  HPS & String & 1 & The device for producing PostScript output.\\
+  HPS & String & 1 & The device for producing PostScript output. This
+  and the other devices are only used in Fortran.\\
   HEP & String & 1 & The device for producing encapsulated PostScript output.\\
   HPD & String & 1 & The device for producing PDF output.\\
   HSV & String & 1 & The device for producing SVG output.\\

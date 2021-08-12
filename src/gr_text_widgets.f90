@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -36,7 +36,9 @@ module gr_text_widgets
 
   use gr_plot
   use gr_text_utils
-
+  use gr_colours
+  use gr_colour_widgets
+  
   implicit none
 
   type(c_ptr), private :: text_window, text_draw, text_entry, text_id_entry, &
@@ -50,6 +52,19 @@ module gr_text_widgets
   integer(kind=int16), private :: csys
   real(kind=plflt), private :: csd
 
+  character(len=15), dimension(29), private, parameter :: &
+       & col_list = [character(len=15) :: &
+       & 'White (bg)', 'Black', 'Red', 'Green', 'Blue', 'Cyan', &
+       & 'Magenta', 'Yellow', 'Orange', '#7f ff 00', '#00 ff 7f', &
+       & '#00 7f ff', '#7f 00 ff', 'Mauve', 'Dark Grey', 'Light Grey', &
+       & 'Dark Red', 'Light Red', 'Dark Green', 'Light Green', 'Dark Blue', &
+       & 'Light Blue', 'Dark Cyan', 'Light Cyan', 'Dark Magenta', &
+       & 'Light Magenta', 'Dark Yellow', 'Light Yellow', 'Custom']
+
+  integer, parameter, private :: ccindex=size(col_list)-1
+  integer(kind=int16), private, target :: current_colour
+  integer(kind=int16), dimension (3), private, target :: current_rgb
+
 contains
 
   subroutine gr_text_menu(index, x, y)
@@ -62,19 +77,13 @@ contains
     logical, dimension(2), target :: iapply = [.false., .true.]
     real(kind=c_double), target, dimension(3) :: align=[0._c_double, &
          & 0.5_c_double, 1.0_c_double]
-    character(len=15), dimension(29) :: col_list = [character(len=15) :: &
-         & 'Omit', 'White (bg)', 'Black', 'Red', 'Green', 'Blue', 'Cyan', &
-         & 'Magenta', 'Yellow', 'Orange', '#7f ff 00', '#00 ff 7f', &
-         & '#00 7f ff', '#7f 00 ff', 'Mauve', 'Dark Grey', 'Light Grey', &
-         & 'Dark Red', 'Light Red', 'Dark Green', 'Light Green', 'Dark Blue', &
-         & 'Light Blue', 'Dark Cyan', 'Light Cyan', 'Dark Magenta', &
-         & 'Light Magenta', 'Dark Yellow', 'Light Yellow']
     real(kind=c_double) :: xs, ys
     real(kind=c_double) :: xcmin, xcmax, xcstep,  ycmin, ycmax, ycstep
     real(kind=plflt) :: css
-
+    integer(kind=c_int) :: isel
+    
     text_ready = .false.
-    call gr_text_init
+!!$    call gr_text_init
 
     call plgchr(csd, css)
 
@@ -201,9 +210,17 @@ contains
     junk = gtk_label_new("Colour:"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 2_c_int, 4_c_int)
 
-    text_clr_cbo = hl_gtk_combo_box_new(initial_choices=col_list,&
-         & active=int(text%colour, c_int)+1_c_int, &
-         & changed=c_funloc(gr_text_update), tooltip=&
+    current_colour = text%colour
+    if (text%colour == -2) then
+       isel = ccindex
+       current_rgb = text%c_vals
+    else
+       isel = text%colour
+       call gr_colour_triple(text%colour, current_rgb)
+    end if
+    text_clr_cbo = hl_gtk_combo_box_new(initial_choices=col_list, &
+         & active=isel, &
+         & changed=c_funloc(gr_text_set_colour), tooltip= &
          & "Select the colour for the text string"//c_null_char)
     call hl_gtk_table_attach(jb, text_clr_cbo, 3_c_int, 4_c_int)
 
@@ -268,38 +285,12 @@ contains
     call hl_gtk_box_pack(jb, junk)
 
     call gtk_widget_show_all(text_window)
-    call gr_set_plw(.true.)
+    call gr_set_plw(text_draw, .true., csize=csd)
 
     text_ready=.true.
     if (text%text /= '') call gr_text_update(c_null_ptr, c_null_ptr)
 
   end subroutine gr_text_menu
-
-  subroutine gr_set_plw(preview, update)
-    logical, intent(in) :: preview
-    logical, intent(in), optional :: update
-
-    ! Select which plot window
-
-    logical :: changed
-
-    call gr_plot_close()
-    if (preview) then
-       call gr_plot_open(area=text_draw)
-       call plbop
-       call plschr(csd, 1._plflt)
-       call plvpor(0._plflt, 1._plflt, 0._plflt, 1._plflt)
-       call plwind(0._plflt, 1._plflt, 0._plflt, 1._plflt)
-    else
-       if (present(update)) then
-          changed = update
-       else 
-          changed = .false.
-       end if
-       call gr_plot_open()
-       call gr_plot_draw(changed)
-    end if
-  end subroutine gr_set_plw
 
   recursive subroutine gr_text_quit(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -310,7 +301,7 @@ contains
 
     call c_f_pointer(data, apply)
 
-    call gr_set_plw(.false., update=apply)
+    call gr_set_plw(update=apply)
     if (apply) then
        call hl_gtk_entry_get_text(text_entry, text=text%text)
        text%norm = int(gtk_combo_box_get_active(text_sys_cbo), int16)
@@ -320,8 +311,13 @@ contains
        text%y = hl_gtk_spin_button_get_value(text_xy_sb(2))
        call hl_gtk_entry_get_text(text_id_entry, text=text%id)
        text%size = real(hl_gtk_spin_button_get_value(text_cs_sb), real32)
-       text%colour = int(gtk_combo_box_get_active(text_clr_cbo), int16) - &
-            & 1_int16
+
+       text%colour = current_colour
+       if (current_colour == -2) then
+          text%c_vals = current_rgb
+       else
+          text%c_vals = 0_int16
+       end if
        text%align = real(hl_gtk_spin_button_get_value(text_algn_sb), real32)
        text%orient = real(hl_gtk_spin_button_get_value(text_ori_sb), real32)
        text%ffamily = int(gtk_combo_box_get_active(text_ffam_cbo), int16) + &
@@ -340,20 +336,46 @@ contains
     end if
   end subroutine gr_text_quit
 
+  subroutine gr_text_set_colour(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    integer :: icol
+    
+    icol = gtk_combo_box_get_active(widget)
+    if (icol == ccindex) then
+       call gr_colour_define(text_window, text_clr_cbo, &
+            & current_colour, current_rgb, &
+            & updater=c_funloc(gr_text_update_timer))
+    else
+       current_colour = int(icol, int16)
+       current_rgb = 0_int16
+       call gr_text_update(widget, data)
+    end if
+
+  end subroutine gr_text_set_colour
+
+  function gr_text_update_timer(data) bind(c)
+    integer(kind=c_int) :: gr_text_update_timer
+    type(c_ptr), value :: data
+
+    call gr_set_plw(text_draw, .true., csize=csd)
+    call gr_text_update(c_null_ptr, c_null_ptr)
+
+    gr_text_update_timer = FALSE
+  end function gr_text_update_timer
+  
   subroutine gr_text_update(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
     ! Update the preview.
 
-    integer :: icol, ffamily, font
+    integer :: ffamily, font
     real(kind=plflt) :: cs
     character(len=265) :: txt
 
     if (.not. text_ready) return
 
     call hl_gtk_entry_get_text(text_entry, text=txt)
-    icol = gtk_combo_box_get_active(text_clr_cbo) - 1
-    if (icol == -1) return
     cs = hl_gtk_spin_button_get_value(text_cs_sb)
     ffamily = gtk_combo_box_get_active(text_ffam_cbo)+1
     if (ffamily < 1 .or. ffamily > size(font_list)) return
@@ -361,7 +383,12 @@ contains
     if (font < 1 .or. font > size(font_shape)) return
 
     call plschr(0._plflt, cs)
-    call plcol0(icol)
+
+    if (current_colour >= 0) then
+       call plcol0(int(current_colour, int32))
+    else
+       call gr_custom_line(current_rgb)
+    end if
     call plsfont(font_list(ffamily), font_shape(font), &
          & font_weight(font))
     call plclear()
@@ -382,7 +409,7 @@ contains
     newsys = gtk_combo_box_get_active(widget)
     if (newsys == csys) return
 
-    call gr_set_plw(.false.)
+    call gr_set_plw()
 
     xc = hl_gtk_spin_button_get_value(text_xy_sb(1))
     yc = hl_gtk_spin_button_get_value(text_xy_sb(2))
@@ -433,7 +460,7 @@ contains
     call hl_gtk_spin_button_set_value(text_xy_sb(2), y)
 
     csys = int(newsys, int16)
-    call gr_set_plw(.true.)
+    call gr_set_plw(text_draw, csize=csd)
   end subroutine gr_text_csys
 
   subroutine gr_text_yax(widget, data) bind(c)
@@ -453,12 +480,12 @@ contains
     x = hl_gtk_spin_button_get_value(text_xy_sb(1))
     y = hl_gtk_spin_button_get_value(text_xy_sb(2))
 
-    call gr_set_plw(.false.)
+    call gr_set_plw()
     call gr_plot_coords_w_v(x, y, xv, yv)
     call gr_plot_coords_v_w(xv, yv, x, y, y_axis=newax)
     call hl_gtk_spin_button_set_value(text_xy_sb(1), x)
     call hl_gtk_spin_button_set_value(text_xy_sb(2), y)
-    call gr_set_plw(.true.)
+    call gr_set_plw(text_draw, csize=csd)
 
   end subroutine gr_text_yax
 

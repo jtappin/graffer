@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -57,8 +57,8 @@ contains
 
     type(c_ptr) :: smnu, junk, jmnu
     logical, dimension(2), target :: use_current = [.true., .false.]
-    character(len=3), dimension(4), target :: devices=['ps ','eps', 'pdf', &
-         & 'svg']
+    character(len=4), dimension(5), target :: devices=['ps  ','eps ', 'pdf ', &
+         & 'epdf', 'svg ']
     character(len=4), dimension(3), target :: imtypes = ['png ', 'tiff', 'jpeg']
     character(len=3), dimension(4), target :: helptype = &
          & ['ug ', 'fmt', 'abt', 'gfa']
@@ -83,13 +83,9 @@ contains
          & tooltip="Save the file to a new name, in ascii format."//c_null_char)
 
     junk = hl_gtk_menu_item_new(smnu, "Open"//c_null_char, &
-         & activate=c_funloc(gr_open_cb), data=c_loc(use_current(1)), &
+         & activate=c_funloc(gr_open_cb), &
          & accel_key="o"//c_null_char, accel_group=accel, &
-         & tooltip="Open an existing file"//c_null_char)
-    junk = hl_gtk_menu_item_new(smnu, "New"//c_null_char, &
-         & activate=c_funloc(gr_open_cb), data=c_loc(use_current(2)), &
-         & accel_key="n"//c_null_char, accel_group=accel, &
-         & tooltip="Create a new file"//c_null_char)
+         & tooltip="Open a new or existing file"//c_null_char)
 
     junk = hl_gtk_menu_item_new(smnu, "Quit"//c_null_char, &
          & activate=c_funloc(gr_exit), &
@@ -121,11 +117,15 @@ contains
          & accel_group=accel, &
          & tooltip="Print to a PDF file"//c_null_char)
 
-    junk = hl_gtk_menu_item_new(smnu, "Generate SVG"//c_null_char, &
+    junk = hl_gtk_menu_item_new(smnu, "Print (Embeddable PDF)"//c_null_char, &
          & activate=c_funloc(gr_print), data=c_loc(devices(4)), &
-         & accel_key='s'//c_null_char, &
+         & accel_key='e'//c_null_char, &
          & accel_mods=ior(GDK_CONTROL_MASK, GDK_SHIFT_MASK), &
          & accel_group=accel, &
+         & tooltip="Print to an embeddable PDF file"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Generate SVG"//c_null_char, &
+         & activate=c_funloc(gr_print), data=c_loc(devices(5)), &
          & tooltip="Output to an SVG file"//c_null_char)
 
     jmnu = hl_gtk_menu_submenu_new(smnu, "Dump screen"//c_null_char)
@@ -192,19 +192,15 @@ contains
 
     ! Callback to open/create a file
 
-    logical, pointer :: is_new
     logical :: ok
-    integer(kind=c_int) :: new_file, ipick, iresp
+    integer(kind=c_int) :: ipick, iresp
     character(len=256), dimension(:), allocatable :: files
     type(c_ptr) :: unsave_msg, junk
     character(len=8) :: gr_sversion
 
-    call c_f_pointer(data, is_new)
-    new_file = f_c_logical(is_new)
-
     ipick = hl_gtk_file_chooser_show(files, &
          & filter=["*.grf"], filter_name=["Graffer Files"], &
-         & edit_filters=TRUE, create=new_file, confirm_overwrite=TRUE, &
+         & edit_filters=TRUE, create=TRUE, confirm_overwrite=TRUE, &
          & parent=gr_window, initial_dir=trim(pdefs%dir)//c_null_char, &
          & initial_file=trim(pdefs%name)//c_null_char, &
          & title="Open a graffer file"//c_null_char)
@@ -280,7 +276,7 @@ contains
 
     ! Make a hardcopy of the plot.
 
-    character(len=3) :: device
+    character(len=4) :: device
 
     call c_f_string(data, device)
 
@@ -300,20 +296,23 @@ contains
     character(len=4) :: filetype
     type(c_ptr) :: pixb
     integer :: pdot
-
+    character(len=120) :: local_name
+    
     call c_f_string(data, filetype)
 
     pixb = hl_gtk_drawing_area_get_gdk_pixbuf(gr_drawing_area)
     if (pdefs%hardset%name == '') then
        pdot = index(pdefs%name, '.', back=.true.)
        if (pdot == 0) then
-          pdefs%hardset%name = pdefs%name
+          local_name = pdefs%name
        else
-          pdefs%hardset%name = pdefs%name(:pdot-1)
+          local_name = pdefs%name(:pdot-1)
        end if
+    else
+       local_name  =pdefs%hardset%name
     end if
     call hl_gdk_pixbuf_save(pixb, trim(pdefs%dir)//'/'//&
-         & trim(pdefs%hardset%name)//'.'//&
+         & trim(local_name)//'.'//&
          & trim(filetype)//c_null_char)
 
   end subroutine gr_dump
@@ -336,8 +335,8 @@ contains
     character(len=256), dimension(:), allocatable :: file
     character(len=256) :: dir, base
     
-    if (pdefs%opts%colour_dir /= '') then
-       dir = pdefs%opts%colour_dir
+    if (sysopts%colour_dir /= '') then
+       dir = sysopts%colour_dir
     else
        dir = '.'
     end if
@@ -372,7 +371,7 @@ contains
 
     call c_f_pointer(data, type)
 
-    if (pdefs%opts%pdfviewer == "") then
+    if (sysopts%pdfviewer == "") then
        call gr_find_viewers(pdflist)
        if (.not. allocated(pdflist)) then
           iresp = hl_gtk_message_dialog_show( &
@@ -383,13 +382,13 @@ contains
                & parent=gr_window)
           return
        end if
-       pdefs%opts%pdfviewer = pdflist(1)
+       sysopts%pdfviewer = pdflist(1)
     end if
 
     if (type == 'ug') then
        do i = 1, size(docdir)
           if (file_exists(trim(docdir(i))//"/Graffer.pdf")) then
-             call execute_command_line(pdefs%opts%pdfviewer//' '//&
+             call execute_command_line(sysopts%pdfviewer//' '//&
                   & trim(docdir(i))//'/Graffer.pdf', wait=.false.)
              return
           end if
@@ -397,7 +396,7 @@ contains
     else
        do i = 1, size(docdir)
           if (file_exists(trim(docdir(i))//"/Format.pdf")) then
-             call execute_command_line(pdefs%opts%pdfviewer//' '//&
+             call execute_command_line(sysopts%pdfviewer//' '//&
                   & trim(docdir(i))//'/Format.pdf', wait=.false.)
              return
           end if

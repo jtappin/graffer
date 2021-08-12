@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -23,7 +23,8 @@ module gr_ds_editor_widgets
 
   use gtk_hl
   use gtk, only: gtk_container_add, gtk_label_new, gtk_widget_destroy, &
-       & gtk_widget_set_sensitive, gtk_widget_show_all, TRUE, FALSE, &
+       & gtk_widget_set_sensitive, gtk_widget_show_all, &
+       & gtk_combo_box_get_active, TRUE, FALSE, &
        & GTK_POLICY_NEVER
 
   use graff_types
@@ -36,7 +37,7 @@ module gr_ds_editor_widgets
 
   implicit none
 
-  type(c_ptr), private :: edit_window, error_grp, value_view
+  type(c_ptr), private :: edit_window, error_grp, value_view, opt_cbo
   type(c_ptr), dimension(9), private :: error_buts
 
 contains
@@ -52,10 +53,13 @@ contains
     character(len=11), dimension(9), parameter :: errnames = &
          & [character(len=11) :: 'None', '±Y', '-Y +Y', '±X', '-X +X', &
          & '±X ±Y', '±X -Y +Y', '-X +X ±Y', '-X +X -Y +Y']
-   character(len=13), dimension(9), parameter :: errnames_p = &
+    character(len=13), dimension(9), parameter :: errnames_p = &
          & [character(len=13) :: 'None', '±Θ', '-Θ +Θ', '±R', '-R +R', &
          & '±R ±Θ', '±R -Θ +Θ', '-R +R ±Θ', '-R +R -Θ +Θ']
 
+    character(len=7), dimension(3), parameter :: err_actions = &
+         &[character(len=7) :: 'Abort', 'Re-edit', 'Skip']
+    
     data => pdefs%data(pdefs%cset)
 
     write(title, "('Dataset Editor, DS #', i0)") pdefs%cset
@@ -79,7 +83,7 @@ contains
        allocate(values(data%ndata))
        nfields = size(data%xydata(:,1))
        do i = 1, data%ndata
-          write(values(i), "(6(g0,2x))") data%xydata(:,i)
+          write(values(i), "(6(1pg0,2x))") data%xydata(:,i)
        end do
     else
        allocate(values(1))
@@ -94,9 +98,13 @@ contains
 
     call hl_gtk_box_pack(base, sbox)
 
+    jb = hl_gtk_box_new(horizontal=TRUE)
+    call hl_gtk_box_pack(base, jb)
+
     mnu = hl_gtk_menu_new()
-    call hl_gtk_box_pack(base, mnu, expand=FALSE)
-    smnu = hl_gtk_menu_submenu_new(mnu, "Error bars"//c_null_char)
+    call hl_gtk_box_pack(jb, mnu) ! , expand=FALSE)
+    
+    smnu = hl_gtk_menu_submenu_new(mnu, "Error bars ▼"//c_null_char)
 
     error_grp = c_null_ptr
     if (data%mode == 0) then
@@ -112,6 +120,14 @@ contains
     end if
     call gr_edit_err_setup(nfields, init=.true.)
 
+    junk = gtk_label_new("Error action:"//c_null_char)
+    call hl_gtk_box_pack(jb, junk)
+    
+    opt_cbo = hl_gtk_combo_box_new(initial_choices=err_actions, &
+         & active=1_c_int, tooltip= &
+         & "Action on invalid data."//c_null_char)
+    call hl_gtk_box_pack(jb, opt_cbo)
+ 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(base, jb, expand=FALSE)
 
@@ -204,14 +220,20 @@ contains
     character(len=200), dimension(:), allocatable :: cvals
     real(kind=real64), dimension(:,:), allocatable :: xyvals
     integer :: nlines, nfields
-    logical :: ok
+    logical :: ok, keep
     type(graff_data), pointer :: data
-
+    integer(kind=c_int) :: ieopt
+    
     call c_f_pointer(gdata, iupdate)
 
+    keep = .false.
+    
     if (iupdate) then
+       ieopt = gtk_combo_box_get_active(opt_cbo)
+       
        call hl_gtk_text_view_get_text(value_view, cvals)
-       call gr_xy_decode(cvals, xyvals, nlines, nfields, ok)
+       call gr_xy_decode(cvals, xyvals, nlines, nfields, ok, &
+            & skip = ieopt == 2)
 
        if (ok) then
           data => pdefs%data(pdefs%cset)
@@ -223,13 +245,18 @@ contains
 
           data%ndata = nlines
           data%type = int(hl_gtk_radio_menu_group_get_select(error_grp), int16)
+          call gtk_entry_set_text(ds_type_id, &
+               & trim(typedescrs(data%type))//c_null_char)
           call move_alloc(xyvals, data%xydata)
 
           call gr_plot_draw(.true.)
+       else
+          keep = ieopt == 1
        end if
     end if
 
-    call gtk_widget_destroy(edit_window)
+    if (.not. keep) call gtk_widget_destroy(edit_window)
+    
   end subroutine gr_editor_quit
 
 end module gr_ds_editor_widgets

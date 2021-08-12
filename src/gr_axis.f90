@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@ module gr_axis
   implicit none
 
   character(len=2), dimension(3), parameter :: axname = ['X ','Y ', 'Yr']
-
+  
 contains
   function gr_axis_new(axis, sensitive) result(fr)
     type(c_ptr) :: fr
@@ -64,6 +64,8 @@ contains
     t = hl_gtk_table_new()
     call hl_gtk_box_pack(fr, t, expand=FALSE)
 
+    ! Axis label
+    
     junk = gtk_label_new(trim(axname(axis))//" Label:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 0, 0, yopts=0)
 
@@ -76,7 +78,8 @@ contains
          & " axis"//c_null_char)
     call hl_gtk_table_attach(t, lbox(axis), 1, 0, xspan=3, yopts=0)
 
-
+    ! Axis options
+    
     menu = hl_gtk_menu_new()
     call hl_gtk_table_attach(t, menu, 1, 1, xspan=2, yopts=0)
 
@@ -89,7 +92,6 @@ contains
          & "Logarithmic"//c_null_char, toggled=c_funloc(gr_set_log), &
          & data=c_loc(axis), &
          & initial_state=f_c_logical(pdefs%axtype(axis) /= 0), &
-         & sensitive = f_c_logical(pdefs%axrange(1,axis) > 0), &
          & tooltip = "Select Log or linear axis"//c_null_char)
 
     exact_chb(axis) = hl_gtk_check_menu_item_new(jmnu, &
@@ -207,20 +209,40 @@ contains
          & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
          & tooltip = "Extend the axis to accomodate the data"//c_null_char)
     call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(2)))
 
     junk = hl_gtk_menu_item_new(smnu, "Extend or shrink"//c_null_char, &
          & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
          & tooltip = "Extend or shrink the axis to fit the data"//c_null_char)
     call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(2)))
+    call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(2)))
 
-    junk = hl_gtk_menu_item_new(jmnu, "Advanced"//c_null_char, &
+    junk = hl_gtk_menu_item_new(smnu, "X-Y data only"//c_null_char, &
+         & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
+         & tooltip = "Extend or shrink the axis to fit the data (ignoring functions)"//c_null_char)
+    call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(2)))
+    call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(1)))
+
+    junk = hl_gtk_menu_item_new(smnu, "Visible only"//c_null_char, &
+         & activate=c_funloc(gr_auto_e), data=c_loc(axis), &
+         & tooltip = "Extend or shrink the axis to fit the visible data"//c_null_char)
+    call g_object_set_data(junk, "shrink"//c_null_char, c_loc(ishrink(1)))
+    call g_object_set_data(junk, "visible"//c_null_char, c_loc(ishrink(2)))
+    call g_object_set_data(junk, "function"//c_null_char, c_loc(ishrink(2)))
+
+    ax_adv_item(axis) = hl_gtk_menu_item_new(jmnu, "Advanced..."//c_null_char, &
          & activate=c_funloc(gr_axis_adv), data=c_loc(axis), &
          & tooltip = "Advanced axis settings"//c_null_char)
 
-    junk= gtk_label_new(axname//" Min:"//c_null_char)
+    ! Axis range
+    
+    junk= gtk_label_new(axname(axis)//" Min:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 0,2, yopts=0)
 
-    write(rtext, "(g0.5)") pdefs%axrange(1,axis)
+    write(rtext, "(1pg0.5)") pdefs%axrange(1,axis)
     rbox(1, axis) = hl_gtk_entry_new(editable=TRUE, &
          & activate=c_funloc(gr_set_range), data=c_loc(axis), & 
          & focus_out_event=c_funloc(gr_set_range_e), &
@@ -233,7 +255,7 @@ contains
     junk= gtk_label_new("Max:"//c_null_char)
     call hl_gtk_table_attach(t, junk, 2,2, yopts=0)
 
-    write(rtext, "(g0.5)") pdefs%axrange(2,axis)
+    write(rtext, "(1pg0.5)") pdefs%axrange(2,axis)
     rbox(2, axis) = hl_gtk_entry_new(editable=TRUE, &
          & activate=c_funloc(gr_set_range), data=c_loc(axis), &  ! Needs tweak
          & focus_out_event=c_funloc(gr_set_range_e), &
@@ -258,6 +280,8 @@ contains
     call c_f_pointer(data, axis)
     call hl_gtk_entry_get_text(widget, title)
 
+    if (pdefs%axtitle(axis) == title) return
+    
     pdefs%axtitle(axis) = title
 
     call gr_plot_draw(.true.)
@@ -271,19 +295,33 @@ contains
     rv = FALSE
   end function gr_set_label_e
 
-  subroutine gr_set_log(widget, data) bind(c)
-    type(c_ptr), value :: widget, data
+  subroutine gr_set_log(widget, wdata) bind(c)
+    type(c_ptr), value :: widget, wdata
 
     ! Set log/linear scaling
 
     integer, pointer :: axis
-
+    type(graff_data), pointer :: data
+    integer :: i
+    
     if (.not. gui_active) return
 
-    call c_f_pointer(data, axis)
+    call c_f_pointer(wdata, axis)
     pdefs%axtype(axis) = int(gtk_check_menu_item_get_active(widget), int16)
-    if (minval(pdefs%axrange(:,axis)) <= 0.) &
-         & call gtk_widget_set_sensitive(widget, FALSE)
+    
+    ! A change of axis type requires new evaluation locations so flag
+    ! functions as not-evaluated.
+    
+    do i = 1, pdefs%nsets
+       data => pdefs%data(i)
+       if (data%type == -1 .or. data%type == -4) data%funct%evaluated = .false.
+       if ((data%type == -2 .or. data%type == -4) .and. &
+            & (.not. pdefs%y_right .or. data%y_axis == axis-1)) &
+            & data%funct%evaluated = .false.
+    end do
+!!$    if (minval(pdefs%axrange(:,axis)) <= 0.) &
+!!$         & call gtk_widget_set_sensitive(widget, FALSE)
+    
     call gr_plot_draw(.true.)
   end subroutine gr_set_log
 
@@ -490,16 +528,22 @@ contains
     ! Autoscale axis.
 
     integer, pointer :: axis
-    logical, pointer :: ishrink
-    type(c_ptr) :: cshrink
+    logical, pointer :: ishrink, ivisible, ifunction
+    type(c_ptr) :: cshrink, cvisible, cfunction
 
     if (.not. gui_active) return
 
     call c_f_pointer(data, axis)
+    
     cshrink = g_object_get_data(widget, "shrink"//c_null_char)
     call c_f_pointer(cshrink, ishrink)
-
-    call gr_autoscale(axis, shrink=ishrink)
+    cvisible = g_object_get_data(widget, "visible"//c_null_char)
+    call c_f_pointer(cvisible, ivisible)
+    cfunction = g_object_get_data(widget, "function"//c_null_char)
+    call c_f_pointer(cfunction, ifunction)
+    
+    call gr_autoscale(axis, shrink=ishrink, visible=ivisible, &
+         & functions=ifunction)
 
     call gr_plot_draw(.true.)
   end subroutine gr_auto_e
@@ -538,48 +582,47 @@ contains
     call hl_gtk_entry_get_text(widget, text)
     read(text, *, iostat=ios) val
     if (ios /= 0) then
-       write(text, "(g0.5)") pdefs%axrange(mm,axis)
+       write(text, "(1pg0.5)") pdefs%axrange(mm,axis)
        call gtk_entry_set_text(widget, trim(text)//c_null_char)
-    else if (val /= pdefs%axrange(mm,axis)) then
-       pdefs%axrange(mm,axis) = val
-       do i = 1, pdefs%nsets
-          select case (pdefs%data(i)%type)
-          case(-1) 
-             if (axis == 1 .and.&
-                  & pdefs%data(i)%funct%range(1,1) == &
-                  & pdefs%data(i)%funct%range(2,1)) &
-                  & pdefs%data(i)%funct%evaluated = .false.
-          case(-2)
-             if (((axis == 2 .and. pdefs%data(i)%y_axis == 0) .or.&
-                  & (axis == 2 .and. pdefs%data(i)%y_axis == 1) .and. &
-                  & pdefs%data(i)%funct%range(1,1) == &
-                  & pdefs%data(i)%funct%range(2,1))) &
-                  & pdefs%data(i)%funct%evaluated = .false.
-          case(-4)
-             if ((axis == 1 .and. &
-                  & pdefs%data(i)%funct%range(1,1) == &
-                  & pdefs%data(i)%funct%range(2,1)) .or.  &
-                  & (((axis == 2 .and. pdefs%data(i)%y_axis == 0) .or.&
-                  & (axis == 2 .and. pdefs%data(i)%y_axis == 1)) .and. &
-                  & pdefs%data(i)%funct%range(1,2) == &
-                  & pdefs%data(i)%funct%range(2,2))) &
-                  & pdefs%data(i)%funct%evaluated = .false.
-          end select
-       end do
     end if
+    if (val == pdefs%axrange(mm,axis)) return
 
-    if (minval(pdefs%axrange(:,axis)) > 0.) then
-       call gtk_widget_set_sensitive(log_chb(axis), TRUE)
-    else if (pdefs%axtype(axis) == 1) then
+    pdefs%axrange(mm,axis) = val
+    do i = 1, pdefs%nsets
+       select case (pdefs%data(i)%type)
+       case(-1) 
+          if (axis == 1 .and.&
+               & pdefs%data(i)%funct%range(1,1) == &
+               & pdefs%data(i)%funct%range(2,1)) &
+               & pdefs%data(i)%funct%evaluated = .false.
+       case(-2)
+          if (((axis == 2 .and. pdefs%data(i)%y_axis == 0) .or.&
+               & (axis == 2 .and. pdefs%data(i)%y_axis == 1) .and. &
+               & pdefs%data(i)%funct%range(1,1) == &
+               & pdefs%data(i)%funct%range(2,1))) &
+               & pdefs%data(i)%funct%evaluated = .false.
+       case(-4)
+          if ((axis == 1 .and. &
+               & pdefs%data(i)%funct%range(1,1) == &
+               & pdefs%data(i)%funct%range(2,1)) .or.  &
+               & (((axis == 2 .and. pdefs%data(i)%y_axis == 0) .or.&
+               & (axis == 2 .and. pdefs%data(i)%y_axis == 1)) .and. &
+               & pdefs%data(i)%funct%range(1,2) == &
+               & pdefs%data(i)%funct%range(2,2))) &
+               & pdefs%data(i)%funct%evaluated = .false.
+       end select
+    end do
+
+
+    if (minval(pdefs%axrange(:,axis)) <= 0. .and. &
+         & pdefs%axtype(axis) == 1) then
        call hl_gtk_info_bar_message(gr_infobar, &
-            &"Setting a zero or negative limit for a log axis"//c_null_char)
-
+            & "Setting a zero or negative limit for a log axis"//c_null_char)
        return
-    else
-       call gtk_widget_set_sensitive(log_chb(axis), FALSE)
     end if
     call gr_plot_draw(.true.)
   end subroutine gr_set_range
+
   function gr_set_range_e(widget, event, data) bind(c) result(rv)
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data

@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -25,36 +25,60 @@ module gr_eval
   use gtk_hl
 
   use gtk, only: GTK_MESSAGE_ERROR, GTK_MESSAGE_INFO
-
+  
   use graff_globals
   use gr_msg
   use gr_utils
 
   implicit none
 
-  logical :: is_init=.false.
-  logical :: gdl_found=.false.
+  logical, private :: is_init=.false.
+  logical, private :: gdl_found=.false.
+  character(len=150), private :: gdl_command = ''
 
+  private :: gr_eval_fx, gr_eval_fy, gr_eval_ft, gr_eval_fz
+  
 contains
-
-  function gr_have_gdl()
+  function gr_get_gdl_command()
+    character(len=len(gdl_command)) :: gr_get_gdl_command
+    
+    logical :: status
+    
+    if (.not. is_init) status = gr_have_gdl()
+    
+    gr_get_gdl_command = trim(gdl_command)
+    
+  end function gr_get_gdl_command
+  
+  function gr_have_gdl(command)
     logical :: gr_have_gdl
-
+    character(len=*), intent(in), optional :: command
     ! Find 'gdl' or 'idl' command
 
     integer :: status
     character(len=150) :: gdl_default_command
-    character(len=150) :: gdl_command
+    logical :: ok
+    
+    if (present(command)) then
+       ok = gr_find_program(command)
+       if (ok) then
+          gdl_command = command
+          is_init = .true.
+       end if
+       gr_have_gdl = ok
+       return
+    end if
 
     if (is_init) then
        gr_have_gdl = gdl_found
        return
     end if
 
-    if (pdefs%opts%gdl_command /= '') then
-       if (gr_find_program(pdefs%opts%gdl_command)) then
+   
+    if (gdl_command /= '') then
+       if (gr_find_program(gdl_command)) then
           call gr_message("Found gdl/idl at: "// &
-               & trim(pdefs%opts%gdl_command), type=GTK_MESSAGE_INFO)
+               & trim(gdl_command), type=GTK_MESSAGE_INFO)
           is_init = .true.
           gdl_found = .true.
           gr_have_gdl = .true.
@@ -71,7 +95,6 @@ contains
           is_init = .true.
           gdl_found = .true.
           gr_have_gdl = .true.
-          pdefs%opts%gdl_command = gdl_command
           return
        end if
     end if
@@ -82,7 +105,6 @@ contains
        is_init = .true.
        gdl_found = .true.
        gr_have_gdl = .true.
-       pdefs%opts%gdl_command = gdl_command
        return
     end if
 
@@ -92,7 +114,6 @@ contains
        is_init = .true.
        gdl_found = .true.
        gr_have_gdl = .true.
-       pdefs%opts%gdl_command = gdl_command
        return
     end if
 
@@ -101,7 +122,7 @@ contains
     gdl_found = .false.
     gr_have_gdl =.false.
     is_init = .true.
-    pdefs%opts%gdl_command = ''
+    gdl_command = ''
   end function gr_have_gdl
 
   function gr_evaluate(dsidx)
@@ -117,7 +138,8 @@ contains
     integer :: status
     type(graff_data), pointer :: data
     character(len=120) :: err_buffer
-
+    logical :: y_is_log
+    
     data => pdefs%data(dsidx)
 
     if (data%funct%evaluated) then
@@ -130,40 +152,48 @@ contains
        frange = data%funct%range(:,1)
        if (frange(1) == frange(2)) frange = pdefs%axrange(:,1)
        call gr_eval_fx(data%funct%funct(1), &
-            & data%ndata, frange, &
-            & x, y, dsidx, status)
+            & data%ndata, frange, pdefs%axtype(1) == 1, dsidx, &
+            & x, y, status)
+       
     case(-2)
        frange = data%funct%range(:,1)
-       if (frange(1) == frange(2)) then
-          if (pdefs%y_right .and. data%y_axis == 1) then
-             frange = pdefs%axrange(:,3)
-          else
-             frange = pdefs%axrange(:,2)
-          end if
+
+       if (pdefs%y_right .and. data%y_axis == 1) then
+          if (frange(1) == frange(2)) frange = pdefs%axrange(:,3)
+          y_is_log = pdefs%axtype(3) == 1
+       else
+          if (frange(1) == frange(2)) frange = pdefs%axrange(:,2)
+          y_is_log = pdefs%axtype(2) == 1
        end if
+
        call gr_eval_fy(data%funct%funct(1), &
-            & data%ndata, frange, &
-            & x, y, dsidx, status)
+            & data%ndata, frange, y_is_log, dsidx, &
+            & x, y, status)
+       
     case(-3)
        frange = data%funct%range(:,1)
        if (frange(1) == frange(2)) frange = [0._real64, 1._real64]
        call gr_eval_ft(data%funct%funct, &
             & data%ndata, frange, &
-            & x, y, dsidx, status)
+            & dsidx, x, y, status)
+       
     case(-4)
        xr = data%funct%range(:,1)
        if (xr(1) == xr(2)) xr = pdefs%axrange(:,1)
+       
        yr = data%funct%range(:,2)
-       if (yr(1) == yr(2)) then
-          if (pdefs%y_right .and. data%y_axis == 1) then
-             yr = pdefs%axrange(:,3)
-          else
-             yr = pdefs%axrange(:,2)
-          end if
+       if (pdefs%y_right .and. data%y_axis == 1) then
+          if (yr(1) == yr(2)) yr = pdefs%axrange(:,3)
+          y_is_log = pdefs%axtype(3) == 1
+       else
+          if (yr(1) == yr(2))  yr = pdefs%axrange(:,2)
+          y_is_log = pdefs%axtype(2) == 1
        end if
+
        call gr_eval_fz(data%funct%funct(1), &
             & data%ndata, data%ndata2, &
-            & xr, yr, x, y, z, dsidx, status)
+            & xr, yr, pdefs%axtype(1) == 1, y_is_log, &
+            & dsidx, x, y, z, status)
 
     end select
 
@@ -207,12 +237,13 @@ contains
 
   end function gr_evaluate
 
-  subroutine gr_eval_fx(fun, n, xr, x, y, dsidx, status)
+  subroutine gr_eval_fx(fun, n, xr, x_is_log, dsidx, x, y, status)
     character(len=*), intent(in) :: fun
     integer(kind=int32), intent(in) :: n
     real(kind=real64), dimension(2), intent(in) :: xr
-    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
+    logical, intent(in) :: x_is_log
     integer(kind=int16), intent(in) :: dsidx
+    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     integer, intent(out) :: status
 
     ! Evaluate a function y = f(x)
@@ -229,17 +260,28 @@ contains
     call gr_make_gdl_names(dsidx, pfile, dfile)
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
-    write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x = ',xr(1), &
-         & '+dindgen(',n,')*',xr(2)-xr(1), &
-         & '/double(',n-1,')'
+
+    ! For log axes, the evaluation points should be uniformly distributed
+    ! in log(x)
+    
+    if (x_is_log) then
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x = ',xr(1), &
+            & '* exp(dindgen(',n,')*alog(',xr(2)/xr(1), &
+            & ')/double(',n-1,'))'
+    else
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x = ',xr(1), &
+            & '+dindgen(',n,')*(',xr(2)-xr(1), &
+            & ')/double(',n-1,')'
+    end if
     write(punit, "(2a)") 'y = ', trim(fun)
+    write(punit, "(a)") 'if size(y, /type) ne 7 then y = double(y)'
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
     write(punit, "(a)") 'close, 1'
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//pfile//&
+    call execute_command_line(trim(gdl_command)//" "//pfile//&
          & ' > /dev/null 2> /dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -247,6 +289,7 @@ contains
        status=-cstatus
        return
     end if
+
     allocate(x(n),y(n))
     open(newunit=dunit, file=dfile, form='unformatted', action='read', &
          & access='stream', iostat=ios)
@@ -259,17 +302,18 @@ contains
 
     close(dunit)
 
-    if (pdefs%opts%delete_function_files) &
+    if (sysopts%delete_function_files) &
          & call execute_command_line("rm "//trim(pfile)//' '//trim(dfile))
 
   end subroutine gr_eval_fx
 
-  subroutine gr_eval_fy(fun, n, yr, x, y, dsidx, status)
+  subroutine gr_eval_fy(fun, n, yr, y_is_log, dsidx, x, y, status)
     character(len=*), intent(in) :: fun
     integer(kind=int32), intent(in) :: n
     real(kind=real64), dimension(2), intent(in) :: yr
-    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
+    logical, intent(in) :: y_is_log
     integer(kind=int16), intent(in) :: dsidx
+    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     integer, intent(out) :: status
 
     ! Evaluate a function x = f(y)
@@ -286,17 +330,28 @@ contains
     call gr_make_gdl_names(dsidx, pfile, dfile)
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
-    write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y = ',yr(1), &
-         & '+dindgen(',n,')*',yr(2)-yr(1), &
-         & '/double(',n-1,')'
+    
+    ! For log axes, the evaluation points should be uniformly distributed
+    ! in log(y)
+    
+    if (y_is_log) then
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y = ',yr(1), &
+            & '* exp(dindgen(',n,')*alog(',yr(2)/yr(1), &
+            & ')/double(',n-1,'))'
+    else
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y = ',yr(1), &
+            & '+dindgen(',n,')*(',yr(2)-yr(1), &
+            & ')/double(',n-1,')'
+    end if
     write(punit, "(2a)") 'x = ', trim(fun)
+    write(punit, "(a)") 'if size(x, /type) ne 7 then x = double(x)'
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
     write(punit, "(a)") 'close, 1'
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
+    call execute_command_line(trim(gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2>/dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -318,17 +373,17 @@ contains
 
     close(dunit)
 
-    if (pdefs%opts%delete_function_files) &
+    if (sysopts%delete_function_files) &
          & call execute_command_line("rm "//trim(pfile)//' '//trim(dfile))
 
   end subroutine gr_eval_fy
 
-  subroutine gr_eval_ft(fun, n, tr, x, y, dsidx, status)
+  subroutine gr_eval_ft(fun, n, tr, dsidx, x, y, status)
     character(len=*), intent(in), dimension(2) :: fun
     integer(kind=int32), intent(in) :: n
     real(kind=real64), dimension(2), intent(in) :: tr
-    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     integer(kind=int16), intent(in) :: dsidx
+    real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     integer, intent(out) :: status
 
     ! Evaluate a function x = f(t), y = g(t)
@@ -346,17 +401,19 @@ contains
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
     write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 't = ',tr(1), &
-         & '+dindgen(',n,')*',tr(2)-tr(1), &
-         & '/double(',n-1,')'
+         & '+dindgen(',n,')*(',tr(2)-tr(1), &
+         & ')/double(',n-1,')'
     write(punit, "(2a)") 'x = ', trim(fun(1))
     write(punit, "(2a)") 'y = ', trim(fun(2))
+    write(punit, "(a)") 'if size(x, /type) ne 7 then x = double(x)'
+    write(punit, "(a)") 'if size(y, /type) ne 7 then y = double(y)'
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x, y'
     write(punit, "(a)") 'close, 1'
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
+    call execute_command_line(trim(gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2> /dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -377,18 +434,20 @@ contains
     if (ios /= 0) status=ios
     close(dunit)
 
-    if (pdefs%opts%delete_function_files) &
+    if (sysopts%delete_function_files) &
          & call execute_command_line("rm "//trim(pfile)//' '//trim(dfile))
 
   end subroutine gr_eval_ft
 
-  subroutine gr_eval_fz(fun, nx, ny, xr, yr, x, y, z, dsidx, status)
+  subroutine gr_eval_fz(fun, nx, ny, xr, yr, x_is_log, y_is_log, dsidx, &
+       & x, y, z, status)
     character(len=*), intent(in) :: fun
     integer(kind=int32), intent(in) :: nx, ny
     real(kind=real64), dimension(2), intent(in) :: xr, yr
+    logical, intent(in) :: x_is_log, y_is_log
+    integer(kind=int16), intent(in) :: dsidx
     real(kind=real64), dimension(:), allocatable, intent(out) :: x, y
     real(kind=real64), dimension(:,:), allocatable, intent(out) :: z
-    integer(kind=int16), intent(in) :: dsidx
     integer, intent(out) :: status
 
     ! Evaluate a function z = f(x,y)
@@ -405,22 +464,43 @@ contains
     call gr_make_gdl_names(dsidx, pfile, dfile)
 
     open(newunit=punit, file=pfile, form='formatted', action='write')
-    write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x1 = ',xr(1), &
-         & '+dindgen(',nx,')*',xr(2)-xr(1), &
-         & '/double(',nx-1,')'
+
+    ! For log axes, the evaluation points should be uniformly distributed
+    ! in log(x)
+
+    if (x_is_log) then
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x1 = ',xr(1), &
+            & '* exp(dindgen(',nx,')*alog(',xr(2)/xr(1), &
+            & ')/double(',nx-1,'))'
+    else
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'x1 = ',xr(1), &
+            & '+dindgen(',nx,')*(',xr(2)-xr(1), &
+            & ')/double(',nx-1,')'
+    end if
     write(punit, "(a,i0,a)") 'x = x1[*,intarr(',ny,')]'
-    write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y1 = ',yr(1), &
-         & '+dindgen(1,',ny,')*',yr(2)-yr(1), &
-         & '/double(',ny-1,')'
+
+    ! For log axes, the evaluation points should be uniformly
+    ! distributed in log(y)
+
+    if (y_is_log) then
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y1 = ',yr(1), &
+            & '* exp(dindgen(1,',ny,')*alog(',yr(2)/yr(1), &
+            & ')/double(',ny-1,'))'
+    else
+       write(punit, "(a,g0,a,i0,a,g0,a,i0,a)") 'y1 = ',yr(1), &
+            & '+dindgen(1,',ny,')*(',yr(2)-yr(1), &
+            & ')/double(',ny-1,')'
+    end if
     write(punit, "(a,i0,a)") 'y = y1[intarr(',nx,'),*]'
     write(punit, "(2a)") 'z = ', trim(fun)
+    write(punit, "(a)") 'if size(z, /type) ne 7 then z = double(z)'
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
     write(punit, "(a)") 'writeu, 1, x1, y1, z'
     write(punit, "(a)") 'close, 1'
     write(punit, "(a)") 'exit'
     close(punit)
 
-    call execute_command_line(trim(pdefs%opts%gdl_command)//" "//trim(pfile)//&
+    call execute_command_line(trim(gdl_command)//" "//trim(pfile)//&
          & ' > /dev/null 2>/dev/null', &
          & exitstat=status, cmdstat=cstatus)
     if (status /= 0) return
@@ -442,14 +522,15 @@ contains
 
     close(dunit)
 
-    if (pdefs%opts%delete_function_files) &
+    if (sysopts%delete_function_files) &
          & call execute_command_line("rm "//trim(pfile)//' '//trim(dfile))
 
   end subroutine gr_eval_fz
 
-  subroutine gr_make_gdl_names(dsidx, pfile, dfile)
+  subroutine gr_make_gdl_names(dsidx, pfile, dfile, ostem)
     integer(kind=int16), intent(in) :: dsidx
     character(len=*), intent(out) :: pfile, dfile
+    character(len=*), intent(out), optional :: ostem
 
     ! Generate the names for the program and its output.
 
@@ -463,6 +544,10 @@ contains
 
     write(pfile(idx:), "('_',i0,'.pro')") dsidx-1
     write(dfile(idx:), "('_',i0,'.fs')") dsidx-1
-
+    if (present(ostem)) then
+       ostem(:idx-1) = pdefs%name(:idx-1)
+       write(ostem(idx:), "('_',i0)") dsidx-1
+    end if
+    
   end subroutine gr_make_gdl_names
 end module gr_eval

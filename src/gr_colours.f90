@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -17,6 +17,7 @@
 
 module gr_colours
   ! Colour table management. (Alternative version)
+  ! Now includes line colours.
 
   use iso_fortran_env
   use plplot
@@ -38,7 +39,7 @@ module gr_colours
 
   type(gr_colour_table), dimension(:), allocatable :: tables
   integer, private :: ntables = 0
-  integer(kind=int32), parameter, private :: mask8 = Z'FF'
+  integer(kind=int32), parameter, private :: mask8 = 255_int32   ! Z'FF'
 
   character(len=*), dimension(*), parameter, private :: ctdirs = &
        & ['/usr/local/share/graffer/',&
@@ -46,9 +47,82 @@ module gr_colours
        &  '/opt/graffer/data/       ']
   character(len=*), parameter, private :: ctname='colour.table'
 
+  ! Values for line colours.
+
+  integer, parameter, dimension(*), private :: red = [255, 0, 255, 0, 0, 0, &
+       & 255, 255, 255, 127, 0, 0, 127, 255, 85, 170, 170, 255, 0, 85, 0, 85, &
+       & 0, 85, 170, 255, 170, 255] 
+  integer, parameter, dimension(*), private :: gre = [255, 0, 0, 255, 0, 255, &
+       & 0, 255, 127, 255, 255, 127, 0, 0, 85, 170, 0, 85, 170, 255, 0, 85, &
+       & 170, 255, 0, 85, 170, 255]
+  integer, parameter, dimension(*), private :: blu = [255, 0, 0, 0, 255, 255, &
+       & 255, 0, 0, 0, 127, 255, 255, 127, 85, 170, 0, 85, 0, 85, 170, 255, &
+       & 170, 255, 170, 255, 0, 85]
+  integer, parameter :: n_cmap=size(red)
+
   private :: find_ct
 
+  interface gr_custom_line
+     module procedure gr_custom_linea
+     module procedure gr_custom_line3
+  end interface gr_custom_line
+
+  interface gr_colour_triple
+     module procedure gr_colour_triple3
+     module procedure gr_colour_triplea
+  end interface gr_colour_triple
+
+  private :: gr_custom_linea, gr_custom_line3, &
+       & gr_colour_triple3, gr_colour_triplea
+  
 contains
+  subroutine gr_line_colours()
+    integer :: i
+
+    call plscmap0n(n_cmap+1)
+    do i = 0, n_cmap-1
+       call plscol0(i, red(i+1), gre(i+1), blu(i+1))
+    end do
+
+  end subroutine gr_line_colours
+
+  subroutine gr_custom_linea(rgb)
+    integer(kind=int16), intent(in), dimension(3) :: rgb
+
+    integer(kind=int32), dimension(3) :: rgbl
+     
+    rgbl=int(rgb, int32)
+
+    call plscol0(n_cmap, rgbl(1), rgbl(2), rgbl(3))
+    call plcol0(n_cmap)
+   
+  end subroutine gr_custom_linea
+
+  subroutine gr_custom_line3(r, g, b)
+    integer(kind=int16), intent(in) :: r, g, b
+
+    call plscol0(n_cmap, int(r, int32), int(g, int32), int(b, int32))
+    call plcol0(n_cmap)
+  end subroutine gr_custom_line3
+
+  subroutine gr_colour_triple3(index, r, g, b)
+    integer(kind=int16), intent(in) :: index
+    integer(kind=int16), intent(out) :: r, g, b
+
+    r = int(red(index+1), int16)
+    g = int(gre(index+1), int16)
+    b = int(blu(index+1), int16)
+
+  end subroutine gr_colour_triple3
+
+  subroutine gr_colour_triplea(index, rgb)
+    integer(kind=int16), intent(in) :: index
+    integer(kind=int16), intent(out), dimension(3) :: rgb
+
+    rgb = int([red(index+1), gre(index+1), blu(index+1)], int16)
+
+  end subroutine gr_colour_triplea
+
   subroutine gr_ct_init(basename, append, dirname, table_list)
     character(len=*), intent(in), optional :: basename, dirname
     logical, intent(in), optional :: append
@@ -162,8 +236,8 @@ contains
 
     if (present(basename)) then
        datafile = basename
-    else if (pdefs%opts%colour_stem /= '') then
-       datafile = pdefs%opts%colour_stem
+    else if (sysopts%colour_stem /= '') then
+       datafile = sysopts%colour_stem
     else 
        datafile='colours.table'
     end if
@@ -181,9 +255,9 @@ contains
        end if
     end if
 
-    if (pdefs%opts%colour_dir /= '') then
-       if (file_exists(trim(pdefs%opts%colour_dir)//'/'//trim(datafile))) then
-          datafile = trim(pdefs%opts%colour_dir)//'/'//trim(datafile)
+    if (sysopts%colour_dir /= '') then
+       if (file_exists(trim(sysopts%colour_dir)//'/'//trim(datafile))) then
+          datafile = trim(sysopts%colour_dir)//'/'//trim(datafile)
           return
        end if
     end if
@@ -226,16 +300,14 @@ contains
     logical, intent(in) :: load
     integer, dimension(:), intent(out), optional :: r, g, b
     logical(kind=int8), intent(in), optional :: invert
-    real(kind=real32), intent(in), optional :: gamma
+    real(kind=real64), intent(in), optional :: gamma
 
     ! Select, and load or return a colour table.
 
     integer, dimension(table_size) :: map, rr, gg, bb
-    integer :: ios, i
-    character(len=120) :: iom
+    integer :: i
     logical :: reversed
     real(kind=real32) :: xgamma
-    character(len=160), dimension(2) :: err_string
     integer :: idx
 
     if (present(invert)) then
@@ -252,7 +324,7 @@ contains
     end if
 
     if (present(gamma)) then
-       xgamma = gamma
+       xgamma = real(gamma)
     else
        xgamma = 1.0
     end if

@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2013-2020
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@ pro Gr_rc_get, optblock
 ; History:
 ;	Extracted from GRAFF_INIT: 21/8/97; SJT
 ;	Eliminate obsolete findfile call: 16/4/12; SJT
+;	Remove colour_menu: 21/5/20; SJT
 ;-
 
 
@@ -58,7 +59,6 @@ pro Gr_rc_get, optblock
         'Supp2D': optblock.s2d = fix(kv(1))
         'MouseEdit': optblock.mouse = fix(kv(1))
         'PDFView': optblock.pdfviewer = kv[1]
-        'ColourMenu': optblock.colour_menu = fix(kv[1])
         Else: print, "Warning: Unknown item in resource file"
      endcase
   endwhile

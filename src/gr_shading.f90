@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -36,10 +36,10 @@ module gr_shading
 
 contains
 
-  subroutine gr_pl_width(width)
-    real(kind=real32), intent(in) :: width
-    call plwidth(real(width, plflt))
-  end subroutine gr_pl_width
+!!$  subroutine gr_pl_width(width)
+!!$    real(kind=real32), intent(in) :: width
+!!$    call plwidth(real(width, plflt))
+!!$  end subroutine gr_pl_width
 
   subroutine gr_plshade1(z, xmin, xmax, ymin, ymax, clevel, ccol, x1, y1)
     real(kind=plflt), intent(in), dimension(:,:) :: z

@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2005-2021
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -36,6 +36,8 @@ pro graff_style__define
 ; MODIFICATION HISTORY:
 ;	Extracted: 30/6/05; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
+;	Remove Xmajor field: unused: 25/3/20; SJT
+;	Add log_band values: 24/6/21; SJT
 ;-
 
 Xsty = {graff_style, $
@@ -48,6 +50,7 @@ Xsty = {graff_style, $
         major:   0, $
         xmajor:  0.d0, $
         format:  '', $
+        log_bands: lonarr(3), $
         values:  ptr_new()}
 
 end

@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2013-2020
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -17,6 +17,6 @@
 
 ; Set the graffer version number.
 
-version = [4, 7]
+version = [4, 10]
 revision = ''
 vstring = string(version, revision, format = "(I0,'.',I2.2,a)")

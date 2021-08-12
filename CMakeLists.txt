@@ -35,9 +35,9 @@ message(STATUS "Build type is: ${CMAKE_BUILD_TYPE}")
 # Removed -ffpe-trap=invalid,zero,overflow as it gives a lot of crashes deep
 # in the call stack in Gtk3
 set(CMAKE_Fortran_FLAGS_DEBUG
-"-g -pthread -Wall -Wtabs -fcheck=all -fbacktrace -Wno-unused-dummy-argument")
+"-g -pthread -Wall -Wtabs -fcheck=all -fbacktrace -Wno-unused-dummy-argument -no-pie")
 set(CMAKE_Fortran_FLAGS_RELEASE
-"-pthread -O3 -mtune=native -march=native")
+"-pthread -O3 -mtune=native -march=native -no-pie")
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 

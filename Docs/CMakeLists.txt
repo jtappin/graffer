@@ -17,13 +17,15 @@
 
 set(images 
   logo.png 
-  main.png 
-  main-2d.png 
+  Main.png 
+  Main-2.png 
   key.png 
-  axis_adv.png 
-  Text.png 
-  hardopts.png 
+  Axis-adv.png 
+  text.png 
+  hardcopy.png 
   options.png
+  Sort.png
+  Rescale.png
 )
 
 add_custom_command(

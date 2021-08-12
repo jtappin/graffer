@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2013-2020
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -41,28 +41,30 @@ pro Gr_bin_ds_v3, data, nset, ilu, msgid, version
 ;	Remove obsolete swap key: 6/1/12; SJT
 ;-
 
-tag = '   '
+  tag = '   '
 
-nflag = 0b
-nflag2 = 0b
-tflag = 0b
-dflag = 0b
-jflag = 0b
+  nflag = 0b
+  nflag2 = 0b
+  tflag = 0b
+  dflag = 0b
+  jflag = 0b
 
-if version[0] eq 2 then begin
-    single = 1b
-    n_is_int = version[1] le 1
-endif else begin
-    single = 0b
-    n_is_int = 0b
-endelse
+  if version[0] eq 2 then begin
+     single = 1b
+     n_is_int = version[1] le 1
+  endif else begin
+     single = 0b
+     n_is_int = 0b
+  endelse
 
-elements = [2, 3, 4, 3, 4, 4, 5, 5, 6]
+  elements = [2, 3, 4, 3, 4, 4, 5, 5, 6]
+  data[nset].min_val = !values.d_nan
+  data[nset].max_val = !values.d_nan
 
-while (not eof(ilu)) do begin
-    
-    readu, ilu, tag
-    
+  while (not eof(ilu)) do begin
+     
+     readu, ilu, tag
+     
                                 ; Recognised tags:
                                 ; J - Joining option
                                 ; P - symbol
@@ -86,18 +88,18 @@ while (not eof(ilu)) do begin
                                 ; VS, VE - start & end XY data.
                                 ; DE - end dataset
 
-    case (strtrim(tag)) of
+     case (strtrim(tag)) of
         
         'J': begin
-            data(nset).pline = gr_int_rd(ilu, 1)
-            jflag = 1b
+           data(nset).pline = gr_int_rd(ilu, 1)
+           jflag = 1b
         end
         
         'P': data(nset).psym = gr_int_rd(ilu, 1)
         'S': data(nset).symsize = gr_flt_rd(ilu, 1)
         'L': data(nset).line = gr_int_rd(ilu, 1)
         'C': data(nset).colour = gr_int_rd(ilu, 1)
-        'W': data(nset).thick = float(gr_int_rd(ilu, 1))
+        'W': data(nset).thick = double(gr_int_rd(ilu, 1))
         'O': data(nset).sort = gr_byt_rd(ilu, 1)
         'K': data(nset).noclip = gr_byt_rd(ilu, 1)
         'E': data(nset).medit = gr_byt_rd(ilu, 1)
@@ -105,30 +107,22 @@ while (not eof(ilu)) do begin
 
         
         'N': begin
-            if (n_is_int) then $
+           if (n_is_int) then $
               data(nset).ndata = gr_int_rd(ilu, 1) $
-            else $
+           else $
               data(nset).ndata = gr_lon_rd(ilu, 1)
-            if data[nset].ndata lt 0 then begin
-                x2flag = 1b
-                data[nset].ndata = abs(data[nset].ndata)
-            endif
-            nflag = 1b
+           nflag = 1b
         end
         'N2': begin
-            if (n_is_int) then $
+           if (n_is_int) then $
               data(nset).ndata2 = gr_int_rd(ilu, 1) $
-            else $
+           else $
               data(nset).ndata2 = gr_lon_rd(ilu, 1)
-            if data[nset].ndata2 lt 0 then begin
-                y2flag = 1b
-                data[nset].ndata2 = abs(data[nset].ndata2)
-            endif
-            nflag2 = 1b
+           nflag2 = 1b
         end
         'T': begin
-            data(nset).type = gr_int_rd(ilu, 1)
-            tflag = 1b
+           data(nset).type = gr_int_rd(ilu, 1)
+           tflag = 1b
         end
         'M': data(nset).mode = gr_int_rd(ilu, 1)
         
@@ -138,16 +132,18 @@ while (not eof(ilu)) do begin
         
         'ZNL': data(nset).zopts.n_levels = abs(gr_int_rd(ilu, 1))
         'ZL': begin
-            levels = gr_dbl_rd(ilu, data(nset).zopts.n_levels, single $
-                               = single)
-            data(nset).zopts.levels = ptr_new(levels)
-            data[nset].zopts.set_levels = 1b
+           levels = gr_dbl_rd(ilu, data(nset).zopts.n_levels, single $
+                              = single)
+           data(nset).zopts.levels = ptr_new(levels)
+           data[nset].zopts.set_levels = 1b
         end
 
         'ZNC': data(nset).zopts.n_cols = gr_int_rd(ilu, 1)
         'ZC': begin
-            cols = gr_int_rd(ilu, data(nset).zopts.n_cols)
-            data(nset).zopts.colours = ptr_new(cols)
+           cols = gr_int_rd(ilu, data(nset).zopts.n_cols)
+           data(nset).zopts.colours = ptr_new(cols, /extract)
+           data[nset].zopts.raw_colours = $
+              ptr_new(intarr(3, data(nset).zopts.n_cols))
         end
 
         'ZCT': data(nset).zopts.ctable = gr_int_rd(ilu, 1)
@@ -156,19 +152,19 @@ while (not eof(ilu)) do begin
 
         'ZNS': data(nset).zopts.n_sty = gr_int_rd(ilu, 1)
         'ZS': begin
-            stys = gr_int_rd(ilu, data(nset).zopts.n_sty)
-            data(nset).zopts.style = ptr_new(stys)
+           stys = gr_int_rd(ilu, data(nset).zopts.n_sty)
+           data(nset).zopts.style = ptr_new(stys)
         end
         
         'ZNT': data(nset).zopts.n_thick = gr_int_rd(ilu, 1)
         'ZT': begin
-            thick = float(gr_int_rd(ilu, data(nset).zopts.n_thick))
-            data(nset).zopts.thick = ptr_new(thick)
+           thick = double(gr_int_rd(ilu, data(nset).zopts.n_thick))
+           data(nset).zopts.thick = ptr_new(thick)
         end
         
         'ZCF': data(nset).zopts.fill = gr_byt_rd(ilu, 1)
         'ZLI': data(nset).zopts.label = $
-          gr_int_rd(ilu, 1)
+           gr_int_rd(ilu, 1)
         
         'ZR': data(nset).zopts.range = gr_dbl_rd(ilu, 2, single = $
                                                  single)
@@ -178,9 +174,9 @@ while (not eof(ilu)) do begin
         'ZIN': data[nset].zopts.invert = gr_byt_rd(ilu, 1)
 
         'R': begin
-            if (data(nset).type eq -4) then $
+           if (data(nset).type eq -4) then $
               xydata.range = gr_dbl_rd(ilu, 4, single = single)  $
-            else $
+           else $
               xydata.range = gr_dbl_rd(ilu, 2, single = single) 
         end
         'F': xydata.funct = gr_str_rd(ilu)
@@ -188,101 +184,101 @@ while (not eof(ilu)) do begin
         'FY': xydata.funct(1) = gr_str_rd(ilu)
         
         'VS': begin
-            ncols = gr_int_rd(ilu, 1)
-            readu, ilu, xydata
-            if single then xydata = double(xydata)
-            readu, ilu, tag
+           ncols = gr_int_rd(ilu, 1)
+           readu, ilu, xydata
+           if single then xydata = double(xydata)
+           readu, ilu, tag
         end
         'ZXS': begin
-            if xydata.x_is_2d then $
+           if xydata.x_is_2d then $
               xv = gr_dbl_rd(ilu, [data(nset).ndata, $
                                    data[nset].ndata2]) $
-            else $ 
+           else $ 
               xv = gr_dbl_rd(ilu, data(nset).ndata, $
                              single = single)
-            xydata.x = ptr_new(xv)
-            readu, ilu, tag
+           xydata.x = ptr_new(xv)
+           readu, ilu, tag
         end
         'ZYS': begin
-            if xydata.y_is_2d then $
+           if xydata.y_is_2d then $
               yv = gr_dbl_rd(ilu, [data(nset).ndata, $
                                    data[nset].ndata2]) $
-            else $ 
-            yv = gr_dbl_rd(ilu, data(nset).ndata2, single = single)
-            xydata.y = ptr_new(yv)
-            readu, ilu, tag
+           else $ 
+              yv = gr_dbl_rd(ilu, data(nset).ndata2, single = single)
+           xydata.y = ptr_new(yv)
+           readu, ilu, tag
         end
         'ZZS': begin
-            zv = gr_dbl_rd(ilu, [data(nset).ndata, $
-                                 data[nset].ndata2], $
-                           single = single)
-            xydata.z = ptr_new(double(zv))
-            readu, ilu, tag
+           zv = gr_dbl_rd(ilu, [data(nset).ndata, $
+                                data[nset].ndata2], $
+                          single = single)
+           xydata.z = ptr_new(double(zv))
+           readu, ilu, tag
         end
 
         'ZX2': if ptr_valid(xydata.x) then graff_msg, msgid, $
-          "WARNING: 2-D X data requested after X data " + $
-          "acquired" $
-               else xydata.x_is_2d = gr_byt_rd(ilu, 1)
+           "WARNING: 2-D X data requested after X data " + $
+           "acquired" $
+        else xydata.x_is_2d = gr_byt_rd(ilu, 1)
         'ZY2': if ptr_valid(xydata.x) then graff_msg, msgid, $
-          "WARNING: 2-D X data requested after X data " + $
-          "acquired" $
-               else xydata.y_is_2d = gr_byt_rd(ilu, 1)
+           "WARNING: 2-D X data requested after X data " + $
+           "acquired" $
+        else xydata.y_is_2d = gr_byt_rd(ilu, 1)
         
         'DE': goto, ds_read
         
         Else: begin
-            graff_msg, msgid, "Unknown DS tag: " + $
-              tag + "Ignoring."
-            point_lun, -ilu, iptr
-            print, iptr
+           graff_msg, msgid, "Unknown DS tag: " + $
+                      tag + "Ignoring."
+           point_lun, -ilu, iptr
+           print, iptr
         end
-    endcase
-    
-    
-    if (nflag and tflag and not dflag) then begin
+     endcase
+     
+     
+     if (nflag and tflag and not dflag) then begin
         dflag = 1b
         case data(nset).type of
-            -4: xydata = {graff_zfunct}
-            -3: xydata = {graff_pfunct}
-            -2: xydata = {graff_funct}
-            -1: xydata = {graff_funct}
-            9: if (nflag2) then begin
-                xydata = {graff_zdata}
-            endif else dflag = 0b
-            
-            Else: begin
-                if single then $
-                  xydata = fltarr(elements(data(nset).type), $
-                                  data(nset).ndata > 2) $
-                else $
-                  xydata = dblarr(elements(data(nset).type), $
-                                  data(nset).ndata > 2)
-            end
+           -4: xydata = {graff_zfunct}
+           -3: xydata = {graff_pfunct}
+           -2: xydata = {graff_funct}
+           -1: xydata = {graff_funct}
+           9: if (nflag2) then begin
+              xydata = {graff_zdata}
+           endif else dflag = 0b
+           
+           Else: begin
+              if single then $
+                 xydata = fltarr(elements(data(nset).type), $
+                                 data(nset).ndata > 2) $
+              else $
+                 xydata = dblarr(elements(data(nset).type), $
+                                 data(nset).ndata > 2)
+           end
         endcase
-    endif
-    
-    New_line:
-    
-endwhile
+     endif
+     
+     New_line:
+     
+  endwhile
 
 Ds_read:
 
 ; This is for old versions that did not have the join setting but used
 ; raw IDL PSYM settings
 
-if (not jflag) then begin
-    if (data(nset).psym eq 10) then begin
+  if (not jflag) then begin
+     if (data(nset).psym eq 10) then begin
         data(nset).pline = 2
         data(nset).psym = 0
-    endif else if (data(nset).psym eq 0) then begin
+     endif else if (data(nset).psym eq 0) then begin
         data(nset).pline = 1
-    endif else if (data(nset).psym lt 0) then begin
+     endif else if (data(nset).psym lt 0) then begin
         data(nset).pline = 1
         data(nset).psym = abs(data(nset).psym)
-    endif else data(nset).pline = 0
-endif
+     endif else data(nset).pline = 0
+  endif
 
-data(nset).xydata = ptr_new(xydata)
+  data(nset).xydata = ptr_new(xydata)
 
 end

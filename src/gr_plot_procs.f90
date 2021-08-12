@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -31,9 +31,13 @@ module gr_plot_procs
   use gr_plot_tools
   use gr_plot_utils
 
+  use gr_colours
+  
   use gr_text_utils
   use gr_shading
 
+  use ieee_arithmetic, only: ieee_is_finite
+  
   implicit none
 
 contains
@@ -66,6 +70,7 @@ contains
     allocate(elo(data%ndata), &
          & ehi(data%ndata))
 
+    !    call plsmin(0._plflt, data%symsize)
     select case (data%type)
     case(1)
        elo = xydata(2,:)-xydata(3,:)
@@ -74,8 +79,8 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
-
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
     case(2)
        elo = xydata(2,:)-xydata(3,:)
        ehi = xydata(2,:)+xydata(4,:)
@@ -83,7 +88,8 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
 
     case(3)
        elo = xydata(1,:)-xydata(3,:)
@@ -92,7 +98,8 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
 
     case(4)
        elo = xydata(1,:)-xydata(3,:)
@@ -101,7 +108,8 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
 
     case(5)
        elo = xydata(1,:)-xydata(3,:)
@@ -110,14 +118,16 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
        elo = xydata(2,:)-xydata(4,:)
        ehi = xydata(2,:)+xydata(4,:)
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
 
     case(6)
        elo = xydata(1,:)-xydata(3,:)
@@ -126,15 +136,17 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
        elo = xydata(2,:)-xydata(4,:)
        ehi = xydata(2,:)+xydata(5,:)
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
-
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
+       
     case(7)
        elo = xydata(1,:)-xydata(3,:)
        ehi = xydata(1,:)+xydata(4,:)
@@ -142,14 +154,16 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
        elo = xydata(2,:)-xydata(5,:)
        ehi = xydata(2,:)+xydata(5,:)
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
 
     case(8)
        elo = xydata(1,:)-xydata(3,:)
@@ -158,19 +172,120 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerrx (elo, ehi, y)
+       !       call plerrx (elo, ehi, y)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
        elo = xydata(2,:)-xydata(5,:)
        ehi = xydata(2,:)+xydata(6,:)
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call plerry (x, elo, ehi)
+       !       call plerry (x, elo, ehi)
+       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
 
     end select
-
+    !    call plsmin(0._plflt, 1._plflt)
+    
   end subroutine gr_plot_xy_errors
 
+  subroutine gr_rect_errors(x, y, elo, ehi, bsize, isx)
+    real(kind=plflt), dimension(:), intent(in) :: x, y, elo, ehi
+    real(kind=plflt), intent(in) :: bsize
+    logical, intent(in) :: isx
+
+    ! Draw a set of error bars on rectangular plots. (Replaces plerry
+    ! and plerrx, so as to handle limits).
+    
+    integer :: i
+    real(kind=plflt) :: wxmin, wxmax, wymin, wymax
+    real(kind=plflt) :: wxrange, wyrange, xcap, ycap, rinf, aspect
+    real(kind=plflt), dimension(6) :: sx, sy
+
+    ! find the axis range to size the caps and also the length of
+    ! limit arrows.
+
+    call plgvpw(wxmin, wxmax, wymin, wymax)
+    aspect = gr_vp_aspect()
+    
+    wxrange = wxmax-wxmin
+    wyrange = wymax-wymin
+
+    xcap = wxrange * bsize / 100.
+    ycap = wyrange * bsize / 100.
+    if (aspect > 1._plflt) then
+       xcap = xcap * aspect
+    else if (aspect < 1._plflt) then
+       ycap = ycap / aspect
+    end if
+    
+    if (isx) then
+       rinf = wxrange / 15.
+    else
+       rinf = wyrange / 15.
+    end if
+
+    if (isx) then
+       ! Error bars in X
+
+       do i = 1, size(x)
+          if (ieee_is_finite(elo(i))) then
+             sx(2) = elo(i)
+             sx(1) = elo(i)
+             sx(3) = elo(i)
+          else
+             sx(2) = x(i) - rinf
+             sx(1) = sx(2) + xcap
+             sx(3) = sx(1)
+          end if
+          if (ieee_is_finite(ehi(i))) then
+             sx(5) = ehi(i)
+             sx(4) = ehi(i)
+             sx(6) = ehi(i)
+          else
+             sx(5) = x(i) + rinf
+             sx(4) = sx(5) - xcap
+             sx(6) = sx(4)
+          end if
+          sy = [y(i) - ycap, y(i), y(i) + ycap, &
+               & y(i) - ycap, y(i), y(i) + ycap]
+
+          call plline(sx(:3), sy(:3))
+          call plline(sx(4:), sy(4:))
+          call pljoin(sx(2), sy(2), sx(5), sy(5))
+       end do
+    else
+       ! Error bars in Y
+
+       do i = 1, size(x)
+          if (ieee_is_finite(elo(i))) then
+             sy(2) = elo(i)
+             sy(1) = elo(i)
+             sy(3) = elo(i)
+          else
+             sy(2) = y(i) - rinf
+             sy(1) = sy(2) + ycap
+             sy(3) = sy(1)
+          end if
+          if (ieee_is_finite(ehi(i))) then
+             sy(5) = ehi(i)
+             sy(4) = ehi(i)
+             sy(6) = ehi(i)
+          else
+             sy(5) = y(i) + rinf
+             sy(4) = sy(5) - ycap
+             sy(6) = sy(4)
+          end if
+          sx = [x(i) - xcap, x(i), x(i) + xcap, &
+               & x(i) - xcap, x(i), x(i) + xcap]
+
+          call plline(sx(:3), sy(:3))
+          call plline(sx(4:), sy(4:))
+          call pljoin(sx(2), sy(2), sx(5), sy(5))
+       end do
+    end if
+
+  end subroutine gr_rect_errors
+  
   subroutine gr_plot_rt_errors(index)
     integer, intent(in) :: index
 
@@ -322,8 +437,9 @@ contains
 
     text => pdefs%text(index)
 
-    if (text%colour < 0) then
-       return
+    if (text%colour == -1)  return
+    if (text%colour == -2) then
+       call gr_custom_line(text%c_vals)
     else
        call plcol0(int(text%colour))
     end if
@@ -379,7 +495,7 @@ contains
        do i = 1, 3
           call gr_plot_coords_v_w(xav(i), yav(i), xa(i), ya(i), nolog=.true.)
           call plcol0(1)
-          call gr_pl_width(1._real32)
+          call plwidth(1._plflt)
           call gr_plot_linesty(0_int16)
        end do
        call plline(xa, ya)
@@ -400,14 +516,16 @@ contains
     real(kind=plflt), dimension(:), allocatable :: y, x0
     real(kind=plflt), dimension(:), allocatable :: x, ys, xx
 
-    integer :: nkey, nrows, i, j, irow, icol
+    integer :: nkey, nkeyd, nrows, i, j, irow, icol, ikey
     character(len=120) :: descr
 
     if (.not. allocated(pdefs%key%list)) return
 
-    nkey = count(pdefs%data(pdefs%key%list+1)%colour /= -1)
-    if (nkey == 0) return
-    nrows = ceiling(real(nkey)/pdefs%key%cols)
+    nkey = size(pdefs%key%list)
+    nkeyd = count(pdefs%data(pdefs%key%list+1)%colour /= -1)
+    if (nkeyd == 0) return
+
+    nrows = ceiling(real(nkeyd)/pdefs%key%cols)
 
     if (pdefs%key%one_point) then
        allocate(x(3), ys(3))
@@ -485,16 +603,23 @@ contains
 
     call plschr(0._plflt, csize)
 
+    ikey = 1
     do j = 1, nkey
-       i = pdefs%key%list(j)+1
+       if (pdefs%key%reverse) then
+          i = pdefs%key%list(nkey-j+1)+1
+       else
+          i = pdefs%key%list(j)+1
+       end if
 
-       irow = nrows - mod((j-1), nrows)
-       icol = (j-1) / nrows + 1
+       if (pdefs%data(i)%colour < 0) cycle
+       
+       irow = nrows - mod((ikey-1), nrows)
+       icol = (ikey-1) / nrows + 1
 
        call gr_plot_linesty(pdefs%data(i)%line, &
             & scale = ceiling(sqrt(pdefs%data(i)%thick)))
        call plcol0(int(pdefs%data(i)%colour))
-       call gr_pl_width(pdefs%data(i)%thick)
+       call plwidth(pdefs%data(i)%thick)
 
        if (pdefs%data(i)%pline == 2 .and. .not. pdefs%key%one_point) then
           xx = [x(1), sum(x)/2., sum(x)/2., x(2)]
@@ -505,7 +630,7 @@ contains
 
        if (pdefs%data(i)%psym /= 0) then
           if (pdefs%key%one_point) then
-             call gr_plot_symbol([x0(icol)+x(2)], [y(irow)], &
+             call gr_plot_symbol([x0(icol)+x(2)], [y(irow) + ys], &
                   & pdefs%data(i)%psym, pdefs%data(i)%symsize)
           else
              call gr_plot_symbol(x0(icol)+x, y(irow)+ys, &
@@ -525,6 +650,8 @@ contains
        call plcol0(1)
        call plptex(x0(icol)+tx, y(irow)+sum(ys)/real(size(ys)), &
             & 1._plflt, 0._plflt, 0._plflt, descr)
+
+       ikey=ikey+1
     end do
   end subroutine gr_key_draw
 
@@ -542,7 +669,9 @@ contains
     real(kind=real64), dimension(:,:), allocatable ::  x2, y2
     real(kind=real64), dimension(:), allocatable :: x1, y1
     logical :: c2d, clall
-    integer :: i
+    integer :: i, icc, icidx
+    integer(kind=int16), dimension(3) :: icrc
+
     real(kind=real64) :: zmin, zmax, xmin, xmax, ymin, ymax, ccol
     logical :: xlog, ylog
 
@@ -603,12 +732,14 @@ contains
        clall = .false.
     else
        allocate(clevels(data%zdata%n_levels))
-       zmin = minval(z)
-       zmax = maxval(z)
-       do i = 1, data%zdata%n_levels
-          clevels(i) = zmin + (real(i, real64)-0.5_real64)*&
-               & (zmax-zmin)/real(data%zdata%n_levels, real64)
-       end do
+       if (data%zdata%lmap == 1) then
+          zmin = minval(z, ieee_is_finite(z) .and. z > 0.)
+          zmax = maxval(z, ieee_is_finite(z) .and. z > 0.)
+       else
+          zmin = minval(z, ieee_is_finite(z))
+          zmax = maxval(z, ieee_is_finite(z))
+       end if
+       call gr_make_levels(zmin, zmax, data%zdata%lmap, clevels)
        clall = .true.
     end if
 
@@ -633,20 +764,26 @@ contains
     end if
 
     call plcol0(1)
-    call gr_pl_width(1.0_real32)
+    call plwidth(1.0_plflt)
     call gr_plot_linesty(0_int16)
 
     if (data%zdata%fill == 2_int8) call hl_gtk_info_bar_message(gr_infobar, &
          & "gr_contour: Contour ticks not (yet) supported"//c_null_char)
 
+    call plsesc(ichar('#'))     ! Plplot default
     do i = 1, data%zdata%n_levels
-       if (data%zdata%label /= 0 .and. mod(i, data%zdata%label) == 0) then
+       if (data%zdata%label /= 0 .and. &
+            & mod(i, max(data%zdata%label,1)) == data%zdata%label_off) then
           call pl_setcontlabelparam(real(0.006*data%zdata%charsize, plflt), &
-               & real(0.5*data%zdata%charsize, plflt), 0.5_plflt, 1)
+               & real(0.5*data%zdata%charsize, plflt), 0.25_plflt, 1)
        else
           call pl_setcontlabelparam(0.006_plflt, &
                & real(0.5*data%zdata%charsize, plflt), 0.25_plflt, 0)
        end if
+
+       ! I'm not convinced that this will do what it is supposed to do!
+       ! It might have made sense in 2013, but I don't get it now.
+       ! SJT 2/4/20
        if (data%zdata%fill == 1_int8) then
           if (allocated(data%zdata%colours) .and. data%zdata%n_cols > 0) &
                & ccol = real(data%zdata%colours(mod(i-1, &
@@ -660,11 +797,19 @@ contains
           end if
        else
           if (allocated(data%zdata%thick) .and. data%zdata%n_thick > 0) &
-               & call gr_pl_width(data%zdata%thick(mod(i-1, &
+               & call plwidth(data%zdata%thick(mod(i-1, &
                & data%zdata%n_thick)+1))
-          if (allocated(data%zdata%colours) .and. data%zdata%n_cols > 0) &
-               & call plcol0(int(data%zdata%colours(mod(i-1, &
-               & data%zdata%n_cols)+1)))
+          if (allocated(data%zdata%colours) .and. data%zdata%n_cols > 0) then
+             icidx = mod(i-1, data%zdata%n_cols)+1
+             icc = int(data%zdata%colours(icidx))
+             if (icc == -1) cycle
+             if (icc == -2) then
+                icrc= data%zdata%raw_colours(:, icidx)
+                call gr_custom_line(icrc)
+             else
+                call plcol0(icc)
+             end if
+          end if
           if (allocated(data%zdata%style) .and. data%zdata%n_sty > 0) then
              if (allocated(data%zdata%thick) .and. data%zdata%n_thick > 0) then
                 call gr_plot_linesty(data%zdata%style(mod(i-1, &
@@ -683,6 +828,8 @@ contains
           end if
        end if
     end do
+    call plsesc(ichar('!'))     ! Graffer strings
+    
     if (clall) deallocate(clevels)
 
   end subroutine gr_contour
@@ -697,7 +844,7 @@ contains
     real(kind=real64), dimension(:,:), allocatable :: x2, y2
     real(kind=real64), dimension(:), allocatable :: x1, y1
     logical :: c2d, xlog, ylog
-    integer :: i, nx, ny
+    integer :: i, j, nx, ny
     real(kind=real64) :: zmin, zmax, xmin, xmax, ymin, ymax
 
     data => pdefs%data(index)
@@ -719,82 +866,114 @@ contains
     z = data%zdata%z
 
     if (data%zdata%range(1) == data%zdata%range(2)) then
-       zmin = minval(z)
-       zmax = maxval(z)
+       zmin = minval(z, mask=ieee_is_finite(z))
+       zmax = maxval(z, mask=ieee_is_finite(z))
+       if (data%zdata%ilog == 1_int16 .and. zmin <= 0.) then
+          call hl_gtk_info_bar_message(gr_infobar, &
+               & "Data has negative values, scaling to positive only." &
+               & //c_null_char)
+          zmin = minval(z, mask = z > 0. .and. ieee_is_finite(z))
+       end if
     else
        zmin = data%zdata%range(1)
        zmax = data%zdata%range(2)
     end if
-    if (data%zdata%ilog) then
+    if (data%zdata%ilog == 1_int16) then
        if (min(zmin, zmax) > 0.) then
           z = log10(z)
           zmin = log10(zmin)
           zmax = log10(zmax)
        else
           call hl_gtk_info_bar_message(gr_infobar, &
-            & "Setting a zero or negative limit for a log mapping, "//&
-            & "using linear"//c_null_char)
+               & "Setting a zero or negative limit for a log mapping, "//&
+               & "using linear"//c_null_char)
        end if
+    else if (data%zdata%ilog == 2_int16) then
+       where(z /= 0.) z = z / sqrt(abs(z))
+       if (zmin /= 0.) zmin = zmin / sqrt(abs(zmin))
+       if (zmax /= 0.) zmax = zmax / sqrt(abs(zmax))
     end if
 
     allocate(x1(nx+1), y1(ny+1))
+
     if (data%zdata%x_is_2d .or. data%zdata%y_is_2d) then
        allocate(x2(nx+1, ny+1), y2(nx+1, ny+1))
        if (data%zdata%x_is_2d) then
-          x2(:,1) = [data%zdata%x(1,1), &
-               & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
-               & data%zdata%x(nx,1)]
-          x2(:,ny+1) = [data%zdata%x(1,ny), &
-               & (data%zdata%x(1:nx-1,ny)+data%zdata%x(2:,ny))/2._real64, &
-               & data%zdata%x(nx,ny)]
+          x2(1,1) = data%zdata%x(1,1)
+          x2(nx+1,1) = data%zdata%x(nx,1)
+          x2(1,ny+1) = data%zdata%x(1,ny)
+          x2(nx+1,ny+1) = data%zdata%x(nx,ny)
           do i = 2, ny
-             x2(:,i) = ([data%zdata%x(1,i-1), &
-                  & (data%zdata%x(1:nx-1,i-1)+data%zdata%x(2:,i-1))/2._real64, &
-                  & data%zdata%x(nx,i-1)] + &
-                  & [data%zdata%x(1,i), &
-                  & (data%zdata%x(1:nx-1,i)+data%zdata%x(2:,i))/2._real64, &
-                  & data%zdata%x(nx,i)]) / 2._real64
+             x2(1,i) = (data%zdata%x(1,i-1) + data%zdata%x(1,i)) / &
+                  & 2._real64
+             x2(nx+1,i) = (data%zdata%x(nx,i-1) + data%zdata%x(nx,i)) / &
+                  & 2._real64
+          end do
+          do j = 2, nx
+             x2(j,1) = (data%zdata%x(j-1,1) + data%zdata%x(j,1)) / &
+                  & 2._real64
+             x2(j,ny+1) = (data%zdata%x(j-1,ny) + data%zdata%x(j,ny)) / &
+                  & 2._real64
+             do i = 2, ny
+                x2(j,i) = (data%zdata%x(j-1,i-1) + data%zdata%x(j,i-1) + &
+                     & data%zdata%x(j-1,i) + data%zdata%x(j,i)) / 4._real64
+             end do
           end do
        else
-          x1 = [data%zdata%x(1,1), &
-               & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
-               & data%zdata%x(nx,1)]
+          x1(1) = data%zdata%x(1,1)
+          x1(nx+1) = data%zdata%x(nx,1)
+          do i = 2, nx
+             x1(i) = (data%zdata%x(i-1,1) + data%zdata%x(i,1)) / 2._real64
+          end do
           do i = 1, ny+1
              x2(:,i) = x1
           end do
        end if
 
        if (data%zdata%y_is_2d) then
-          y2(1,:) = [data%zdata%y(1,1), &
-               & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
-               & data%zdata%y(1,ny)]
-          y2(nx+1,:) = [data%zdata%y(nx,1), &
-               & (data%zdata%y(nx,1:ny-1)+data%zdata%y(nx,2:))/2._real64, &
-               & data%zdata%y(nx,ny)]
-          do i = 2, nx
-             y2(i,:) = ([data%zdata%y(i-1,1), &
-                  & (data%zdata%y(i-1,1:ny-1)+data%zdata%y(i-1,2:))/2._real64, &
-                  & data%zdata%y(i-1,ny)] + &
-                  & [data%zdata%y(i,1), &
-                  & (data%zdata%y(i,1:ny-1)+data%zdata%y(i,2:))/2._real64, &
-                  & data%zdata%y(i,ny)]) / 2._real64
+          y2(1,1) = data%zdata%y(1,1)
+          y2(nx+1,1) = data%zdata%y(nx,1)
+          y2(1,ny+1) = data%zdata%y(1,ny)
+          y2(nx+1,ny+1) = data%zdata%y(nx,ny)
+          do i = 2, ny
+             y2(1,i) = (data%zdata%y(1,i-1) + data%zdata%y(1,i)) / &
+                  & 2._real64
+             y2(nx+1,i) = (data%zdata%y(nx,i-1) + data%zdata%y(nx,i)) / &
+                  & 2._real64
           end do
+          do j = 2, nx
+             y2(j,1) = (data%zdata%y(j-1,1) + data%zdata%y(j,1)) / &
+                  & 2._real64
+             y2(j,ny+1) = (data%zdata%y(j-1,ny) + data%zdata%y(j,ny)) / &
+                  & 2._real64
+             do i = 2, ny
+                y2(j,i) = (data%zdata%y(j-1,i-1) + data%zdata%y(j,i-1) + &
+                     & data%zdata%y(j-1,i) + data%zdata%y(j,i)) / 4._real64
+             end do
+          end do
+
        else
-          y1 = [data%zdata%y(1,1), &
-               & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
-               & data%zdata%y(1,ny)]
+          y1(1) = data%zdata%y(1,1)
+          y1(ny+1) = data%zdata%y(1,ny)
+          do i = 2, ny
+             y1(i) = (data%zdata%y(1,i-1) + data%zdata%y(1,i)) / 2._real64
+          end do
           do i = 1, nx+1
              y2(i,:) = y1
           end do
        end if
        c2d = .true.
     else
-       x1 = [data%zdata%x(1,1), &
-            & (data%zdata%x(1:nx-1,1)+data%zdata%x(2:,1))/2._real64, &
-            & data%zdata%x(nx,1)]
-       y1 = [data%zdata%y(1,1), &
-            & (data%zdata%y(1,1:ny-1)+data%zdata%y(1,2:))/2._real64, &
-            & data%zdata%y(1,ny)]
+       x1(1) = data%zdata%x(1,1)
+       x1(nx+1) = data%zdata%x(nx,1)
+       do i = 2, nx
+          x1(i) = (data%zdata%x(i-1,1) + data%zdata%x(i,1)) / 2._real64
+       end do
+       y1(1) = data%zdata%y(1,1)
+       y1(ny+1) = data%zdata%y(1,ny)
+       do i = 2, ny
+          y1(i) = (data%zdata%y(1,i-1) + data%zdata%y(1,i)) / 2._real64
+       end do
        c2d = .false.
     end if
 
@@ -832,6 +1011,11 @@ contains
        call plimagefr(z, xmin, xmax, ymin, ymax, minval(z), maxval(z), &
             & zmin, zmax, x2, y2)
     else
+       xmin=0._plflt
+       xmax=0._plflt
+       ymin=0._plflt
+       ymax=0._plflt
+
        call plimagefr(z, xmin, xmax, ymin, ymax, minval(z), maxval(z), &
             & zmin, zmax, x1, y1)
     end if
@@ -853,7 +1037,7 @@ contains
     logical :: c2d
     integer :: i
     real(kind=real64) :: zmin, zmax, xmin, xmax, ymin, ymax, z0, z1
-    logical :: xlog, ylog, zflag
+    logical :: xlog, ylog
 
     data => pdefs%data(index)
     if (.not. allocated(data%zdata%z)) return
@@ -869,29 +1053,39 @@ contains
     allocate(z(data%ndata, data%ndata2))
     z = data%zdata%z
 
-    z0 = minval(z)
-    z1 = maxval(z)
+    z0 = minval(z, mask=ieee_is_finite(z))
+    z1 = maxval(z, mask=ieee_is_finite(z))
     if (data%zdata%range(1) == data%zdata%range(2)) then
        zmin = z0
        zmax = z1
+       if (data%zdata%ilog == 1_int16 .and. zmin <= 0.) then
+          call hl_gtk_info_bar_message(gr_infobar, &
+               & "Data has negative values, scaling to positive only." &
+               & //c_null_char)
+          zmin = minval(z, mask = z > 0. .and. ieee_is_finite(z))
+       end if
     else
        zmin = data%zdata%range(1)
        zmax = data%zdata%range(2)
     end if
 
-    zflag = .false.
-    if (data%zdata%ilog) then
+    if (data%zdata%ilog == 1_int16) then
        if (min(zmin, zmax) > 0.) then
+          z = log10(z)
           zmin = log10(zmin)
           zmax = log10(zmax)
        else
           call hl_gtk_info_bar_message(gr_infobar, &
             & "Setting a zero or negative limit for a log mapping, "//&
             & "using linear"//c_null_char)
-          zflag = .true.
        end if
+    else if (data%zdata%ilog == 2_int16) then
+       where(z /= 0.) z = z / sqrt(abs(z))
+       if (zmin /= 0.) zmin = zmin / sqrt(abs(zmin))
+       if (zmax /= 0.) zmax = zmax / sqrt(abs(zmax))
     end if
-    where(.not. finite(z)) z = data%zdata%missing
+
+    where(.not. ieee_is_finite(z)) z = data%zdata%missing
 
     if (data%zdata%shade_levels == 0) data%zdata%shade_levels = 256
     allocate(clevels(data%zdata%shade_levels))
@@ -899,7 +1093,6 @@ contains
     do i = 1, size(clevels)
        clevels(i) = zmin + real(i-1)*(zmax - zmin)/real(size(clevels)-1)
     end do
-    if (.not. zflag .and. data%zdata%ilog) clevels = 10.**clevels
     clevels(1) = min(clevels(1), z0)
     clevels(size(clevels)) = max(clevels(size(clevels)), z1)
 
@@ -1002,4 +1195,63 @@ contains
     call plschr(0._plflt, real(pdefs%charsize, plflt)*0.5_plflt)
     call plptex(xw, yw, 1._plflt, 0._plflt, align, date)
   end subroutine gr_stamp
+
+  subroutine gr_make_levels(zmin, zmax, map, levels)
+    real(kind=real64), intent(in) :: zmin, zmax
+    integer(kind=int16), intent(in) :: map
+    real(kind=real64), dimension(:), intent(out) :: levels
+
+    real(kind=real64) :: rg, lmx, lmn
+    integer :: i, nl
+    real(kind=real64), dimension(:), allocatable :: slev
+    
+    nl = size(levels)
+
+    select case (map)
+    case(0)                    ! Linear scaling
+       rg = zmax - zmin
+
+       do i = 1, nl
+          levels(i) = rg * (real(i, real64) - 0.5_real64) / &
+               & real(nl, real64) + zmin
+       end do
+       
+    case(1)                    ! Log scaling
+       lmx = log10(zmax)
+       lmn = log10(zmin)
+       
+       if (.not. ieee_is_finite(lmx) .or. .not. ieee_is_finite(lmn)) then
+          levels(:) = 0._real64
+       else
+          rg = lmx-lmn
+          do i = 1, nl
+             levels(i) = 10._real64 ** (rg * (real(i, real64) - 0.5_real64)/ &
+                  & real(nl,real64) + lmn)
+          end do
+       end if
+
+    case (2)                 ! Square root scaling
+       if (zmax == 0._real64) then
+          lmx = 0._real64
+       else
+          lmx = zmax / sqrt(abs(zmax))
+       end if
+       if (zmin == 0._real64) then
+          lmn = 0._real64
+       else
+          lmn = zmin / sqrt(abs(zmin))
+       end if
+
+       rg = lmx-lmn
+       allocate(slev(nl))
+
+       do i = 1, nl
+          slev(i) = rg * (real(i, real64) - 0.5_real64) / real(nl, real64) &
+               & + lmn
+       end do
+       levels = slev**2
+       where(slev < 0._real64) levels = -levels
+       
+    end select
+  end subroutine gr_make_levels
 end module gr_plot_procs

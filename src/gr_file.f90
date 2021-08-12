@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -322,7 +322,9 @@ contains
           call rec%get_value(pdefs%isotropic,status)
        case ('GHA')
           call rec%get_value(pdefs%match,status)
-
+       case('GF')
+          call rec%get_value(pdefs%fontopt, status)
+          
           ! The X, Y and R keys are items relating
           ! to the X, Y and right-hand Y axes
           ! respectively  
@@ -354,11 +356,11 @@ contains
           call rec%get_value(pdefs%axsty(1)%minor, status)
        case ('XMJ')
           call rec%get_value(pdefs%axsty(1)%major, status)
-       case ('XMS')
-          call rec%get_value(pdefs%axsty(1)%xmajor, status)
        case ('XFM')
           call rec%get_value(pdefs%axsty(1)%format, status)
-
+       case('XLL')
+          call rec%get_value(pdefs%axsty(1)%log_bands, status)
+          
        case('XVL')
           if (allocated(pdefs%axsty(1)%values)) &
                & deallocate(pdefs%axsty(1)%values)
@@ -390,10 +392,11 @@ contains
           call rec%get_value(pdefs%axsty(2)%minor, status)
        case ('YMJ')
           call rec%get_value(pdefs%axsty(2)%major, status)
-       case ('YMS')
-          call rec%get_value(pdefs%axsty(2)%xmajor, status)
        case ('YFM')
           call rec%get_value(pdefs%axsty(2)%format, status)
+       case('YLL')
+          call rec%get_value(pdefs%axsty(2)%log_bands, status)
+
        case('YVL')
           if (allocated(pdefs%axsty(2)%values)) &
                & deallocate(pdefs%axsty(2)%values)
@@ -427,10 +430,11 @@ contains
           call rec%get_value(pdefs%axsty(3)%minor, status)
        case ('RMJ')
           call rec%get_value(pdefs%axsty(3)%major, status)
-       case ('RMS')
-          call rec%get_value(pdefs%axsty(3)%xmajor, status)
        case ('RFM')
           call rec%get_value(pdefs%axsty(3)%format, status)
+       case('RLL')
+          call rec%get_value(pdefs%axsty(3)%log_bands, status)
+
        case('RVL')
           if (allocated(pdefs%axsty(3)%values)) &
                & deallocate(pdefs%axsty(3)%values)
@@ -542,6 +546,11 @@ contains
           ! HVA - Any part of the view
           !       command which follows the
           !       filename. 
+          ! HPB - The pdf view command (up to
+          !       the filename)
+          ! HPA - Any part of the pdf view
+          !       command which follows the
+          !       filename. 
           ! HF - Font family.
           ! HWS - Font weight and slant (bit 0 is
           !       on for bold, bit 1 for
@@ -577,6 +586,10 @@ contains
           call rec%get_value(pdefs%hardset%viewer(1), status)
        case ('HVA')
           call rec%get_value(pdefs%hardset%viewer(2), status)
+       case ('HPB')
+          call rec%get_value(pdefs%hardset%pdfviewer(1), status)
+       case ('HPA')
+          call rec%get_value(pdefs%hardset%pdfviewer(2), status)
 
        case ('HF ')
           call rec%get_value(pdefs%hardset%font_family, status)
@@ -624,6 +637,8 @@ contains
           call rec%get_value(pdefs%key%cols, status)
        case ('KF ')
           call rec%get_value(pdefs%key%frame, status)
+       case('KR ')
+          call rec%get_value(pdefs%key%reverse, status)
        case ('KP ')
           call rec%get_value(pdefs%key%one_point, status)
        case ('KT ')
@@ -646,9 +661,9 @@ contains
           ! corrupted. 
 
        case default
-          call gr_message("GR_READ: unknown tag: "// &
+          call gr_message("GR_READ: unknown or obsolete tag: "// &
                & rec%get_tag()//" Skipping")
-          status = 2
+          if (.not. is_letters(rec%get_tag())) status = 2
 
        end select
 
@@ -659,7 +674,7 @@ contains
           exit
        case(2)
           call gr_message("GR_READ: possibly invalid file")
-          exit
+ 
        case(4)
           call gr_message("GR_READ: possible loss of precision: "// &
                & rec%get_tag())
@@ -671,10 +686,8 @@ contains
     if (pdefs%version(2) <= 6) call gr_font_remap
 
     call gr_set_changed(.false.)
-    pdefs%transient%backup = .false.
+    transient%backup = .false.
     pdefs%is_ascii = .false.
-
-    !    if (ctflag) call gr_colours(pdefs)
 
   end subroutine gr_read
 
@@ -703,6 +716,7 @@ contains
 
           ! Recognized tags for Text items
           ! C - colour
+          ! CV - Custom colour.
           ! S - character size
           ! O - orientation (degrees
           !     anticlockwise from the normal
@@ -725,6 +739,8 @@ contains
 
        case ('C')
           call rec%get_value(txt_s%colour, status)
+       case('CV')
+          call rec%get_value(txt_s%c_vals, status)
        case ('S')
           call rec%get_value(txt_s%size, status)
        case ('O')
@@ -763,7 +779,7 @@ contains
        case default
           call gr_message("Unknown text tag: "// &
                & rec%get_tag()//" Skipping.")
-          status = 2
+          if (.not. is_letters(rec%get_tag())) status = 2
        end select
 
     end do
@@ -777,7 +793,6 @@ contains
 
     logical :: nflag, nflag2
     logical :: tflag
-    logical :: x2flag, y2flag
     type(graffer_record) :: rec
 
     integer, parameter, dimension(*) :: elements = [2, 3, 4, 3, 4, 4, 5, 5, 6]
@@ -804,6 +819,7 @@ contains
           ! S - symbol size
           ! L - line style
           ! C - colour
+          ! CV - Custom colour
           ! W - thickness (width)
           ! O - sorted? (Order)
           ! D - description
@@ -818,7 +834,35 @@ contains
           ! E - Mouse editing
           ! R - function range
           ! F, FX, FY - function specifiers
-          ! VS, VE - start & end XY data.
+          ! VS - XY data.
+          !
+          ! MN - Minimum value to display
+          ! MX - Maximum value to display
+          ! Y - Which Y axis to use (if 2 are defined).
+          ! ZF - 2D dataset display format
+          ! ZNL - 2D dataset, number of contours
+          ! ZL - 2D: Contour levels
+          ! ZC - 2D: Contour colours
+          ! ZCR - 2D: Contour custom colours
+          ! ZCT - 2D: Colour table
+          ! ZCG - 2D: Gamma setting for colour display
+          ! ZS - 2D: Contour linestyles
+          ! ZT - 2D: Contour thicknesses.
+          ! ZCF - 2D: Contour fill style.
+          ! ZLI - 2D: Contour labelling interval
+          ! ZLO - 2D: Contour labelling offset.
+          ! ZCS - 2D: Contour label charsize
+          ! ZLM - 2D: Contour mapping.
+          ! ZR - 2D: Colour map data range.
+          ! ZP - 2D: Pixel size (IDL only)
+          ! ZIL - 2D: Colour mapping.
+          ! ZIN - 2D: Colour invert?
+          ! ZSM - 2D: Colour smooth display (FTN only)
+          ! ZSN - 2D: Smooth colour number of levels (FTN only)
+          ! ZM - 2D: Missing data value.
+          ! ZXS - 2D: Data X values.
+          ! ZYS - 2D: Data Y values
+          ! ZZS - 2D: Data Z values.
           ! DE - end dataset
 
        case ('J')
@@ -831,6 +875,8 @@ contains
           call rec%get_value(ds%line, status)
        case ('C')
           call rec%get_value(ds%colour, status)
+       case ('CV')
+          call rec%get_value(ds%c_vals, status)
        case ('W')
           call rec%get_value(ds%thick, status)
        case ('O')
@@ -841,25 +887,17 @@ contains
           call rec%get_value(ds%medit, status)
        case ('D')
           call rec%get_value(ds%descript, status)
-
+       case('MN')
+          call rec%get_value(ds%min_val, status)
+       case('MX')
+          call rec%get_value(ds%max_val, status)
+          
        case('N')
           call rec%get_value(ds%ndata, status)
-          if (ds%ndata < 0) then 
-             x2flag = .true.
-             ds%ndata = abs(ds%ndata)
-          else
-             x2flag = .false.
-          endif
           nflag = .true.
 
        case('N2')
           call rec%get_value(ds%ndata2, status)
-          if (ds%ndata2 < 0) then
-             y2flag = .true.
-             ds%ndata2 = abs(ds%ndata2)
-          else
-             y2flag = .false.
-          end if
           nflag2 = .true.
 
        case('T')
@@ -899,8 +937,21 @@ contains
           end if
           allocate(ds%zdata%colours(asize))
           call rec%get_value(ds%zdata%colours, status)
+          
+          if (rec%tcode == idl_objref) then
+             if (allocated(ds%zdata%raw_colours)) &
+                  & deallocate(ds%zdata%raw_colours)
+             allocate(ds%zdata%raw_colours(3,asize))
+             call rec%get_value(ds%zdata%raw_colours, status)
+          end if
           ds%zdata%n_cols = int(asize, int16)
 
+       case('ZCR')
+          if (allocated(ds%zdata%raw_colours)) &
+               & deallocate(ds%zdata%raw_colours)
+          allocate(ds%zdata%raw_colours(dims(1), dims(2)))
+          call rec%get_value(ds%zdata%raw_colours, status)
+            
        case ('ZCT')
           call rec%get_value(ds%zdata%ctable, status)
 
@@ -934,9 +985,13 @@ contains
           call rec%get_value(ds%zdata%fill, status)
        case ('ZLI')
           call rec%get_value(ds%zdata%label, status)
+       case ('ZLO')
+          call rec%get_value(ds%zdata%label_off, status)
        case ('ZCS')
           call rec%get_value(ds%zdata%charsize, status)
-
+       case('ZLM')
+          call rec%get_value(ds%zdata%lmap, status)
+          
        case ('ZR')
           call rec%get_value(ds%zdata%range, status)
        case ('ZP')
@@ -967,9 +1022,14 @@ contains
 
        case ('VS')
           if (allocated(ds%xydata)) deallocate(ds%xydata)
-          allocate(ds%xydata(dims(1), dims(2)))
+          if (size(dims) == 2) then
+             allocate(ds%xydata(dims(1), dims(2)))
+             ds%ndata = dims(2)
+          else
+             allocate(ds%xydata(dims(1), 1))
+             ds%ndata = 1
+          end if
           call rec%get_value(ds%xydata, status)
-          ds%ndata = dims(2)
 
        case('ZXS')
           if (allocated(ds%zdata%x)) deallocate(ds%zdata%x)
@@ -992,6 +1052,7 @@ contains
              allocate(ds%zdata%y(dims(1),dims(2)))
           end if
           call rec%get_value(ds%zdata%y, status)
+
        case('ZZS')
           if (allocated(ds%zdata%z)) deallocate(ds%zdata%z)
           allocate(ds%zdata%z(dims(1),dims(2)))
@@ -1003,10 +1064,23 @@ contains
        case default
           call gr_message("GR_READ_DS: Unknown DS tag: "// &
                & rec%get_tag()//", Skipping.")
-          status = 2
+          if (.not. is_letters(rec%get_tag())) status = 2
 
        end select
     end do
+
+    ! If min_val and max_val are both zero then they should both be NaN
+
+    if (ds%min_val == 0._real64 .and. ds%max_val == 0._real64) then
+       ds%min_val = d_nan()
+       ds%max_val = d_nan()
+    end if
+
+    ! For 2D dss, shade_levels can end up as zero which isn't sensible
+    if (ds%type == 9 .or. ds%type == -4) then
+       if (ds%zdata%shade_levels == 0) ds%zdata%shade_levels = 256
+    end if
+    
   end subroutine gr_read_ds
 
   subroutine gr_write(ok, auto, ascii)
@@ -1038,10 +1112,10 @@ contains
     else
        outfile = trim(pdefs%dir)//trim(pdefs%name)
        autofile = trim(pdefs%dir)//'#'//trim(pdefs%name)//'#'
-       if (.not. pdefs%transient%backup .and. file_exists(outfile)) then
+       if (.not. transient%backup .and. file_exists(outfile)) then
           call execute_command_line("cp "//trim(outfile)//" "//&
                & trim(outfile)//"~")
-          pdefs%transient%backup = .true.
+          transient%backup = .true.
        end if
        if (present(ascii)) then
           use_ascii = ascii
@@ -1067,7 +1141,8 @@ contains
     call gr_date(date)
     write(unit) "GRAFFER", graffer_version%ints(), &
          & to_little(len_trim(pdefs%dir)), &
-         & trim(pdefs%dir), to_little(len_trim(pdefs%name)), trim(pdefs%name), &
+         & trim(pdefs%dir), to_little(len_trim(pdefs%name)), &
+         & trim(pdefs%name), &
          & to_little(len_trim(date)), trim(date)
 
     call rec%set_value('GT ', pdefs%title, unit)
@@ -1089,8 +1164,9 @@ contains
     call rec%set_value('XST', pdefs%axsty(1)%time, unit)
     call rec%set_value('XSZ', pdefs%axsty(1)%tzero, unit)
     call rec%set_value('XMJ', pdefs%axsty(1)%major, unit)
-    call rec%set_value('XMS', pdefs%axsty(1)%xmajor, unit)
     call rec%set_value('XFM', pdefs%axsty(1)%format, unit)
+    call rec%set_value('XLL', pdefs%axsty(1)%log_bands, unit)
+    
     call rec%set_value('XMN', pdefs%axsty(1)%minor, unit)
     if (allocated(pdefs%axsty(1)%values)) &
          &  call rec%set_value('XVL', pdefs%axsty(1)%values, unit)
@@ -1107,8 +1183,9 @@ contains
     call rec%set_value('YST', pdefs%axsty(2)%time, unit)
     call rec%set_value('YSZ', pdefs%axsty(2)%tzero, unit)
     call rec%set_value('YMJ', pdefs%axsty(2)%major, unit)
-    call rec%set_value('YMS', pdefs%axsty(2)%xmajor, unit)
     call rec%set_value('YFM', pdefs%axsty(2)%format, unit)
+    call rec%set_value('YLL', pdefs%axsty(2)%log_bands, unit)
+    
     call rec%set_value('YMN', pdefs%axsty(2)%minor, unit)
     if (allocated(pdefs%axsty(2)%values)) &
          & call rec%set_value('YVL', pdefs%axsty(2)%values, unit)
@@ -1124,8 +1201,9 @@ contains
     call rec%set_value('RST', pdefs%axsty(3)%time, unit)
     call rec%set_value('RSZ', pdefs%axsty(3)%tzero, unit)
     call rec%set_value('RMJ', pdefs%axsty(3)%major, unit)
-    call rec%set_value('RMS', pdefs%axsty(3)%xmajor, unit)
     call rec%set_value('RFM', pdefs%axsty(3)%format, unit)
+    call rec%set_value('RLL', pdefs%axsty(3)%log_bands, unit)
+    
     call rec%set_value('RMN', pdefs%axsty(3)%minor, unit)
     if (allocated(pdefs%axsty(3)%values)) &
          & call rec%set_value('RVL', pdefs%axsty(3)%values, unit)
@@ -1159,11 +1237,14 @@ contains
        call rec%set_value('S  ', gdata%symsize, unit)
        call rec%set_value('L  ', gdata%line, unit)
        call rec%set_value('C  ', gdata%colour, unit)
+       call rec%set_value('CV ', gdata%c_vals, unit)
        call rec%set_value('W  ', gdata%thick, unit)
        call rec%set_value('O  ', gdata%sort, unit)
        call rec%set_value('K  ', gdata%noclip, unit)
        call rec%set_value('E  ', gdata%medit, unit)
-
+       call rec%set_value('MN ', gdata%min_val, unit)
+       call rec%set_value('MX ', gdata%max_val, unit)
+       
        select case(gdata%type)
        case(0:8)             ! X-Y types
           if (allocated(gdata%xydata)) &
@@ -1192,7 +1273,10 @@ contains
 
           call rec%set_value('ZCF', gdata%zdata%fill, unit)
           call rec%set_value('ZLI', gdata%zdata%label, unit)
+          call rec%set_value('ZLO', gdata%zdata%label_off, unit)
           call rec%set_value('ZCS', gdata%zdata%charsize, unit)
+          call rec%set_value('ZLM', gdata%zdata%lmap, unit)
+          
           call rec%set_value('ZCT', gdata%zdata%ctable, unit)
           call rec%set_value('ZCG', gdata%zdata%gamma, unit)
 
@@ -1202,8 +1286,11 @@ contains
           else
              call rec%set_value('ZNL', gdata%zdata%n_levels, unit)
           end if
-          if (gdata%zdata%n_cols > 0)  &
-               & call rec%set_value('ZC ',gdata%zdata%colours , unit)
+          if (gdata%zdata%n_cols > 0)  then
+             call rec%set_value('ZC ',gdata%zdata%colours , unit)
+             if (allocated(gdata%zdata%raw_colours)) &
+                  & call rec%set_value('ZCR',gdata%zdata%raw_colours , unit)
+          end if
           if (gdata%zdata%n_sty > 0)  &
                & call rec%set_value('ZS ', gdata%zdata%style, unit)
           if (gdata%zdata%n_thick > 0)  &
@@ -1236,6 +1323,7 @@ contains
        call rec%set_value('N  ', gtext%norm, unit)
        call rec%set_value('AX ', gtext%axis, unit)
        call rec%set_value('C  ', gtext%colour, unit)
+       call rec%set_value('CV ', gtext%c_vals, unit)
        call rec%set_value('S  ', gtext%size, unit)
        call rec%set_value('O  ', gtext%orient, unit)
        call rec%set_value('A  ', gtext%align, unit)
@@ -1253,6 +1341,7 @@ contains
     call rec%set_value('TTS')
     call rec%put(unit, status)
     call rec%set_value('C  ', pdefs%text_options%colour, unit)
+    call rec%set_value('CV ', pdefs%text_options%c_vals, unit)
     call rec%set_value('S  ', pdefs%text_options%size, unit)
     call rec%set_value('O  ', pdefs%text_options%orient, unit)
     call rec%set_value('A  ', pdefs%text_options%align, unit)
@@ -1270,6 +1359,7 @@ contains
     call rec%set_value('KN ', pdefs%key%norm, unit)
     call rec%set_value('KC ', pdefs%key%cols, unit)
     call rec%set_value('KF ', pdefs%key%frame, unit)
+    call rec%set_value('KR ', pdefs%key%reverse, unit)
     call rec%set_value('KP ', pdefs%key%one_point, unit)
     call rec%set_value('KS ', pdefs%key%csize, unit)
     call rec%set_value('KT ', pdefs%key%title, unit)
@@ -1297,6 +1387,8 @@ contains
     call rec%set_value('HAA', pdefs%hardset%action(2), unit)
     call rec%set_value('HVB', pdefs%hardset%viewer(1), unit)
     call rec%set_value('HVA', pdefs%hardset%viewer(2), unit)
+    call rec%set_value('HPB', pdefs%hardset%pdfviewer(1), unit)
+    call rec%set_value('HPA', pdefs%hardset%pdfviewer(2), unit)
 
     call rec%set_value('HF ', pdefs%hardset%font_family, unit)
     call rec%set_value('HWS', pdefs%hardset%font_wg_sl, unit)

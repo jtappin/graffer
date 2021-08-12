@@ -51,10 +51,13 @@ contains
     type(c_ptr) :: base, jb, junk
     logical, dimension(2), target :: iapply = [.false., .true.]
 
-    if (pdefs%aspect(1) <= 0. .and. pdefs%position(1) <= 0.) then
-       corn_method = 0_c_int
-    else if (pdefs%aspect(1) <= 0.) then
-       corn_method = 1_c_int
+    if (pdefs%aspect(1) <= 0.) then
+       if (pdefs%position(1) == pdefs%position(3) .or. &
+            &  pdefs%position(2) == pdefs%position(4)) then
+          corn_method = 0_c_int
+       else
+          corn_method = 1_c_int
+       end if
     else
        corn_method = 2_c_int
     end if

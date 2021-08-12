@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -29,6 +29,8 @@ module gr_record
 
   implicit none
 
+  integer(kind=int16), parameter, private :: bmask=255_int16
+  
   type :: graffer_record
      character(len=3) :: tag
      integer(kind=int32) :: tcode = idl_nocode
@@ -48,7 +50,11 @@ module gr_record
      real(kind=real64), dimension(:), allocatable :: da_val
      
      integer(kind=int8), dimension(:,:), allocatable :: baa_val
+     integer(kind=int16), dimension(:,:), allocatable :: iaa_val
+     integer(kind=int32), dimension(:,:), allocatable :: laa_val
+     real(kind=real32), dimension(:,:), allocatable :: raa_val
      real(kind=real64), dimension(:,:), allocatable :: daa_val
+     
    contains
      private
      procedure, public :: read => gr_read_rec
@@ -68,6 +74,7 @@ module gr_record
      procedure :: gr_get_double_a
      procedure :: gr_get_string_a
 
+     procedure :: gr_get_int_aa
      procedure :: gr_get_double_aa
 
      procedure :: gr_set_null
@@ -86,19 +93,22 @@ module gr_record
      procedure :: gr_set_string_a
 
      procedure :: gr_set_double_aa
+     procedure :: gr_set_int_aa
 
      generic, public :: get_value => gr_get_int, gr_get_long, &
           & gr_get_float, gr_get_double, gr_get_logical, gr_get_string, &
           & gr_get_int_a, gr_get_long_a, gr_get_float_a, gr_get_double_a, &
-          & gr_get_string_a, gr_get_double_aa, gr_get_byte
+          & gr_get_string_a, gr_get_double_aa, gr_get_int_aa, gr_get_byte
 
      generic, public :: set_value => gr_set_int, gr_set_long, &
           & gr_set_float, gr_set_double, gr_set_logical, gr_set_string, &
           & gr_set_int_a, gr_set_long_a, gr_set_float_a, gr_set_double_a, &
-          & gr_set_string_a, gr_set_double_aa, gr_set_byte, gr_set_null
+          & gr_set_string_a, gr_set_double_aa, gr_set_int_aa, &
+          & gr_set_byte, gr_set_null
 
      procedure, public :: get_dimensions => gr_get_dimensions
      procedure, public :: get_tag => gr_get_tag
+     procedure, public :: print_rec => gr_print_rec
   end type graffer_record
 
   character(len=160), dimension(2), private :: error_str
@@ -117,6 +127,13 @@ contains
     integer :: ios
     character(len=120) :: iomsg
     integer :: i
+
+    ! List elements
+    integer(kind=int32) :: etcode, endims, edims
+    integer(kind=int8) :: ebval
+    integer(kind=int32) :: elval
+    integer(kind=int8), dimension(3) :: ebaval
+    integer(kind=int32), dimension(3) :: elaval
 
     status = 0
     inquire(unit=unit, opened=isopen)
@@ -345,6 +362,120 @@ contains
                 return
              end if
           end do
+
+       case(idl_objref)
+          ! Only one know case of this: contour colours as a list
+          allocate(this%ia_val(this%dims(1)), &
+               & this%iaa_val(3, this%dims(1)))
+
+          do i = 1, this%dims(1)
+             read(unit, iostat=ios, iomsg=iomsg) etcode, endims
+             if (ios /= 0) then
+                write(error_str, "(A)") &
+                     & "GR_READ_REC: Failed to read list element", &
+                     & trim(iomsg)
+                call gr_message(error_str)
+                status = 1
+                return
+             end if
+             if (endims == 1) then
+                read(unit, iostat=ios, iomsg=iomsg) edims
+                if (ios /= 0) then
+                   write(error_str, "(A)") &
+                        & "GR_READ_REC: Failed to read list element", &
+                        & trim(iomsg)
+                   call gr_message(error_str)
+                   status = 1
+                   return
+                end if
+             else
+                edims = 1
+             end if
+             
+             if (edims == 1) then
+                select case (etcode)
+                case(idl_byte)
+                   read(unit, iostat=ios, iomsg=iomsg) ebval
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                   this%ia_val(i) = iand(int(ebval, int16), bmask)
+                case(idl_int)
+                   read(unit, iostat=ios, iomsg=iomsg) this%ia_val(i)
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                case(idl_long)
+                   read(unit, iostat=ios, iomsg=iomsg) elval
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                   this%ia_val(i)= int(elval, int16)
+                end select
+                this%iaa_val(:,i) = 0_int16
+
+             else
+                if (edims /= 3) then
+                   write(error_str, "(A,i0,a)") &
+                        & "GR_READ_REC: Array element of list has ", &
+                        & edims, " elements, should have 3,"
+                   call gr_message(error_str)
+                   status = 1
+                   return
+                end if
+                select case (etcode)
+                case(idl_byte)
+                   read(unit, iostat=ios, iomsg=iomsg) ebaval
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                   this%iaa_val(:,i) = iand(int(ebaval, int16), bmask)
+                case(idl_int)
+                   read(unit, iostat=ios, iomsg=iomsg) this%iaa_val(:,i)
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                case(idl_long)
+                   read(unit, iostat=ios, iomsg=iomsg) elaval
+                   if (ios /= 0) then
+                      write(error_str, "(A)") &
+                           & "GR_READ_REC: Failed to read list element", &
+                           & trim(iomsg)
+                      call gr_message(error_str)
+                      status = 1
+                      return
+                   end if
+                   this%iaa_val(:,i) =int(elaval, int16)
+                end select
+                this%ia_val(i) = -2
+             end if
+          end do
+          
        case default
           write(error_str, "(A, i0)") &
                & "GR_READ_REC: Unknown/inappropriate type code, ", this%tcode
@@ -353,7 +484,7 @@ contains
           return
        end select
 
-    case (2)   ! 2-D arrays (only double supported)
+    case (2)   ! 2-D arrays 
 
        select case (this%tcode)
        case(idl_double)
@@ -368,6 +499,58 @@ contains
              return
           end if
           if (swap_end) call byte_swap(this%daa_val)
+
+       case(idl_float)
+          allocate(this%raa_val(this%dims(1), this%dims(2)))
+          read(unit, iostat=ios, iomsg=iomsg) this%raa_val
+          if (ios /= 0) then
+             write(error_str, "(A)") &
+                  & "GR_READ_REC: Failed to read float array", &
+                  & trim(iomsg)
+             call gr_message(error_str)
+             status = 1
+             return
+          end if
+          if (swap_end) call byte_swap(this%raa_val)
+
+       case(idl_int)
+          allocate(this%iaa_val(this%dims(1), this%dims(2)))
+          read(unit, iostat=ios, iomsg=iomsg) this%iaa_val
+          if (ios /= 0) then
+             write(error_str, "(A)") &
+                  & "GR_READ_REC: Failed to read int array", &
+                  & trim(iomsg)
+             call gr_message(error_str)
+             status = 1
+             return
+          end if
+          if (swap_end) call byte_swap(this%iaa_val)
+
+       case(idl_long)
+          allocate(this%laa_val(this%dims(1), this%dims(2)))
+          read(unit, iostat=ios, iomsg=iomsg) this%laa_val
+          if (ios /= 0) then
+             write(error_str, "(A)") &
+                  & "GR_READ_REC: Failed to read long array", &
+                  & trim(iomsg)
+             call gr_message(error_str)
+             status = 1
+             return
+          end if
+          if (swap_end) call byte_swap(this%laa_val)
+
+       case(idl_byte)
+          allocate(this%baa_val(this%dims(1), this%dims(2)))
+          read(unit, iostat=ios, iomsg=iomsg) this%baa_val
+          if (ios /= 0) then
+             write(error_str, "(A)") &
+                  & "GR_READ_REC: Failed to read byte array", &
+                  & trim(iomsg)
+             call gr_message(error_str)
+             status = 1
+             return
+          end if
+
        case default
           write(error_str, "(A, i0)") &
                & "GR_READ_REC: Unknown/inappropriate type code, ", this%tcode
@@ -378,7 +561,7 @@ contains
     case default
        write(error_str, "(A, i0)") &
             & "GR_READ_REC: Inappropriate dimensionality, ", this%ndims
-          call gr_message(error_str(1))
+       call gr_message(error_str(1))
        status = 2
        return
 
@@ -388,6 +571,80 @@ contains
 
   end function gr_read_rec
 
+  subroutine gr_print_rec(this, meta)
+    class(graffer_record), intent(in) :: this
+    logical, intent(in), optional :: meta
+
+    logical :: full_vals
+
+    if (present(meta)) then
+       full_vals = .not. meta
+    else
+       full_vals = .false.
+    end if
+
+    print "(/'Tag:',a,' Type: ',i2,' N Dims: ',i1)", this%tag, this%tcode, &
+         & this%ndims
+    if (allocated(this%dims)) then
+       print "('Dimensions : ', 7I8)", this%dims
+    else
+       print "('Scalar value')"
+    end if
+    if (allocated(this%length)) &
+         & print "('Lengths : ', 7I8)", this%length
+
+    print "('Byte ', I3,' Int16 ',I5,' Int32 ',I10)", this%b_val, &
+         & this%i_val, this%l_val
+    print "('Real32 ', 1pg0, ' Real64 ',g0)", this%r_val, this%d_val
+
+    if (allocated(this%ba_val)) then
+       print "('Byte 1D: ', i6)", size(this%ba_val)
+       if (full_vals) print "(20i4)", this%ba_val
+    end if
+     if (allocated(this%ia_val)) then
+       print "('Int16 1D: ', i6)", size(this%ia_val)
+       if (full_vals) print "(10i7)", this%ia_val
+    end if
+    if (allocated(this%la_val)) then
+       print "('Int32 1D: ', i6)", size(this%la_val)
+       if (full_vals) print "(8i10)", this%la_val
+    end if
+     if (allocated(this%ra_val)) then
+       print "('Real 32 1D: ', i6)", size(this%ra_val)
+       if (full_vals) print "(1p,8g0)", this%ra_val
+    end if
+     if (allocated(this%da_val)) then
+       print "('Real 64 1D: ', i6)", size(this%da_val)
+       if (full_vals) print "(1p,5g0)", this%da_val
+    end if
+   
+    if (allocated(this%baa_val)) then
+       print "('Byte 2D: ', i6, '(',2i6,')')", size(this%baa_val), &
+            & shape(this%baa_val)
+       if (full_vals) print "(20i4)", this%baa_val
+    end if
+     if (allocated(this%iaa_val)) then
+       print "('Int16 2D: ', i6, '(',2i6,')')", size(this%iaa_val), &
+            & shape(this%iaa_val)
+       if (full_vals) print "(10i7)", this%iaa_val
+    end if
+    if (allocated(this%laa_val)) then
+       print "('Int32 2D: ', i6, '(',2i6,')')", size(this%laa_val), &
+            & shape(this%laa_val)
+       if (full_vals) print "(8i10)", this%laa_val
+    end if
+     if (allocated(this%raa_val)) then
+       print "('Real 32 2D: ', i6, '(',2i6,')')", size(this%raa_val), &
+            & shape(this%raa_val)
+       if (full_vals) print "(1p,8g0)", this%raa_val
+    end if
+     if (allocated(this%daa_val)) then
+       print "('Real 64 2D: ', i6, '(',2i6,')')", size(this%daa_val), &
+            & shape(this%daa_val)
+       if (full_vals) print "(1p,5g0)", this%daa_val
+    end if
+  end subroutine gr_print_rec
+  
   subroutine gr_get_int(this, ival, status)
     class(graffer_record), intent(in) :: this
     integer(kind=int16), intent(out) :: ival
@@ -416,7 +673,7 @@ contains
        ival = int(this%d_val, int16)
        status = 4
     case(idl_byte)
-       ival = int(this%b_val, int16)
+       ival = iand(int(this%b_val, int16), bmask)
     case default
        write(error_str, "(A, I0)") "GR_GET_INT: Unknown type code: ", &
             & this%tcode
@@ -452,7 +709,7 @@ contains
        lval = int(this%d_val, int32)
        status = 4
     case(idl_byte)
-       lval = int(this%b_val, int32)
+       lval = int(iand(int(this%b_val, int16), bmask), int32)
     case default
        write(error_str, "(A, I0)") "GR_GET_LONG: Unknown type code: ", &
             & this%tcode
@@ -488,7 +745,7 @@ contains
     case(idl_int)
        rval = real(this%i_val, real32)
     case(idl_byte)
-       rval = real(this%b_val, real32)
+       rval = real(iand(int(this%b_val, int16), bmask), real32)
     case default
        write(error_str, "(A, I0)") "GR_GET_FLOAT: Unknown type code: ", &
             & this%tcode
@@ -522,7 +779,7 @@ contains
     case(idl_int)
        dval = real(this%i_val, real64)
     case(idl_byte)
-       dval = real(this%b_val, real64)
+       dval = real(iand(int(this%b_val,int16), bmask), real64)
     case default
        write(error_str, "(A, I0)") "GR_GET_DOUBLE: Unknown type code: ", &
             & this%tcode
@@ -673,7 +930,7 @@ contains
     end if
 
     select case (this%tcode)
-    case(idl_int)
+    case(idl_int, idl_objref)
        ival(:mxi) = this%ia_val(:mxi)
     case(idl_long)
        ival(:mxi) = int(this%la_val(:mxi), int16)
@@ -685,7 +942,7 @@ contains
        ival(:mxi) = int(this%da_val(:mxi), int16)
        status = 4
     case(idl_byte)
-       ival(:mxi) = int(this%ba_val(:mxi), int16)
+       ival(:mxi) = iand(int(this%ba_val(:mxi), int16), bmask)
     case default
        write(error_str, "(A, I0)") "GR_GET_INT_A: Unknown type code: ", &
             & this%tcode
@@ -736,7 +993,7 @@ contains
        lval(:mxi) = int(this%da_val(:mxi), int32)
        status = 4
     case(idl_byte)
-       lval(:mxi) = int(this%ba_val(:mxi), int32)
+       lval(:mxi) = int(iand(int(this%ba_val(:mxi), int16), bmask), int32)
     case default
        write(error_str, "(A, I0)") "GR_GET_LONG_A: Unknown type code: ", &
             & this%tcode
@@ -787,7 +1044,7 @@ contains
        rval(:mxi) = real(this%la_val(:mxi), real32)
        status = 4
     case(idl_byte)
-       rval(:mxi) = real(this%ba_val(:mxi), real32)
+       rval(:mxi) = real(iand(int(this%ba_val(:mxi), int16), bmask), real32)
     case default
        write(error_str, "(A, I0)") "GR_GET_FLOAT_A: Unknown type code: ", &
             & this%tcode
@@ -830,14 +1087,14 @@ contains
     case(idl_double) 
        dval(:mxi) = this%da_val(:mxi)
     case(idl_float)
-       dval(:mxi) = real(this%la_val(:mxi), real64)
+       dval(:mxi) = real(this%ra_val(:mxi), real64)
     case(idl_int)
        dval(:mxi) = real(this%ia_val(:mxi), real64)
     case(idl_long)
        dval(:mxi) = real(this%la_val(:mxi), real64)
        status = 4
     case(idl_byte)
-       dval(:mxi) = real(this%ba_val(:mxi), real64)
+       dval(:mxi) = real(iand(int(this%ba_val(:mxi),int16), bmask), real64)
     case default
        write(error_str, "(A, I0)") "GR_GET_DOUBLE_A: Unknown type code: ", &
             & this%tcode
@@ -933,6 +1190,8 @@ contains
        select case (this%tcode)
        case(idl_double) 
           dval(:mxi,:mxj) = this%daa_val(:mxi,:mxj)
+       case(idl_float) 
+          dval(:mxi,:mxj) = real(this%raa_val(:mxi,:mxj), real64)
        case default
           write(error_str, "(A, I0)") "GR_GET_DOUBLE_AA: Unknown type code: ", &
                & this%tcode
@@ -941,6 +1200,62 @@ contains
        end select
     end if
   end subroutine gr_get_double_aa
+  
+  subroutine gr_get_int_aa(this, ival, status)
+    class(graffer_record), intent(in) :: this
+    integer(kind=int16), dimension(:,:), intent(out) :: ival
+    integer, intent(out) :: status
+
+    ! Get a 2D int(2) array from a record.
+
+    integer(kind=int16) :: sival
+    integer :: mxi, mxj
+    integer, dimension(2) :: sz
+
+    sz = shape(ival)
+
+    if (this%ndims == 0) then
+       call gr_get_int(this, sival, status)
+       ival = sival
+       return
+    else if (this%ndims == 1) then
+       if (sz(2) == 1) then
+          call gr_get_int_a(this, ival(:,1), status)
+       else if (sz(1) == 1) then
+          call gr_get_int_a(this, ival(1,:), status)
+       else
+          call gr_message("GR_GET_INT_AA: Try to read 2D array from 1-D")
+          status = 2
+          return
+       end if
+    else
+       mxi = min(this%dims(1), sz(1))
+       mxj = min(this%dims(2), sz(2))
+
+       if (any(sz /= this%dims)) then
+          write(error_str, "(A,i0,1x,i0,a,i0,1x,i0,a)") &
+               & "GR_GET_INT_AA: output size (",sz,&
+               & ") not equal to data size (",this%dims,")"
+          call gr_message(error_str(1))
+          status = 4
+       end if
+
+       select case (this%tcode)
+       case(idl_byte) 
+          ival(:mxi,:mxj) = iand(int(this%baa_val(:mxi,:mxj), int16), bmask)
+       case(idl_int, idl_objref) 
+          ival(:mxi,:mxj) = this%iaa_val(:mxi,:mxj)
+       case(idl_long)
+          ival(:mxi,:mxj) = int(this%laa_val(:mxi,:mxj), int16)
+          status=4
+       case default
+          write(error_str, "(A, I0)") "GR_GET_INT_AA: Unknown type code: ", &
+               & this%tcode
+          call gr_message(error_str(1))
+          status = 2
+       end select
+    end if
+  end subroutine gr_get_int_aa
 
   function gr_get_dimensions(this, dims) result(ndims)
     integer(kind=int32) :: ndims
@@ -1146,6 +1461,7 @@ contains
     this%la_val = lval
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_long_a
+  
   subroutine gr_set_float_a(this, tag, rval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
@@ -1166,6 +1482,7 @@ contains
     this%ra_val = rval
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_float_a
+  
   subroutine gr_set_double_a(this, tag, dval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
@@ -1186,6 +1503,7 @@ contains
     this%da_val = dval
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_double_a
+  
   subroutine gr_set_string_a(this, tag, sval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
@@ -1236,6 +1554,28 @@ contains
 
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_double_aa
+  
+   subroutine gr_set_int_aa(this, tag, ival, unit)
+    class(graffer_record), intent(out) :: this
+    character(len=3), intent(in) :: tag
+    integer(kind=int16), intent(in), dimension(:,:) :: ival
+    integer, intent(in), optional :: unit
+
+    ! Set a double(8) 2D array for a record.
+
+    integer :: status
+
+    this%tcode = idl_int
+    this%tag = tag
+    this%ndims = 2
+    allocate(this%dims(2))
+    this%dims = shape(ival)
+
+    allocate(this%iaa_val(this%dims(1), this%dims(2)))
+    this%iaa_val = ival
+
+    if (present(unit)) call this%put(unit, status)
+  end subroutine gr_set_int_aa
   
   subroutine gr_put_rec(this, unit, status)
     class(graffer_record), intent(in) :: this
@@ -1299,7 +1639,7 @@ contains
                   & "GR_PUT_REC: Failed to write byte scalar", &
                   & trim(iomsg)
              call gr_message(error_str)
-            status = 1
+             status = 1
              return
           end if
        case(idl_int)
@@ -1421,7 +1761,7 @@ contains
           end do
        end select
 
-    case (2)   ! 2-D arrays (only double supported)
+    case (2)   ! 2-D arrays (only double/int supported)
 
        select case (this%tcode)
        case(idl_double)
@@ -1429,6 +1769,16 @@ contains
           if (ios /= 0) then
              write(error_str, "(A)") &
                   & "GR_PUT_REC: Failed to write double array", &
+                  & trim(iomsg)
+             call gr_message(error_str)
+             status = 1
+             return
+          end if
+       case(idl_int)
+          write(unit, iostat=ios, iomsg=iomsg) to_little(this%iaa_val)
+          if (ios /= 0) then
+             write(error_str, "(A)") &
+                  & "GR_PUT_REC: Failed to write int array", &
                   & trim(iomsg)
              call gr_message(error_str)
              status = 1

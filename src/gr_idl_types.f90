@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@ module gr_idl_types
   integer(kind=int32), parameter :: idl_struct = 8   ! Structure
   integer(kind=int32), parameter :: idl_dcomplex = 9  ! Double-precision complex
   integer(kind=int32), parameter :: idl_pointer = 10   ! Pointer
-  integer(kind=int32), parameter :: idl_objref = 11   ! Object reference
+  integer(kind=int32), parameter :: idl_objref = 11   ! Object reference (list)
   integer(kind=int32), parameter :: idl_uint = 12   ! Unsigned Integer
   integer(kind=int32), parameter :: idl_ulong = 13   ! Unsigned Longword Integer
   integer(kind=int32), parameter :: idl_long64 = 14   ! 64-bit Integer

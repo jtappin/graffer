@@ -1,4 +1,4 @@
-# Copyright (C) 2013
+# Copyright (C) 2013, 2020
 # James Tappin
 
 # This is free software# you can redistribute it and/or modify
@@ -26,6 +26,7 @@ set(sources
   "gr_axis_autoscale.f90"
   "gr_cb_common.f90"
   "gr_colours.f90"
+  "gr_colour_widgets.f90"
   "gr_drawing.f90"
   "gr_drawing_buttons.f90"
   "gr_ds_data.f90"

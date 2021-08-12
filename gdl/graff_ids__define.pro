@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2013-2020
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -37,6 +37,7 @@ pro graff_ids__define
 ;	Extracted: 30/6/05; SJT
 ;	Add support for a second Y-scale: 22/12/11; SJT
 ;	Add "current" ds only id: 26/1/12; SJT
+;	Unify with IDL tree (only for consistency of definitions): 21/5/20; SJT
 ;-
 
 Ids = { graff_ids, $
@@ -46,6 +47,7 @@ Ids = { graff_ids, $
         Subtitle:0l, $
         Charsize:0l, $
         Axthick: 0l, $
+        fontsel: 0l, $
         textmode:0l, $
         Mode:    0l, $
         Xtitle:  0l, $
@@ -71,14 +73,17 @@ Ids = { graff_ids, $
         Plopts:  lonarr(2), $
         zopts:   {graff_zids, $
                   bases: lonarr(2), $
-                  c_auto: 0l, $
+                  c_auto: 0l, $ 
+                  cl_base: lonarr(2), $
                   c_levels: 0l, $
                   c_nlevels: 0l, $
+                  c_map: 0l, $
                   c_colour: 0l, $
                   c_thick: 0l, $
                   c_style: 0l, $
                   c_type: 0l, $
                   c_label: 0l, $
+                  c_label_off: 0l, $
                   c_charsize: 0l, $
                   i_range: lonarr(2), $
                   i_log: 0l, $
@@ -94,16 +99,23 @@ Ids = { graff_ids, $
         Psym:    0l, $
         Symsize: 0l, $
         Colour:  0l, $
+        dscolour_base: 0l, $
+        dscolour_show: 0l, $
+        dscolour_win:  0l, $
         Line:    0l, $
         Thick:   0l, $
         Dsxtra:  lonarr(3), $
         Clip:    0l, $
+        minmaxbase: 0l, $
+        minval:  0l, $
+        maxval:  0l, $
         Zmode:   0l, $
         current: 0l, $
         Xcp:     0l, $
         Ycp:     0l, $
         Draw:    0l, $
         Windex:  0l, $
+        txwindex:0l, $
         Message: 0l, $
         Hlptxt:  0l, $
         Popmsg:  0l, $

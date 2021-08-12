@@ -26,7 +26,7 @@
  \setlength{\evensidemargin}{0mm}
 
 \pagestyle{myheadings}
-\markboth{GRAFFER}{Version 4.08}
+\markboth{GRAFFER}{Version 4.13}
 
 %\usepackage{babel}
 \makeatother
@@ -41,7 +41,7 @@
 \author{\textsf{\textbf{\Large James Tappin}}\\
   \texttt{\textbf{\Large jtappin at gmail dot com}}}
 
-\date{\textsf{\textbf{\large November 2013}}}
+\date{\textsf{\textbf{\large June 2020}}}
 
 \maketitle
 
@@ -105,7 +105,7 @@ utility operations).
 \subsection{Requirements}
 
 The Fortran version of GRAFFER requires the gtk-fortran
-(\url{https://github.com/jerryd/gtk-fortran}) and plplot
+(\url{https://github.com/vmagnin/gtk-fortran}) and plplot
 (\url{http://plplot.sourceforge.net/}) and their dependencies. In
 addition, you will need a working Fortran compiler (with a fully
 functional \texttt{iso\_c\_binding} module); for \texttt{gfortran},
@@ -240,7 +240,7 @@ GRAFFER can accept a number of keywords to control its operation:
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\textwidth]{main}
+  \includegraphics[width=\textwidth]{Main}
   \caption{The layout of the main GRAFFER window. (With the dataset tab
     shown to the right).}
   \label{fig:main}
@@ -450,8 +450,6 @@ inserting or prepending points, you must release the modifier key
 before releasing the mouse button.
 
 \subsubsection{A note on limits}
-
-\textit{Not yet implemented in Fortran version.}
 
 In many situations in the real world, some of the values in a dataset
 are upper or lower limits. To plot limits requires that the dataset be
@@ -745,6 +743,15 @@ operations which work on whole datasets. These operations are all
 options of the \texttt{Other} button in the dataset operations menu.
 
 \begin{description}
+\item[Rescale:] Shift and/or scale the values in a dataset
+  (Figure~\ref{fig:rescale}). Not applicable to functions. 
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.75\textwidth]{Rescale}
+    \caption{Rescaling menus. Left: 1-D datasets, Right: 2-D datasets.}
+    \label{fig:rescale}
+  \end{figure}
+\item[Transpose:] Exchange the X and Y axes. Not applicable to functions.
 \item [Delete:]Delete the current dataset. There is a confirm pop-up
   before the dataset is actually destroyed. The next dataset becomes
   current, unless the dataset deleted was the last in which case the
@@ -756,6 +763,21 @@ options of the \texttt{Other} button in the dataset operations menu.
 \item [Erase:]Delete the contents of the current dataset but do not
   remove its slot in the GRAFFER file. This can be done to the only
   dataset in a file.
+\item [Write~:] Write the current dataset to an ASCII file in a
+  format that can be read by the \texttt{Read from file} options of the
+  data and function entry menus. A pop-up will appear to allow you to
+  specify the filename and directory. If you attempt to overwrite an
+  existing file a confirm menu will appear to allow you to {}``back
+  out''.
+\item[Write as data:] For functions only, evaluate the function and
+  write as data.
+\item[Copy:] Make a new dataset which is a copy of the current
+  dataset. The data values and type are copied. For functions the
+  functions and evaluation range are copied. Display properties will be
+  the defaults. The new dataset becomes current.
+ 
+\item[Select:] Display a list of datasets, and click on one to make it
+  current. 
 \item [Sort:]Reorder the datasets. This generates a pop-up that allows
   you to select datasets and move them to a different location in the
   list. This can be useful if you want to make sure that one dataset is
@@ -764,13 +786,18 @@ options of the \texttt{Other} button in the dataset operations menu.
   the key appear in a more logical order.
 
 
-  To use the pop-up just click on the dataset you want to move; the
-  list will then be updated to remove the selected dataset and add a
-  ``start'' placeholder. Then click on the dataset immediately
-  \textsc{before} the new location of the dataset. This is likely to be
-  the most convenient way of doing things until RSI implements
+  To use the pop-up (Figure~\ref{fig:sort}) just click on the dataset
+  you want to move; the list will then be updated to remove the
+  selected dataset and add a ``start'' placeholder. Then click on the
+  dataset immediately \textsc{before} the new location of the dataset.
   ``drag-and-drop'' in list widgets.
-
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{Sort}
+    \caption{Dataset sorting selectors. Left: initial selection, Right:
+      target selection.}
+    \label{fig:sort}
+  \end{figure}
   Multiple datasets may be moved in one invocation, but the ``Do it''
   button is disabled when there is an incomplete move (i.e.\ after a
   dataset has been selected but not relocated).
@@ -790,16 +817,6 @@ options of the \texttt{Other} button in the dataset operations menu.
     {}``New'' dataset and then merge each of the existing datasets into
     that dataset.}
 \end{quote}
-\item [Write~to~file:] Write the current dataset to an ASCII file in a
-  format that can be read by the \texttt{Read from file} options of the
-  data and function entry menus. A pop-up will appear to allow you to
-  specify the filename and directory. If you attempt to overwrite an
-  existing file a confirm menu will appear to allow you to {}``back
-  out''.
-\item[Copy:] Make a new dataset which is a copy of the current
-  dataset. The data values and type are copied. For functions the
-  functions and evaluation range are copied. Display properties will be
-  the defaults. The new dataset becomes current.
 \end{description}
 To select which Y-axis to use (when a secondary Y-axis is enabled),
 there is a pulldown menu adjacent to the input options.
@@ -885,9 +902,9 @@ each case, the menu below the choice allows you to set the detailed
 options.
 \begin{figure}[htbp]
   \centering
-  \includegraphics{main-2d}
-  \caption{The datasets panel with (left) contouring options and
-    (right) colour/greyscale options shown.}
+  \includegraphics[width=0.8\textwidth]{Main-2}
+  \caption{The datasets panel for 2-D datasets with (left) contouring
+    options and (right) colour/greyscale options shown.}
   \label{contour}
 \end{figure}
 \begin{description}
@@ -1093,7 +1110,7 @@ what the traces are. For this reason GRAFFER provides a mechanism for
 adding a key to the plot.
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=10cm]{key}
+  \includegraphics[width=0.8\textwidth]{key}
   \caption{The key (or legend) definition menu of GRAFFER.}
   \label{key menu}
 \end{figure}
@@ -1277,8 +1294,9 @@ available in IDL are available along with a number of extensions.
   settings available are:
   \begin{figure}
     \centering
-    \includegraphics{axis_adv}
-    \caption{The menu for setting advanced axis options.}
+    \includegraphics[width=0.8\textwidth]{Axis-adv}
+    \caption{The menu for setting advanced axis options. Left: linear
+      axes, Right: log axes.}
     \label{fig:adv-axis-menu}
   \end{figure}
   \begin{itemize}
@@ -1324,7 +1342,7 @@ to select any annotation.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=12cm]{Text}
+  \includegraphics[width=0.8\textwidth]{text}
   \caption{The text input/editing menu of GRAFFER.}
   \label{text panel}
 \end{figure}
@@ -1405,7 +1423,7 @@ setup menu will be produced (\textsc{\autoref{hardcopy menu}}).
 
  \begin{figure}[htbp]
    \centering
-   \includegraphics[width=10cm]{hardopts}
+   \includegraphics[width=0.6\textwidth]{hardcopy}
    \caption{The GRAFFER hard copy set up menu.}
    \label{hardcopy menu}
  \end{figure}
@@ -1457,6 +1475,8 @@ The final few items set the output file options
   file name by replacing the suffix with \texttt{.ps}, \texttt{.eps} or
   \texttt{.pdf} according to the selected output. This can be changed
   via the output file entry box.
+\item[Clear] Clear the file name stem, will then be generated from the
+  GRAFFER file name.
 \item[Print cmd, View cmd] 
  For ``normal'' PostScript files, GRAFFER can automatically spool
  the file to the printer, this can.  A view for encapsulated postscript

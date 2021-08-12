@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2013-2020
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -40,34 +40,35 @@ pro graff_get_rec, ilu, tag, value, tcode, ndims = ndims, dims = $
 ;	Add ndims, nvals and dims keywords: 9/1/12; SJT
 ;-
 
-on_error, 2
+  on_error, 2
 
 ; Initialize the tag header information
-tag = '   '
-tcode = 0l
-ndims = 0l
+  tag = '   '
+  tcode = 0l
+  ndims = 0l
 
-readu, ilu, tag, tcode, ndims
+  readu, ilu, tag, tcode, ndims
 
-if tcode eq 0 then return       ; A tag with no values
+  if tcode eq 0 then return     ; A tag with no values
 
-if ndims gt 0 then begin
-    dims = lonarr(ndims)
-    readu, ilu, dims
-endif else dims = 1
+  if ndims gt 0 then begin
+     if ndims eq 1 then dims = 0l $
+     else dims = lonarr(ndims)
+     readu, ilu, dims
+  endif else dims = 1
 
-value = make_array(dims, type = tcode)
-if arg_present(nvals) then nvals = n_elements(value)
+  value = make_array(dims, type = tcode)
+  if arg_present(nvals) then nvals = n_elements(value)
 
-if tcode eq 7 then begin
-    lstr = lonarr(dims)
-    readu, ilu, lstr
-    for j = 0, n_elements(lstr)-1 do  $
-      if lstr[j] ne 0 then value[j] = string(replicate(32b, lstr[j]))
-endif
+  if tcode eq 7 then begin
+     lstr = lonarr(dims)
+     readu, ilu, lstr
+     for j = 0, n_elements(lstr)-1 do  $
+        if lstr[j] ne 0 then value[j] = string(replicate(32b, lstr[j]))
+  endif
 
-if ndims eq 0 then value = value[0]
+  if ndims eq 0 then value = value[0]
 
-readu, ilu, value
+  readu, ilu, value
 
 end

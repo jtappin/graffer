@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -43,11 +43,11 @@ contains
 
     ! Display options for 2-D datasets.
 
-    type(c_ptr) :: table, junk, sbox, jb, jbb
+    type(c_ptr) :: table, junk, sbox, jb
     integer(kind=c_int) :: nbi
     type(graff_zdata), pointer :: zdata
     character(len=32), dimension(:), allocatable :: txtvals
-    integer :: i
+    integer :: i, nccol
     integer, dimension(2), target :: idx = [1, 2]
     character(len=32) :: textval
     integer(kind=int16) :: zformat
@@ -75,6 +75,13 @@ contains
          & "Select automatic or explicit contour levels"//c_null_char)
     call hl_gtk_box_pack(jb, clevel_cbo)
 
+    cldist_cbo = hl_gtk_combo_box_new(initial_choices= &
+         & ['Linear     ', 'Logarithmic', 'Square Root'], &
+         & changed = c_funloc(gr_2d_set_clog), &
+         & active = int(zdata%lmap, c_int), &
+         & tooltip = "Select log/linear/sqrt contour levels."//c_null_char)
+    call hl_gtk_box_pack(jb, cldist_cbo)
+    
     cfmt_cbo = hl_gtk_combo_box_new(initial_choices=&
          & ["Outline ", "Filled  ", "Downhill"], &
          & changed=c_funloc(gr_2d_set_ct_fmt), &
@@ -94,7 +101,7 @@ contains
     call hl_gtk_table_attach(table, sbox, 0_c_int, 2_c_int, xpad=5_c_int)
     if (allocated(zdata%levels)) then
        allocate(txtvals(size(zdata%levels)))
-       write(txtvals, "(g0.5)") zdata%levels
+       write(txtvals, "(1pg0.5)") zdata%levels
        call hl_gtk_text_view_insert(clevel_view, txtvals, replace=TRUE)
        deallocate(txtvals)
     end if
@@ -109,8 +116,15 @@ contains
          & tooltip="Set contour colours"//c_null_char)
     call hl_gtk_table_attach(table, sbox, 1_c_int, 2_c_int, xpad=5_c_int)
     if (allocated(zdata%colours)) then
-       allocate(txtvals(size(zdata%colours)))
-       write(txtvals, "(i0)") zdata%colours
+       nccol = size(zdata%colours)
+       allocate(txtvals(nccol))
+       do i = 1, nccol
+          if (zdata%colours(i) == -2) then
+             write(txtvals(i), "(3i5)") zdata%raw_colours(:,i)
+          else
+             write(txtvals(i), "(i0)") zdata%colours(i)
+          end if
+       end do
        call hl_gtk_text_view_insert(ccol_view, txtvals, replace=TRUE)
        deallocate(txtvals)
     end if
@@ -142,50 +156,49 @@ contains
     call hl_gtk_table_attach(table, sbox, 2_c_int, 4_c_int, xpad=5_c_int)
     if (allocated(zdata%thick)) then
        allocate(txtvals(size(zdata%thick)))
-       write(txtvals, "(g0.5)") zdata%thick
+       write(txtvals, "(f0.2)") zdata%thick
        call hl_gtk_text_view_insert(cthick_view, txtvals, replace=TRUE)
        deallocate(txtvals)
     end if
 
-    jb = hl_gtk_box_new()
+    jb = hl_gtk_table_new()
     call hl_gtk_table_attach(table, jb, 0_c_int, 4_c_int, xspan=2_c_int)
 
-    jbb = hl_gtk_box_new(horizontal=TRUE)
-    call hl_gtk_box_pack(jb, jbb, expand=FALSE)
-
     junk = gtk_label_new("# Levels:"//c_null_char)
-    call hl_gtk_box_pack(jbb, junk)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 0_c_int)
 
     clevels_entry = hl_gtk_spin_button_new(1_c_int, 100_c_int, &
          & initial_value=int(zdata%n_levels, c_int), &
          & value_changed=c_funloc(gr_2d_set_cnlevels), &
          & sensitive=f_c_logical(.not. zdata%set_levels), &
          & tooltip = "Set the number of contours"//c_null_char)
-    call hl_gtk_box_pack(jbb, clevels_entry)
-
-    jbb = hl_gtk_box_new(horizontal=TRUE)
-    call hl_gtk_box_pack(jb, jbb, expand=FALSE)
+    call hl_gtk_table_attach(jb, clevels_entry, 1_c_int, 0_c_int)
 
     junk = gtk_label_new("Label"//c_null_char)
-    call hl_gtk_box_pack(jbb, junk)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int)
 
     clabel_entry = hl_gtk_spin_button_new(0_c_int, 100_c_int, &
          & initial_value=int(zdata%label, c_int), &
          & value_changed=c_funloc(gr_2d_set_clabel), &
          & tooltip="Set the contour labelling frequency (0=Off)"//c_null_char)
-    call hl_gtk_box_pack(jbb, clabel_entry)
+    call hl_gtk_table_attach(jb, clabel_entry, 1_c_int, 1_c_int)
 
-    jbb = hl_gtk_box_new(horizontal=TRUE)
-    call hl_gtk_box_pack(jb, jbb, expand=FALSE)
+    junk = gtk_label_new('Label offset'//c_null_char)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 2_c_int)
+    clabel_off_entry = hl_gtk_spin_button_new(0_c_int, 99_c_int, &
+         & initial_value = int(zdata%label_off, c_int), &
+         & value_changed = c_funloc(gr_2d_set_clabel_off), &
+         & tooltip = "Set the first contour to label."//c_null_char)
+    call hl_gtk_table_attach(jb, clabel_off_entry, 1_c_int, 2_c_int)
 
     junk = gtk_label_new("Charsize"//c_null_char)
-    call hl_gtk_box_pack(jbb, junk)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 3_c_int)
 
     cchsize_entry = hl_gtk_spin_button_new(0._c_double, 100._c_double, &
          & 0.01_c_double, initial_value=real(zdata%charsize, c_double), &
          & value_changed=c_funloc(gr_2d_set_csize), &
          & tooltip="Set the character size for contour labels"//c_null_char)
-    call hl_gtk_box_pack(jbb, cchsize_entry)
+    call hl_gtk_table_attach(jb, cchsize_entry, 1_c_int, 3_c_int)
 
     ! The Greyscale/colour page
 
@@ -217,7 +230,7 @@ contains
     call hl_gtk_table_attach(table, junk, 2_c_int, 2_c_int)
 
     do i = 1, 2
-       write(textval, "(g0.5)") zdata%range(i)
+       write(textval, "(1pg0.5)") zdata%range(i)
        cg_range_entry(i) = hl_gtk_entry_new(editable=TRUE, &
             & value=trim(adjustl(textval))//c_null_char, &
             & activate=c_funloc(gr_2d_set_range), data=c_loc(idx(i)), &
@@ -232,7 +245,7 @@ contains
     junk = gtk_label_new("Missing:"//c_null_char)
     call hl_gtk_table_attach(table, junk, 0_c_int, 3_c_int)
 
-    write(textval, "(g0.5)") zdata%missing
+    write(textval, "(1pg0.5)") zdata%missing
     cg_missing_entry = hl_gtk_entry_new(editable=TRUE, &
          & value=trim(adjustl(textval))//c_null_char, &
          & activate=c_funloc(gr_2d_set_missing),  &
@@ -251,11 +264,12 @@ contains
     call hl_gtk_table_attach(table, cg_gamma_entry, 3_c_int, 3_c_int)
 
 
-    cg_log_but = hl_gtk_check_button_new("Log. mapping?"//c_null_char, &
-         & toggled=c_funloc(gr_2d_set_log), &
-         & initial_state=f_c_logical(zdata%ilog), &
-         & tooltip="Select log/linear colour mapping"//c_null_char)
-    call hl_gtk_table_attach(table, cg_log_but, 0_c_int, 4_c_int, &
+    cg_log_cbo = hl_gtk_combo_box_new(initial_choices = &
+         & ['Linear     ', 'Logarithmic', 'Square Root'], &
+         & changed=c_funloc(gr_2d_set_log), &
+         & active=int(zdata%ilog, c_int), &
+         & tooltip="Select log/linear/sqrt colour mapping"//c_null_char)
+    call hl_gtk_table_attach(table, cg_log_cbo, 0_c_int, 4_c_int, &
          & xspan=2_c_int)
 
     cg_invert_but = hl_gtk_check_button_new("Invert colours?"//c_null_char, &
@@ -275,14 +289,14 @@ contains
 
     junk = gtk_label_new("Levels"//c_null_char)
     call hl_gtk_table_attach(table, junk, 2_c_int, 5_c_int)
-
+    
     gc_smooth_l_sb = hl_gtk_spin_button_new(3_c_int, 256_c_int, &
          & initial_value=int(zdata%shade_levels, c_int), &
          & value_changed=c_funloc(gr_2d_set_sm_levels), tooltip=&
          & "Set how many levels for smooth colour display"//c_null_char, &
          & sensitive=f_c_logical(zdata%invert))
     call hl_gtk_table_attach(table, gc_smooth_l_sb, 3_c_int, 5_c_int)
-
+    
     ! Hidden dataset
 
     junk = hl_gtk_box_new()
@@ -319,12 +333,27 @@ contains
          & c_f_logical(gtk_combo_box_get_active(widget))
 
     call gtk_widget_set_sensitive(clevel_view, &
-         &f_c_logical(pdefs%data(pdefs%cset)%zdata%set_levels))
+         & f_c_logical(pdefs%data(pdefs%cset)%zdata%set_levels))
     call gtk_widget_set_sensitive(clevels_entry, &
-         &f_c_logical(.not. pdefs%data(pdefs%cset)%zdata%set_levels))
+         & f_c_logical(.not. pdefs%data(pdefs%cset)%zdata%set_levels))
+    call gtk_widget_set_sensitive(cldist_cbo, &
+         & f_c_logical(.not. pdefs%data(pdefs%cset)%zdata%set_levels))
 
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_ct_rule
+  subroutine gr_2d_set_clog(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Set log colour mapping
+
+    if (.not. gui_active) return
+
+    pdefs%data(pdefs%cset)%zdata%lmap = &
+         & int(gtk_combo_box_get_active(widget), int16)
+
+    call gr_plot_draw(.true.)
+  end subroutine gr_2d_set_clog
+
 
   subroutine gr_2d_set_ct_fmt(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -374,15 +403,20 @@ contains
     end do
     nlevels = i-1
 
-    if (allocated(zdata%levels)) deallocate(zdata%levels)
+    if (allocated(zdata%levels)) then
+       if (size(zdata%levels) == nlevels .and. &
+            & all(zdata%levels == levels(:nlevels))) return
+       deallocate(zdata%levels)
+    end if
+    
     allocate(zdata%levels(nlevels))
     zdata%levels(:) = levels(:nlevels)
     zdata%n_levels = int(nlevels, int16)
-
+        
     if (rewrite) then
        deallocate(text)
        allocate(text(nlevels))
-       write(text, "(g0.5)") zdata%levels
+       write(text, "(1pg0.5)") zdata%levels
        call hl_gtk_text_view_insert(widget, text, replace=TRUE)
     end if
 
@@ -396,9 +430,13 @@ contains
     ! Contour colours
 
     character(len=32), dimension(:), allocatable :: text
+    character(len=12), dimension(:), allocatable :: subtext
+
     integer(kind=int16), dimension(:), allocatable :: colours
-    integer :: ncols, ios, i, j
-    logical :: rewrite
+    integer(kind=int16), dimension(:,:), allocatable :: raw_colours
+
+    integer :: ncols, ios, i, j, nsub
+    logical :: rewrite, changed
     type(graff_zdata), pointer :: zdata
 
     rv = FALSE
@@ -408,7 +446,7 @@ contains
     ncols = count(text /= '')
     if (ncols == 0) return
 
-    allocate(colours(ncols))
+    allocate(colours(ncols), raw_colours(3,ncols))
 
     zdata => pdefs%data(pdefs%cset)%zdata
 
@@ -416,24 +454,49 @@ contains
     rewrite = .false.
     do j = 1, size(text)
        if (text(j) == '') cycle
-       read(text(j), *, iostat=ios) colours(i)
-       if (ios /= 0) then
-          rewrite = .true.
-          cycle
+       call split(text(j), ' ,	', subtext, count=nsub)
+       if (nsub < 3) then
+          read(text(j), *, iostat=ios) colours(i)
+          if (ios /= 0) then
+             rewrite = .true.
+             cycle
+          end if
+          raw_colours(:,i) = 0_int16
+       else
+          read(text(j), *, iostat=ios) raw_colours(:,i)
+          if (ios /= 0) then
+             rewrite = .true.
+             cycle
+          end if
+          colours(i) = -2
        end if
        i = i+1
     end do
     ncols = i-1
 
+    if (allocated(zdata%colours) .and. allocated(zdata%raw_colours)) then
+       if (zdata%n_cols == ncols .and. &
+           & all(zdata%colours == colours) .and. &
+           & all(zdata%raw_colours == raw_colours)) return
+    end if
     if (allocated(zdata%colours)) deallocate(zdata%colours)
-    allocate(zdata%colours(ncols))
+    if (allocated(zdata%raw_colours)) deallocate(zdata%raw_colours)
+    allocate(zdata%colours(ncols), zdata%raw_colours(3, ncols))
+    
     zdata%colours(:) = colours(:ncols)
+    zdata%raw_colours(:,:) = raw_colours(:,:ncols)
     zdata%n_cols = int(ncols, int16)
 
     if (rewrite) then
        deallocate(text)
        allocate(text(ncols))
-       write(text, "(i0)") zdata%colours
+       do i = 1, ncols
+          if (zdata%colours(i) == -2) then
+             write(text(i), "(3i5)") zdata%raw_colours(:,i)
+          else
+             write(text(i), "(i0)") zdata%colours(i)
+          end if
+       end do
        call hl_gtk_text_view_insert(widget, text, replace=TRUE)
     end if
 
@@ -475,7 +538,11 @@ contains
     end do
     nsty = i-1
 
-    if (allocated(zdata%style)) deallocate(zdata%style)
+    if (allocated(zdata%style)) then
+       if (zdata%n_sty == nsty .and. &
+            & all(zdata%style == styles(:nsty))) return
+       deallocate(zdata%style)
+    end if
     allocate(zdata%style(nsty))
     zdata%style(:) = styles(:nsty)
     zdata%n_sty = int(nsty, int16)
@@ -525,15 +592,20 @@ contains
     end do
     nthick = i-1
 
-    if (allocated(zdata%thick)) deallocate(zdata%thick)
+    if (allocated(zdata%thick)) then
+       if (zdata%n_thick == nthick .and. &
+            & all(zdata%thick == thick(:nthick))) return
+       deallocate(zdata%thick)
+    end if
     allocate(zdata%thick(nthick))
+    
     zdata%thick(:) = thick(:nthick)
     zdata%n_thick = int(nthick, int16)
 
     if (rewrite) then
        deallocate(text)
        allocate(text(nthick))
-       write(text, "(g0.5)") zdata%thick
+       write(text, "(f0.2)") zdata%thick
        call hl_gtk_text_view_insert(widget, text, replace=TRUE)
     end if
 
@@ -549,7 +621,7 @@ contains
 
     pdefs%data(pdefs%cset)%zdata%n_levels = &
          & int(hl_gtk_spin_button_get_value(widget), int16)
-
+        
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_cnlevels
 
@@ -565,6 +637,19 @@ contains
 
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_clabel
+
+  subroutine gr_2d_set_clabel_off(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Contour labelling offset
+    
+    if (.not. gui_active) return
+
+    pdefs%data(pdefs%cset)%zdata%label_off = &
+         & int(hl_gtk_spin_button_get_value(widget), int16)
+
+    call gr_plot_draw(.true.)
+  end subroutine gr_2d_set_clabel_off
 
   subroutine gr_2d_set_csize(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -618,13 +703,16 @@ contains
     call hl_gtk_entry_get_text(widget, text)
     read(text, *, iostat=ios) value
     if (ios /= 0) then
-       write(text, "(g0.5)") zdata%range(idx)
+       write(text, "(1pg0.5)") zdata%range(idx)
        call gtk_entry_set_text(widget, trim(adjustl(text))//c_null_char)
+    else if (zdata%range(idx) == value) then
+       return
     else
        zdata%range(idx) = value
     end if
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_range
+  
   function gr_2d_set_range_e(widget, event, data) bind(c) result(rv)
     integer(kind=c_int) :: rv
     type(c_ptr), value :: widget, event, data
@@ -652,11 +740,14 @@ contains
     call hl_gtk_entry_get_text(widget, text)
     read(text, *, iostat=ios) value
     if (ios /= 0) then
-       write(text, "(g0.5)") zdata%missing
+       write(text, "(1pg0.5)") zdata%missing
        call gtk_entry_set_text(widget, trim(adjustl(text))//c_null_char)
+    else if (zdata%missing == value) then
+       return
     else
        zdata%missing = value
     end if
+    
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_missing
 
@@ -687,8 +778,10 @@ contains
     call hl_gtk_entry_get_text(widget, text)
     read(text, *, iostat=ios) value
     if (ios /= 0) then
-       write(text, "(g0.5)") zdata%gamma
+       write(text, "(1pg0.5)") zdata%gamma
        call gtk_entry_set_text(widget, trim(adjustl(text))//c_null_char)
+    else if (zdata%gamma == value) then
+       return
     else
        zdata%gamma = value
     end if
@@ -703,7 +796,7 @@ contains
     if (.not. gui_active) return
 
     pdefs%data(pdefs%cset)%zdata%ilog = &
-         & c_f_logical(gtk_toggle_button_get_active(widget))
+         & int(gtk_combo_box_get_active(widget), int16)
 
     call gr_plot_draw(.true.)
   end subroutine gr_2d_set_log

@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -426,8 +426,6 @@ contains
 
           case('XMJ')
              pdefs%axsty(1)%major = gr_int_val(tag_val(itag+1))
-          case('XMS')
-             pdefs%axsty(1)%xmajor = gr_dbl_val(tag_val(itag+1))
           case('XMN')
              pdefs%axsty(1)%minor = gr_int_val(tag_val(itag+1))
           case('XNV')
@@ -435,7 +433,9 @@ contains
           case('XFM')
              call gr_str_val(inln, 'XFM', pdefs%axsty(1)%format)
              exit
-
+          case('XLL')
+             pdefs%axsty(1)%log_bands =gr_int_val(tag_val(itag+1), 3)
+             
           case('XVL')
              if (nxt == 0) exit
              pdefs%axsty(1)%values = gr_dbl_val(tag_val(itag+1), nxt)
@@ -465,8 +465,6 @@ contains
 
           case('YMJ')
              pdefs%axsty(2)%major = gr_int_val(tag_val(itag+1))
-          case('YMS')
-             pdefs%axsty(2)%xmajor = gr_dbl_val(tag_val(itag+1))
           case('YMN')
              pdefs%axsty(2)%minor = gr_int_val(tag_val(itag+1))
           case('YNV')
@@ -474,7 +472,9 @@ contains
           case('YFM')
              call gr_str_val(inln, 'YFM', pdefs%axsty(2)%format)
              exit
-
+          case('YLL')
+             pdefs%axsty(2)%log_bands =gr_int_val(tag_val(itag+1), 3)
+             
           case('YVL')
              if (nxt == 0) exit
              pdefs%axsty(2)%values = gr_dbl_val(tag_val(itag+1), nxt)
@@ -504,8 +504,6 @@ contains
 
           case('RMJ')
              pdefs%axsty(3)%major = gr_int_val(tag_val(itag+1))
-          case('RMS')
-             pdefs%axsty(3)%xmajor = gr_dbl_val(tag_val(itag+1))
           case('RMN')
              pdefs%axsty(3)%minor = gr_int_val(tag_val(itag+1))
           case('RNV')
@@ -513,7 +511,9 @@ contains
           case('RFM')
              call gr_str_val(inln, 'RFM', pdefs%axsty(3)%format)
              exit
-
+          case('RLL')
+             pdefs%axsty(3)%log_bands =gr_int_val(tag_val(itag+1), 3)
+             
           case('RVL')
              if (nxt == 0) exit
              pdefs%axsty(3)%values = gr_dbl_val(tag_val(itag+1), nxt)
@@ -614,13 +614,22 @@ contains
              exit
 
           case('HVB')
-             call gr_str_val(inln, 'HAB',  pdefs%hardset%viewer(1) )
+             call gr_str_val(inln, 'HVB',  pdefs%hardset%viewer(1) )
              exit
 
           case('HVA')
-             call gr_str_val(inln, 'HAA', pdefs%hardset%viewer(2))
+             call gr_str_val(inln, 'HVA', pdefs%hardset%viewer(2))
              exit
 
+          case('HPB')
+             call gr_str_val(inln, 'HPB', pdefs%hardset%pdfviewer(1) )
+             exit
+
+          case('HPA')
+             call gr_str_val(inln, 'HPA', pdefs%hardset%pdfviewer(2))
+             exit
+
+ 
           case('HF')
              pdefs%hardset%font_family = gr_int_val(tag_val(itag+1))
           case('HWS')
@@ -655,6 +664,8 @@ contains
              pdefs%key%cols = gr_int_val(tag_val(itag+1))
           case('KF')
              pdefs%key%frame = gr_log_val(tag_val(itag+1))
+          case('KR')
+             pdefs%key%reverse = gr_log_val(tag_val(itag+1))
           case('KP')
              pdefs%key%one_point = gr_log_val(tag_val(itag+1))
           case('KT')
@@ -681,7 +692,7 @@ contains
     end do
 
     call gr_set_changed(.false.)
-    pdefs%transient%backup = .false.
+    transient%backup = .false.
     pdefs%is_ascii = .true.
 
   end subroutine gr_get_asc
@@ -734,6 +745,8 @@ contains
              data%line = gr_int_val(tag_val(itag+1))
           case('C')
              data%colour = gr_int_val(tag_val(itag+1))
+          case('CV')
+             data%c_vals = gr_int_val(tag_val(itag+1), 3)
           case('W')
              data%thick = gr_flt_val(tag_val(itag+1))
           case('O')
@@ -746,6 +759,11 @@ contains
              call gr_str_val(inln, 'D',  data%descript)
              exit
 
+          case('MN')
+             data%min_val = gr_dbl_val(tag_val(itag+1))
+          case('MX')
+             data%max_val = gr_dbl_val(tag_val(itag+1))
+             
           case('N')
              data%ndata = gr_lon_val(tag_val(itag+1))
              nflag = .true.
@@ -807,6 +825,19 @@ contains
                 call gr_message("gr_get_ds_asc:  Contour colour "// &
                      & "list given without count - ignored")
              end if
+
+          case('ZCR')
+             if (cflag(2)) then 
+                if (allocated(data%zdata%raw_colours)) &
+                     & deallocate(data%zdata%raw_colours)
+                allocate(data%zdata%raw_colours(3,data%zdata%n_cols))
+                read(unit, *) data%zdata%raw_colours
+                exit
+             else 
+                call gr_message("gr_get_ds_asc:  Contour colour "// &
+                     & "list given without count - ignored")
+             end if
+
           case('ZCL')
              if (cflag(2)) then 
                 if (allocated(data%zdata%colours)) &
@@ -879,16 +910,20 @@ contains
           case('ZCF')
              data%zdata%fill = gr_byt_val(tag_val(itag+1))
           case('ZLI')
-             data%zdata%label =  gr_int_val(tag_val(itag+1))
+             data%zdata%label = gr_int_val(tag_val(itag+1))
+          case('ZLO')
+             data%zdata%label_off = gr_int_val(tag_val(itag+1))
           case('ZCS')
              data%zdata%charsize = gr_flt_val(tag_val(itag+1))
-
+          case('ZLM')
+             data%zdata%lmap = gr_int_val(tag_val(itag+1))
+             
           case('ZR')
              data%zdata%range = gr_dbl_val(tag_val(itag+1), 2)
           case('ZP')
              data%zdata%pxsize = gr_flt_val(tag_val(itag+1))
           case('ZIL')
-             data%zdata%ilog = gr_log_val(tag_val(itag+1))
+             data%zdata%ilog = gr_int_val(tag_val(itag+1))
           case('ZIN')
              data%zdata%invert = gr_log_val(tag_val(itag+1))
           case('ZSM')
@@ -1090,6 +1125,14 @@ contains
        end do
     end do main
 
+    ! If min_val and max_val are both zero then they should both be NaN
+
+    if (data%min_val == 0._real64 .and. data%max_val == 0._real64) then
+       data%min_val = d_nan()
+       data%max_val = d_nan()
+    end if
+
+ 
     if (.not. jflag) then
        select case(data%psym)
        case(10)
@@ -1137,6 +1180,8 @@ contains
 
           case('C')
              text%colour = gr_int_val(tag_val(itag+1))
+          case('CV')
+             text%c_vals = gr_int_val(tag_val(itag+1), 3)
           case('S')
              text%size = gr_flt_val(tag_val(itag+1))
           case('O')
@@ -1201,9 +1246,9 @@ contains
 
     outfile = trim(pdefs%dir)//trim(pdefs%name)
 
-    if (.not. pdefs%transient%backup .and. file_exists(outfile)) then
+    if (.not. transient%backup .and. file_exists(outfile)) then
        call execute_command_line("cp "//trim(outfile)//" "//trim(outfile)//"~")
-       pdefs%transient%backup = .true.
+       transient%backup = .true.
     end if
 
     open(newunit=unit, file=outfile, form='formatted', action='write', &
@@ -1235,10 +1280,11 @@ contains
          & pdefs%axsty(1)%idl, ":XSE:", pdefs%axsty(1)%extra, &
          & ":XSG:", pdefs%axsty(1)%grid, ":XST:", pdefs%axsty(1)%time, &
          & ":XSZ:", pdefs%axsty(1)%tzero
-    write(unit, "(a,i0,a,g0,a,i0)") "XMJ:", pdefs%axsty(1)%major, ":XMS:", &
-         & pdefs%axsty(1)%xmajor, ":XMN:", pdefs%axsty(1)%minor
+    write(unit, "(a,i0,a,i0)") "XMJ:", pdefs%axsty(1)%major, &
+         &  ":XMN:", pdefs%axsty(1)%minor
     write(unit, "(2a)") "XFM:", trim(pdefs%axsty(1)%format)
-
+    write(unit, "(a,3(i0,' '))") "XLL:", pdefs%axsty(1)%log_bands
+    
     if (allocated(pdefs%axsty(1)%values)) then
        nvals = size(pdefs%axsty(1)%values)
        write(unit, "(a,i0)") "XNV:", nvals
@@ -1255,10 +1301,11 @@ contains
          & pdefs%axsty(2)%idl, ":YSE:", pdefs%axsty(2)%extra, &
          & ":YSG:", pdefs%axsty(2)%grid, ":YST:", pdefs%axsty(2)%time, &
          & ":YSZ:", pdefs%axsty(2)%tzero
-    write(unit, "(a,i0,a,g0,a,i0)") "YMJ:", pdefs%axsty(2)%major, ":YMS:", &
-         & pdefs%axsty(2)%xmajor, ":YMN:", pdefs%axsty(2)%minor
+    write(unit, "(a,i0,a,i0)") "YMJ:", pdefs%axsty(2)%major, &
+         & ":YMN:", pdefs%axsty(2)%minor
     write(unit, "(2a)") "YFM:", trim(pdefs%axsty(2)%format)
-
+    write(unit, "(a,3(i0,' '))") "YLL:", pdefs%axsty(2)%log_bands
+    
     if (allocated(pdefs%axsty(2)%values)) then
        nvals = size(pdefs%axsty(2)%values)
        write(unit, "(a,i0)") "YNV:", nvals
@@ -1273,10 +1320,11 @@ contains
          & pdefs%axsty(3)%idl, ":RSE:", pdefs%axsty(3)%extra, &
          & ":RSG:", pdefs%axsty(3)%grid, ":RST:", pdefs%axsty(3)%time, &
          & ":RSZ:", pdefs%axsty(3)%tzero
-    write(unit, "(a,i0,a,g0,a,i0)") "RMJ:", pdefs%axsty(3)%major, ":RMS:", &
-         & pdefs%axsty(3)%xmajor, ":RMN:", pdefs%axsty(3)%minor
+    write(unit, "(a,i0,a,i0)") "RMJ:", pdefs%axsty(3)%major&
+         &, ":RMN:", pdefs%axsty(3)%minor
     write(unit, "(2a)") "RFM:", trim(pdefs%axsty(3)%format)
-
+    write(unit, "(a,3(i0,' '))") "RLL:", pdefs%axsty(3)%log_bands
+    
     if (allocated(pdefs%axsty(3)%values)) then
        nvals = size(pdefs%axsty(3)%values)
        write(unit, "(a,i0)") "RNV:", nvals
@@ -1303,7 +1351,9 @@ contains
             & ":C:", data%colour, ":W:", data%thick, &
             & ":O:", f_c_logical(data%sort), ":K:", f_c_logical(data%noclip), &
             & ":E:", f_c_logical(data%medit)
-
+       if (data%colour == -2) write(unit, "(a,3i5)") 'CV:', data%c_vals
+       write(unit, "(2(a,g0))") "MN:", data%min_val, ":MX:", data%max_val
+       
        if (data%ndata > 0) then
           select case(data%type)
           case(0:8)
@@ -1345,10 +1395,12 @@ contains
                   & ':ZNC:', data%zdata%n_cols, &
                   & ':ZNS:', data%zdata%n_sty, &
                   & ':ZNT:', data%zdata%n_thick
-             write(unit, "(3(a,i0),2(a,f7.3))") "ZCF:", data%zdata%fill, &
+             write(unit, "(5(a,i0))") "ZCF:", data%zdata%fill, &
                   & ":ZCT:", data%zdata%ctable, &
                   & ":ZLI:", data%zdata%label, &
-                  & ":ZCS:", data%zdata%charsize, &
+                  & ":ZLO:", data%zdata%label_off, &
+                  & ":ZLM:", data%zdata%lmap
+             write(unit, "(2(a,f7.3))") ":ZCS:", data%zdata%charsize, &
                   & ":ZCG:", data%zdata%gamma
 
              if (data%zdata%set_levels .and. allocated(data%zdata%levels)) then
@@ -1369,6 +1421,11 @@ contains
                 end if
              end if
 
+             if (allocated(data%zdata%raw_colours)) then
+                write(unit, "(a)") "ZCR:"
+                write(unit, "(15i5)") data%zdata%raw_colours
+             end if
+             
              if (allocated(data%zdata%style)) then
                 if (data%zdata%n_sty <= 20) then
                    write(unit, "(a,20i4)") "ZS:", data%zdata%style
@@ -1390,7 +1447,7 @@ contains
              write(unit, "(a,2(g0,1x),a,g0)") "ZR:", data%zdata%range, &
                   & ":ZM:", data%zdata%missing
              write(unit, "(a,f7.3, 4(a,i0))") "ZP:", data%zdata%pxsize, &
-                  & ":ZIL:", f_c_logical(data%zdata%ilog), ":ZIN:", &
+                  & ":ZIL:", data%zdata%ilog, ":ZIN:", &
                   & f_c_logical(data%zdata%invert), ':ZSM:', &
                   & f_c_logical(data%zdata%smooth), ':ZSN:', &
                   & data%zdata%shade_levels
@@ -1413,6 +1470,8 @@ contains
 
        write(unit, "(a,i0,a,f8.3,a,f9.4, a,f8.5)") "C:", text%colour, &
             & ":S:", text%size, ":O:", text%orient, ":A:", text%align
+       if (text%colour == -2) write(unit, "(a,3i5)") 'CV:', text%c_vals
+       
        write(unit, "(2(a,i0), a,f7.2)") "FF:", text%ffamily, &
             & ":F:", text%font, ":W:", text%thick
        write(unit, "(a)") "TE:"
@@ -1422,14 +1481,17 @@ contains
     write(unit, "(a,i0)") "TTS:"
     write(unit, "(a,i0,a,f8.3,a,f9.4, a,f8.5)") "C:", text%colour, &
          & ":S:", text%size, ":O:", text%orient, ":A:", text%align
-    write(unit, "(2(a,i0), a,f7.2)") "FF:", text%ffamily, &
+    if (text%colour == -2) write(unit, "(a,3i5)") 'CV:', text%c_vals
+    
+     write(unit, "(2(a,i0), a,f7.2)") "FF:", text%ffamily, &
          & ":F:", text%font, ":W:", text%thick
     write(unit, "(a)") "TTE:"
 
-    write(unit, "(5(a,i0))") "KU:", f_c_logical(pdefs%key%use), &
+    write(unit, "(6(a,i0))") "KU:", f_c_logical(pdefs%key%use), &
          & ":KN:", pdefs%key%norm, ":KC:", pdefs%key%cols, &
          & ":KF:", f_c_logical(pdefs%key%frame), ":KP:", &
-         & f_c_logical(pdefs%key%one_point)
+         & f_c_logical(pdefs%key%one_point), &
+         & ":KR:", f_c_logical(pdefs%key%reverse)
 
     write(unit, "(2(a,2(g0,1x)),a,g0)") "KX:", pdefs%key%x, ":KY:", &
          & pdefs%key%y, ":KS:", pdefs%key%csize
@@ -1455,7 +1517,9 @@ contains
     write(unit, "(2a)") "HAB:", pdefs%hardset%action(1), &
          & "HAA:", pdefs%hardset%action(2), &
          & "HVB:", pdefs%hardset%viewer(1), &
-         & "HVA:", pdefs%hardset%viewer(2)
+         & "HVA:", pdefs%hardset%viewer(2), &
+         & "HPB:", pdefs%hardset%pdfviewer(1), &
+         & "HPA:", pdefs%hardset%pdfviewer(2)
 
     write(unit, "(2(a,i0))") "HF:", pdefs%hardset%font_family, &
          & ":HWS:", pdefs%hardset%font_wg_sl

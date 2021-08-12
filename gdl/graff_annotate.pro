@@ -19,8 +19,9 @@ pro graff_annotate, file, value, id = id, index = index, $
                     substring = substring, case_squash = case_squash, $
                     text = text, newid = newid, $
                     colour = colour, size = size, orient = orient, $
-                    align = align, ffamily = ffamily, $
-                    font = font, x = x, y = y, norm = $
+                    align = align, ffamily = ffamily, hershey = $
+                    hershey, truetype = truetype, hardware = hardware, $
+                    font = font, thick = thick, x = x, y = y, norm = $
                     norm, axis = axis,  status = status
 
 ;+
@@ -50,8 +51,13 @@ pro graff_annotate, file, value, id = id, index = index, $
 ;	orient	float	The orientation of the annotation
 ;			(anticlockwise, degrees)
 ;	align	float	The alignment (0=left, 1=right, 0.5=centre)
-;	ffamily	int	The font style to use.
+;	ffamily	int	The font style to use. (-1 Hershey, 0 hardware,
+;			1 TrueType)
+;	/hershey	Set Hershey fonts.
+;	/truetype	Set TrueType fonts.
+;	/hardware	Set hardware fonts
 ;	font	int	Set the font shape & weight for the desired font.
+;	thick	float	Set the line thickness for Hershey fonts.
 ;	x	float	Set the X-coordinate of the origin
 ;	y	float	Set the Y-coordinate of the origin
 ;	norm	int	Set the coordinate system, 0=data,
@@ -69,6 +75,7 @@ pro graff_annotate, file, value, id = id, index = index, $
 ;
 ; History:
 ;	Original: 13/6/12; SJT
+;	Realign with main IDL package: 21/5/20; SJT
 ;-
 
   on_error, 2                   ; Return to caller on error
@@ -145,15 +152,22 @@ pro graff_annotate, file, value, id = id, index = index, $
   if n_elements(align) ne 0 then (*pdefs.text)[idx].align = align
 
   if n_elements(ffamily) ne 0 then (*pdefs.text)[idx].ffamily = $
-     ffamily
+     ffamily $
+  else if keyword_set(hardware) then (*pdefs.text)[idx].ffamily = 0 $
+  else if keyword_set(hershey) then (*pdefs.text)[idx].ffamily = -1 $
+  else if keyword_set(truetype) then (*pdefs.text)[idx].ffamily = 1
+
   
   if n_elements(font) ne 0 then (*pdefs.text)[idx].font = font
+  if n_elements(thick) ne 0 then (*pdefs.text)[idx].thick = thick
 
   if n_elements(x) ne 0 then (*pdefs.text)[idx].x = x
   if n_elements(y) ne 0 then (*pdefs.text)[idx].y = y
   if n_elements(norm) ne 0 then (*pdefs.text)[idx].norm = norm
 
-  gr_bin_save, pdefs
+  if (keyword_set(ascii)) then gr_asc_save, pdefs $
+  else gr_bin_save, pdefs
+
   graff_clear, pdefs
 
   status = 1

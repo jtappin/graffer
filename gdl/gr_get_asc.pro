@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 1995-2021
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -50,6 +50,9 @@ pro Gr_get_asc, pdefs, ilu, no_set = no_set
 ;	Convert to procedure for Graffer V4: 6/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
 ;	Add options for plplot drivers: 29/11/13; SJT
+;	PDF viewer: 21/9/16; SJT
+;	Font option: 11/2/20; SJT
+;	Add log_band values: 24/6/21; SJT
 ;-
 
 
@@ -92,7 +95,8 @@ while (not eof(ilu)) do begin
             'GR': pdefs.aspect = gr_flt_val(tag_val[itag+1], 2)
             'GI': pdefs.isotropic = gr_byt_val(tag_val[itag+1], 1)
             'GHA': pdefs.match = gr_byt_val(tag_val[itag+1], 1)
-
+            'GF': pdefs.fontopt =  gr_int_val(tag_val[itag+1], 1)
+            
                                 ; The X, Y and R keys are items relating
                                 ; to the X, Y and right-hand Y axes
                                 ; respectively  
@@ -125,7 +129,9 @@ while (not eof(ilu)) do begin
                pdefs.xsty.format = gr_str_val(inline, 'XFM')
                goto, new_line
             end
-
+            'XLL': pdefs.xsty.log_bands = $
+               gr_int_val(tag_val[itag+1], 3)
+            
             'XVL': begin
                if nxt eq 0 then goto, new_line
                vals = gr_dbl_val(tag_val[itag+1], nxt)
@@ -158,6 +164,9 @@ while (not eof(ilu)) do begin
                pdefs.ysty.format = gr_str_val(inline, 'YFM')
                goto, new_line
             end
+            'YLL': pdefs.ysty.log_bands = $
+               gr_int_val(tag_val[itag+1], 3)
+            
             'YNV': nyt = gr_int_val(tag_val[itag+1], 1)
             'YVL': begin
                if nyt eq 0 then goto, new_line
@@ -191,6 +200,9 @@ while (not eof(ilu)) do begin
                pdefs.ysty_r.format = gr_str_val(inline, 'RFM')
                goto, new_line
             end
+            'RLL': pdefs.ysty_r.log_bands = $
+               gr_int_val(tag_val[itag+1], 3)
+            
             'RNV': nrt = gr_int_val(tag_val[itag+1], 1)
             'RVL': begin
                if nrt eq 0 then goto, new_line
@@ -236,7 +248,7 @@ while (not eof(ilu)) do begin
                 
                 pdefs.nsets = gr_int_val(tag_val[itag+1], 1)
                 nds = pdefs.nsets > 1
-                data = replicate({graff_data}, nds)
+                data =  gr_new_ds(pdefs, nds) ;replicate({graff_data}, nds)
                 dflag = 1b
             end
             'DC': pdefs.cset = gr_int_val(tag_val[itag+1], 1)
@@ -332,6 +344,11 @@ while (not eof(ilu)) do begin
                                 ; HVA - Any part of the view
                                 ;       command which follows the
                                 ;       filename. 
+                                ; HPB - The PDF view command (up to
+                                ;       the filename)
+                                ; HPA - Any part of the PDF view
+                                ;       command which follows the
+                                ;       filename. 
                                 ; HF - Font family.
                                 ; HWS - Font weight and slant (bit 0 is
                                 ;       on for bold, bit 1 for
@@ -357,11 +374,19 @@ while (not eof(ilu)) do begin
                 goto, new_line
             end
             'HVB': begin
-                pdefs.hardset.viewer[0] = gr_str_val(inline, 'HAB')
+                pdefs.hardset.viewer[0] = gr_str_val(inline, 'HVB')
                 goto, new_line
             end
             'HVA': begin
-                pdefs.hardset.viewer[1] = gr_str_val(inline, 'HAA')
+                pdefs.hardset.viewer[1] = gr_str_val(inline, 'HVA')
+                goto, new_line
+            end
+            'HPB': begin
+                pdefs.hardset.pdfviewer[0] = gr_str_val(inline, 'HPB')
+                goto, new_line
+            end
+            'HPA': begin
+                pdefs.hardset.pdfviewer[1] = gr_str_val(inline, 'HPA')
                 goto, new_line
             end
 
@@ -372,7 +397,11 @@ while (not eof(ilu)) do begin
             'HFN':  begin
                 pdefs.hardset.name = gr_str_val(inline, 'HFN')
                 goto, new_line
-             end
+            end
+
+                                ; The values are only used in the
+                                ; Fortran version.
+            
             'HPS': begin
                pdefs.hardset.psdev = gr_str_val(inline, 'HPS')
                goto, new_line
@@ -414,6 +443,7 @@ while (not eof(ilu)) do begin
             'KN': pdefs.key.norm = gr_int_val(tag_val[itag+1], 1)
             'KC': pdefs.key.cols = gr_int_val(tag_val[itag+1], 1)
             'KF': pdefs.key.frame = gr_byt_val(tag_val[itag+1], 1)
+            'KR': pdefs.key.reverse = gr_byt_val(tag_val[itag+1], 1)
             'KP': pdefs.key.one_point = gr_byt_val(tag_val[itag+1], 1)
             'KT': begin
                 pdefs.key.title = gr_str_val(inline, 'KT')
@@ -459,11 +489,6 @@ pdefs.is_ascii = 1b
 free_lun, ilu
 
 pdefs.chflag = 0                ; Clear changes flag
-
-if (not keyword_set(no_set)) then begin
-    graff_set_vals, pdefs
-endif
-if ctflag then graff_colours, pdefs
 
 end
 

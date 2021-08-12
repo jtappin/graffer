@@ -27,7 +27,6 @@ configure_file(
   )
 
 install(FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/doc_library.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_as_xa.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_as_xr.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_as_ya.pro"

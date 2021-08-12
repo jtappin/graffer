@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@ module gr_ds_selector
   use gr_cb_common
   use gr_ds_tools
   use gr_ds_widgets
-
+  
   implicit none
 
 contains
@@ -45,7 +45,8 @@ contains
 
     type(c_ptr) :: jb, mnu, smnu, junk
     integer(kind=int16), dimension(2), target :: direct = [-1_int16, 1_int16]
-
+    character(len=32) :: typet
+    
     fr = hl_gtk_box_new()
 
     jb = hl_gtk_box_new(horizontal=TRUE)
@@ -73,20 +74,22 @@ contains
     smnu = hl_gtk_menu_submenu_new(mnu, "Other ▼"//c_null_char, &
          & tooltip="Other dataset options"//c_null_char)
 
-    junk = hl_gtk_menu_item_new(smnu, "Select..."//c_null_char, &
-         & activate=c_funloc(gr_ds_select_cb), tooltip=&
-         & "Select a dataset"//c_null_char)
+    ds_rescale_id = hl_gtk_menu_item_new(smnu, "Rescale Current"//c_null_char, &
+         & activate=c_funloc(gr_ds_rescale_cb), &
+         & tooltip="Scale and/or shift the current dataset"//c_null_char, &
+         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
 
-    junk = hl_gtk_menu_item_new(smnu, "Merge..."//c_null_char, &
-         & activate=c_funloc(gr_ds_merge_cb), tooltip=&
-         & "Merge two datasets"//c_null_char)
-
-    junk = hl_gtk_menu_item_new(smnu, "Sort..."//c_null_char, &
-         & activate=c_funloc(gr_ds_sort), tooltip=&
-         & "Reorder the datasets"//c_null_char)
-
+    ds_transpose_id =  hl_gtk_menu_item_new(smnu, "Transpose"//c_null_char, &
+         & activate=c_funloc(gr_ds_transpose_cb), &
+         & tooltip="Exchange X & Y axes of the current dataset"//c_null_char, &
+         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
+    
     junk = hl_gtk_menu_item_new(smnu, "Erase"//c_null_char, &
          & activate=c_funloc(gr_ds_erase_cb), tooltip=&
+         & "Erase the data of the current dataset"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Erase all"//c_null_char, &
+         & activate=c_funloc(gr_ds_erase_all_cb), tooltip=&
          & "Erase the contents of the current dataset"//c_null_char)
 
     junk = hl_gtk_menu_item_new(smnu, "Delete"//c_null_char, &
@@ -106,6 +109,19 @@ contains
     junk = hl_gtk_menu_item_new(smnu, "Copy"//c_null_char, &
          & activate=c_funloc(gr_ds_copy_cb), tooltip=&
          & "Copy the current dataset to a new one"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Select..."//c_null_char, &
+         & activate=c_funloc(gr_ds_select_cb), tooltip=&
+         & "Select a dataset"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Sort..."//c_null_char, &
+         & activate=c_funloc(gr_ds_sort), tooltip=&
+         & "Reorder the datasets"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Merge..."//c_null_char, &
+         & activate=c_funloc(gr_ds_merge_cb), tooltip=&
+         & "Merge two datasets"//c_null_char)
+
 
 
     jb = hl_gtk_box_new(horizontal=TRUE)
@@ -130,11 +146,22 @@ contains
          & wrap = TRUE)
     call hl_gtk_box_pack(jb, ds_idx_id)
 
+    jb = hl_gtk_box_new(horizontal=TRUE)
+    call hl_gtk_box_pack(fr, jb, expand=FALSE)
+
+    junk = gtk_label_new("Type:"//c_null_char)
+    call hl_gtk_box_pack(jb, junk, expand=FALSE)
+    
+    ds_type_id =hl_gtk_entry_new(editable=FALSE, &
+         & size=34_c_int, value = &
+         & trim(typedescrs(pdefs%data(pdefs%cset)%type))//c_null_char)
+    call hl_gtk_box_pack(jb, ds_type_id, expand=FALSE)
+    
     junk = hl_gtk_check_button_new("Only show current DS"//c_null_char, &
          & toggled=c_funloc(gr_ds_current_only), initial_state=&
-         & f_c_logical(pdefs%transient%current_only), &
-         & tooltip="Toggle display if only the current dataset"//c_null_char)
-    call hl_gtk_box_pack(fr, junk, expand=FALSE)
+         & f_c_logical(transient%current_only), &
+         & tooltip="Toggle display of only the current dataset"//c_null_char)
+    call hl_gtk_box_pack(jb, junk, expand=FALSE)
 
   end function gr_ds_selector_new
 
@@ -160,8 +187,11 @@ contains
        cnew = int(hl_gtk_spin_button_get_value(widget), int16)
     end if
 
-    if (cnew /= pdefs%cset) call gr_set_values_dataset(select = cnew)
-
+    if (cnew /= pdefs%cset) then
+       call gr_set_values_dataset(select = cnew)
+       if (transient%current_only) call gr_plot_draw(.false.)
+    end if
+    
   end subroutine gr_ds_advance
 
   subroutine gr_ds_new_cb(widget, data) bind(c)
@@ -180,7 +210,7 @@ contains
     ! Select a new current dataset
 
     call gr_ds_select
-
+  
   end subroutine gr_ds_select_cb
 
   subroutine gr_ds_merge_cb(widget, data) bind(c)
@@ -189,6 +219,7 @@ contains
     ! Append one datset to another
 
     call gr_ds_merge
+    
   end subroutine gr_ds_merge_cb
 
 
@@ -218,10 +249,31 @@ contains
 
     if (iresp /= GTK_RESPONSE_YES) return
 
-    call gr_ds_erase
+    call gr_ds_erase(data_only=.true.)
     call gr_plot_draw(.true.)
 
   end subroutine gr_ds_erase_cb
+  
+  subroutine gr_ds_erase_all_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Erase the current dataset
+
+    integer(kind=c_int) :: iresp
+
+    iresp = hl_gtk_message_dialog_show(&
+         & ["This will destroy all data and ", &
+         &  "settings in the current dataset", &
+         &  "Do you want to continue?       "],&
+         & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION, &
+         & parent=gr_window)
+
+    if (iresp /= GTK_RESPONSE_YES) return
+
+    call gr_ds_erase(data_only=.false.)
+    call gr_plot_draw(.true.)
+
+  end subroutine gr_ds_erase_all_cb
 
   subroutine gr_ds_delete_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
@@ -304,18 +356,23 @@ contains
     current_ds = pdefs%cset
 
     call gr_ds_new(.true.)
-    call gr_ds_copy(current_ds)
+    call gr_ds_copy(current_ds, append=' (copy)')
+    call gr_plot_draw(.true.)
 
   end subroutine gr_ds_copy_cb
 
   subroutine gr_ds_rename(widget, data) bind(c)
     type(c_ptr), value :: widget, data
-
+    character(len=120) :: newdesc
+    
     ! Change the name of the current dataset.
 
-    call hl_gtk_entry_get_text(widget, pdefs%data(pdefs%cset)%descript)
-    call gr_plot_draw(.true.)
-
+    call hl_gtk_entry_get_text(widget, newdesc)
+    if (newdesc /= pdefs%data(pdefs%cset)%descript) then
+       pdefs%data(pdefs%cset)%descript = newdesc
+       call gr_plot_draw(.true.)
+    end if
+    
   end subroutine gr_ds_rename
   function gr_ds_rename_e(widget, event, data) bind(c) result(rv)
     integer(kind=c_int) :: rv
@@ -332,10 +389,29 @@ contains
 
     if (.not. gui_active) return
 
-    pdefs%transient%current_only = &
+    transient%current_only = &
          & c_f_logical(gtk_toggle_button_get_active(widget))
 
     call gr_plot_draw(.false.)
   end subroutine gr_ds_current_only
+
+  subroutine gr_ds_rescale_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Scale/shift data.
+
+    call gr_ds_rescale
+
+  end subroutine gr_ds_rescale_cb
+
+  subroutine gr_ds_transpose_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Scale/shift data.
+
+    call gr_ds_transpose
+
+  end subroutine gr_ds_transpose_cb
+
 
 end module gr_ds_selector

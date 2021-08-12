@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -47,6 +47,8 @@ module gr_cb_common
   use graff_version
   use gr_msg
 
+  use ieee_arithmetic, only: ieee_is_finite
+  
   use plplot, only: pi => pl_pi
 
   implicit none
@@ -56,24 +58,28 @@ module gr_cb_common
   ! Top - level gui
 
   type(c_ptr) :: y2_tab, y2_check
-  type(c_ptr) :: name_id		! The file name display
-  type(c_ptr) :: display_nb		! The notebook for 1d/2d
+  type(c_ptr) :: name_id                ! The file name display
+  type(c_ptr) :: display_nb             ! The notebook for 1d/2d
 
   ! 1 D dataset options
 
   type(c_ptr) :: colour_cbo, symbol_cbo, style_cbo, join_cbo, thick_ent, &
-       & size_ent, csys_cbo, xsort_id, clip_id, mouse_id
+       & size_ent, csys_cbo, xsort_id, clip_id, mouse_id, min_ent, max_ent
 
+  integer(kind=c_int) :: custom_colour_index
+  
   ! 2 D dataset options
 
   type(c_ptr) :: fmt_nbook
 
-  type(c_ptr) :: clevel_cbo, cfmt_cbo, clevel_view, ccol_view, csty_view, &
-       & clevels_entry, cthick_view, clabel_entry, cchsize_entry
+  type(c_ptr) :: clevel_cbo, cldist_cbo, cfmt_cbo, clevel_view, &
+       & ccol_view, csty_view, &
+       & clevels_entry, cthick_view, clabel_entry, &
+       & clabel_off_entry, cchsize_entry
 
   type(c_ptr) :: cg_table_pick=c_null_ptr, cg_missing_entry, & 
-       & cg_gamma_entry, cg_log_but, cg_invert_but, cg_smooth_but, &
-       & gc_smooth_l_sb
+       & cg_gamma_entry, cg_invert_but, cg_smooth_but, &
+       & gc_smooth_l_sb, cg_log_cbo
 
   type(c_ptr), dimension(2) :: cg_range_entry
 
@@ -81,17 +87,18 @@ module gr_cb_common
 
   type(c_ptr), dimension(3) :: lbox, log_chb, &
        & exact_chb, ext_chb, ax_chb, bax_chb, minor_chb, ann_chb, time_chb, &
-       & origin_grp, grid_grp, rot_chb
+       & origin_grp, grid_grp, rot_chb, ax_adv_item
 
   type(c_ptr), dimension(2,3) :: rbox
 
   ! DS data
 
-  type(c_ptr) :: ds_y_axis_cbo, ds_rescale_id
+  type(c_ptr) :: ds_y_axis_cbo
 
   ! DS selector
 
-  type(c_ptr) :: ds_name_id, ds_idx_id, ds_as_data_id
+  type(c_ptr) :: ds_name_id, ds_idx_id, ds_rescale_id, ds_as_data_id, &
+       & ds_transpose_id, ds_type_id
 
   ! General
 
@@ -254,7 +261,8 @@ contains
     integer :: i, j
     character(len=32) :: text
     character(len=8) :: gr_sversion
-
+    logical :: log_valid
+    
     gui_active = .false.
 
     call graffer_version%string(gr_sversion)
@@ -277,16 +285,20 @@ contains
     call hl_gtk_spin_button_set_value(linewidth_spin, &
          & real(pdefs%axthick, c_double))
 
-
+    log_valid = all(pdefs%data%mode == 0)
+    if (.not. log_valid) pdefs%axtype(:) = 0
+    
     do i = 1, 3
        call gtk_entry_set_text(lbox(i), trim(pdefs%axtitle(i))//c_null_char)
        do j = 1, 2
-          write(text, "(g0.5)") pdefs%axrange(j,i)
+          write(text, "(1pg0.5)") pdefs%axrange(j,i)
           call gtk_entry_set_text(rbox(j,i), trim(text)//c_null_char)
        end do
 
        call gtk_check_menu_item_set_active(log_chb(i), &
             & int(pdefs%axtype(i), c_int))
+       call gtk_widget_set_sensitive(log_chb(i), f_c_logical(log_valid))
+
        call gtk_check_menu_item_set_active(exact_chb(i), &
             & f_c_logical(btest(pdefs%axsty(i)%idl, exact_bit)))
        call gtk_check_menu_item_set_active(ext_chb(i), &
@@ -353,7 +365,12 @@ contains
        call  gtk_notebook_set_current_page(display_nb, 0)
     end if
 
-    call gtk_combo_box_set_active(colour_cbo, int(data%colour, c_int)+1_c_int)
+    if (data%colour == -2) then
+       call gtk_combo_box_set_active(colour_cbo, custom_colour_index)
+    else
+       call gtk_combo_box_set_active(colour_cbo, &
+            & int(data%colour, c_int)+1_c_int)
+    end if
     call gtk_combo_box_set_active(symbol_cbo, int(data%psym, c_int))
     call gtk_combo_box_set_active(style_cbo, int(data%line, c_int))
     call gtk_combo_box_set_active(join_cbo, int(data%pline, c_int))
@@ -362,25 +379,45 @@ contains
     call hl_gtk_spin_button_set_value(thick_ent, real(data%thick, c_double))
     call hl_gtk_spin_button_set_value(size_ent, real(data%symsize, c_double))
 
-    call gtk_check_menu_item_set_active(xsort_id, f_c_logical(data%sort))
-    call gtk_check_menu_item_set_active(clip_id, f_c_logical(.not. data%noclip))
-    call gtk_check_menu_item_set_active(mouse_id, f_c_logical(data%medit))
-
+    if (ieee_is_finite(data%min_val)) then
+       write(stext, "(1pg0.5)") data%min_val
+       call gtk_entry_set_text(min_ent, trim(stext)//c_null_char)
+    else
+       call gtk_entry_set_text(min_ent, c_null_char)
+    end if
+    if (ieee_is_finite(data%max_val)) then
+       write(stext, "(1pg0.5)") data%max_val
+       call gtk_entry_set_text(max_ent, trim(stext)//c_null_char)
+    else
+       call gtk_entry_set_text(max_ent, c_null_char)
+    end if
+    
+    call gtk_toggle_button_set_active(xsort_id, f_c_logical(data%sort))
+    call gtk_toggle_button_set_active(clip_id, f_c_logical(.not. data%noclip))
+    call gtk_toggle_button_set_active(mouse_id, f_c_logical(data%medit))
+    call gtk_widget_set_sensitive(xsort_id, f_c_logical(data%type >= 0))
+    call gtk_widget_set_sensitive(mouse_id, f_c_logical(data%type >= 0))
+    
     call gtk_notebook_set_current_page(fmt_nbook, &
          & int(data%zdata%format, c_int))
 
     call gtk_combo_box_set_active(clevel_cbo, &
          & f_c_logical(data%zdata%set_levels))
+    call gtk_combo_box_set_active(cldist_cbo, &
+         & int(data%zdata%lmap, c_int))
     call gtk_combo_box_set_active(cfmt_cbo,&
          & int(data%zdata%fill, c_int))
     call hl_gtk_spin_button_set_value(clevels_entry, int(data%zdata%n_levels))
     call gtk_widget_set_sensitive(clevels_entry, &
          & f_c_logical(.not. data%zdata%set_levels))
+    call gtk_widget_set_sensitive(cldist_cbo, &
+         & f_c_logical(.not. data%zdata%set_levels))
     call gtk_widget_set_sensitive(clevel_view, &
          & f_c_logical(data%zdata%set_levels))
+    
     if (allocated(data%zdata%levels)) then
        allocate(vtext(size(data%zdata%levels)))
-       write(vtext, "(g0.5)") data%zdata%levels
+       write(vtext, "(1pg0.5)") data%zdata%levels
        call hl_gtk_text_view_insert(clevel_view, vtext, replace=TRUE)
        deallocate(vtext)
     else
@@ -404,7 +441,7 @@ contains
     end if
     if (allocated(data%zdata%thick)) then
        allocate(vtext(size(data%zdata%thick)))
-       write(vtext, "(g0.5)") data%zdata%thick
+       write(vtext, "(1pg0.5)") data%zdata%thick
        call hl_gtk_text_view_insert(cthick_view, vtext, replace=TRUE)
        deallocate(vtext)
     else
@@ -413,30 +450,34 @@ contains
 
     call hl_gtk_spin_button_set_value(clabel_entry, &
          & int(data%zdata%label, c_int))
+ 
+    call hl_gtk_spin_button_set_value(clabel_off_entry, &
+         & int(data%zdata%label_off, c_int))
     call hl_gtk_spin_button_set_value(cchsize_entry, &
          & real(data%zdata%charsize, c_double))
 
     call hl_gtk_listn_set_selection(cg_table_pick, &
          & int(data%zdata%ctable, c_int))
 
-    write(stext, "(g0.5)") data%zdata%missing
+    write(stext, "(1pg0.5)") data%zdata%missing
     call gtk_entry_set_text(cg_missing_entry, trim(stext)//c_null_char)
 
     call hl_gtk_spin_button_set_value(cg_gamma_entry, &
          & real(data%zdata%gamma, c_double))
 
-    call gtk_toggle_button_set_active(cg_log_but, f_c_logical(data%zdata%ilog))
+    call gtk_combo_box_set_active(cg_log_cbo, int(data%zdata%ilog, c_int))
     call gtk_toggle_button_set_active(cg_invert_but, &
          & f_c_logical(data%zdata%invert))
     call gtk_toggle_button_set_active(cg_smooth_but, &
          & f_c_logical(data%zdata%smooth))
     call gtk_widget_set_sensitive(gc_smooth_l_sb, &
          &  f_c_logical(data%zdata%smooth))
+    
     call hl_gtk_spin_button_set_value(gc_smooth_l_sb, &
          &  int(data%zdata%shade_levels, c_int))
-
+    
     do i = 1, 2
-       write(stext, "(g0.5)") data%zdata%range(i)
+       write(stext, "(1pg0.5)") data%zdata%range(i)
        call gtk_entry_set_text(cg_range_entry(i), trim(stext)//c_null_char)
     end do
 
@@ -446,7 +487,17 @@ contains
 
     call gtk_entry_set_text(ds_name_id, trim(data%descript)//c_null_char)
     call hl_gtk_spin_button_set_value(ds_idx_id, int(pdefs%cset, c_int))
+
+    if (data%type == 0 .and. data%ndata == 0) then
+       call gtk_entry_set_text(ds_type_id, &
+            & "Unset"//c_null_char)
+    else
+       call gtk_entry_set_text(ds_type_id, &
+            & trim(typedescrs(data%type))//c_null_char)
+    end if
+
     call gtk_widget_set_sensitive(ds_as_data_id, f_c_logical(data%type < 0))
+    call gtk_widget_set_sensitive(ds_transpose_id, f_c_logical(data%type >= 0))
 
     call gr_ds_device
 
@@ -468,8 +519,8 @@ contains
 
     data => pdefs%data(pdefs%cset)
 
-    if (allocated(pdefs%transient%x_dev)) deallocate(pdefs%transient%x_dev)
-    if (allocated(pdefs%transient%y_dev)) deallocate(pdefs%transient%y_dev)
+    if (allocated(transient%x_dev)) deallocate(transient%x_dev)
+    if (allocated(transient%y_dev)) deallocate(transient%y_dev)
 
     if (data%type < 0 .or. data%type == 9) return
     if (data%ndata == 0) return
@@ -490,12 +541,12 @@ contains
        y = data%xydata(1,:) * sin(data%xydata(2,:)*scale)
     end if
 
-    allocate(pdefs%transient%x_dev(data%ndata), &
-         & pdefs%transient%y_dev(data%ndata))
+    allocate(transient%x_dev(data%ndata), &
+         & transient%y_dev(data%ndata))
 
     do i = 1, data%ndata
-       call gr_plot_coords_w_d(x(i), y(i), pdefs%transient%x_dev(i), &
-            &  pdefs%transient%y_dev(i))
+       call gr_plot_coords_w_d(x(i), y(i), transient%x_dev(i), &
+            &  transient%y_dev(i))
     end do
   end subroutine gr_ds_device
 
@@ -507,9 +558,9 @@ contains
 
     logical :: ok
 
-    if (pdefs%transient%changes > 0) then
+    if (transient%changes > 0) then
        call gr_write(ok, auto=.TRUE.)
-       pdefs%transient%changes = 0
+       transient%changes = 0
     end if
 
     rv = TRUE
@@ -523,7 +574,7 @@ contains
 
     if (.not. c_associated(gr_drawing_area)) return
 
-    if (pdefs%transient%mode == 1) then
+    if (transient%mode == 1) then
        call gtk_widget_set_tooltip_text(gr_drawing_area, &
             & "Left = Add new annotation"//c_new_line//&
             & "Middle = Edit an existing annotation"//c_new_line//&

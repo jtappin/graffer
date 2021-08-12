@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -29,12 +29,20 @@ module graff_globals
 
   type(graff_pdefs), target :: pdefs
 
+  ! Transient, but global values.
+  
+  type(graff_trans), target :: transient
+  
+  ! Display options
+
+  type(graff_opts), target :: sysopts
+  
   ! Widgets that may be needed outside the GUI-specifics
 
-  type(c_ptr) :: gr_window = c_null_ptr		! The top level window
-  type(c_ptr) :: gr_drawing_area = c_null_ptr	! The main plotting surface
-  type(c_ptr) :: gr_infobar = c_null_ptr	! Messages window
-  type(c_ptr) :: xhair_but = c_null_ptr         ! Cross hairs toggle
+  type(c_ptr) :: gr_window = c_null_ptr         ! The top level window
+  type(c_ptr) :: gr_drawing_area = c_null_ptr   ! The main plotting surface
+  type(c_ptr) :: gr_infobar = c_null_ptr        ! Messages window
+!!$  type(c_ptr) :: xhair_but = c_null_ptr         ! Cross hairs toggle
 
 
 end module graff_globals

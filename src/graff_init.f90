@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -57,8 +57,9 @@ contains
        pdefs%axsty(i)%tzero = 0_int32
        pdefs%axsty(i)%minor = 0_int16
        pdefs%axsty(i)%major = 0_int16
-       pdefs%axsty(i)%xmajor = 0._real64
        pdefs%axsty(i)%format = ""
+       pdefs%axsty(i)%log_bands = [6, 15, 30]
+       pdefs%axsty(i)%is_big_log = .false.
     end do
 
     pdefs%ctable = 0_int16
@@ -79,9 +80,9 @@ contains
 
     call gr_pdefs_text_init(pdefs%text_options)
 
-    pdefs%transient%current_only = .false.
-    if (allocated(pdefs%transient%x_dev)) deallocate(pdefs%transient%x_dev)
-    if (allocated(pdefs%transient%y_dev)) deallocate(pdefs%transient%y_dev)
+    transient%current_only = .false.
+    if (allocated(transient%x_dev)) deallocate(transient%x_dev)
+    if (allocated(transient%y_dev)) deallocate(transient%y_dev)
 
     ! Hardcopy defaults (note that not all of these are relevant to
     ! plplot's way of doing hardcopy).
@@ -100,14 +101,13 @@ contains
     
     pdefs%hardset%action = ''
     pdefs%hardset%viewer = ''
+    pdefs%hardset%pdfviewer = ''
     pdefs%hardset%name = ''
 
     pdefs%hardset%psdev = ''
     pdefs%hardset%epsdev = ''
     pdefs%hardset%pdfdev = ''
     pdefs%hardset%svgdev = '' 
-
-    pdefs%opts = default_options
 
     pdefs%key%x = 0._real64
     pdefs%key%y = 0._real64
@@ -139,13 +139,15 @@ contains
   end subroutine gr_pdefs_data_init_all
 
 
-  subroutine gr_pdefs_data_init(dataset, index)
+  subroutine gr_pdefs_data_init(dataset, index, minimal)
     type(graff_data), intent(inout), optional, target :: dataset
     integer(kind=int16), intent(in), optional :: index
+    logical, intent(in), optional :: minimal
 
     ! Initialize a Graffer dataset.
 
     type(graff_data), pointer :: data
+    logical :: init_settings
 
     if (present(dataset)) then
        data => dataset
@@ -157,49 +159,60 @@ contains
        return
     end if
 
+    if (present(minimal)) then
+       init_settings = .not. minimal
+    else
+       init_settings = .true.
+    end if
+
     data%ndata = 0_int32
     data%ndata2 = 0_int32
     data%type = 0_int16
     data%mode = 0_int16
-    data%descript = ''
-    data%pline = 1_int16
-    data%psym = 0_int16
-    data%symsize = 1._real32
-    data%line = 0_int16
-    data%colour = 1_int16
-    data%thick = 1._real32
-    data%y_axis = 0_int16
-    data%sort = .false.
-    data%noclip = .false.
+    if (init_settings) then
+       data%descript = ''
+       data%pline = 1_int16
+       data%psym = 0_int16
+       data%symsize = 1._real32
+       data%line = 0_int16
+       data%colour = 1_int16
+       data%thick = 1._real32
 
-    if (present(dataset)) then
-       data%medit = .false.
-       data%zdata%gamma = 1._real32
-       data%zdata%ctable = 0_int16
-    else
-       data%medit = pdefs%opts%mouse
-       data%zdata%gamma = pdefs%gamma
-       data%zdata%ctable = pdefs%ctable
+       data%min_val = d_nan()
+       data%max_val = d_nan()
+       data%y_axis = 0_int16
+       data%sort = .false.
+       data%noclip = .false.
+
+       if (present(dataset)) then
+          data%medit = .false.
+          data%zdata%gamma = 1._real32
+          data%zdata%ctable = 0_int16
+       else
+          data%medit = sysopts%mouse
+          data%zdata%gamma = pdefs%gamma
+          data%zdata%ctable = pdefs%ctable
+       end if
+
+       data%zdata%format = 0
+       data%zdata%set_levels = .false.
+       data%zdata%n_levels = 6_int16
+       data%zdata%n_cols = 0_int16
+       data%zdata%n_sty = 0_int16
+       data%zdata%n_thick = 0_int16
+
+       data%zdata%range = 0._real64
+       data%zdata%missing = 0._real64
+       data%zdata%pxsize = 0.1_real32
+       data%zdata%charsize = 1._real32
+       data%zdata%label = 0_int16
+       data%zdata%fill = 0_int8
+       data%zdata%ilog = 0_int16
+       data%zdata%invert = .false.
+       data%zdata%smooth = .false.
+       data%zdata%shade_levels = 256
     end if
-
-    data%zdata%format = 0
-    data%zdata%set_levels = .false.
-    data%zdata%n_levels = 6_int16
-    data%zdata%n_cols = 0_int16
-    data%zdata%n_sty = 0_int16
-    data%zdata%n_thick = 0_int16
-
-    data%zdata%range = 0._real64
-    data%zdata%missing = 0._real64
-    data%zdata%pxsize = 0.1_real32
-    data%zdata%charsize = 1._real32
-    data%zdata%label = 0_int16
-    data%zdata%fill = 0_int8
-    data%zdata%ilog = .false.
-    data%zdata%invert = .false.
-    data%zdata%smooth = .false.
-    data%zdata%shade_levels = 256
-
+    
     if (allocated(data%xydata)) deallocate(data%xydata)
 
     if (allocated(data%zdata%x)) deallocate(data%zdata%x)
@@ -261,7 +274,7 @@ contains
 
     if (state) then
        pdefs%chflag = .true.
-       pdefs%transient%changes = pdefs%transient%changes + 1_int16
+       transient%changes = transient%changes + 1_int16
        if (c_associated(gr_window)) &
             & call gtk_window_set_title(gr_window, &
             & "Graffer V"//trim(gr_sversion)//&
@@ -274,7 +287,7 @@ contains
           auto_only = .false.
        end if
 
-       pdefs%transient%changes = 0_int16
+       transient%changes = 0_int16
        if (.not. auto_only) then
           pdefs%chflag = .false.
           if (c_associated(gr_window)) &

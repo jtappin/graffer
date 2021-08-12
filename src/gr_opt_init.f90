@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -24,10 +24,11 @@ module gr_opt_init
 
   use graff_types
   use gr_utils
+  use gr_eval
 
+  use graff_globals
+  
   implicit none
-
-  type(graff_opts) :: default_options
 
 contains
   subroutine gr_read_rc
@@ -67,6 +68,7 @@ contains
     character(len=32) :: key
     integer :: ival
     integer, dimension(2) :: ival2
+    logical :: found
 
     ok = .true.
 
@@ -114,69 +116,60 @@ contains
                   & "gr_read_rc_file: Invalid Autosave setting in file:", &
                   & trim(file), trim(keyval)
           else
-             default_options%auto_delay = ival
+             sysopts%auto_delay = ival
           end if
        case('supp2d')
-          read(keyval, *, iostat=ios, iomsg=iom) ival
+          sysopts%s2d = truth(keyval, default=sysopts%s2d, status=ios)
           if (ios /= 0) then
              write(error_unit, "(2a/t10,a)") &
                   & "gr_read_rc_file: Invalid Supp2D setting in file:", &
                   & trim(file), trim(keyval)
-          else
-             default_options%s2d = c_f_logical(ival)
           end if
        case('mouseedit')
-          read(keyval, *, iostat=ios, iomsg=iom) ival
+          sysopts%mouse = truth(keyval, default=sysopts%mouse, status=ios)
           if (ios /= 0) then
              write(error_unit, "(2a/t10,a)") &
                   & "gr_read_rc_file: Invalid MouseEdit setting in file:", &
                   & trim(file), trim(keyval)
-          else
-             default_options%mouse = c_f_logical(ival)
           end if
-       case('colourmenu')
-          read(keyval, *, iostat=ios, iomsg=iom) ival
-          if (ios /= 0) then
-             write(error_unit, "(2a/t10,a)") &
-                  & "gr_read_rc_file: Invalid ColourMenu setting in file:", &
-                  & trim(file), trim(keyval)
-          else
-             default_options%colour_menu = c_f_logical(ival)
-             write(error_unit, "(a)") &
-                  & "Warning: colour menu is ignored in the Fortran version"
-          end if
+
        case('delete')
-          read(keyval, *, iostat=ios, iomsg=iom) ival
+          sysopts%delete_function_files = truth(keyval, default = &
+               & sysopts%delete_function_files, status=ios)
           if (ios /= 0) then
              write(error_unit, "(2a/t10,a)") &
                   & "gr_read_rc_file: Invalid Delete setting in file:", &
                   & trim(file), trim(keyval)
-          else
-             default_options%delete_function_files = c_f_logical(ival)
           end if
 
        case("colourdir")
-          default_options%colour_dir = trim(adjustl(keyval))
+          sysopts%colour_dir = trim(adjustl(keyval))
        case("colourname")
-          default_options%colour_stem = trim(adjustl(keyval))
+          sysopts%colour_stem = trim(adjustl(keyval))
 
        case('pdfview')
-          default_options%pdfviewer = trim(adjustl(keyval))
+          sysopts%pdfviewer = trim(adjustl(keyval))
 
        case('gdl', 'idl')
-          default_options%gdl_command = trim(adjustl(keyval))
+          found = gr_have_gdl(adjustl(keyval))
+          if (.not. found) then
+             write(error_unit, "(a/t10,a)") &
+                  & "gr_parse_command: gdl/idl command not found in path", &
+                  & trim(keyval)
+          end if
 
        case('geometry')
           px = scan(keyval, 'xX')
           if (px > 0) keyval(px:px) = ' '
           read(keyval, *, iostat=ios, iomsg=iom) ival2
-                    if (ios /= 0) then
+          if (ios /= 0) then
              write(error_unit, "(2a/t10,a)") &
                   & "gr_read_rc_file: Invalid Geometry setting in file:", &
                   & trim(file), trim(keyval)
           else
-             default_options%geometry = ival2
+             sysopts%geometry = ival2
           end if
+
        case default
           write(error_unit, "(2a/t10,a)") &
                & "gr_read_rc_file: Unknown item in file:", &
@@ -201,7 +194,7 @@ contains
     logical :: arg_plus
     integer :: ios
     character(len=120) :: iom
-    logical :: helped
+    logical :: helped, found
 
     nargs = command_argument_count()
 
@@ -209,10 +202,22 @@ contains
     isdir=.false.
     helped = .false.
 
+    if (nargs == 0) return
+
+    call get_command_argument(nargs, file)
+
+    if (trim(file) == '-h' .or. trim(file) == '--help') then
+       call gr_cmd_help
+       stop                       ! After help don't want to do
+    end if
+    isdir = gr_is_dir(file)
+    if (file == '.' .or. file == '..') isdir = .true.
+
     i = 1
     do 
-       if (i > nargs) exit
+       if (i > nargs-1) exit
        call get_command_argument(i, argv)
+       
        poseq = index(argv, '=')
        if (poseq > 0) then
           key = trim(argv(:poseq-1))
@@ -225,7 +230,8 @@ contains
        select case (key)
        case('-h', '--help')
           call gr_cmd_help
-          stop
+          stop                       ! After help don't want to do
+                                     ! anything else.
 
        case('-a','--autosave')
           if (keyval == '') then
@@ -247,24 +253,24 @@ contains
                      & "not valid", trim(keyval)
              else 
                 if (arg_plus) i = i+1
-                default_options%auto_delay = ival
+                sysopts%auto_delay = ival
              end if
           end if
 
        case('-m','--mouse')
-          default_options%mouse = .true.
+          sysopts%mouse = .true.
        case('-nom', '--nomouse')
-          default_options%mouse = .false.
+          sysopts%mouse = .false.
 
        case('-s2', '--suppress-2d')
-          default_options%s2d = .true.
+          sysopts%s2d = .true.
        case('-nos2', '--nosuppress-2d')
-          default_options%s2d = .false.
+          sysopts%s2d = .false.
 
        case('-d', '--delete')
-          default_options%delete_function_files = .true.
+          sysopts%delete_function_files = .true.
        case('-nod', '--nodelete')
-          default_options%delete_function_files = .false.
+          sysopts%delete_function_files = .false.
 
        case('-p', '--pdf')
           if (keyval == '') then
@@ -281,7 +287,7 @@ contains
           else
              if (arg_plus) i = i+1
              if (gr_find_program(keyval)) then
-                default_options%pdfviewer =trim(keyval)
+                sysopts%pdfviewer =trim(keyval)
              else 
                 write(error_unit, "(a/t10,a)") &
                      & "gr_parse_command: Pdf viewer not found in path", &
@@ -303,9 +309,8 @@ contains
                   &  trim(key)
           else
              if (arg_plus) i = i+1
-             if (gr_find_program(keyval)) then
-                default_options%gdl_command = trim(keyval)
-             else
+             found = gr_have_gdl(keyval)
+             if (.not. found) then
                 write(error_unit, "(a/t10,a)") &
                      & "gr_parse_command: gdl/idl command not found in path", &
                      & trim(keyval)
@@ -326,7 +331,7 @@ contains
                   &  trim(key)
           else
              if (arg_plus) i = i+1
-             default_options%colour_stem =trim(keyval)
+             sysopts%colour_stem =trim(keyval)
           end if
 
        case('-cd', '--colour-dir')
@@ -343,7 +348,7 @@ contains
                   &  trim(key)
           else
              if (arg_plus) i = i+1
-             default_options%colour_dir =trim(keyval)
+             sysopts%colour_dir =trim(keyval)
           end if
 
        case('-g', '--geometry')
@@ -354,6 +359,7 @@ contains
           else
              status = 0
           end if
+
           if (status /= 0) then
              write(error_unit, "(a/t10,a)") &
                   & "gr_parse_command: Failed to get a value for key: ",&
@@ -373,7 +379,7 @@ contains
                         & "gr_parse_command: Value for x size is "//&
                         & "not valid", trim(keyval)
                 else
-                   default_options%geometry(1) = ival
+                   sysopts%geometry(1) = ival
                 end if
                 read(keyval(px+1:), *, iostat=ios, iomsg=iom) ival
                 if (ios /= 0) then
@@ -381,28 +387,23 @@ contains
                         & "gr_parse_command: Value for y size is "//&
                         & "not valid", trim(keyval)
                 else
-                   default_options%geometry(2) = ival
+                   sysopts%geometry(2) = ival
                 end if
              end if
           end if
-
+          
        case default
-          if (i /= nargs) then
              write(error_unit, "(2a)") &
                   & "gr_parse_command: Unknown option: ", trim(key)
              if (.not. helped) then
                 call gr_cmd_help
                 helped = .true.
              end if
-          else
-             file = trim(argv)
-             isdir = gr_is_dir(file)
-             if (file == '.' .or. file == '..') isdir = .true.
-          end if
-       end select
+        end select
 
        i = i+1
-    end do 
+    end do
+    
   end subroutine gr_parse_command
 
   subroutine gr_cmd_help
@@ -426,9 +427,12 @@ contains
          & "-ct --colour-table <name>: Specify the filename stem for the colour", &
          & "                        table files (default 'c_tables')", &
          & "-cd --colour-dir <dir>: Specify where the colour tables are installed", &
-         & "--gdl --idl <cmd>     : Specify the gdl or idl command to use", &
          & "                        default ${PREFIX}/share/graffer.", &
+         & "--gdl --idl <cmd>     : Specify the gdl or idl command to use,", &
+         & "                        default: search $PATH for 'gdl' then 'idl'.", &
          & "", &
-         & "<file>                : The graffer file to open or a directory to search"
+         & "<file>                : The graffer file to open or a directory to search", &
+         & "                        if not given, then a dialogue is opened in the", &
+         & "                        current directory."
   end subroutine gr_cmd_help
 end module gr_opt_init

@@ -37,6 +37,7 @@ pro graff_key__define
 ;	Extracted: 30/6/05; SJT
 ;	Add char size: 29/4/09; SJT
 ;	Add support for a second Y-scale: 22/12/11; SJT
+;	Support for reversed key listing: 16/7/21
 ;-
 
 Key = {graff_key, $
@@ -48,6 +49,7 @@ Key = {graff_key, $
        List:      ptr_new(),  $
        Frame:     0b, $
        One_point: 0b, $
+       reverse:   0b, $
        Use:       0b, $
        side:      0b, $
        title: '' $

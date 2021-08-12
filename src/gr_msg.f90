@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -36,25 +36,37 @@ module gr_msg
      module procedure gr_message_1, gr_message_n
   end interface gr_message
 
-  private :: is_terminal
+  private :: is_terminal, gr_message_1, gr_message_n
 
 contains
-  subroutine gr_message_1(message, type)
+  subroutine gr_message_1(message, type, pop_up)
     character(len=*), intent(in) :: message
     integer(kind=c_int), intent(in), optional :: type
-
+    logical, intent(in), optional :: pop_up
+    
     ! Error message (1 line)
 
     integer(kind=c_int) :: msgtype, iresp
     character(len=len(message)) :: hdr
-
+    logical :: dialogue
+    
     if (present(type)) then
        msgtype = type
     else
        msgtype = GTK_MESSAGE_WARNING
     end if
 
-    if (c_associated(gr_infobar) .and. msgtype /= GTK_MESSAGE_INFO) then
+    if (present(pop_up)) then
+       dialogue = pop_up
+    else
+       dialogue = .false.
+    end if
+
+    if (dialogue) then
+       hdr = "GRAFFER"
+       iresp = hl_gtk_message_dialog_show([hdr, message], &
+            & GTK_BUTTONS_OK, type=msgtype)
+    else if (c_associated(gr_infobar) .and. msgtype /= GTK_MESSAGE_INFO) then
        call hl_gtk_info_bar_message(gr_infobar, trim(message)//c_null_char, &
             & type=msgtype)
     else
@@ -77,15 +89,17 @@ contains
     end if
   end subroutine gr_message_1
 
-  subroutine gr_message_n(message, type)
+  subroutine gr_message_n(message, type, pop_up)
     character(len=*), dimension(:), intent(in) :: message
     integer(kind=c_int), intent(in), optional :: type
+    logical, intent(in), optional :: pop_up
 
     ! Error message (>1 line)
 
     integer(kind=c_int) :: msgtype, iresp
     character(len=1), dimension(:), allocatable :: cmsg
     character(len=len(message)) :: hdr
+    logical :: dialogue
 
     if (present(type)) then
        msgtype = type
@@ -93,7 +107,17 @@ contains
        msgtype = GTK_MESSAGE_WARNING
     end if
 
-    if (c_associated(gr_infobar) .and. msgtype /= GTK_MESSAGE_INFO) then
+    if (present(pop_up)) then
+       dialogue = pop_up
+    else
+       dialogue = .false.
+    end if
+
+    if (dialogue) then
+       hdr = "GRAFFER"
+       iresp = hl_gtk_message_dialog_show([hdr, message], &
+            & GTK_BUTTONS_OK, type=msgtype)
+    else if (c_associated(gr_infobar) .and. msgtype /= GTK_MESSAGE_INFO) then
        call f_c_string(message, cmsg)
        call hl_gtk_info_bar_message(gr_infobar, cmsg, &
             & type=msgtype)

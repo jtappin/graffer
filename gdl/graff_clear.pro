@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2013-2020
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -36,21 +36,22 @@ pro Graff_clear, pdefs
 ;	Replace handles with pointers: 28/6/05; SJT
 ;-
 
-for j = 0, pdefs.nsets-1 do begin
-    if (*pdefs.data)[j].type eq 9 then ptr_free, $
-      (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
-      (*(*pdefs.data)[j].xydata).z
-    ptr_free, (*pdefs.data)[j].xydata
-    ptr_free, (*pdefs.data)[j].zopts.levels, $
-      (*pdefs.data)[j].zopts.style, $
-      (*pdefs.data)[j].zopts.thick, $
-      (*pdefs.data)[j].zopts.colours
+  for j = 0, pdefs.nsets-1 do begin
+     if (*pdefs.data)[j].type eq 9 then ptr_free, $
+        (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
+        (*(*pdefs.data)[j].xydata).z
+     ptr_free, (*pdefs.data)[j].xydata
+     ptr_free, (*pdefs.data)[j].zopts.levels, $
+               (*pdefs.data)[j].zopts.style, $
+               (*pdefs.data)[j].zopts.thick, $
+               (*pdefs.data)[j].zopts.colours, $
+               (*pdefs.data)[j].zopts.raw_colours
 
-endfor
+  endfor
 
-ptr_free, pdefs.data
-ptr_free, pdefs.text
-ptr_free, pdefs.key.list
-ptr_free, pdefs.remarks
+  ptr_free, pdefs.data
+  ptr_free, pdefs.text
+  ptr_free, pdefs.key.list
+  ptr_free, pdefs.remarks
 
 end

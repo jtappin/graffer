@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -22,7 +22,8 @@ module gr_utils
 
   use iso_fortran_env
   use iso_c_binding
-
+  use ieee_arithmetic
+  
   use gtk_sup
 
   use gr_msg
@@ -54,6 +55,7 @@ module gr_utils
      module procedure count_lines_unit
   end interface count_lines
 
+  
   integer(kind=int8), parameter, private, dimension(2) :: z1 = [0_int8, 1_int8]
   integer(kind=int16), parameter, private :: blv = transfer(z1, 0_int16)
   logical, parameter :: is_big_endian = blv == 1_int16
@@ -61,16 +63,12 @@ module gr_utils
   private :: swap_8, swap_16, swap_32, swap_r32, swap_r64
   private :: little_8, little_16, little_32, little_r32, little_r64
   private :: count_lines_file, count_lines_unit
+   
+  ! Character limits
 
-  ! Axis style bits
-
-  integer, parameter :: exact_bit = 0, extend_bit = 1, axis_bit = 2, &
-       & box_bit = 3
-  integer, parameter :: origin_bit = 1, full_bit = 3, annot_bit = 2, &
-       & yrot_bit=4, time_bit = 0
-
-  ! NaN value
-  real(kind=real64), parameter :: d_nan=transfer(z'7ff8000000000000',1._real64)
+  integer, parameter, private :: lcmin = iachar('a'), lcmax = iachar('z')
+  integer, parameter, private :: ucmin = iachar('A'), ucmax = iachar('Z')
+  integer, parameter, private :: case_diff = iachar('A')-iachar('a')
 
 contains
 
@@ -249,12 +247,10 @@ contains
     character(len=*), intent(in) :: str
     character(len=len(str)) :: upcase
 
-    integer, parameter :: lcmin = iachar('a'), lcmax = iachar('z')
-    integer, parameter :: case_diff = iachar('A')-iachar('a')
     integer :: i,ic
 
     upcase = str
-    do i = 1, len(str)
+    do i = 1, len_trim(str)
        ic = iachar(str(i:i))
        if (ic >= lcmin .and. ic <= lcmax) upcase(i:i) = achar(ic+case_diff)
     end do
@@ -264,17 +260,36 @@ contains
     character(len=*), intent(in) :: str
     character(len=len(str)) :: lowcase
 
-    integer, parameter :: ucmin = iachar('A'), ucmax = iachar('Z')
-    integer, parameter :: case_diff = iachar('A')-iachar('a')
     integer :: i,ic
 
     lowcase = str
-    do i = 1, len(str)
+    do i = 1, len_trim(str)
        ic = iachar(str(i:i))
        if (ic >= ucmin .and. ic <= ucmax) lowcase(i:i) = achar(ic-case_diff)
     end do
   end function lowcase
 
+  ! Character test.
+
+  elemental function is_letters(str)
+    logical :: is_letters
+    character(len=*), intent(in) :: str
+
+    integer :: i, ic
+
+    is_letters = .true.
+
+    do i = 1, len_trim(str)
+       ic = iachar(str(i:i))
+       if ((ic < ucmin .or. ic > ucmax) .and. &
+            & (ic < lcmin .or. ic > lcmax)) then
+          is_letters = .false.
+          exit
+       end if
+    end do
+
+  end function is_letters
+  
   function file_exists(file)
     logical :: file_exists
     character(len=*), intent(in) :: file
@@ -578,13 +593,6 @@ contains
     end function mdays
   end subroutine gr_date
 
-  elemental function finite(x)
-    logical :: finite
-    real(kind=real64), intent(in) :: x
-
-    finite = .not. (isnan(x) .or. x > huge(x) .or. x < -huge(x))
-  end function finite
-
   ! Miscellaneous glib interfaces with "fortranization"
 
   function gr_find_program(name, path)
@@ -661,4 +669,38 @@ contains
     pl=0
   end function last
 
+  function truth(str, default, status)
+    logical(kind=int8) :: truth
+    character(len=*), intent(in) :: str
+    logical(kind=int8), intent(in), optional :: default
+    integer, intent(out), optional :: status
+
+    status = 0
+    select case(lowcase(trim(adjustl(str))))
+    case('t', 'true', 'y', 'yes', '1')
+       truth = .true.
+    case('f', 'false', 'n', 'no', '0' )
+       truth = .false.
+    case default
+       write(error_unit, *) "TRUTH:: Warning: Invalid input ", trim(str)
+       status = 1
+       if (present(default)) then
+          truth = default
+       else
+          truth = .false.
+       end if
+    end select
+  end function truth
+
+  pure function d_inf()
+    real(kind=real64) :: d_inf
+
+    d_inf = ieee_value(d_inf, ieee_positive_inf)
+  end function d_inf
+  
+  pure function d_nan()
+    real(kind=real64) :: d_nan
+
+    d_nan = ieee_value(d_nan, ieee_quiet_nan)
+  end function d_nan
 end module gr_utils

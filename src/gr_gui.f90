@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -187,7 +187,7 @@ contains
     call gr_plot_open
     call gr_plot_draw(.false.)
 
-    iseconds = int(pdefs%opts%auto_delay, c_int)
+    iseconds = int(sysopts%auto_delay, c_int)
     tid = g_timeout_add_seconds(iseconds, c_funloc(gr_auto_save), c_null_ptr)
 
     call gtk_main()

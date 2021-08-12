@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -18,8 +18,9 @@
 module gr_ds_fit_widgets
   ! Fitting a function to a dataset.
 
-  use iso_fortran_env
-  use iso_c_binding
+  use, intrinsic :: iso_fortran_env
+  use, intrinsic :: iso_c_binding
+  use, intrinsic :: ieee_arithmetic
 
   use gtk_hl
   use gtk_sup
@@ -37,14 +38,17 @@ module gr_ds_fit_widgets
   use gr_plot
   use gr_cb_common
   use gr_msg
-
+  use gr_ds_tools
+  
   implicit none
 
   type(c_ptr), private :: fit_window, fit_list, fit_type_cbo, fit_order_sb, &
        & fit_dir_cbo, fit_soln_entry, fit_prob_entry, fit_wt_but, &
        & fit_neval_sb, fit_chi2_entry
-  type(graff_fdata), private :: oldfun
-  integer(kind=int16), private :: oldtype
+
+  type(graff_data), private :: old_ds
+  
+  logical, private :: have_changed
 
 contains
   subroutine gr_fit_menu
@@ -61,13 +65,8 @@ contains
        return
     end if
 
-    if (pdefs%data(pdefs%cset)%type < 0) then
-       oldfun = pdefs%data(pdefs%cset)%funct
-       oldtype = pdefs%data(pdefs%cset)%type
-    else 
-       oldtype = 10
-    end if
-
+    call gr_ds_copy(from=pdefs%cset, destination = old_ds)
+    
     fit_window = hl_gtk_window_new("Fitting"//c_null_char, &
          & destroy=c_funloc(gr_fit_quit), &
          & parent=gr_window, modal=TRUE)
@@ -114,8 +113,7 @@ contains
          & ["Polynomial      ", &
          &  "Exponential     ", &
          &  "Logarithmic     ", &
-         &  "Power law       ", &
-         &  "Piecewise linear"], active=-1_c_int, tooltip = &
+         &  "Power law       "], active=-1_c_int, tooltip = &
          & "Select the type of fit to make"//c_null_char)
     call hl_gtk_table_attach(jb, fit_type_cbo, 1_c_int, 0_c_int, &
          & yopts=0_c_int)
@@ -183,13 +181,11 @@ contains
          & "Compute the fit, and show the result"//c_null_char)
     call hl_gtk_box_pack(jb, junk)
 
-    if (pdefs%data(pdefs%cset)%type < 0) then
-       junk = hl_gtk_button_new("Cancel"//c_null_char, &
-            & clicked=c_funloc(gr_fit_clear), tooltip=&
-            & "Clear the fit, restore the previous function, "//&
-            & "quit the dialogue"//c_null_char)
-       call hl_gtk_box_pack(jb, junk)
-    end if
+    junk = hl_gtk_button_new("Cancel"//c_null_char, &
+         & clicked=c_funloc(gr_fit_clear), tooltip=&
+         & "Clear the fit, restore the previous function, "//&
+         & "quit the dialogue"//c_null_char)
+    call hl_gtk_box_pack(jb, junk)
 
     junk = hl_gtk_button_new("Quit"//c_null_char, &
          & clicked=c_funloc(gr_fit_quit), tooltip=&
@@ -206,6 +202,9 @@ contains
     ! Quit fitting menu
 
     call gtk_widget_destroy(fit_window)
+
+    call gr_plot_draw(have_changed)
+
   end subroutine gr_fit_quit
 
   subroutine gr_fit_select(widget, gdata) bind(c)
@@ -264,12 +263,10 @@ contains
 
     ! Cancel changes
 
-    if (oldtype < 0) then
-       pdefs%data(pdefs%cset)%funct = oldfun
-       pdefs%data(pdefs%cset)%type = oldtype
-       call gtk_widget_destroy(fit_window)
-    end if
-
+    call gr_ds_copy(source=old_ds, to=pdefs%cset, move=.true.)
+    have_changed = .false.
+    call gtk_widget_destroy(fit_window)
+ 
   end subroutine gr_fit_clear
 
   subroutine gr_fit_update(widget, gdata) bind(c)
@@ -283,17 +280,18 @@ contains
     real(kind=real64), dimension(:), pointer :: x, y
     real(kind=real64) :: chi2, prob
 
-    integer :: order, neval,i,ipos
+    integer :: order, neval,i,ipos, nf_data, j
     integer(kind=int16) :: oftype
     integer(kind=c_int), dimension(:), allocatable :: isel
     integer(kind=c_int) :: itype, idir, nsel, idx
 
-    logical :: use_wt
+    logical :: use_wt, nan_flag
     character(len=10) :: var
     character(len=5) :: wrap0, wrap1
     character(len=256) :: fstring
     character(len=32) :: termstr
     type(graff_data), pointer :: fit_ds, curr_ds
+    logical, dimension(:), allocatable :: valid_data
 
     nsel = hl_gtk_listn_get_selections(fit_list, &
          & indices = isel)
@@ -310,35 +308,146 @@ contains
     neval = int(hl_gtk_spin_button_get_value(fit_neval_sb))
     idir = gtk_combo_box_get_active(fit_dir_cbo)
     itype = gtk_combo_box_get_active(fit_type_cbo)
-    allocate(x(fit_ds%ndata), y(fit_ds%ndata), coeffs(order+1))
-    xr = fit_ds%xydata(1,:)
-    yr = fit_ds%xydata(2,:)
+
+    allocate(coeffs(order+1))
+
+    ! Need to eliminate any NaN values otherwise fit will be NaN.
+
+    nan_flag=any(.not. (ieee_is_finite(fit_ds%xydata(1,:)) .and. &
+         & ieee_is_finite(fit_ds%xydata(2,:))))
+
+    if (nan_flag) then
+       allocate(valid_data(fit_ds%ndata))
+       valid_data = ieee_is_finite(fit_ds%xydata(1,:)) .and. &
+            & ieee_is_finite(fit_ds%xydata(2,:))
+       nf_data = count(valid_data)
+       allocate(xr(nf_data), yr(nf_data))
+       j = 1
+       do i = 1, fit_ds%ndata
+          if (.not. valid_data(i)) cycle
+          xr(j) = fit_ds%xydata(1,i)
+          yr(j) = fit_ds%xydata(2,i)
+          j = j+1
+       end do
+    else
+       allocate(xr(fit_ds%ndata), yr(fit_ds%ndata))
+       xr = fit_ds%xydata(1,:)
+       yr = fit_ds%xydata(2,:)
+    end if
+
+    select case (itype)
+    case(1)                ! Exponential fit, -ve Y values invalid
+       if (any(yr <= 0.)) then
+          call gr_message("Exp fit: Y contains negative or zero values, using polynomial")
+          itype = 0
+          call gtk_combo_box_set_active(fit_type_cbo, 0_c_int)
+       end if
+
+    case(2)                ! Log fit, -ve X values are invalid
+       if (any(xr <= 0.)) then
+          call gr_message("Log fit: X contains negative or zero values, using polynomial")
+          itype = 0
+          call gtk_combo_box_set_active(fit_type_cbo, 0_c_int)
+       end if
+
+    case(3)                ! Power law, -ve X or Y values are invalid
+       if (any(xr <= 0.) .or. any(yr <= 0)) then
+          call gr_message("Power fit: X or Y contains negative or zero values, using polynomial")
+          itype = 0
+          call gtk_combo_box_set_active(fit_type_cbo, 0_c_int)
+       end if
+    end select
 
     if (use_wt) then
-       allocate(wt(fit_ds%ndata))
+       if (nan_flag) then
+          allocate(wt(nf_data))
 
-       select case (fit_ds%type)
-       case(1)
-          wt = 1._real64/fit_ds%xydata(3,:)
-       case(2)
-          wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
-       case(3)
-          wt = 1._real64/fit_ds%xydata(3,:)
-       case(4)
-          wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
-       case(5)
-          wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
-               & (1._real64/fit_ds%xydata(4,:))**2)
-       case(6)
-          wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
-               & (2._real64/(fit_ds%xydata(4,:)+fit_ds%xydata(5,:)))**2)
-       case(7)
-          wt = sqrt((2._real64/(fit_ds%xydata(3,:)+fit_ds%xydata(4,:)))**2 + &
-               & (1._real64/fit_ds%xydata(5,:))**2)
-       case(8)
-          wt = sqrt((2._real64/(fit_ds%xydata(3,:)+fit_ds%xydata(4,:)))**2 + &
-               & (2._real64/(fit_ds%xydata(5,:)+fit_ds%xydata(5,:)))**2)
-       end select
+          j = 1
+          select case (fit_ds%type)
+          case(1)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = 1._real64/fit_ds%xydata(3,i)
+                j = j+1
+             end do
+          case(2)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = 2._real64 / (fit_ds%xydata(3,i) + fit_ds%xydata(4,i))
+                j = j+1
+             end do
+          case(3)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = 1._real64/fit_ds%xydata(3,i)
+                j = j+1
+             end do
+          case(4)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = 2._real64 / (fit_ds%xydata(3,i) + fit_ds%xydata(4,i))
+                j = j+1
+             end do
+          case(5)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = sqrt((1._real64/fit_ds%xydata(3,i))**2 + &
+                     & (1._real64/fit_ds%xydata(4,i))**2)
+                j = j+1
+             end do
+          case(6)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = sqrt((1._real64/fit_ds%xydata(3,i))**2 + &
+                     & (2._real64/(fit_ds%xydata(4,i)+fit_ds%xydata(5,i)))**2)
+                j = j+1
+             end do
+          case(7)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = sqrt((2._real64/(fit_ds%xydata(3,i)+ &
+                     & fit_ds%xydata(4,i)))**2 + &
+                     & (1._real64/fit_ds%xydata(5,i))**2)
+                j = j+1
+             end do
+          case(8)
+             do i = 1, fit_ds%ndata
+                if (.not. valid_data(i)) cycle
+                wt(j) = sqrt((2._real64/(fit_ds%xydata(3,i)+ &
+                     & fit_ds%xydata(4,i)))**2 + &
+                     & (2._real64/(fit_ds%xydata(5,i)+fit_ds%xydata(6,i)))**2)
+                j = j+1
+             end do
+          end select
+       else
+          allocate(wt(fit_ds%ndata))
+
+          select case (fit_ds%type)
+          case(1)
+             wt = 1._real64/fit_ds%xydata(3,:)
+          case(2)
+             wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
+          case(3)
+             wt = 1._real64/fit_ds%xydata(3,:)
+          case(4)
+             wt = 2._real64 / (fit_ds%xydata(3,:) + fit_ds%xydata(4,:))
+          case(5)
+             wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
+                  & (1._real64/fit_ds%xydata(4,:))**2)
+          case(6)
+             wt = sqrt((1._real64/fit_ds%xydata(3,:))**2 + &
+                  & (2._real64/(fit_ds%xydata(4,:)+fit_ds%xydata(5,:)))**2)
+          case(7)
+             wt = sqrt((2._real64/(fit_ds%xydata(3,:)+ &
+                  & fit_ds%xydata(4,:)))**2 + &
+                  & (1._real64/fit_ds%xydata(5,:))**2)
+          case(8)
+             wt = sqrt((2._real64/(fit_ds%xydata(3,:)+ &
+                  & fit_ds%xydata(4,:)))**2 + &
+                  & (2._real64/(fit_ds%xydata(5,:)+fit_ds%xydata(6,:)))**2)
+          end select
+       endif
+       where (.not. ieee_is_finite(wt)) wt = 0._real64
     end if
 
     if (idir == 0) then
@@ -371,7 +480,7 @@ contains
        wrap0 = 'exp('
        wrap1 = ')'
     case(4)
-       print *, "Not yet implemented"
+       call gr_message("Piecewise fitting is not yet implemented.")
        return
     end select
 
@@ -383,17 +492,17 @@ contains
 
     fstring = wrap0
 
-    write(termstr,"(g0.8)") coeffs(1)
+    write(termstr,"(1pg0.8)") coeffs(1)
     termstr=adjustl(termstr)
     fstring = trim(fstring)//termstr
 
-    write(termstr,"(sp,g0.8)") coeffs(2)
+    write(termstr,"(sp,1pg0.8)") coeffs(2)
     termstr=adjustl(termstr)
     termstr = trim(termstr)//"*"//var
     fstring = trim(fstring)//termstr
 
     do i = 2, order
-       write(termstr,"(sp,g0.8)") coeffs(i+1)
+       write(termstr,"(sp,1pg0.8)") coeffs(i+1)
        termstr=adjustl(termstr)
        ipos = len_trim(termstr)+1
        write(termstr(ipos:), "('*',a,'^',i0)") trim(var), i
@@ -404,10 +513,10 @@ contains
 
     call gtk_entry_set_text(fit_soln_entry, trim(fstring)//c_null_char)
 
-    write(termstr, "(g0)") chi2/(size(x)-1-order)
+    write(termstr, "(1pg0)") chi2/(size(x)-1-order)
     call gtk_entry_set_text(fit_chi2_entry, trim(termstr)//c_null_char)
     prob = 1. - gammap(real(size(x)-1-order, real64)/2., chi2/2.)
-    write(termstr, "(g0)") prob
+    write(termstr, "(1pg0)") prob
     call gtk_entry_set_text(fit_prob_entry, trim(termstr)//c_null_char)
 
     curr_ds%type = oftype
@@ -417,10 +526,13 @@ contains
     curr_ds%funct%funct(1) = fstring
     curr_ds%funct%funct(2) = ''
     curr_ds%funct%evaluated = .false.
+    call gtk_entry_set_text(ds_type_id, &
+         & trim(typedescrs(curr_ds%type))//c_null_char)
 
     if (allocated(curr_ds%xydata)) deallocate(curr_ds%xydata)
     call  gtk_notebook_set_current_page(display_nb, 0)
 
-    call gr_plot_draw(.true.)
+    call gr_plot_draw(.false.)
+    have_changed = .true.
   end subroutine gr_fit_update
 end module gr_ds_fit_widgets

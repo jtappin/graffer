@@ -1,4 +1,4 @@
-! Copyright (C) 2013
+! Copyright (C) 2013-2020
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -162,7 +162,9 @@ contains
 
     logical, pointer :: apply
     integer(kind=c_int) :: i
-
+    integer :: kidx, kidxt
+    integer(kind=int32), dimension(:), allocatable :: ktmp
+    
     call c_f_pointer(data, apply)
 
     if (apply) call gr_ds_move(int(sort_from, int16), int(sort_to, int16))

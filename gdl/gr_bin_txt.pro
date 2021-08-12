@@ -1,4 +1,4 @@
-; Copyright (C) 2013
+; Copyright (C) 2013-2020
 ; James Tappin
 
 ; This is free software; you can redistribute it and/or modify
@@ -53,6 +53,7 @@ while (not eof(ilu)) do begin
         
                                 ; Recognized tags for Text items
                                 ; C - colour
+                                ; CV - custom colour
                                 ; S - character size
                                 ; O - orientation (degrees
                                 ;     anticlockwise from the normal
@@ -74,6 +75,7 @@ while (not eof(ilu)) do begin
                                 ; TE, TTE - End
         
         'C': text(nset).colour = value
+        'CV': text[nset].c_vals = value
         'S': text(nset).size = value
         'O': text(nset).orient = value
         'A': text(nset).align = value
