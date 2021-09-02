@@ -41,8 +41,13 @@ to build graffer, and:
 
    sudo make install
 
-to install it. This will also install some gdl/idl utilities to allow
-creation of graffer files from within that environment.
+to install it. By default this will also install some gdl/idl utilities
+to allow creation of graffer files from within that environment.
+If you already have the full GDL/IDL version of graffer, then the
+installation of the GDL/IDL routines from this repository is redundant
+and may be suppressed with:
+    cmake -DGDL=OFF ..
+    
 
 Setting up
 ----------
