@@ -983,6 +983,10 @@ contains
 
        case ('ZCF')
           call rec%get_value(ds%zdata%fill, status)
+          if (ds%zdata%fill > 1) then
+             call gr_message("GR_READ_DS: Downhill ticks no longer supported, using regular.")
+             ds%zdata%fill = 0_int8
+          end if
        case ('ZLI')
           call rec%get_value(ds%zdata%label, status)
        case ('ZLO')

@@ -909,6 +909,10 @@ contains
 
           case('ZCF')
              data%zdata%fill = gr_byt_val(tag_val(itag+1))
+             if (data%zdata%fill > 1) then
+                call gr_message("GR_GET_DS_ASC: Downhill ticks no longer supported, using regular.")
+                data%zdata%fill = 0_int8
+             end if
           case('ZLI')
              data%zdata%label = gr_int_val(tag_val(itag+1))
           case('ZLO')

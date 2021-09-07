@@ -83,7 +83,7 @@ contains
     call hl_gtk_box_pack(jb, cldist_cbo)
     
     cfmt_cbo = hl_gtk_combo_box_new(initial_choices=&
-         & ["Outline ", "Filled  ", "Downhill"], &
+         & ["Outline ", "Filled  "], &
          & changed=c_funloc(gr_2d_set_ct_fmt), &
          & active=int(zdata%fill, c_int), tooltip=&
          & "Select type of contours to use"//c_null_char)
