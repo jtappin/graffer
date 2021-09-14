@@ -15,7 +15,7 @@
 ; this program; see the files COPYING3 and COPYING.RUNTIME respectively.
 ; If not, see <http://www.gnu.org/licenses/>.
 
-pro Graff_init, pdefs, file, version = version
+pro Graff_init, pdefs, file, version = version, ttype = ttype
 
 ;+
 ; GRAFF_INIT
