@@ -611,14 +611,18 @@ contains
           i = pdefs%key%list(j)+1
        end if
 
-       if (pdefs%data(i)%colour < 0) cycle
+       if (pdefs%data(i)%colour == -1) cycle
        
        irow = nrows - mod((ikey-1), nrows)
        icol = (ikey-1) / nrows + 1
 
        call gr_plot_linesty(pdefs%data(i)%line, &
             & scale = ceiling(sqrt(pdefs%data(i)%thick)))
-       call plcol0(int(pdefs%data(i)%colour))
+       if (pdefs%data(i)%colour == -2) then
+          call gr_custom_line(pdefs%data(i)%c_vals)
+       else
+          call plcol0(int(pdefs%data(i)%colour))
+       end if
        call plwidth(pdefs%data(i)%thick)
 
        if (pdefs%data(i)%pline == 2 .and. .not. pdefs%key%one_point) then
