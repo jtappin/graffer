@@ -1,4 +1,4 @@
-! Copyright (C) 2013-2020
+! Copyright (C) 2013-2021
 ! James Tappin
 
 ! This is free software; you can redistribute it and/or modify
@@ -66,6 +66,9 @@ contains
     character(len=120) :: iom
     character(len=160) :: inln, keyval
     character(len=32) :: key
+    real(kind=real32) :: rval
+    real(kind=plflt) :: r8val
+    
     integer :: ival
     integer, dimension(2) :: ival2
     logical :: found
@@ -110,13 +113,13 @@ contains
 
        select case (key)
        case('autosave')
-          read(keyval, *, iostat=ios, iomsg=iom) ival
+          read(keyval, *, iostat=ios, iomsg=iom) rval
           if (ios /= 0) then
              write(error_unit, "(2a/t10,a)") &
                   & "gr_read_rc_file: Invalid Autosave setting in file:", &
                   & trim(file), trim(keyval)
           else
-             sysopts%auto_delay = ival
+             sysopts%auto_delay = rval
           end if
        case('supp2d')
           sysopts%s2d = truth(keyval, default=sysopts%s2d, status=ios)
@@ -170,6 +173,16 @@ contains
              sysopts%geometry = ival2
           end if
 
+       case('scale')
+          read(keyval, *, iostat=ios, iomsg=iom) r8val
+          if (ios /= 0) then
+             write(error_unit, "(2a/t10,a)") &
+                  & "gr_read_rc_file: Invalid Scale setting in file:", &
+                  & trim(file), trim(keyval)
+          else
+             sysopts%charscale = r8val
+          end if
+
        case default
           write(error_unit, "(2a/t10,a)") &
                & "gr_read_rc_file: Unknown item in file:", &
@@ -191,6 +204,8 @@ contains
     character(len=32) :: key
     integer :: nargs, i, poseq, status, px
     integer(kind=int32) :: ival
+    real(kind=real32) :: rval
+    real(kind=plflt) :: r8val
     logical :: arg_plus
     integer :: ios
     character(len=120) :: iom
@@ -217,7 +232,7 @@ contains
     do 
        if (i > nargs-1) exit
        call get_command_argument(i, argv)
-       
+
        poseq = index(argv, '=')
        if (poseq > 0) then
           key = trim(argv(:poseq-1))
@@ -231,7 +246,7 @@ contains
        case('-h', '--help')
           call gr_cmd_help
           stop                       ! After help don't want to do
-                                     ! anything else.
+          ! anything else.
 
        case('-a','--autosave')
           if (keyval == '') then
@@ -246,14 +261,38 @@ contains
                   & "gr_parse_command: Failed to get a value for key: ",&
                   &  trim(key)
           else
-             read(keyval, *, iostat=ios, iomsg=iom) ival
+             read(keyval, *, iostat=ios, iomsg=iom) rval
              if (ios /= 0) then
                 write(error_unit, "(a/t10,a)") &
                      & "gr_parse_command: Value for autosave delay is "//&
                      & "not valid", trim(keyval)
              else 
                 if (arg_plus) i = i+1
-                sysopts%auto_delay = ival
+                sysopts%auto_delay = rval
+             end if
+          end if
+
+       case('-cs', '--charscale')
+          if (keyval == '') then
+             call  get_command_argument(i+1, keyval, &
+                  & status=status)
+             arg_plus = .true.
+          else
+             status = 0
+          end if
+          if (status /= 0) then
+             write(error_unit, "(a/t10,a)") &
+                  & "gr_parse_command: Failed to get a value for key: ",&
+                  &  trim(key)
+          else
+             read(keyval, *, iostat=ios, iomsg=iom) r8val
+             if (ios /= 0) then
+                write(error_unit, "(a/t10,a)") &
+                     & "gr_parse_command: Value for character scaling is "//&
+                     & "not valid", trim(keyval)
+             else 
+                if (arg_plus) i = i+1
+                sysopts%charscale = r8val
              end if
           end if
 
@@ -391,19 +430,19 @@ contains
                 end if
              end if
           end if
-          
+
        case default
-             write(error_unit, "(2a)") &
-                  & "gr_parse_command: Unknown option: ", trim(key)
-             if (.not. helped) then
-                call gr_cmd_help
-                helped = .true.
-             end if
-        end select
+          write(error_unit, "(2a)") &
+               & "gr_parse_command: Unknown option: ", trim(key)
+          if (.not. helped) then
+             call gr_cmd_help
+             helped = .true.
+          end if
+       end select
 
        i = i+1
     end do
-    
+
   end subroutine gr_parse_command
 
   subroutine gr_cmd_help

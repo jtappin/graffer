@@ -444,7 +444,8 @@ contains
        call plcol0(int(text%colour))
     end if
 
-    call plschr(0._plflt, real(pdefs%charsize*text%size, plflt))
+    call plschr(0._plflt, real(pdefs%charsize*text%size, plflt)* &
+         & sysopts%charscale)
 
     if (text%ffamily <= 0 .or. text%ffamily > size(font_list)) &
          & text%ffamily = 1_int16
@@ -575,7 +576,7 @@ contains
 
     if (pdefs%key%title  /= '') then
        lsp = (yw(2)-yw(1))/(nrows+1.2_plflt)
-       call plschr(0._plflt, 1.2_plflt*csize)
+       call plschr(0._plflt, 1.2_plflt*csize*sysopts%charscale)
        call plptex(sum(xw)/2._plflt, yw(2)-lsp*0.6_plflt, 1._plflt, 0._plflt, &
             & 0.5_plflt, trim(pdefs%key%title))
     else
@@ -601,7 +602,7 @@ contains
 
     yoff = 0.
 
-    call plschr(0._plflt, csize)
+    call plschr(0._plflt, csize*sysopts%charscale)
 
     ikey = 1
     do j = 1, nkey
@@ -1196,7 +1197,7 @@ contains
     call gr_plot_coords_n_w(xxn, yyn, xw, yw)
     call gr_plot_transform(full=.true._int8)
     call plsfont(font_list(1), font_shape(1), font_weight(1))
-    call plschr(0._plflt, real(pdefs%charsize, plflt)*0.5_plflt)
+    call plschr(0._plflt, real(pdefs%charsize, plflt)*0.5_plflt*sysopts%charscale)
     call plptex(xw, yw, 1._plflt, 0._plflt, align, date)
   end subroutine gr_stamp
 

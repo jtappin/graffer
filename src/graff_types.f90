@@ -145,8 +145,9 @@ module graff_types
   ! General options
   type :: graff_opts
      real(kind=real32) :: auto_delay=300._real32
+     real(kind=plflt) :: charscale=0.6_plflt
      logical(kind=int8) :: s2d=.false., mouse=.false., &
-          & delete_function_files=.false.
+          & delete_function_files=.false., track=.false.
      character(len=120) :: pdfviewer=''
      character(len=256) :: colour_dir=''
      character(len=80) :: colour_stem=''

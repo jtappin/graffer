@@ -382,7 +382,7 @@ contains
     font = gtk_combo_box_get_active(text_fnt_cbo)+1
     if (font < 1 .or. font > size(font_shape)) return
 
-    call plschr(0._plflt, cs)
+    call plschr(0._plflt, cs*sysopts%charscale)
 
     if (current_colour >= 0) then
        call plcol0(int(current_colour, int32))

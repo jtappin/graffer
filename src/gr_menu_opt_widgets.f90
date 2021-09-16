@@ -39,7 +39,8 @@ module gr_menu_opt_widgets
 
   type(c_ptr), private :: opt_window, opt_view_cbo, opt_2d_but, &
        & opt_mouse_but, opt_ffam_cbo, opt_fnt_cbo, opt_delete_f_but, &
-       & opt_gdl_entry
+       & opt_gdl_entry, opt_scale_sb
+  
   character(len=16), dimension(:), allocatable, private :: viewnames
 
 contains
@@ -103,6 +104,17 @@ contains
          & tooltip="Set the command or path for the GDL or IDL interpreter" &
          & //c_null_char)
     call hl_gtk_box_pack(jb, opt_gdl_entry)
+
+    jb = hl_gtk_box_new(horizontal=TRUE)
+    call hl_gtk_box_pack(base, jb, expand=FALSE)
+
+    junk = gtk_label_new("Character size scale factor:"//c_null_char)
+    call hl_gtk_box_pack(jb, junk, expand=FALSE)
+    opt_scale_sb = hl_gtk_spin_button_new(0._c_double, &
+         & 3._c_double, 0.01_c_double, initial_value=sysopts%charscale, &
+         & tooltip="Set the character size relative to PLPLOT default"//c_null_char, &
+         & digits=3_c_int)
+    call hl_gtk_box_pack(jb, opt_scale_sb)
 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(base, jb, expand=FALSE)
@@ -199,7 +211,8 @@ contains
             & c_f_logical(gtk_toggle_button_get_active(opt_mouse_but))
        sysopts%delete_function_files = &
             & c_f_logical(gtk_toggle_button_get_active(opt_delete_f_but))
-
+       sysopts%charscale = hl_gtk_spin_button_get_value(opt_scale_sb)
+       
        vsel = hl_gtk_combo_box_get_active(opt_view_cbo, &
             & ftext=sysopts%pdfviewer)
        pdefs%hardset%font_family = &

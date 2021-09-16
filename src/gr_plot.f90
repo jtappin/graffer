@@ -251,7 +251,7 @@ contains
     if (present(drawing)) then
        call gr_plot_open(area=drawing)
        call plbop
-       if (present(csize)) call plschr(csize, 1._plflt)
+       if (present(csize)) call plschr(csize, sysopts%charscale)    !1._plflt)
        call plvpor(0._plflt, 1._plflt, 0._plflt, 1._plflt)
        call plwind(0._plflt, 1._plflt, 0._plflt, 1._plflt)
     else
@@ -412,7 +412,7 @@ contains
     call plcol0(1)
     call plwidth(pdefs%axthick)
     call gr_plot_linesty(0_int16)
-    call plschr(0._plflt, real(pdefs%charsize, plflt))
+    call plschr(0._plflt, real(pdefs%charsize, plflt)*sysopts%charscale)
     call gr_plot_transform(index=1, full=.false._int8)
 
     call plsesc(ichar('#'))
