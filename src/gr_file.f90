@@ -811,7 +811,7 @@ contains
        end if
 
        ndims = rec%get_dimensions(dims)
-       
+
        select case(rec%get_tag())
           ! Recognised tags:
           ! J - Joining option
@@ -891,7 +891,7 @@ contains
           call rec%get_value(ds%min_val, status)
        case('MX')
           call rec%get_value(ds%max_val, status)
-          
+
        case('N')
           call rec%get_value(ds%ndata, status)
           nflag = .true.
@@ -937,7 +937,7 @@ contains
           end if
           allocate(ds%zdata%colours(asize))
           call rec%get_value(ds%zdata%colours, status)
-          
+
           if (rec%tcode == idl_objref) then
              if (allocated(ds%zdata%raw_colours)) &
                   & deallocate(ds%zdata%raw_colours)
@@ -951,7 +951,7 @@ contains
                & deallocate(ds%zdata%raw_colours)
           allocate(ds%zdata%raw_colours(dims(1), dims(2)))
           call rec%get_value(ds%zdata%raw_colours, status)
-            
+
        case ('ZCT')
           call rec%get_value(ds%zdata%ctable, status)
 
@@ -995,7 +995,7 @@ contains
           call rec%get_value(ds%zdata%charsize, status)
        case('ZLM')
           call rec%get_value(ds%zdata%lmap, status)
-          
+
        case ('ZR')
           call rec%get_value(ds%zdata%range, status)
        case ('ZP')
@@ -1084,7 +1084,7 @@ contains
     if (ds%type == 9 .or. ds%type == -4) then
        if (ds%zdata%shade_levels == 0) ds%zdata%shade_levels = 256
     end if
-    
+
   end subroutine gr_read_ds
 
   subroutine gr_write(ok, auto, ascii)
