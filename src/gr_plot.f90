@@ -70,11 +70,12 @@ contains
     integer(kind=c_int) :: width, height
     character(len=20) :: geometry
     character(len=16) :: driver
+    character(len=120) :: dname
 
     integer :: pdot
     real(kind=plflt) :: page_aspect
     type(graff_hard), pointer :: hardset
-    logical :: status
+    logical :: status, isd
     integer :: plrc
 
     if (gr_plot_is_open) return
@@ -94,7 +95,22 @@ contains
              local_name = pdefs%name(:pdot-1)
           end if
        else
-          local_name = hardset%name
+          pdot = index(hardset%name, '/', back=.true.)
+          
+          ! If the name has a directory, check that is exists and if
+          ! not then strip it.
+          if (pdot /= 0) then
+             dname = hardset%name(:pdot)
+             inquire(file=dname, exist=isd)
+             if (isd) then
+                local_name = hardset%name
+             else
+                local_name = hardset%name(pdot+1:)
+                hardset%name =  local_name
+             end if
+          else
+             local_name = hardset%name
+          end if
        end if
 
        select case (device)
@@ -134,7 +150,7 @@ contains
 
           ! This slightly bizarre looking page set up is needed to avoid
           ! rotated plots.
-          
+
           call plsori(1)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
