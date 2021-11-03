@@ -131,7 +131,7 @@ module graff_types
 
   ! Hardcopy options
   type :: graff_hard
-     logical(kind=int8) :: colour=.true., eps=.false., orient=.false., &
+     logical(kind=int8) :: colour=.true., orient=.false., &
           & timestamp=.false., cmyk=.false.
      integer(kind=int8) :: psize=0_int8
      integer(kind=int16) :: font_family=1_int16, font_wg_sl=1_int16

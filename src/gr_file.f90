@@ -564,7 +564,7 @@ contains
        case ('HC ')
           call rec%get_value(pdefs%hardset%colour, status)
        case ('HE ')
-          call rec%get_value(pdefs%hardset%eps, status)
+
        case ('HO ')
           call rec%get_value(pdefs%hardset%orient, status)
        case ('HY ')
@@ -1379,7 +1379,6 @@ contains
     ! The hardcopy options
 
     call rec%set_value('HC ', pdefs%hardset%colour, unit)
-    call rec%set_value('HE ', pdefs%hardset%eps, unit)
     call rec%set_value('HO ', pdefs%hardset%orient, unit)
     call rec%set_value('HY ', pdefs%hardset%cmyk, unit)
     call rec%set_value('HP ', pdefs%hardset%psize, unit)

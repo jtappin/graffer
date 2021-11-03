@@ -88,7 +88,6 @@ contains
     ! plplot's way of doing hardcopy).
 
     pdefs%hardset%colour = .true.
-    pdefs%hardset%eps = .false.
     pdefs%hardset%orient = .true.
     pdefs%hardset%psize = 0_int8
     pdefs%hardset%timestamp = .false.

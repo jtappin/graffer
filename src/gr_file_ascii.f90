@@ -591,7 +591,7 @@ contains
           case('HC')
              pdefs%hardset%colour = gr_log_val(tag_val(itag+1))
           case('HE')
-             pdefs%hardset%eps = gr_log_val(tag_val(itag+1))
+             
           case('HO')
              pdefs%hardset%orient = gr_log_val(tag_val(itag+1))
           case('HP')
@@ -1508,8 +1508,7 @@ contains
        write(unit, vfmt) "KL:", pdefs%key%list
     end if
 
-    write(unit, "(6(a,i0))") "HC:", f_c_logical(pdefs%hardset%colour), &
-         & ":HE:", f_c_logical(pdefs%hardset%eps), &
+    write(unit, "(5(a,i0))") "HC:", f_c_logical(pdefs%hardset%colour), &
          & ":HP:", pdefs%hardset%psize, &
          & ":HO:", f_c_logical(pdefs%hardset%orient), ":HT:", &
          & f_c_logical(pdefs%hardset%timestamp), ":HY:", &
