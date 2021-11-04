@@ -123,7 +123,7 @@ module graff_types
   type :: graff_trans
      real(kind=real64), dimension(2) :: opos = 0._real64
      integer(kind=int32) :: imove = 0_int32
-     integer(kind=int16) :: mode=0_int16, changes=0_int16, colmin=0_int16
+     integer(kind=int16) :: mode=0_int16, changes=0_int16
      logical(kind=int8) :: hairs=.true., opflag=.false., &
           & backup=.false., current_only=.false.
      real(kind=real64), dimension(:), allocatable :: x_dev, y_dev

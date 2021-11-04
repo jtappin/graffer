@@ -1,19 +1,9 @@
-; Copyright (C) 2013-2020
-; James Tappin
-
-; This is free software; you can redistribute it and/or modify
-; it under the terms of the GNU General Public License as published by
-; the Free Software Foundation; either version 3, or (at your option)
-; any later version.
-
-; This software is distributed in the hope that it will be useful,
-; but WITHOUT ANY WARRANTY; without even the implied warranty of
-; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-; GNU General Public License for more details.
-
-; You should have received a copy of the GNU General Public License along with
-; this program; see the files COPYING3 and COPYING.RUNTIME respectively.
-; If not, see <http://www.gnu.org/licenses/>.
+; LICENCE:
+; Copyright (C) 1995-2021: SJT
+; This program is free software; you can redistribute it and/or modify  
+; it under the terms of the GNU General Public License as published by  
+; the Free Software Foundation; either version 2 of the License, or     
+; (at your option) any later version.                                   
 
 pro graff_ids__define
 ;+
@@ -37,7 +27,10 @@ pro graff_ids__define
 ;	Extracted: 30/6/05; SJT
 ;	Add support for a second Y-scale: 22/12/11; SJT
 ;	Add "current" ds only id: 26/1/12; SJT
-;	Unify with IDL tree (only for consistency of definitions): 21/5/20; SJT
+; 	Add min & max values: 4/3/15; SJT
+;	Add non-linear contour level maps: 12/10/16; SJT
+;	Add labelling offset: 2/5/17; SJT
+;	Add fontsel field: 12/2/20; SJT
 ;-
 
 Ids = { graff_ids, $
@@ -95,6 +88,7 @@ Ids = { graff_ids, $
         export:  0l, $
         Cset:    0l, $
         Descr:   0l, $
+        type:    0l, $
         Pline:   0l, $
         Psym:    0l, $
         Symsize: 0l, $
