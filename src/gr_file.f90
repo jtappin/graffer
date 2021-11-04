@@ -949,7 +949,7 @@ contains
        case('ZCR')
           if (allocated(ds%zdata%raw_colours)) &
                & deallocate(ds%zdata%raw_colours)
-          allocate(ds%zdata%raw_colours(dims(1), dims(2)))
+          allocate(ds%zdata%raw_colours(dims(1), max(dims(2),1)))
           call rec%get_value(ds%zdata%raw_colours, status)
 
        case ('ZCT')
