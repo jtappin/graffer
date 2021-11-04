@@ -492,6 +492,7 @@ contains
             & ')/double(',ny-1,')'
     end if
     write(punit, "(a,i0,a)") 'y = y1[intarr(',nx,'),*]'
+    write(punit, "(a)") 'r = sqrt(x^2 + y^2)'
     write(punit, "(2a)") 'z = ', trim(fun)
     write(punit, "(a)") 'if size(z, /type) ne 7 then z = double(z)'
     write(punit, "(3a)") 'openw, 1, "', trim(dfile), '"'
