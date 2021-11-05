@@ -35,8 +35,6 @@ pro Gr_rc_get, optblock
      rcfile = home+path_sep()+'.grafferrc' $
   else  rcfile = home+'.grafferrc'
 
-  if ~file_test(rcfile) then return
-
   optblock = {graff_opts}
   optblock.Auto_delay = 300.
   optblock.Mouse = 0b
