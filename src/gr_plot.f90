@@ -95,21 +95,30 @@ contains
              local_name = pdefs%name(:pdot-1)
           end if
        else
-          pdot = index(hardset%name, '/', back=.true.)
+          pdot = index(hardset%name, '.', back=.true.)
+          if (pdot == 0) then
+             local_name = hardset%name
+          else
+             local_name = hardset%name(:pdot-1)
+          end if
+
+          pdot = index(local_name, '/', back=.true.)
           
           ! If the name has a directory, check that is exists and if
           ! not then strip it.
           if (pdot /= 0) then
-             dname = hardset%name(:pdot)
+             dname = local_name(:pdot)
              inquire(file=dname, exist=isd)
-             if (isd) then
-                local_name = hardset%name
-             else
-                local_name = hardset%name(pdot+1:)
-                hardset%name =  local_name
+             if (.not. isd) then
+                local_name = local_name(pdot+1:)
+                hardset%name = local_name
+                if (index(pdefs%dir, '/', back=.true.) == &
+                     & len_trim(pdefs%dir)) then
+                   local_name = trim(pdefs%dir) // trim(local_name)
+                else
+                   local_name = trim(pdefs%dir) // '/' // trim(local_name)
+                end if
              end if
-          else
-             local_name = hardset%name
           end if
        end if
 
@@ -137,7 +146,7 @@ contains
                & int(hardset%off(1)*cm2pt), &
                & int(hardset%off(2)*cm2pt))
 
-          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.ps')
+          call plsfnam(trim(local_name)//'.ps')
        case('eps')
           if (hardset%epsdev == '') then
              call gr_default_device('eps', driver)
@@ -157,7 +166,7 @@ contains
                & int(hardset%size(2)*cm2pt), &
                & int(hardset%size(1)*cm2pt), &
                & 0, 0)
-          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.eps')
+          call plsfnam(trim(local_name)//'.eps')
        case('pdf')
           if (hardset%pdfdev == '') then
              call gr_default_device('pdf', driver)
@@ -181,7 +190,7 @@ contains
                & int(hardset%size(2)*cm2pt), &
                & int(hardset%off(1)*cm2pt), &
                & int(hardset%off(2)*cm2pt))
-          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.pdf')
+          call plsfnam(trim(local_name)//'.pdf')
        case('epdf')
           if (hardset%pdfdev == '') then
              call gr_default_device('pdf', driver)
@@ -198,7 +207,7 @@ contains
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
                & 0, 0)
-          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.pdf')
+          call plsfnam(trim(local_name)//'.pdf')
        case('svg')
           if (hardset%svgdev == '') then
              call gr_default_device('svg', driver)
@@ -214,7 +223,7 @@ contains
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
                & 0, 0)
-          call plsfnam(trim(pdefs%dir)//'/'//trim(local_name)//'.svg')
+          call plsfnam(trim(local_name)//'.svg')
 
        end select
 
