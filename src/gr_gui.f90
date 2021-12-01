@@ -123,11 +123,17 @@ contains
     ! Dataset specific settings
 
     ds_base = hl_gtk_box_new()
+
+
     nbi = hl_gtk_notebook_add_page(g_d_notebook, ds_base, &
          & label="Datasets"//c_null_char)
 
     junk = gr_ds_selector_new()
     call hl_gtk_box_pack(ds_base, junk)
+
+    junk = gr_ds_data_new()
+    call hl_gtk_box_pack(ds_base, junk, expand=FALSE)
+
 
     display_nb = hl_gtk_notebook_new(show_tabs=FALSE)
     call hl_gtk_box_pack(ds_base, display_nb)
@@ -137,9 +143,6 @@ contains
 
     junk = gr_2d_opts_new()
     nbi = hl_gtk_notebook_add_page(display_nb, junk)
-
-    junk = gr_ds_data_new()
-    call hl_gtk_box_pack(ds_base, junk, expand=FALSE)
 
     junk = gtk_label_new(c_null_char)
     call hl_gtk_box_pack(ds_base, junk)
