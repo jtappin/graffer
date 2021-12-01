@@ -544,7 +544,7 @@ contains
 
   subroutine gr_plot_linesty(index, scale)
     integer(kind=int16), intent(in) :: index
-    integer, intent(in), optional :: scale
+    real(kind=real64), intent(in), optional :: scale
 
     ! Define the linestyle.
 
@@ -589,8 +589,8 @@ contains
 
     ! Only scale dashes & gaps, not dots.
     if (present(scale)) then
-       where(ld > 100) ld = ld*max(scale,1)
-       where(lg > 100) lg = lg*max(scale,1)
+       where(ld > 100) ld = nint(ld*max(scale,1._real64))
+       where(lg > 100) lg = nint(lg*max(scale,1._real64))
     end if
 
     call plstyl(ld, lg)

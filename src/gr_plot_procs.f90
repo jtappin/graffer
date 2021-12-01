@@ -618,7 +618,7 @@ contains
        icol = (ikey-1) / nrows + 1
 
        call gr_plot_linesty(pdefs%data(i)%line, &
-            & scale = ceiling(sqrt(pdefs%data(i)%thick)))
+            & scale = sqrt(pdefs%data(i)%thick))
        if (pdefs%data(i)%colour == -2) then
           call gr_custom_line(pdefs%data(i)%c_vals)
        else
@@ -819,8 +819,8 @@ contains
              if (allocated(data%zdata%thick) .and. data%zdata%n_thick > 0) then
                 call gr_plot_linesty(data%zdata%style(mod(i-1, &
                      & data%zdata%n_sty)+1), &
-                     & scale=ceiling(sqrt(data%zdata%thick(mod(i-1, &
-                     & data%zdata%n_thick)+1))))
+                     & scale=sqrt(data%zdata%thick(mod(i-1, &
+                     & data%zdata%n_thick)+1)))
              else
                 call gr_plot_linesty(data%zdata%style(mod(i-1, &
                      & data%zdata%n_sty)+1))

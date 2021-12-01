@@ -446,12 +446,12 @@ contains
 
     if (pdefs%axsty(1)%grid /= 0) then
        call gr_plot_linesty(pdefs%axsty(1)%grid-1_int16, &
-            & scale=ceiling(sqrt(pdefs%axthick)))
+            & scale=sqrt(pdefs%axthick))
        call plbox("g", xmajor, 0, "", 0._plflt, 0)
     end if
     if (pdefs%axsty(2)%grid /= 0) then
        call gr_plot_linesty(pdefs%axsty(2)%grid-1_int16, &
-            & scale=ceiling(sqrt(pdefs%axthick)))
+            & scale=sqrt(pdefs%axthick))
        call plbox("", 0._plflt, 0, "g", ymajor, 0)
     end if
 
@@ -473,7 +473,7 @@ contains
 
        if (pdefs%axsty(3)%grid /= 0) then
           call gr_plot_linesty(pdefs%axsty(3)%grid-1_int16, &
-            & scale=ceiling(sqrt(pdefs%axthick)))
+            & scale=sqrt(pdefs%axthick))
           call plbox("", 0._plflt, 0, "g", rmajor, 0)
        end if
        call plmtex("r", 3._plflt, 0.5_plflt, 0.5_plflt, pdefs%axtitle(3))
@@ -592,7 +592,7 @@ contains
     end if
     
     call plwidth(data%thick)
-    call gr_plot_linesty(data%line, scale=ceiling(sqrt(data%thick)))
+    call gr_plot_linesty(data%line, scale=sqrt(data%thick))
 
     ! Moved error bars  before the line so that
     ! isegb doesn't get changed
