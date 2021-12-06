@@ -371,11 +371,14 @@ contains
 
     integer :: ffamily, font
     real(kind=plflt) :: cs
-    character(len=265) :: txt
+    character(len=265) :: txt, txt1
 
     if (.not. text_ready) return
 
-    call hl_gtk_entry_get_text(text_entry, text=txt)
+    call hl_gtk_entry_get_text(text_entry, text=txt1)
+    txt = ''
+    call gr_ip_convert(txt1, txt)
+    
     cs = hl_gtk_spin_button_get_value(text_cs_sb)
     ffamily = gtk_combo_box_get_active(text_ffam_cbo)+1
     if (ffamily < 1 .or. ffamily > size(font_list)) return

@@ -42,7 +42,8 @@ module gr_plot
   use gr_sort
   use gr_text_utils
   use gr_shading
-
+  use gr_utils
+  
   use ieee_arithmetic, only: ieee_is_finite
   
   implicit none
@@ -259,7 +260,7 @@ contains
     call plfontld(1)
     gr_plot_is_open = .true.
     call plgdev(selected_device)
-    call plsesc(ichar('!'))
+!    call plsesc(ichar('!'))
 
   end subroutine gr_plot_open
 
@@ -424,7 +425,9 @@ contains
     character(len=20) :: xopt, yopt, ropt
     integer :: xminor, yminor, rminor
     real(kind=plflt) :: xmajor, ymajor, rmajor
-
+    character(len=241) :: fxstring   ! Gets the subtitle as well.
+    character(len=120) :: fystring, ftstring
+    
     !    external :: gr_format_labels
 
     call gr_axis_box(1, xopt, xmajor, xminor)
@@ -440,9 +443,9 @@ contains
     call plschr(0._plflt, real(pdefs%charsize, plflt)*sysopts%charscale)
     call gr_plot_transform(index=1, full=.false._int8)
 
-    call plsesc(ichar('#'))
+!    call plsesc(ichar('#'))
     call plbox(xopt, xmajor, xminor, yopt, ymajor, yminor)
-    call plsesc(ichar('!'))
+!    call plsesc(ichar('!'))
 
     if (pdefs%axsty(1)%grid /= 0) then
        call gr_plot_linesty(pdefs%axsty(1)%grid-1_int16, &
@@ -455,9 +458,28 @@ contains
        call plbox("", 0._plflt, 0, "g", ymajor, 0)
     end if
 
-    call pllab(trim(pdefs%axtitle(1))//c_new_line//trim(pdefs%subtitle), &
-         & pdefs%axtitle(2), pdefs%title)
+    fxstring=''
+    if (len_trim(pdefs%axtitle(1)) > 0) then
+       if (len_trim(pdefs%subtitle) > 0) then
+          call gr_ip_convert(trim(pdefs%axtitle(1))//c_new_line//trim(pdefs%subtitle), &
+               & fxstring)
+       else
+          call gr_ip_convert(pdefs%axtitle(1), fxstring)
+       end if
+    end if
 
+    fystring = ''
+    if (len_trim(pdefs%axtitle(2)) > 0) &
+         &  call gr_ip_convert(pdefs%axtitle(2), fystring)
+
+    ftstring=''
+    if (len_trim(pdefs%title) > 0) &
+         &  call gr_ip_convert(pdefs%title, ftstring)
+    
+!!$    call pllab(trim(pdefs%axtitle(1))//c_new_line//trim(pdefs%subtitle), &
+!!$         & pdefs%axtitle(2), pdefs%title)
+    call pllab(fxstring, fystring, ftstring)
+    
     if (pdefs%y_right) then
        call plcol0(1)
        call plwidth(pdefs%axthick)
@@ -467,16 +489,20 @@ contains
 
        call gr_plot_transform(index=2, full=.false._int8)
 
-       call plsesc(ichar('#'))
+!       call plsesc(ichar('#'))
        call plbox("", 0._plflt, 0, ropt, rmajor, rminor)
-       call plsesc(ichar('!'))
+!       call plsesc(ichar('!'))
 
        if (pdefs%axsty(3)%grid /= 0) then
           call gr_plot_linesty(pdefs%axsty(3)%grid-1_int16, &
             & scale=sqrt(pdefs%axthick))
           call plbox("", 0._plflt, 0, "g", rmajor, 0)
        end if
-       call plmtex("r", 3._plflt, 0.5_plflt, 0.5_plflt, pdefs%axtitle(3))
+       if (len_trim(pdefs%axtitle(3)) > 0) then
+          fystring=''
+          call gr_ip_convert(pdefs%axtitle(3), fystring)
+          call plmtex("r", 3._plflt, 0.5_plflt, 0.5_plflt, fystring)
+       end if
     end if
 
   end subroutine gr_axis_plot

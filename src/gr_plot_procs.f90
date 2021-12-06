@@ -434,9 +434,14 @@ contains
     real(kind=plflt) :: xd, yd, dxw, dyw
     integer :: i
     character(len=120) :: err_buffer
-
+    character(len=256) :: ptext
+    
     text => pdefs%text(index)
+    if (len_trim(text%text) == 0) return
 
+    ptext = ''
+    call gr_ip_convert(text%text, ptext)
+    
     if (text%colour == -1)  return
     if (text%colour == -2) then
        call gr_custom_line(text%c_vals)
@@ -484,7 +489,7 @@ contains
     dxw = dxw - x
     dyw = dyw - y
 
-    call plptex(x, y, dxw, dyw, real(text%align, plflt), text%text)
+    call plptex(x, y, dxw, dyw, real(text%align, plflt), ptext)
 
     if (anchor) then
        call gr_plot_coords_w_v(x, y, xav(2), yav(2), nolog=.true.)
@@ -577,8 +582,10 @@ contains
     if (pdefs%key%title  /= '') then
        lsp = (yw(2)-yw(1))/(nrows+1.2_plflt)
        call plschr(0._plflt, 1.2_plflt*csize*sysopts%charscale)
+       descr=''
+       call gr_ip_convert(pdefs%key%title, descr)
        call plptex(sum(xw)/2._plflt, yw(2)-lsp*0.6_plflt, 1._plflt, 0._plflt, &
-            & 0.5_plflt, trim(pdefs%key%title))
+            & 0.5_plflt, trim(descr))
     else
        lsp =  (yw(2)-yw(1))/real(nrows, plflt)
     end if
@@ -643,7 +650,8 @@ contains
           end if
        end if
 
-       descr = pdefs%data(i)%descript
+       descr=''
+       call gr_ip_convert(pdefs%data(i)%descript, descr)
        if (pdefs%y_right .and. pdefs%key%side) then
           if (pdefs%data(i)%y_axis == 0) then
              descr = trim(descr)//' (l)'
@@ -651,8 +659,9 @@ contains
              descr = trim(descr)//' (r)'
           end if
        end if
-
+       
        call plcol0(1)
+       
        call plptex(x0(icol)+tx, y(irow)+sum(ys)/real(size(ys)), &
             & 1._plflt, 0._plflt, 0._plflt, descr)
 
@@ -775,7 +784,7 @@ contains
     if (data%zdata%fill == 2_int8) call hl_gtk_info_bar_message(gr_infobar, &
          & "gr_contour: Contour ticks not (yet) supported"//c_null_char)
 
-    call plsesc(ichar('#'))     ! Plplot default
+!    call plsesc(ichar('#'))     ! Plplot default
     do i = 1, data%zdata%n_levels
        if (data%zdata%label /= 0 .and. &
             & mod(i, max(data%zdata%label,1)) == data%zdata%label_off) then
@@ -833,7 +842,7 @@ contains
           end if
        end if
     end do
-    call plsesc(ichar('!'))     ! Graffer strings
+!    call plsesc(ichar('!'))     ! Graffer strings
     
     if (clall) deallocate(clevels)
 
@@ -1197,7 +1206,8 @@ contains
     call gr_plot_coords_n_w(xxn, yyn, xw, yw)
     call gr_plot_transform(full=.true._int8)
     call plsfont(font_list(1), font_shape(1), font_weight(1))
-    call plschr(0._plflt, real(pdefs%charsize, plflt)*0.5_plflt*sysopts%charscale)
+    call plschr(0._plflt, real(pdefs%charsize, plflt)* &
+         & 0.5_plflt*sysopts%charscale)
     call plptex(xw, yw, 1._plflt, 0._plflt, align, date)
   end subroutine gr_stamp
 

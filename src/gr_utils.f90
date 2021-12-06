@@ -703,4 +703,88 @@ contains
 
     d_nan = ieee_value(d_nan, ieee_quiet_nan)
   end function d_nan
+
+  ! A very basic converter of {IG}DL text escapes to PLPLOT ones.
+  
+  subroutine gr_ip_convert(instr, outstr)
+    character(len=*), intent(in) :: instr
+    character(len=*), intent(out) :: outstr
+
+    integer :: i, j, nchars, level
+    character, parameter :: iesc = '!', pesc = '#'
+
+    level = 0           ! Assume we start in normal state
+    nchars = len_trim(instr)
+    
+    i = 1
+    j = 1
+
+    do
+       if (i > nchars) exit
+
+       select case(instr(i:i))
+       case(pesc)
+          outstr(j:j) = pesc
+          outstr(j+1:j+1) = pesc
+          j = j+2
+          i = i+1
+
+       case(iesc)
+          select case(instr(i+1:i+1))
+          case(iesc)
+             outstr(j:j) = iesc
+             j = j+1
+             i = i+2
+
+          case('d', 'D')
+             outstr(j:j) = pesc
+             outstr(j+1:j+1) = instr(i+1:i+1)
+             i = i+2
+             j = j+2
+             level = level-1
+
+          case('u', 'U')
+             outstr(j:j) = pesc
+             outstr(j+1:j+1) = instr(i+1:i+1)
+             i = i+2
+             j = j+2
+             level = level+1
+
+          case('n', 'N')
+             if (level > 0) then
+                outstr(j:j) = pesc
+                outstr(j+1:j+1) = 'd'
+                i = i+2
+                j = j+2
+                level = level-1
+             else if (level < 0) then
+                outstr(j:j) = pesc
+                outstr(j+1:j+1) = 'u'
+                i = i+2
+                j = j+2
+                level = level+1
+             else
+                i = i+2
+
+             end if
+
+          case('m', 'M')
+             outstr(j:j) = pesc
+             outstr(j+1:j+1) = 'g'
+             i = i+2
+             j = j+2
+            
+          case default
+             i = i+1
+          end select
+
+       case default
+          outstr(j:j) = instr(i:i)
+          i = i+1
+          j = j+1
+       end select
+       
+    end do
+  end subroutine gr_ip_convert
+  
 end module gr_utils
