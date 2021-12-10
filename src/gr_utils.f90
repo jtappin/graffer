@@ -710,7 +710,27 @@ contains
     character(len=*), intent(in) :: instr
     character(len=*), intent(out) :: outstr
 
-    integer :: i, j, nchars, level
+    character(len=13), dimension(3:20), parameter :: fnt_fci = &
+         & ['#<0x80000000>', & 
+         & '#<0x80000100>', &
+         & '#<0x80000010>', &
+         & '#<0x80000110>', &
+         & '#<0x80000001>', &
+         & '#<0x80000011>', &
+         & '#<0x80000004>', &
+         & '#<0x80000000>', &
+         & '#<0x80000002>', &
+         & '#<0x80000012>', &
+         & '#<0x80000102>', &
+         & '#<0x80000112>', &
+         & '#<0x80000101>', &
+         & '#<0x80000111>', &
+         & '#<0x80000100>', &
+         & '#<0x80000010>', &
+         & '#<0x80000110>', &
+         & '#<0x80000004>']
+    
+    integer :: i, j, nchars, level, fidx
     character, parameter :: iesc = '!', pesc = '#'
 
     level = 0           ! Assume we start in normal state
@@ -773,7 +793,37 @@ contains
              outstr(j+1:j+1) = 'g'
              i = i+2
              j = j+2
-            
+
+          case('3':'9')
+             read(instr(i+1:i+1),"(i1)") fidx
+             outstr(j:j+12) = fnt_fci(fidx)
+             i=i+2
+             j=j+13
+
+          case('1')
+             select case(instr(i+2:i+2))
+             case('0':'9')
+                read(instr(i+1:i+2),"(i2)") fidx
+                outstr(j:j+12) = fnt_fci(fidx)
+                i=i+3
+                j=j+13
+                
+             case default
+                i=i+2
+             end select
+
+          case('2')
+             select case(instr(i+2:i+2))
+             case('0')
+                read(instr(i+1:i+2),"(i2)") fidx
+                outstr(j:j+12) = fnt_fci(fidx)
+                i=i+3
+                j=j+13
+                
+             case default
+                i=i+2
+             end select
+
           case default
              i = i+1
           end select

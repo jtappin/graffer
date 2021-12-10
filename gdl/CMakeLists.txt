@@ -26,6 +26,10 @@ configure_file(
   @ONLY
   )
 
+add_subdirectory(definitions)
+add_subdirectory(lib)
+add_subdirectory(utils)
+
 install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_as_xa.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_as_xr.pro"
