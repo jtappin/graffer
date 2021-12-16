@@ -1,19 +1,9 @@
-; Copyright (C) 2013
-; James Tappin
-
-; This is free software; you can redistribute it and/or modify
-; it under the terms of the GNU General Public License as published by
-; the Free Software Foundation; either version 3, or (at your option)
-; any later version.
-
-; This software is distributed in the hope that it will be useful,
-; but WITHOUT ANY WARRANTY; without even the implied warranty of
-; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-; GNU General Public License for more details.
-
-; You should have received a copy of the GNU General Public License along with
-; this program; see the files COPYING3 and COPYING.RUNTIME respectively.
-; If not, see <http://www.gnu.org/licenses/>.
+; LICENCE:
+; Copyright (C) 1995-2021: SJT
+; This program is free software; you can redistribute it and/or modify  
+; it under the terms of the GNU General Public License as published by  
+; the Free Software Foundation; either version 2 of the License, or     
+; (at your option) any later version.                                   
 
 pro graff_get_data, file, idx, name = name, $
                     xval = xval, yval = yval, zval = zval, $
@@ -48,8 +38,6 @@ pro graff_get_data, file, idx, name = name, $
      message, "Must specify a file"
      return
   endif
-
-  gr_state, /save
 
 ;	Open the file
 
@@ -132,6 +120,5 @@ pro graff_get_data, file, idx, name = name, $
   endelse
 
   graff_clear, pdefs
-  gr_state
 
 end

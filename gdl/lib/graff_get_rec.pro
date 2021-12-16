@@ -40,16 +40,22 @@ pro graff_get_rec, ilu, tag, value, tcode, ndims = ndims, dims = $
 
   readu, ilu, tag, tcode, ndims
 
-  if tcode eq 0 then return     ; A tag with no values
-
+  if tcode eq 0 then begin
+     if arg_present(nvals) then nvals = 0l
+     return                     ; A tag with no values
+  endif
+  
   if ndims gt 0 then begin
      if ndims eq 1 then dims = 0l $
      else dims = lonarr(ndims)
      readu, ilu, dims
   endif else dims = 1
 
-  if min(dims) eq 0 then return ; No actual values.
-  
+  if min(dims) eq 0 then begin
+     if arg_present(nvals) then nvals = 0l
+     return                     ; No actual values.
+  endif
+
   if tcode ne 11 then begin
      value = make_array(dims, type = tcode)
      if arg_present(nvals) then nvals = n_elements(value)
@@ -94,5 +100,6 @@ pro graff_get_rec, ilu, tag, value, tcode, ndims = ndims, dims = $
         value.add, ivalue
      endfor
   endelse
+  if arg_present(nvals) then nvals = n_elements(value)
 
 end

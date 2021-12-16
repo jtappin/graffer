@@ -48,7 +48,10 @@ pro Gr_bin_save, pdefs, auto = auto
      file = pdefs.dir+'#'+pdefs.name+'#'
      graff_msg, pdefs.ids.message, 'Autosaving'
   endif else begin
-     file = pdefs.dir+pdefs.name
+     if pdefs.dir ne './' then $
+        file = pdefs.dir+pdefs.name $
+     else file = pdefs.name
+     
      if ~pdefs.transient.backup && file_test(file) then begin
         file_copy, file, file+'~', /overwrite
         pdefs.transient.backup = 1b

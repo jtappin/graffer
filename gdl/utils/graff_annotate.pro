@@ -1,19 +1,9 @@
-; Copyright (C) 2013
-; James Tappin
-
-; This is free software; you can redistribute it and/or modify
-; it under the terms of the GNU General Public License as published by
-; the Free Software Foundation; either version 3, or (at your option)
-; any later version.
-
-; This software is distributed in the hope that it will be useful,
-; but WITHOUT ANY WARRANTY; without even the implied warranty of
-; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-; GNU General Public License for more details.
-
-; You should have received a copy of the GNU General Public License along with
-; this program; see the files COPYING3 and COPYING.RUNTIME respectively.
-; If not, see <http://www.gnu.org/licenses/>.
+; LICENCE:
+; Copyright (C) 1995-2021: SJT
+; This program is free software; you can redistribute it and/or modify  
+; it under the terms of the GNU General Public License as published by  
+; the Free Software Foundation; either version 2 of the License, or     
+; (at your option) any later version.                                   
 
 pro graff_annotate, file, value, id = id, index = index, $
                     substring = substring, case_squash = case_squash, $
@@ -22,7 +12,7 @@ pro graff_annotate, file, value, id = id, index = index, $
                     align = align, ffamily = ffamily, hershey = $
                     hershey, truetype = truetype, hardware = hardware, $
                     font = font, thick = thick, x = x, y = y, norm = $
-                    norm, axis = axis,  status = status
+                    norm, axis = axis,  status = status, ascii = ascii
 
 ;+
 ; GRAFF_ANNOTATE
@@ -51,12 +41,12 @@ pro graff_annotate, file, value, id = id, index = index, $
 ;	orient	float	The orientation of the annotation
 ;			(anticlockwise, degrees)
 ;	align	float	The alignment (0=left, 1=right, 0.5=centre)
-;	ffamily	int	The font style to use. (-1 Hershey, 0 hardware,
+;	ffamily	int	The font group to use (-1 Hershey, 0 hardware,
 ;			1 TrueType)
 ;	/hershey	Set Hershey fonts.
 ;	/truetype	Set TrueType fonts.
 ;	/hardware	Set hardware fonts
-;	font	int	Set the font shape & weight for the desired font.
+;	font	int	Set the font index for the desired font.
 ;	thick	float	Set the line thickness for Hershey fonts.
 ;	x	float	Set the X-coordinate of the origin
 ;	y	float	Set the Y-coordinate of the origin
@@ -65,6 +55,7 @@ pro graff_annotate, file, value, id = id, index = index, $
 ;	axis	int	For data coordinates, set which Y axis to use.
 ;	status	int	A named variable, set to 1 on success, 0 on
 ;			failure.
+;	/ascii		If set, then save to an ascii format file.
 ;
 ; Notes:
 ;	The behaviour if more than one font family keyword is set is

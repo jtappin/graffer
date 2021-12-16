@@ -45,7 +45,10 @@ pro Gr_asc_save, pdefs
 ;	Add log_bands values: 24/6/21; SJT
 ;-
 
-  file = pdefs.dir+pdefs.name
+  if pdefs.dir ne './' then $
+     file = pdefs.dir+pdefs.name $
+  else file = pdefs.name
+
   if ~pdefs.transient.backup && file_test(file) then begin
      file_copy, file, file+'~', /overwrite
      pdefs.transient.backup = 1b

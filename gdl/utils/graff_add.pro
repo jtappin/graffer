@@ -288,7 +288,9 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 @graff_version
 
   f0 = file
+  
   graff_init, pdefs, f0, version = version
+  
   igot = graff_get(pdefs, f0, /no_set, /no_warn)
   if igot eq 0 then begin       ; Note that here it is meaningful to
                                 ; continue if the file doesn't exist.

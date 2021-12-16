@@ -1,23 +1,13 @@
-; Copyright (C) 2013-2020
-; James Tappin
+; LICENCE:
+; Copyright (C) 1995-2021: SJT
+; This program is free software; you can redistribute it and/or modify  
+; it under the terms of the GNU General Public License as published by  
+; the Free Software Foundation; either version 2 of the License, or     
+; (at your option) any later version.                                   
 
-; This is free software; you can redistribute it and/or modify
-; it under the terms of the GNU General Public License as published by
-; the Free Software Foundation; either version 3, or (at your option)
-; any later version.
-
-; This software is distributed in the hope that it will be useful,
-; but WITHOUT ANY WARRANTY; without even the implied warranty of
-; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-; GNU General Public License for more details.
-
-; You should have received a copy of the GNU General Public License along with
-; this program; see the files COPYING3 and COPYING.RUNTIME respectively.
-; If not, see <http://www.gnu.org/licenses/>.
-
-pro Graff_props, file, title = title, subtitle = subtitle, $
-                 charsize = charsize, thick = thick, corners = $
-                 corners, $
+pro Graff_props, file, pdefs, title = title, subtitle = subtitle, $
+                 charsize = charsize, thick = thick, $
+                 corners = corners, $
                  aspect = aspect, comment = comment, xtitle = xtitle, $
                  xrange = xrange, xlog = xlog, xl_bands = xl_bands, $
                  xexact = xexact, $
@@ -42,12 +32,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
                  yrminor = yrminor, yrtime = yrtime, yrorigin = $
                  yrorigin, $
                  yrgrid = yrgrid, yrauto = yrauto, yrannotate = $
-                 yrannotate, h_orient = h_orient, $ $
-                 h_colour = h_colour, h_eps = h_eps, h_xsize = $
-                 h_xsize, $
+                 yrannotate, display = display, $ $
+                 graffer = graffer, ascii = ascii, h_orient = h_orient, $ $
+                 h_colour = h_colour, h_eps = h_eps, h_xsize = h_xsize, $
                  h_ysize = h_ysize, h_xmargin = h_xmargin, $ $
-                 h_ymargin = h_ymargin, isotropic = isotropic, h_cmyk $
-                 = $
+                 h_ymargin = h_ymargin, isotropic = isotropic, h_cmyk = $
                  h_cmyk, ctable = ctable, h_print = h_print, h_viewer $
                  = h_viewer, h_file = h_file, h_psdev = h_psdev, $
                  h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, $
@@ -59,7 +48,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;	file.
 ;
 ; Usage:
-; pro Graff_props, file, title = title, subtitle = subtitle, $
+; pro Graff_props, file[, pdefs], title = title, subtitle = subtitle, $
 ;                 charsize = charsize, thick = thick, corners = $
 ;                 corners, $
 ;                 aspect = aspect, comment = comment, xtitle = xtitle, $
@@ -84,8 +73,9 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;                 yrextend = yrextend, yraxes = yraxes, $ $
 ;                 yrminor = yrminor, yrtime = yrtime, yrorigin = yrorigin, $
 ;                 yrgrid = yrgrid, yrauto = yrauto, yrannotate = $
-;                 yrannotate, h_orient = h_orient, $ $
-;                 h_colour = h_colour, h_eps = h_eps, h_xsize = h_xsize, $
+;                 yrannotate, display = display, $ $
+;                 graffer = graffer, ascii = ascii, h_orient = h_orient, $ $
+;                 h_colour = h_colour, h_xsize = h_xsize, $
 ;                 h_ysize = h_ysize, h_xmargin = h_xmargin, $ $
 ;                 h_ymargin = h_ymargin, isotropic = isotropic, h_cmyk = $
 ;                 h_cmyk, ctable = ctable, h_print = h_print, h_viewer $
@@ -93,8 +83,13 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;                 h_epsdev = h_epsdev, h_pdfdev = h_pdfdev, h_pdfdev = $
 ;                 h_pdfdev
 ;
-; Argument:
+; Arguments:
 ;	file	string	input	The graffer file to modify.
+;	pdefs	struct	output	Argument to return the graffer
+;				structure. If this is present and
+;				mutable, then the structure is
+;				returned instead of being saved back
+;				to the file.
 ;
 ; Keywords:
 ; 	title		input	Set the plot title.
@@ -139,7 +134,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;				turn off the minor ticks. If a
 ;				non-unit value then set the number of
 ;				minor intervals to that.
-;	[xyyr]major	input	Set the size of major intervals.
+;	[xyyr]major	input	Set the number of major intervals.
 ;	[xyyr]tickv	input	Set explicit tick locations. Set to a
 ;				scalar value, or set [xyyr]major without
 ;				setting this key to revert to automatic.
@@ -168,6 +163,13 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;	[xyyr]annotate	input	Set this explicity to zero to suppress
 ;				annotations on the axis
 ;	yr_enable	input	If set, then enable the secondary Y-axis.
+;	display		input	If set, then display the plot on the
+;				current device.
+;	graffer		input	If set, then invoke GRAFFER after
+;				adding the dataset.
+;	ascii		input	If set, then save as an ASCII GRAFFER
+;				file (by default a binary graffer file
+;				is generated).
 ;	h_orient	input	Set landscape(0) or portrait (1)
 ;				orientation of the page.
 ;	h_colour	input	Set or unset the generation of a
@@ -175,10 +177,6 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 ;	h_cmyk		input	Set or unset the use of the CMYK model
 ;				for (E)PS files. Specifying this
 ;				keyword will force colour (E)PS.
-;	h_eps		input	Set or unset the generation of EPS
-;				file rather than PS (N.B. if h_eps is
-;				set and h_orient is not specified,
-;				then h_orient=1 is implied).
 ;	h_[xy]size	input	Set the X(Y) dimension of the page in cm
 ;	h_[xy]margin	input	Set the X(Y) offset of the page from
 ;				the lower-left corner of the page.
@@ -222,7 +220,8 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 
   on_error, 2                   ; Return to caller on error
 
-  if (n_params() ne 1) then message, "Must specify a GRAFFER file"
+  if n_params() eq 0 || size(file, /type) ne 7 then $
+     message, "Must specify a GRAFFER file"
 
 ;	Open the file
 
@@ -275,11 +274,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 
 ;	X axis settings
 
-  if (n_elements(xrange) eq 2) then pdefs.xrange = xrange $
-  else if keyword_set(xauto) then  gr_autoscale, pdefs, /xaxis, /ignore
-
   if (n_elements(xtitle) ne 0) then pdefs.xtitle = xtitle
   if (n_elements(xlog) ne 0) then pdefs.xtype = keyword_set(xlog)
+
+  if (n_elements(xrange) eq 2) then pdefs.xrange = xrange $
+  else if keyword_set(xauto) then  gr_autoscale, pdefs, /xaxis, /ignore
 
 ;	Standard IDL style settings
 
@@ -292,11 +291,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      else  pdefs.xsty.idl = pdefs.xsty.idl and (not 2)
   endif
   if (n_elements(xaxes) ne 0) then begin
-     if keyword_set(xaxes) then pdefs.xsty.idl = pdefs.xsty.idl or 4 $
+     if ~keyword_set(xaxes) then pdefs.xsty.idl = pdefs.xsty.idl or 4 $
      else  pdefs.xsty.idl = pdefs.xsty.idl and (not 4)
   endif
   if (n_elements(xbox) ne 0) then begin
-     if keyword_set(xbox) then pdefs.xsty.idl = pdefs.xsty.idl or 8 $
+     if ~keyword_set(xbox) then pdefs.xsty.idl = pdefs.xsty.idl or 8 $
      else  pdefs.xsty.idl = pdefs.xsty.idl and (not 8)
   endif
 
@@ -310,7 +309,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      endcase
   endif
   if n_elements(xmajor) ne 0 then begin
-     pdefs.xsty.xmajor = xmajor
+     pdefs.xsty.major = xmajor
      if  ptr_valid(pdefs.xsty.values) and n_elements(xtickv) eq 0 then $
         ptr_free, pdefs.xsty.values
   endif
@@ -353,11 +352,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
 
 ;	Y axis settings
 
-  if (n_elements(yrange) eq 2) then pdefs.yrange = yrange $
-  else if keyword_set(yauto) then  gr_autoscale, pdefs, /yaxis, /ignore
-
   if (n_elements(ytitle) ne 0) then pdefs.ytitle = ytitle
   if (n_elements(ylog) ne 0) then pdefs.ytype = keyword_set(ylog)
+
+  if (n_elements(yrange) eq 2) then pdefs.yrange = yrange $
+  else if keyword_set(yauto) then  gr_autoscale, pdefs, /yaxis, /ignore
 
 ;	Standard IDL style settings
 
@@ -370,11 +369,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      else  pdefs.ysty.idl = pdefs.ysty.idl and (not 2)
   endif
   if (n_elements(yaxes) ne 0) then begin
-     if keyword_set(yaxes) then pdefs.ysty.idl = pdefs.ysty.idl or 4 $
+     if ~keyword_set(yaxes) then pdefs.ysty.idl = pdefs.ysty.idl or 4 $
      else  pdefs.ysty.idl = pdefs.ysty.idl and (not 4)
   endif
   if (n_elements(ybox) ne 0) then begin
-     if keyword_set(ybox) then pdefs.ysty.idl = pdefs.ysty.idl or 8 $
+     if ~keyword_set(ybox) then pdefs.ysty.idl = pdefs.ysty.idl or 8 $
      else  pdefs.ysty.idl = pdefs.ysty.idl and (not 8)
   endif
 
@@ -388,7 +387,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      endcase
   endif
   if n_elements(ymajor) ne 0 then begin
-     pdefs.ysty.xmajor = ymajor
+     pdefs.ysty.major = ymajor
      if  ptr_valid(pdefs.ysty.values) and n_elements(ytickv) eq 0 then $
         ptr_free, pdefs.ysty.values
   endif
@@ -434,11 +433,11 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
   if (n_elements(yr_enable) ne 0) then pdefs.y_right = $
      keyword_set(yr_enable)
 
-  if (n_elements(yrrange) eq 2) then pdefs.yrange_r = yrrange $
-  else if keyword_set(yrauto) then  gr_autoscale, pdefs, yaxis = 2, /ignore
-
   if (n_elements(yrtitle) ne 0) then pdefs.ytitle_r = yrtitle
   if (n_elements(yrlog) ne 0) then pdefs.ytype_r = keyword_set(yrlog)
+
+  if (n_elements(yrrange) eq 2) then pdefs.yrange_r = yrrange $
+  else if keyword_set(yrauto) then  gr_autoscale, pdefs, yaxis = 2, /ignore
 
 ;	Standard IDL style settings
 
@@ -451,7 +450,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      else  pdefs.ysty_r.idl = pdefs.ysty_r.idl and (not 2)
   endif
   if (n_elements(yraxes) ne 0) then begin
-     if keyword_set(yraxes) then pdefs.ysty_r.idl = pdefs.ysty_r.idl or 4 $
+     if ~keyword_set(yraxes) then pdefs.ysty_r.idl = pdefs.ysty_r.idl or 4 $
      else  pdefs.ysty_r.idl = pdefs.ysty_r.idl and (not 4)
   endif
 
@@ -465,7 +464,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      endcase
   endif
   if n_elements(yrmajor) ne 0 then begin
-     pdefs.ysty_r.xmajor = yrmajor
+     pdefs.ysty_r.major = yrmajor
      if  ptr_valid(pdefs.ysty_r.values) and n_elements(yrtickv) eq 0 then $
         ptr_free, pdefs.ysty_r.values
   endif
@@ -513,9 +512,7 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
   if (n_elements(h_colour) ne 0) then pdefs.hardset.colour = $
      keyword_set(h_colour)
   if (n_elements(h_eps) ne 0) then begin
-     pdefs.hardset.eps = keyword_set(h_eps)
-     if (keyword_set(h_eps) and n_elements(h_orient) eq 0) then $
-        pdefs.hardset.orient = 1b
+     print, "Output type is no longer stored."
   endif
 
   if (n_elements(h_xsize) ne 0) then pdefs.hardset.size(0) = h_xsize
@@ -538,13 +535,36 @@ pro Graff_props, file, title = title, subtitle = subtitle, $
      1: pdefs.hardset.viewer = [h_viewer, ' &']
      2: pdefs.hardset.viewer = h_viewer[0:1]
   endcase
+  case  n_elements(h_pdfviewer) of
+     0:                         ; Not given do nothing
+     1: pdefs.hardset.pdfviewer = [h_pdfviewer, ' &']
+     2: pdefs.hardset.pdfviewer = h_pdfviewer[0:1]
+  endcase
   if n_elements(h_file) ne 0 then pdefs.hardset.name = h_file
   if n_elements(h_psdev) ne 0 then pdefs.hardset.psdev = h_psdev
   if n_elements(h_epsdev) ne 0 then pdefs.hardset.epsdev = h_epsdev
   if n_elements(h_pdfdev) ne 0 then pdefs.hardset.pdfdev = h_pdfdev
   if n_elements(h_svgdev) ne 0 then pdefs.hardset.svgdev = h_svgdev
 
-  gr_bin_save, pdefs
+;	If the PDEFS arguement is given then do not save.
+
+  if arg_present(pdefs) then return
+
+;	Display or enter Graffer?
+
+  if keyword_set(graffer) && graff_have_gui() then begin
+     gr_state, /save
+     gr_bin_save, pdefs
+     graffer, file
+     return
+  endif else if (keyword_set(display)) then begin
+     gr_state, /save
+     gr_plot_object, pdefs
+     gr_state
+  endif
+
+  if (keyword_set(ascii)) then gr_asc_save, pdefs $
+  else gr_bin_save, pdefs
 
   graff_clear, pdefs
 

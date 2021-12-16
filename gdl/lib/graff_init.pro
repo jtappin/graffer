@@ -68,8 +68,6 @@ pro Graff_init, pdefs, file, version = version, ttype = ttype
   endif else begin
      fc = file
      gr_split_dir, fc, dir
-     dir = gr_get_full_dir(dir)
-     
   endelse
 
   if (n_elements(ds_dir) eq 0) then ds_dir = dir
