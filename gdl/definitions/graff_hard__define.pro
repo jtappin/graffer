@@ -26,6 +26,8 @@ pro graff_hard__define
 ; MODIFICATION HISTORY:
 ;	Extracted: 30/6/05; SJT
 ;	Add options for plplot drivers: 29/11/13; SJT
+;	Add PDF viewer: 21/9/16; SJT
+;	Add Fortran-only device names: 31/3/20; SJT
 ;-
 
 Hardset = { graff_hard, $
