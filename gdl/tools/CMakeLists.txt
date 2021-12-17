@@ -6,15 +6,15 @@
 #(at your option) any later version.                                   
 
 install(FILES
-  "${CMAKE_CURRENT_SOURCE_DIR/aspect.pro"
-  "${CMAKE_CURRENT_SOURCE_DIR/fractile.pro"
-  "${CMAKE_CURRENT_SOURCE_DIR/gr_cvttobm.pro"
-  "${CMAKE_CURRENT_SOURCE_DIR/gr_interpol_ss.pro"
-  "${CMAKE_CURRENT_SOURCE_DIR/gr_min_nz.pro"
-  "${CMAKE_CURRENT_SOURCE_DIR/gr_strpad.pro"
-  "${CMAKE_CURRENT_SOURCE_DIR/is_gdl.pro"
-  "${CMAKE_CURRENT_SOURCE_DIR/match_in.pro"
-  "${CMAKE_CURRENT_SOURCE_DIR/truth.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/aspect.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/fractile.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gr_cvttobm.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gr_interpol_ss.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gr_min_nz.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gr_strpad.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/is_gdl.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/match_in.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/truth.pro"
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/graffer/lib/tools
   )
 
