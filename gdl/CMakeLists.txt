@@ -21,6 +21,11 @@ add_subdirectory(lib)
 add_subdirectory(plotlib)
 add_subdirectory(tools)
 add_subdirectory(utils)
+if (GDL_GUI)
+  add_subdirectory(widgets)
+  add_subdirectory(gui)
+  add_subdirectory(bitmaps)
+endif()
 
 install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_version.pro"

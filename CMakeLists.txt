@@ -24,6 +24,9 @@ include(CheckCSourceCompiles)
 # -DGDL=1
 set(GDL ON CACHE BOOL "GRAFFER: Install gdl routines?")
 
+# Enable installation of GDL/IDL gui with -DGDL_GUI=1
+set(GDL_GUI OFF CACHE BOOL "GRAFFER: Install GDL GUI?")
+
 # Note that we override the lib directory here because most
 # 64-bit systems don't actually work if we use the default.
 include(GNUInstallDirs)
