@@ -125,11 +125,8 @@ pro Gr_ctl_event, event
         ichange = 0b
         idraw_flag = 0
      end
-     'File.Save as': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Save plot to an alternative ' + $
-                   'filename'  
-     
-     'File.Save as.Save binary as ...': if track_flag then $
+
+     'File.Save as ...': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, 'Save plot to new file name in ' + $
                    'binary format' $
      else begin
@@ -148,7 +145,7 @@ pro Gr_ctl_event, event
            graff_set_vals, pdefs
         end
      end
-     'File.Save as.Save ascii as ...': if track_flag then $
+     'File.Save ascii as ...': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, 'Save plot to new file name in ' + $
                    'ascii format' $
      else begin
@@ -322,8 +319,7 @@ pro Gr_control_menu, base
 
   ctlmenu = [{control_opts, flag:1, label:'File', accelerator:''}, $
              {control_opts, 0, 'Save', 'Ctrl+S'}, $
-             {control_opts, 1, 'Save as', ''}, $ $
-             {control_opts, 0, 'Save binary as ...', 'Ctrl+Shift+S'}, $
+             {control_opts, 0, 'Save as ...', 'Ctrl+Shift+S'}, $ 
              {control_opts, 2, 'Save ascii as ...', 'Ctrl+Alt+S'}, $
              {control_opts, 1, 'Dump screen', ''}, $
              {control_opts, 0, 'PNG', 'Ctrl+Alt+P'}, $
