@@ -64,16 +64,18 @@ pro Gr_axis_event, event
                    '(floating point)' $
      else pdefs.xrange[1] = event.value
      
-     'XLOG': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Toggle linear or logarithmic X axis' $
-     else pdefs.xtype = event.index
-     
      'XSTY': begin
         val = strsplit(event.value, '/', /extr)
         if (n_elements(val) eq 1) then $
            graff_msg, pdefs.ids.hlptxt, $
                       'Select X-axis style options' $
         else case val[1] of
+           'Logarithmic': begin
+              if track_flag then $
+                 graff_msg, pdefs.ids.hlptxt, $
+                 'Toggle linear or logarithmic X axis' $
+              else pdefs.xtype = event.select
+           end
            'Exact Range': begin
               if track_flag then $
                  graff_msg, pdefs.ids.hlptxt, 'Select exact  or ' + $
@@ -225,16 +227,18 @@ pro Gr_axis_event, event
                    '(floating point)' $
      else pdefs.yrange[1] = event.value
      
-     'YLOG': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Toggle linear or logarithmic Y axis' $
-     else pdefs.ytype = event.index
-     
      'YSTY': begin
         val = strsplit(event.value, '/', /extr)
         if (n_elements(val) eq 1) then $
            graff_msg, pdefs.ids.hlptxt, $
                       'Select Y-axis style options' $
         else case val[1] of
+           'Logarithmic': begin
+              if track_flag then $
+                 graff_msg, pdefs.ids.hlptxt, $
+                 'Toggle linear or logarithmic Y axis' $
+              else pdefs.ytype = event.select
+           end
            'Exact Range': begin
               if track_flag then $
                  graff_msg, pdefs.ids.hlptxt, 'Select exact  or ' + $
@@ -391,17 +395,18 @@ pro Gr_axis_event, event
         pdefs.yrange_r(1) = event.value
      end
      
-     'YrLOG': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, $
-                   'Toggle linear or logarithmic Y(r) axis' $
-     else pdefs.ytype_r = event.index
-     
      'YrSTY': begin
         val = strsplit(event.value, '/', /extr)
         if n_elements(val) eq 1 then $
            graff_msg, pdefs.ids.hlptxt, $
                       'Select Y(r)-axis style options' $
         else case val[1] of
+           'Logarithmic': begin
+              if track_flag then $
+                 graff_msg, pdefs.ids.hlptxt, $
+                 'Toggle linear or logarithmic Y(r) axis' $
+              else pdefs.ytype_r = event.select
+           end
            'Exact Range': begin
               if track_flag then $
                  graff_msg, pdefs.ids.hlptxt, 'Select exact or ' + $
@@ -584,11 +589,11 @@ pro Gr_axis_menu, axis, base, pdefs
                    xpad = 0, $
                    ypad = 0, $
                    space = 0)
-  log = widget_droplist(jb, $
-                        value = ['Linear', 'Log'], $
-                        uvalue = axis+'LOG', $
-                        title = axis+' Log/Lin:', $
-                        track = optblock.track)
+  ;; log = widget_droplist(jb, $
+  ;;                       value = ['Linear', 'Log'], $
+  ;;                       uvalue = axis+'LOG', $
+  ;;                       title = axis+' Log/Lin:', $
+  ;;                       track = optblock.track)
 
                                 ; Exact or rounded axis range
 
@@ -597,6 +602,7 @@ pro Gr_axis_menu, axis, base, pdefs
 
   stydesc = [{AXMENU_OPTS, flag:3, label:axis+' style', state:0b, $
               group: 0, sensitive: 1b},  $
+             {axmenu_opts, 4, 'Logarithmic', 0b, 0, 1b}, $
              {axmenu_opts, 4, 'Exact Range', 0b, 0, 1b}, $
              {axmenu_opts, 4, 'Extended Range', 0b, 0, 1b}, $
              {axmenu_opts, 4, 'Draw Axes', 0b, 0, 1b}, $
@@ -638,7 +644,7 @@ pro Gr_axis_menu, axis, base, pdefs
   if axis eq 'Y' then pdefs.ids.y_box = buts[4]
   if axis eq 'X' then pdefs.ids.x_origin = buts[8]
 
-  asty_pos = [1, 2, 3, 4,  5,  6,  7,  8,  12]
+  asty_pos = [1, 2, 3, 4,  5,  6,  7,  8,  9, 12]
   
                                 ; Minimum
 
@@ -675,19 +681,19 @@ pro Gr_axis_menu, axis, base, pdefs
 
   if (axis eq 'X') then begin
      pdefs.ids.xtitle = title
-     pdefs.ids.xlog = log
+;;     pdefs.ids.xlog = log
      pdefs.ids.xmin = amin
      pdefs.ids.xmax = amax
      pdefs.ids.xsty = buts[asty_pos]
   endif else if (axis eq 'Y') then begin
      pdefs.ids.ytitle = title
-     pdefs.ids.ylog = log
+;;     pdefs.ids.ylog = log
      pdefs.ids.ymin = amin
      pdefs.ids.ymax = amax
      pdefs.ids.ysty = buts[asty_pos]
   endif else if (axis eq 'Yr') then begin
      pdefs.ids.ytitle_r = title
-     pdefs.ids.ylog_r = log
+;;     pdefs.ids.ylog_r = log
      pdefs.ids.ymin_r = amin
      pdefs.ids.ymax_r = amax
      pdefs.ids.ysty_r = buts[asty_pos]

@@ -320,7 +320,7 @@ pro Gr_control_menu, base
   ctlmenu = [{control_opts, flag:1, label:'File', accelerator:''}, $
              {control_opts, 0, 'Save', 'Ctrl+S'}, $
              {control_opts, 0, 'Save as ...', 'Ctrl+Shift+S'}, $ 
-             {control_opts, 2, 'Save ascii as ...', 'Ctrl+Alt+S'}, $
+             {control_opts, 0, 'Save ascii as ...', 'Ctrl+Alt+S'}, $
              {control_opts, 1, 'Dump screen', ''}, $
              {control_opts, 0, 'PNG', 'Ctrl+Alt+P'}, $
              {control_opts, 0, 'TIFF', 'Ctrl+Alt+T'}, $

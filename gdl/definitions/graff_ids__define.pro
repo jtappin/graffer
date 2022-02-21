@@ -46,9 +46,9 @@ Ids = { graff_ids, $
         Xtitle:  0l, $
         Xmin:    0l, $
         Xmax:    0l, $
-        Xlog:    0l, $
+;;        Xlog:    0l, $
         x_origin:0l, $
-        Xsty:    lonarr(9), $
+        Xsty:    lonarr(10), $
         y_right: 0l, $
         ybase_r: 0l, $
         y_box:   0l, $
@@ -57,12 +57,12 @@ Ids = { graff_ids, $
         Ymin:    0l, $
         Ymax:    0l, $
         Ylog:    0l, $
-        Ysty:    lonarr(9), $
+        Ysty:    lonarr(10), $
         Ytitle_r:  0l, $
         Ymin_r:    0l, $
         Ymax_r:    0l, $
         Ylog_r:    0l, $
-        Ysty_r:    lonarr(9), $
+        Ysty_r:    lonarr(10), $
         Plopts:  lonarr(2), $
         zopts:   {graff_zids, $
                   bases: lonarr(2), $

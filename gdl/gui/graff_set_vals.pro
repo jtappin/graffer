@@ -58,65 +58,68 @@ pro Graff_set_vals, pdefs, set_only = set_only
      widget_control, pdefs.ids.xtitle, set_value = pdefs.xtitle
      widget_control, pdefs.ids.xmin, set_value = pdefs.xrange(0)
      widget_control, pdefs.ids.xmax, set_value = pdefs.xrange[1]
-     widget_control, pdefs.ids.xlog, set_droplist_select = pdefs.xtype
+;;     widget_control, pdefs.ids.xlog, set_droplist_select = pdefs.xtype
      
-     cw_pdmenu_plus_set, pdefs.ids.xsty[0], pdefs.xsty.idl and 1
-     cw_pdmenu_plus_set, pdefs.ids.xsty[1], (pdefs.xsty.idl and 2) ne 0
-     cw_pdmenu_plus_set, pdefs.ids.xsty[2], (pdefs.xsty.idl and 4) eq 0
-     cw_pdmenu_plus_set, pdefs.ids.xsty[3], (pdefs.xsty.idl and 8) eq 0
+     cw_pdmenu_plus_set, pdefs.ids.xsty[0], pdefs.xtype
+     cw_pdmenu_plus_set, pdefs.ids.xsty[1], pdefs.xsty.idl and 1
+     cw_pdmenu_plus_set, pdefs.ids.xsty[2], (pdefs.xsty.idl and 2) ne 0
+     cw_pdmenu_plus_set, pdefs.ids.xsty[3], (pdefs.xsty.idl and 4) eq 0
+     cw_pdmenu_plus_set, pdefs.ids.xsty[4], (pdefs.xsty.idl and 8) eq 0
      
-     cw_pdmenu_plus_set, pdefs.ids.xsty[4], pdefs.xsty.minor eq 0
-     cw_pdmenu_plus_set, pdefs.ids.xsty[5], (pdefs.xsty.extra and 4) eq 0
+     cw_pdmenu_plus_set, pdefs.ids.xsty[5], pdefs.xsty.minor eq 0
+     cw_pdmenu_plus_set, pdefs.ids.xsty[6], (pdefs.xsty.extra and 4) eq 0
 
      if (pdefs.xsty.extra and 2) eq 0 then xostat = 0 $
      else if (pdefs.xsty.extra and 8) eq 0 then xostat = 1 $
      else xostat = 2
-     cw_pdmenu_plus_set, pdefs.ids.xsty[7], index = xostat
+     cw_pdmenu_plus_set, pdefs.ids.xsty[8], index = xostat
      
-     cw_pdmenu_plus_set, pdefs.ids.xsty[6], (pdefs.xsty.time and 1) ne 0
-     cw_pdmenu_plus_set, pdefs.ids.xsty[8], index = pdefs.xsty.grid
+     cw_pdmenu_plus_set, pdefs.ids.xsty[7], (pdefs.xsty.time and 1) ne 0
+     cw_pdmenu_plus_set, pdefs.ids.xsty[9], index = pdefs.xsty.grid
      
      widget_control, pdefs.ids.ytitle, set_value = pdefs.ytitle
      widget_control, pdefs.ids.ymin, set_value = pdefs.yrange[0]
      widget_control, pdefs.ids.ymax, set_value = pdefs.yrange[1]
-     widget_control, pdefs.ids.ylog, set_droplist_select = pdefs.ytype
+     ;; widget_control, pdefs.ids.ylog, set_droplist_select = pdefs.ytype
 
-     cw_pdmenu_plus_set, pdefs.ids.ysty[0], pdefs.ysty.idl and 1
-     cw_pdmenu_plus_set, pdefs.ids.ysty[1], (pdefs.ysty.idl and 2) ne 0
-     cw_pdmenu_plus_set, pdefs.ids.ysty[2], (pdefs.ysty.idl and 4) eq 0
-     cw_pdmenu_plus_set, pdefs.ids.ysty[3], (pdefs.ysty.idl and 8) eq 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty[0], pdefs.ytype
+     cw_pdmenu_plus_set, pdefs.ids.ysty[1], pdefs.ysty.idl and 1
+     cw_pdmenu_plus_set, pdefs.ids.ysty[2], (pdefs.ysty.idl and 2) ne 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty[3], (pdefs.ysty.idl and 4) eq 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty[4], (pdefs.ysty.idl and 8) eq 0
      
-     cw_pdmenu_plus_set, pdefs.ids.ysty[4], pdefs.ysty.minor eq 0
-     cw_pdmenu_plus_set, pdefs.ids.ysty[5], (pdefs.ysty.extra and 4) eq 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty[5], pdefs.ysty.minor eq 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty[6], (pdefs.ysty.extra and 4) eq 0
 
      if (pdefs.ysty.extra and 2) eq 0 then yostat = 0 $
      else if (pdefs.ysty.extra and 8) eq 0 then yostat = 1 $
      else yostat = 2
-     cw_pdmenu_plus_set, pdefs.ids.ysty[7], index = yostat
+     cw_pdmenu_plus_set, pdefs.ids.ysty[8], index = yostat
      
-     cw_pdmenu_plus_set, pdefs.ids.ysty[6], (pdefs.ysty.time and 1) ne 0
-     cw_pdmenu_plus_set, pdefs.ids.ysty[8], index = pdefs.ysty.grid
+     cw_pdmenu_plus_set, pdefs.ids.ysty[7], (pdefs.ysty.time and 1) ne 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty[9], index = pdefs.ysty.grid
 
      widget_control, pdefs.ids.ytitle_r, set_value = pdefs.ytitle_r
      widget_control, pdefs.ids.ymin_r, set_value = pdefs.yrange_r[0]
      widget_control, pdefs.ids.ymax_r, set_value = pdefs.yrange_r[1]
-     widget_control, pdefs.ids.ylog_r, set_droplist_select = pdefs.ytype_r
+     ;; widget_control, pdefs.ids.ylog_r, set_droplist_select = pdefs.ytype_r
 
-     cw_pdmenu_plus_set, pdefs.ids.ysty_r[0], pdefs.ysty_r.idl and 1
-     cw_pdmenu_plus_set, pdefs.ids.ysty_r[1], (pdefs.ysty_r.idl and 2) ne 0
-     cw_pdmenu_plus_set, pdefs.ids.ysty_r[2], (pdefs.ysty_r.idl and 4) eq 0
-     cw_pdmenu_plus_set, pdefs.ids.ysty_r[3], (pdefs.ysty_r.idl and 8) eq 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[0], pdefs.ytype_r
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[1], pdefs.ysty_r.idl and 1
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[2], (pdefs.ysty_r.idl and 2) ne 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[3], (pdefs.ysty_r.idl and 4) eq 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[4], (pdefs.ysty_r.idl and 8) eq 0
      
-     cw_pdmenu_plus_set, pdefs.ids.ysty_r[4], pdefs.ysty_r.minor eq 0
-     cw_pdmenu_plus_set, pdefs.ids.ysty_r[5], (pdefs.ysty_r.extra and 4) eq 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[5], pdefs.ysty_r.minor eq 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[6], (pdefs.ysty_r.extra and 4) eq 0
 
      if (pdefs.ysty_r.extra and 2) eq 0 then yrostat = 0 $
      else if (pdefs.ysty_r.extra and 8) eq 0 then yrostat = 1 $
      else yrostat = 2
-     cw_pdmenu_plus_set, pdefs.ids.ysty_r[7], index = yrostat
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[8], index = yrostat
 
-     cw_pdmenu_plus_set, pdefs.ids.ysty_r[6], (pdefs.ysty_r.time and 1) ne 0
-     cw_pdmenu_plus_set, pdefs.ids.ysty_r[8], index = $
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[7], (pdefs.ysty_r.time and 1) ne 0
+     cw_pdmenu_plus_set, pdefs.ids.ysty_r[9], index = $
                          pdefs.ysty_r.grid
 
      widget_control, pdefs.ids.current, set_button = $
