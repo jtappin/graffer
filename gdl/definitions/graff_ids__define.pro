@@ -56,12 +56,12 @@ Ids = { graff_ids, $
         Ytitle:  0l, $
         Ymin:    0l, $
         Ymax:    0l, $
-        Ylog:    0l, $
+;;        Ylog:    0l, $
         Ysty:    lonarr(10), $
         Ytitle_r:  0l, $
         Ymin_r:    0l, $
         Ymax_r:    0l, $
-        Ylog_r:    0l, $
+;;        Ylog_r:    0l, $
         Ysty_r:    lonarr(10), $
         Plopts:  lonarr(2), $
         zopts:   {graff_zids, $
