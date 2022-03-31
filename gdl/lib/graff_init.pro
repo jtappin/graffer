@@ -46,6 +46,7 @@ pro Graff_init, pdefs, file, version = version, ttype = ttype
 ;	Set current font option to the initial state: 12/2/20; SJT
 ;	Move top level options out of PDEFS: 21/5/20; SJT
 ;	Initialize key charsize to 1: 4/11/21; SJT
+;	Disable cross hairs in GDL: 31/3/22; SJT
 ;-
 
   common graffer_options, optblock
@@ -96,7 +97,7 @@ pro Graff_init, pdefs, file, version = version, ttype = ttype
   pdefs.key.csize = 1.d
   
   pdefs.transient.Imove =   -1l
-  pdefs.transient.hairs = 1b
+  pdefs.transient.hairs = ~is_gdl()
 
   pdefs.ds_dir =       ds_dir
 
