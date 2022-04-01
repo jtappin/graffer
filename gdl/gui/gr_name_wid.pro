@@ -41,7 +41,7 @@ function grname_event, event
         case event.value of
            'DO': begin
               evr.action = 1
-              widget_control, (*state).namid, get_value = name
+              widget_control, state.namid, get_value = name
               evr.name = name
            end
            'DONT': begin
@@ -79,7 +79,7 @@ function gr_name_wid, top
                    button_uvalue = ['DO', 'DONT'], $
                    uvalue = 'QUIT')
 
-  state = {namid: namid})
+  state = {namid: namid}
 
   widget_control, base, /real, set_uvalue = state, $
                   event_func = 'grname_event'

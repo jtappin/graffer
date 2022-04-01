@@ -18,9 +18,6 @@ function gr_tlv_event, event
   case mnu of
      "DONT": begin
         evr.exit = -1
-        
-        ;; widget_control, /destroy, event.top
-        ;; return
      end
 
      'DO': begin
@@ -148,8 +145,6 @@ function gr_tlv_event, event
               else:
            endcase
         endelse
-        ;; widget_control, event.top, /destroy
-        ;; return
         evr.exit = 1
      end
 
@@ -441,7 +436,6 @@ pro graff_to_tlv, pdefs
   widget_control, base, /real, set_uvalue = state, event_func = $
                   'gr_tlv_event' 
 
-  ;; xmanager, "gr_tlv", base
   repeat begin
      ev = widget_event(base)
   endrep until (ev.exit ne 0)
