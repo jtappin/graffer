@@ -188,7 +188,7 @@ pro Gr_ctl_event, event
         graff_msg, pdefs.ids.hlptxt, 'Save to a variable at the ' + $
                    '$MAIN$ level.' $
      else begin
-        name = gr_name_wid(event)
+        name = gr_name_wid(event.top)
         if name ne '' then $
            graff_dump, pdefs, variable = name
         ichange = 0b

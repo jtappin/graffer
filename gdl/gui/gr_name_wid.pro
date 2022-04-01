@@ -10,49 +10,57 @@
 ;	Request a variable name.
 ;
 ; Usage:
-; 	name = gr_name_wid(event)
+; 	name = gr_name_wid(top)
 ;
 ; Returns:
 ;	The name of the variable, or an empty string.
 ;
 ; Argument:
-;	event	struct	The event in the caller.
+;	top	long	The widget id of the top-level widget of the
+;			caller. 
 ;
 ; History:
 ;	Original: 3/1/18(?); SJT
 ;	Document: 3/7/18; SJT
+;	Replace xmanager call: 1/4/22; SJT
 ;-
 
-pro grname_event, event
+function grname_event, event
 
   widget_control, event.top, get_uvalue = state
   widget_control, event.id, get_uvalue = mnu
+
+  evr = {id: event.handler, $
+         top: event.top, $
+         handler: event.handler, $
+         name: '', $
+         action: 0}
+  
   case mnu of
      'QUIT': begin
         case event.value of
            'DO': begin
-              (*state).action = 1
+              evr.action = 1
               widget_control, (*state).namid, get_value = name
-              (*state).name = name
+              evr.name = name
            end
            'DONT': begin
-              (*state).name = ''
-              (*state).action = -1
+              evr.name = ''
+              evr.action = -1
            end
         endcase
-        widget_control, event.top, /destroy
      end
      'NAME':
   endcase
 end
 
-function gr_name_wid, event
+function gr_name_wid, top
 
   defname = 'grf_image'
 
-  widget_control, event.top, sensitive = 0
+  widget_control, top, sensitive = 0
   
-  base = widget_base(group = event.top, $
+  base = widget_base(group = top, $
                      /column, $
                      title = "Variable name")
 
@@ -71,18 +79,20 @@ function gr_name_wid, event
                    button_uvalue = ['DO', 'DONT'], $
                    uvalue = 'QUIT')
 
-  state = ptr_new({name: defname, $
-                   action: 0, $
-                   namid: namid})
+  state = {namid: namid})
 
-  widget_control, base, /real, set_uvalue = state
+  widget_control, base, /real, set_uvalue = state, $
+                  event_func = 'grname_event'
 
-  xmanager, 'grname', base
-  
-  widget_control, event.top, /sensitive
-  
-  if (*state).action gt 0 then rname = (*state).name $
+  repeat begin
+     ev = widget_event(base)
+  endrep until ev.action ne 0
+
+  if ev.action eq 1 then rname = ev.name $
   else rname = ''
-
+  widget_control, base, /destroy
+  
+  widget_control, top, /sensitive
+  
   return, rname
 end
