@@ -644,7 +644,7 @@ pro Gr_axis_menu, axis, base, pdefs
   if axis eq 'Y' then pdefs.ids.y_box = buts[4]
   if axis eq 'X' then pdefs.ids.x_origin = buts[8]
 
-  asty_pos = [1, 2, 3, 4,  5,  6,  7,  8,  9, 12]
+  asty_pos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 13]
   
                                 ; Minimum
 
