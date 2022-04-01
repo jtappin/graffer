@@ -28,7 +28,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
                   z_charsize = z_charsize, status = status, $
                   z_mode = z_mode, x_scale = x_scale, $
                   y_scale = y_scale, x_shift = x_shift, $
-                  y_shift = y_shift
+                  y_shift = y_shift, retain_unset = retain_unset
 
 ;+
 ; GRAFF_UPDATE
@@ -58,7 +58,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;                  z_charsize = z_charsize, status = status, $
 ;                  z_mode = z_mode, x_scale = x_scale, $
 ;                  y_scale = y_scale, x_shift = x_shift, $
-;                  y_shift = y_shift
+;                  y_shift = y_shift, retain_unset = retain_unset
 ;
 ; Arguments:
 ;	file	string	input	The graffer file to modify.
@@ -150,6 +150,9 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;	y_shift	float	input	Shift Y values by this factor
 ;	status	int	output	A named variable to be set to 0 on
 ;				failure or 1 on success
+;	/retain_unset	input	If set, then unspecified data fields
+;				are retained when a subset of data
+;				fields is given.
 ;
 ; Restrictions:
 ;	Does not allow changing dataset type.
@@ -173,6 +176,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;	Add X & Y shifts and scale: 26/1/16; SJT
 ;	Add non-linear contour level maps: 12/10/16; SJT
 ;	Allow long/triple colours: 1/3/19; SJT
+;	Start extraction of data updates: 1/4/22; SJT
 ;-
 
   on_error, 2                   ; Return to caller on error
@@ -250,7 +254,10 @@ pro graff_update, file, idx, name = name, polar = polar, $
      return
   endif
 
-  if (keyword_set(polar) and ((*pdefs.data)[index].type ge -3 and $
+  dataflag = keyword_set(x_values) || keyword_set(y_values) || $
+             keyword_set(z_values) || keyword_set(errors)
+  
+  if (keyword_set(polar) && ((*pdefs.data)[index].type ge -3 && $
                               (*pdefs.data)[index].type le 8)) then $
                                  (*pdefs.data)[index].mode = polar
   if (n_elements(psym) ne 0) then  (*pdefs.data)[index].psym = psym
@@ -405,59 +412,11 @@ pro graff_update, file, idx, name = name, polar = polar, $
            keyword_set(z_func) then $
               message, "Cannot convert a data dataset to a function"
 
-        if keyword_set(y_values) then begin ; Values given
-           ny = n_elements(y_values)
-           if (keyword_set(errors)) then begin
-              se = size(errors)
-              if (se(0) eq 1) then begin
-                 nt = 3
-                 nerr = se(1)
-                 errs = double(transpose(errors))
-              endif else if (se(0) eq 2 and se(1) le 6) then begin
-                 nt = se(1)+2
-                 nerr = se(2)
-                 errs = errors
-              endif else message, "Invalid dimensions for ERRORS"
-              if (nerr ne ny) then $
-                 message, 'Must have the same number of ' + $
-                          'errors as Y-values'
-              
-              if keyword_set(errtype) then begin
-                 if strlen(errtype) ne nt-2 then $
-                    message, "ERRTYPE incompatible with specified errors"
-                 case strupcase(errtype) of
-                    'Y': ntype = 1
-                    'YY': ntype = 2
-                    'X': ntype = 3
-                    'XX': ntype = 4
-                    'XY': ntype = 5
-                    'XYY': ntype = 6
-                    'XXY': ntype = 7
-                    'XXYY': ntype = 8
-                 endcase
-              endif else case nt of
-                 3: ntype = 1
-                 4: ntype = 5
-                 5: ntype = 6
-                 6: ntype = 8
-              endcase
-           endif else begin
-              nt = 2
-              ntype = 0
-           endelse
-
-           if ~keyword_set(x_values) then x_values = dindgen(ny) $
-           else if n_elements(x_values) ne ny then $
-              message, "X & Y must have the same number of elements"
-
-           xydata = dblarr(nt, ny)
-           xydata[0, *] = x_values
-           xydata[1, *] = y_values
-           if nt ge 3 then xydata[2, 0] = errs
-           ptr_free, (*pdefs.data)[index].xydata
-           (*pdefs.data)[index].xydata = ptr_new(xydata)
-           (*pdefs.data)[index].type = ntype
-           (*pdefs.data)[index].ndata = ny
+        if dataflag then begin
+           data = (*pdefs.data)[index]
+           ok = gr_update_xy(data, x_values, y_values, errors, $
+                             errtype, keyword_set(retain_unset))
+           if ok then (*pdefs.data)[index] = data
         endif else if n_elements(mscale) eq 4 then begin
 
            xydata = *(*pdefs.data)[index].xydata
