@@ -5,15 +5,22 @@
 ; the Free Software Foundation; either version 2 of the License, or     
 ; (at your option) any later version.                                   
 
-pro gr_tlv_event, event
+function gr_tlv_event, event
 
   widget_control, event.top, get_uvalue = state
   widget_control, event.id, get_uvalue = mnu
 
+  evr =  {id: event.handler, $
+          top: event.top, $
+          handler: event.handler, $
+          exit: 0}
+  
   case mnu of
      "DONT": begin
-        widget_control, /destroy, event.top
-        return
+        evr.exit = -1
+        
+        ;; widget_control, /destroy, event.top
+        ;; return
      end
 
      'DO': begin
@@ -141,8 +148,9 @@ pro gr_tlv_event, event
               else:
            endcase
         endelse
-        widget_control, event.top, /destroy
-        return
+        ;; widget_control, event.top, /destroy
+        ;; return
+        evr.exit = 1
      end
 
      'X': state.names.x = event.value
@@ -158,6 +166,9 @@ pro gr_tlv_event, event
   endcase
 
   widget_control, event.top, set_uvalue = state
+
+  return, evr
+  
 end
 pro graff_to_tlv, pdefs
 
@@ -427,10 +438,14 @@ pro graff_to_tlv, pdefs
            type: data.type, $
            names: names}
 
-  widget_control, base, /real, set_uvalue = state
+  widget_control, base, /real, set_uvalue = state, event_func = $
+                  'gr_tlv_event' 
 
-  xmanager, "gr_tlv", base
-
+  ;; xmanager, "gr_tlv", base
+  repeat begin
+     ev = widget_event(base)
+  endrep until (ev.exit ne 0)
+  widget_control, base, /destroy
   widget_control, pdefs.ids.graffer, /sensitive
 
 end
