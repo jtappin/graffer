@@ -258,8 +258,8 @@ pro graff_update, file, idx, name = name, polar = polar, $
              keyword_set(z_values) || keyword_set(errors)
   
   if (keyword_set(polar) && ((*pdefs.data)[index].type ge -3 && $
-                              (*pdefs.data)[index].type le 8)) then $
-                                 (*pdefs.data)[index].mode = polar
+                             (*pdefs.data)[index].type le 8)) then $
+                                (*pdefs.data)[index].mode = polar
   if (n_elements(psym) ne 0) then  (*pdefs.data)[index].psym = psym
   if (n_elements(join) ne 0) then (*pdefs.data)[index].pline = join
   if (n_elements(symsize) ne 0) then  (*pdefs.data)[index].symsize $
@@ -312,7 +312,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
         ptr_free, (*pdefs.data)[index].zopts.Colours
      if ptr_valid((*pdefs.data)[index].zopts.raw_colours) then $
         ptr_free, (*pdefs.data)[index].zopts.raw_colours
-      
+     
      ncolss = n_elements(z_colours)
      (*pdefs.data)[index].zopts.N_cols = ncolss
      case size(z_colours, /type) of
@@ -404,193 +404,141 @@ pro graff_update, file, idx, name = name, polar = polar, $
   endif
 
   type = (*pdefs.data)[index].type
-  case 1 of
-     type ge 0 and type le 8: begin ; A normal 1-D data set.
-        if keyword_set(z_values) then $
-           message, "Cannot convert a 1-D dataset to a 2-D dataset"
-        if keyword_set(x_func) or keyword_set(y_func) or $
-           keyword_set(z_func) then $
-              message, "Cannot convert a data dataset to a function"
+  if type ge 0 && type le 8 then begin ; A normal 1-D data set.
+     if keyword_set(z_values) then $
+        message, "Cannot convert a 1-D dataset to a 2-D dataset"
+     if keyword_set(x_func) or keyword_set(y_func) or $
+        keyword_set(z_func) then $
+           message, "Cannot convert a data dataset to a function"
 
-        if dataflag then begin
-           data = (*pdefs.data)[index]
-           ok = gr_update_xy(data, x_values, y_values, errors, $
-                             errtype, keyword_set(retain_unset))
-           if ok then (*pdefs.data)[index] = data
-        endif else if n_elements(mscale) eq 4 then begin
+     if dataflag then begin
+        data = (*pdefs.data)[index]
+        ok = gr_update_xy(data, x_values, y_values, errors, $
+                          errtype, keyword_set(retain_unset))
+        if ok then (*pdefs.data)[index] = data
+     endif else if n_elements(mscale) eq 4 then begin
 
-           xydata = *(*pdefs.data)[index].xydata
+        xydata = *(*pdefs.data)[index].xydata
 
-           xydata[0, *] = xydata[0, *] * mscale[0] + mscale[1]
-           xydata[1, *] = xydata[1, *] * mscale[2] + mscale[3]
-           case type of
-              0:
-              1: xydata[2, *] = xydata[2, *]*mscale[2]     ; Y
-              2: xydata[2:3, *] = xydata[2:3, *]*mscale[2] ; YY
-              
-              3: xydata[2, *] = xydata[2, *]*mscale[0]     ; X
-              4: xydata[2:3, *] = xydata[2:3, *]*mscale[0] ; XX
-              
-              5: begin          ; XY
-                 xydata[2, *] = xydata[2, *]*mscale[0]
-                 xydata[3, *] = xydata[3, *]*mscale[2]
-              end
-              
-              6: begin          ; XYY
-                 xydata[2, *] = xydata[2, *]*mscale[0]
-                 xydata[3:4, *] = xydata[3:4, *]*mscale[2]
-              end
-              7: begin          ; XXY
-                 xydata[2:3, *] = xydata[2:3, *]*mscale[0]
-                 xydata[4, *] = xydata[4, *]*mscale[2]
-              end
-              
-              8: begin          ; XXYY
-                 xydata[2:3, *] = xydata[2:3, *]*mscale[0]
-                 xydata[4:5, *] = xydata[4:5, *]*mscale[2]
-              end
-           endcase
-           *(*pdefs.data)[index].xydata = xydata
+        xydata[0, *] = xydata[0, *] * mscale[0] + mscale[1]
+        xydata[1, *] = xydata[1, *] * mscale[2] + mscale[3]
+        case type of
+           0:
+           1: xydata[2, *] = xydata[2, *]*mscale[2]        ; Y
+           2: xydata[2:3, *] = xydata[2:3, *]*mscale[2]    ; YY
+           
+           3: xydata[2, *] = xydata[2, *]*mscale[0]        ; X
+           4: xydata[2:3, *] = xydata[2:3, *]*mscale[0]    ; XX
+           
+           5: begin             ; XY
+              xydata[2, *] = xydata[2, *]*mscale[0]
+              xydata[3, *] = xydata[3, *]*mscale[2]
+           end
+           
+           6: begin             ; XYY
+              xydata[2, *] = xydata[2, *]*mscale[0]
+              xydata[3:4, *] = xydata[3:4, *]*mscale[2]
+           end
+           7: begin             ; XXY
+              xydata[2:3, *] = xydata[2:3, *]*mscale[0]
+              xydata[4, *] = xydata[4, *]*mscale[2]
+           end
+           
+           8: begin             ; XXYY
+              xydata[2:3, *] = xydata[2:3, *]*mscale[0]
+              xydata[4:5, *] = xydata[4:5, *]*mscale[2]
+           end
+        endcase
+        *(*pdefs.data)[index].xydata = xydata
 
-        endif
-     end
-     type eq 9: begin           ; 2-D dataset
-        if keyword_set(x_func) or keyword_set(y_func) or $
-           keyword_set(z_func) then $
-              message, "Cannot convert a data dataset to a function"
-
-        if keyword_set(z_values) then begin
-           sz = size(z_values)
-           if sz[0] ne 2 then message, $
-              "Z values must be a 2-D array"
-           x2d = 0b
-           if keyword_set(x_values) then begin
-              sx = size(x_values)
-              case sx[0] of
-                 1: if sx[1] ne sz[1] then message, $
-                    "X array must be same length as X dimension of Z"
-                 2: begin
-                    if sx[1] ne sz[1] or sx[2] ne sz[2] then $
-                       message,  "X array must be same size as Z"
-                    x2d = 1b
-                 end
-                 else: message, "X array must be 1 or 2 " + $
-                                "dimensional"
-              endcase
-           endif else x_values = dindgen(sz[1])
-
-           y2d = 0b
-           if keyword_set(y_values) then begin
-              sy = size(y_values)
-              case sy[0] of
-                 1: if sy[1] ne sz[2] then message, $
-                    "Y array must be same length as Y dimension of Z"
-                 2: begin
-                    if sy[1] ne sz[1] or sy[2] ne sz[2] then $
-                       message,  "Y array must be same size as Z"
-                    y2d = 1b
-                 end
-                 else: message, "Y array must be 1 or 2 " + $
-                                "dimensional"
-              endcase
-           endif else y_values = dindgen(sz[2])
-
-           xydata = {graff_zdata}
-           xydata.Z = ptr_new(z_values)
-           xydata.X = ptr_new(x_values)
-           xydata.Y = ptr_new(y_values)
-           xydata.x_is_2d = x2d
-           xydata.y_is_2d = y2d
-
-           (*pdefs.data)[index].ndata = sz[1]
-           (*pdefs.data)[index].ndata2 = sz[2]
-
-           ptr_free, (*(*pdefs.data)[index].xydata).x, $
-                     (*(*pdefs.data)[index].xydata).y, $
-                     (*(*pdefs.data)[index].xydata).z, $
-                     (*pdefs.data)[index].xydata
-
-           (*pdefs.data)[index].xydata = ptr_new(xydata)
-        endif else if keyword_set(x_values) || keyword_set(y_values) then $
-           message, "Cannot convert s 2-D dataset to 1-D" $
-        else if n_elements(mscale) eq 4 then begin
-           xydata = *(*pdefs.data)[index].xydata
-           *xydata.x = *xydata.x*mscale[0] + mscale[1]
-           *xydata.y = *xydata.y*mscale[2] + mscale[3]
-
-           *(*pdefs.data)[index].xydata = xydata
-        endif
-     end
-
-     type eq -4: begin          ; 2-D function
-        if keyword_set(x_func) or keyword_set(y_func) then $
-           message, "Cannot convert a 2-D function to 1-D"
-        if keyword_set(x_values) or keyword_set(y_values) or $
-           keyword_set(z_values) then $
-              message, "Cannot convert a function dataset to data"
-
-        if keyword_set(z_func) then $
-           ((*pdefs.data)[index].xydata).funct = z_func
-        if keyword_set(neval) then begin
-           if n_elements(neval) eq 1 then begin
-              (*pdefs.data)[index].ndata = neval
-              (*pdefs.data)[index].ndata2 = neval
-           endif else begin
-              (*pdefs.data)[index].ndata = neval[0]
-              (*pdefs.data)[index].ndata2 = neval[1]
-           endelse
-        endif
-        if keyword_set(frange) then (*(*pdefs.data)[index].xydata).range $
-           = frange
-     end
+     endif
      
-     type eq -3: begin          ; Parametric function
-        if keyword_set(z_func) then message, $
-           "Cannot convert a 1-D function to 2-D"
-        if keyword_set(x_values) or keyword_set(y_values) or $
-           keyword_set(z_values) then $
-              message, "Cannot convert a function dataset to data"
+  endif else if type eq 9 then begin ; 2-D dataset
+     if keyword_set(x_func) or keyword_set(y_func) or $
+        keyword_set(z_func) then $
+           message, "Cannot convert a data dataset to a function"
 
-        if keyword_set(x_func) then $
-           (*(*pdefs.data)[index].xydata).funct[0] = x_func
-        if keyword_set(y_func) then $
-           (*(*pdefs.data)[index].xydata).funct[1] = y_func
-        if keyword_set(frange) then (*(*pdefs.data)[index].xydata).range $
-           = frange
-        if keyword_set(neval) then (*pdefs.data)[index].ndata = neval
-     end
+     if dataflag then begin
+        data = (*pdefs.data)[index]
+        ok = gr_update_z(data, z_values, x_values, y_values, $
+                         keyword_set(retain_unset))
+        if ok then (*pdefs.data)[index] = data
+ 
+     endif else if n_elements(mscale) eq 4 then begin
+        xydata = *(*pdefs.data)[index].xydata
+        *xydata.x = *xydata.x*mscale[0] + mscale[1]
+        *xydata.y = *xydata.y*mscale[2] + mscale[3]
 
-     type eq -2: begin          ; f(y)
-        if keyword_set(z_func) then message, $
-           "Cannot convert a 1-D function to 2-D"
-        if keyword_set(x_values) or keyword_set(y_values) or $
-           keyword_set(z_values) then $
-              message, "Cannot convert a function dataset to data"
-        if keyword_set(y_func) then message, $
-           "Cannot convert f(y) to f(x)"
+        *(*pdefs.data)[index].xydata = xydata
+     endif
+     
+  endif else if type eq -4 then begin ; 2-D function
+     if keyword_set(x_func) or keyword_set(y_func) then $
+        message, "Cannot convert a 2-D function to 1-D"
+     if keyword_set(x_values) or keyword_set(y_values) or $
+        keyword_set(z_values) then $
+           message, "Cannot convert a function dataset to data"
 
-        if keyword_set(x_func) then $
-           (*(*pdefs.data)[index].xydata).funct = x_func
-        if keyword_set(frange) then (*(*pdefs.data)[index].xydata).range $
-           = frange
-        if keyword_set(neval) then (*pdefs.data)[index].ndata = neval
-     end
-     type eq -1: begin          ; f(x)
-        if keyword_set(z_func) then message, $
-           "Cannot convert a 1-D function to 2-D"
-        if keyword_set(x_values) or keyword_set(y_values) or $
-           keyword_set(z_values) then $
-              message, "Cannot convert a function dataset to data"
-        if keyword_set(x_func) then message, $
-           "Cannot convert f(x) to f(y)"
+     if keyword_set(z_func) then $
+        ((*pdefs.data)[index].xydata).funct = z_func
+     if keyword_set(neval) then begin
+        if n_elements(neval) eq 1 then begin
+           (*pdefs.data)[index].ndata = neval
+           (*pdefs.data)[index].ndata2 = neval
+        endif else begin
+           (*pdefs.data)[index].ndata = neval[0]
+           (*pdefs.data)[index].ndata2 = neval[1]
+        endelse
+     endif
+     if keyword_set(frange) then (*(*pdefs.data)[index].xydata).range $
+        = frange
+     
+  endif else if type eq -3 then begin ; Parametric function
+     if keyword_set(z_func) then message, $
+        "Cannot convert a 1-D function to 2-D"
+     if keyword_set(x_values) or keyword_set(y_values) or $
+        keyword_set(z_values) then $
+           message, "Cannot convert a function dataset to data"
 
-        if keyword_set(y_func) then $
-           (*(*pdefs.data)[index].xydata).funct = y_func
-        if keyword_set(frange) then (*(*pdefs.data)[index].xydata).range $
-           = frange
-        if keyword_set(neval) then (*pdefs.data)[index].ndata = neval
-     end
-  endcase
+     if keyword_set(x_func) then $
+        (*(*pdefs.data)[index].xydata).funct[0] = x_func
+     if keyword_set(y_func) then $
+        (*(*pdefs.data)[index].xydata).funct[1] = y_func
+     if keyword_set(frange) then (*(*pdefs.data)[index].xydata).range $
+        = frange
+     if keyword_set(neval) then (*pdefs.data)[index].ndata = neval
+     
+  endif else if type eq -2 then begin ; f(y)
+     if keyword_set(z_func) then message, $
+        "Cannot convert a 1-D function to 2-D"
+     if keyword_set(x_values) or keyword_set(y_values) or $
+        keyword_set(z_values) then $
+           message, "Cannot convert a function dataset to data"
+     if keyword_set(y_func) then message, $
+        "Cannot convert f(y) to f(x)"
+
+     if keyword_set(x_func) then $
+        (*(*pdefs.data)[index].xydata).funct = x_func
+     if keyword_set(frange) then (*(*pdefs.data)[index].xydata).range $
+        = frange
+     if keyword_set(neval) then (*pdefs.data)[index].ndata = neval
+     
+  endif else if type eq -1 then begin ; f(x)
+     if keyword_set(z_func) then message, $
+        "Cannot convert a 1-D function to 2-D"
+     if keyword_set(x_values) or keyword_set(y_values) or $
+        keyword_set(z_values) then $
+           message, "Cannot convert a function dataset to data"
+     if keyword_set(x_func) then message, $
+        "Cannot convert f(x) to f(y)"
+
+     if keyword_set(y_func) then $
+        (*(*pdefs.data)[index].xydata).funct = y_func
+     if keyword_set(frange) then (*(*pdefs.data)[index].xydata).range $
+        = frange
+     if keyword_set(neval) then (*pdefs.data)[index].ndata = neval
+  endif
+
 
   if (keyword_set(ascii)) then gr_asc_save, pdefs $
   else gr_bin_save, pdefs

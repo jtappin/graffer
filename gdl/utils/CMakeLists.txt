@@ -17,5 +17,6 @@ install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_show.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_update.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_update_xy.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gr_update_z.pro"
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/graffer/lib/utils
 )
