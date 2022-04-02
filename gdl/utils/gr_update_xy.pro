@@ -64,6 +64,9 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
   endelse
 
   nx = n_elements(x_values)
+  if xflag then xty = size(x_values, /type) $
+  else xty = 0l
+  
   ny = n_elements(y_values)
   cplxflag = 0b
   
@@ -99,11 +102,11 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
                  "dataset if RETAIN_UNSET is present."
         return, 0
      endif 
-     if xflag && ~yflag && (se[se[0]+1] eq 6 || $
-                            se[se[0]+1] eq 9) then cmplxflag = 1b
+     if xflag && ~yflag && (xty eq 6 || $
+                            xty eq 9) then cplxflag = 1b
      
   endif else if xflag then begin
-     if se[se[0]+1] ne 6 && se[se[0]+1] ne 9 then begin
+     if xty ne 6 && xty ne 9 then begin
         message, /continue, $
                  "If X_VALUES are given without Y_VALUES, then " + $
                  "X_VALUES must be complex."
@@ -211,7 +214,7 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
         endcase
         xydata = [xydata[0:1], reform(errors, net, nerr)]
      endelse
-     if cmplxflag then begin
+     if cplxflag then begin
         xydata[0, *] = real_part(x_values)
         xydata[1, *] = imaginary(x_values)
      endif else begin
@@ -265,7 +268,7 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
      return, 1
   endif
 
-  if cmplxflag then begin
+  if cplxflag then begin
      xydata = dblarr(2+net, nx)
      xydata[0, *] = real_part(x_values)
      xydata[1, *] = imaginary(y_values)
