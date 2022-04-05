@@ -28,7 +28,8 @@ pro graff_update, file, idx, name = name, polar = polar, $
                   z_charsize = z_charsize, status = status, $
                   z_mode = z_mode, x_scale = x_scale, $
                   y_scale = y_scale, x_shift = x_shift, $
-                  y_shift = y_shift, retain_unset = retain_unset
+                  y_shift = y_shift, z_scale = z_scale, $
+                  z_shift = z_shift, retain_unset = retain_unset
 
 ;+
 ; GRAFF_UPDATE
@@ -58,7 +59,8 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;                  z_charsize = z_charsize, status = status, $
 ;                  z_mode = z_mode, x_scale = x_scale, $
 ;                  y_scale = y_scale, x_shift = x_shift, $
-;                  y_shift = y_shift, retain_unset = retain_unset
+;                  y_shift = y_shift,  z_scale = z_scale, $
+;                  z_shift = z_shift, retain_unset = retain_unset
 ;
 ; Arguments:
 ;	file	string	input	The graffer file to modify.
@@ -145,9 +147,11 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;				plot a function
 ;	z_missing float	input	A missing value to use for warped images.
 ;	x_scale	float	input	Scale X values by this factor
-;	x_shift	float	input	Shift X values by this factor
+;	x_shift	float	input	Shift X values by this amount
 ;	y_scale	float	input	Scale Y values by this factor
-;	y_shift	float	input	Shift Y values by this factor
+;	y_shift	float	input	Shift Y values by this amount
+;	z_scale	float	input	Scale Z values by this factor
+;	z_shift	float	input	Shift Z values by this amount
 ;	status	int	output	A named variable to be set to 0 on
 ;				failure or 1 on success
 ;	/retain_unset	input	If set, then unspecified data fields
@@ -189,6 +193,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;	Allow long/triple colours: 1/3/19; SJT
 ;	Start extraction of data updates: 1/4/22; SJT
 ;	/Retain_unset should now work: 2/4/22; SJT
+;	Add Z shift & scale: 5/4/22; SJT
 ;-
 
   on_error, 2                   ; Return to caller on error
@@ -405,17 +410,27 @@ pro graff_update, file, idx, name = name, polar = polar, $
 
 ; Data updates.
 
+  type = (*pdefs.data)[index].type
+
   if n_elements(x_shift) ne 0 || n_elements(y_shift) ne 0 || $
-     n_elements(x_scale) ne 0 || n_elements(y_scale) ne 0 then begin
-     mscale = [1.d0, 0.d0, 1.d0, 0.d0]
+     n_elements(x_scale) ne 0 || n_elements(y_scale) ne 0 || $
+     n_elements(z_shift) ne 0 || n_elements(z_scale) ne 0 then begin
+     if type ne 9 then $
+        mscale = [1.d0, 0.d0, 1.d0, 0.d0] $
+     else $
+        mscale = [1.d0, 0.d0, 1.d0, 0.d0, 1.d0, 0.d0]
+
      
      if n_elements(x_scale) ne 0 then mscale[0] = x_scale
      if n_elements(x_shift) ne 0 then mscale[1] = x_shift
      if n_elements(y_scale) ne 0 then mscale[2] = y_scale
      if n_elements(y_shift) ne 0 then mscale[3] = y_shift
+     if type eq 9 then begin
+        if n_elements(z_scale) ne 0 then mscale[4] = z_scale
+        if n_elements(z_shift) ne 0 then mscale[5] = z_shift
+     endif
   endif
 
-  type = (*pdefs.data)[index].type
   if type ge 0 && type le 8 then begin ; A normal 1-D data set.
      if keyword_set(z_values) then $
         message, "Cannot convert a 1-D dataset to a 2-D dataset"
@@ -476,10 +491,11 @@ pro graff_update, file, idx, name = name, polar = polar, $
                          keyword_set(retain_unset))
         if ok then (*pdefs.data)[index] = data
  
-     endif else if n_elements(mscale) eq 4 then begin
+     endif else if n_elements(mscale) eq 6 then begin
         xydata = *(*pdefs.data)[index].xydata
         *xydata.x = *xydata.x*mscale[0] + mscale[1]
         *xydata.y = *xydata.y*mscale[2] + mscale[3]
+        *xydata.z = *xydata.z*mscale[5] + mscale[5]
 
         *(*pdefs.data)[index].xydata = xydata
      endif
