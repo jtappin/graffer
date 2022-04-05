@@ -2092,6 +2092,15 @@ both is an error.  If name is given then (1) If there are 2 datasets of
 the same name, the first will be modified, (2) if the name is not
 found, then the program exits without updating.
 
+The \texttt{/RETAIN\_UNSET} key allows single axes of a dataset to be
+changed without resetting the others (like specifying a dot in the GUI
+to read local variables).  To work, the change must not affect the
+dimension of the dataset (for Z datasets a 1-D X or Y map can be
+replaced by 2-D or vice-versa, provided Z is still matched).  If
+specified, error limits must provide all errors.  If a dataset has
+errors, but no new ones are given, then unchanged axes retain their
+errors, while changed axes lose theirs.
+
 \section{GRAFF\_EXPORT}
 \label{sec:graff_export}
 
