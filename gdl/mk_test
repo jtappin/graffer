@@ -1,0 +1,68 @@
+#!/bin/sh
+
+# MK_TEST
+#   Make a test compilation program for GRAFFER and run it.
+#
+# Usage:
+#	mk_test [-i]
+#
+# By default GDL is used, if the '-i' option is given, then use IDL
+#   instead.
+
+function usage {
+    echo "$(basename $0): Generates and runs a script to test that"
+    echo 'all of the routines in Graffer compile correctly.'
+    echo
+    echo 'Usage:'
+    echo "$(basename $0) [-idh]"
+    echo '      -i  Uses IDL rather than GDL for the compilations.'
+    echo '      -d  Deletes the test_compile.pro script after running.'
+    echo '      -h  Prints this help info.'
+}
+
+
+ccmd='gdl'
+del=''
+options=":idh"
+
+while getopts ${options} thisopt
+do
+    case ${thisopt} in
+	i) ccmd='idl' ;;
+	d) del='yes' ;;
+	h)
+	    usage
+	    exit ;;
+	?)
+	echo "Invalid option: -${OPTARG}"
+	echo
+	usage
+	exit 1 ;;
+    esac
+done
+
+# Must delete any existing script as it will be appended
+
+if [ -f test_compile.pro ]
+then
+    rm test_compile.pro
+fi
+
+for dir in definitions lib plotlib tools widgets utils gui ;
+do
+    for file in ${dir}/*.pro ;
+    do
+	echo "print, '$file'" >> test_compile.pro
+	echo ".r ${file%.pro}" >> test_compile.pro
+    done
+done
+
+echo "exit" >> test_compile.pro
+
+${ccmd} ./test_compile.pro
+
+if [ "${del}" == "yes" ]
+then
+    rm ./test_compile.pro
+fi
+
