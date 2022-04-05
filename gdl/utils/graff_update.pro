@@ -165,6 +165,17 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;	If shift & scale are given for the same axis, scale is applied
 ;	first.
 ;
+; Notes:
+; 	The /RETAIN_UNSET key allows single axes of a dataset to be
+; 	changed without resetting the others (like specifying a dot in
+; 	the GUI to read local variables).
+; 	To work, the change must not affect the dimension of the
+; 	dataset (for Z datasets a 1-D X or Y map can be replaced by
+; 	2-D or vice-versa, provided Z is still matched).
+; 	If specified, error limits must provide all errors.
+; 	If a dataset has errors, but no new ones are given, then
+; 	unchanged axes retain their errors, while changed axes lose theirs.
+; 	
 ; History:
 ;	Original (after graff_add): 20/12/11; SJT
 ;	Add option to select secondary Y-axis: 23/12/11; SJT
@@ -177,6 +188,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;	Add non-linear contour level maps: 12/10/16; SJT
 ;	Allow long/triple colours: 1/3/19; SJT
 ;	Start extraction of data updates: 1/4/22; SJT
+;	/Retain_unset should now work: 2/4/22; SJT
 ;-
 
   on_error, 2                   ; Return to caller on error
