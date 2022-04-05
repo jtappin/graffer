@@ -41,7 +41,7 @@
 \author{\textsf{\textbf{\Large James Tappin}}\\
   \texttt{\textbf{\Large jtappin at gmail dot com}}}
 
-\date{\textsf{\textbf{\large June 2020}}}
+\date{\textsf{\textbf{\large April 2022}}}
 
 \maketitle
 
@@ -1950,22 +1950,30 @@ User-callable interface to update the properties of a dataset.
 
 
 \begin{verbatim}
-graff_update, file, idx, name=name, polar = polar, rescale = rescale, $
-            style = style, psym = psym, join = $
-            join, symsize = symsize, colour = colour, thick = $
-            thick, neval = neval, description = description, $
-            sort = sort, ascii = ascii, noclip = noclip, $
-            mouse = mouse, z_format = z_format, z_nlevels = $
-            z_nlevels, z_levels = z_levels, z_colours = z_colours, $
-            z_style = z_style, z_thick = z_thick, z_range = $
-            z_range, z_label = z_label, z_pxsize = z_pxsize, $
-            z_invert = z_invert, z_fill = z_fill, z_log = z_log, $
-            z_ctable = z_ctable, y_axis=y_axis, $
-            make_current = make_current x_values = x_values, $
-            y_values = y_values, z_values = z_values, x_func = $
-            x_func, y_func = y_func, z_func = z_func, xy_file = $ $
-            xy_file, z_file = z_file, errors = errors, errtype = $
-            errtype, neval = neval, frange = frange
+        graff_update, file, idx, name = name, polar = polar, $
+                  rescale = rescale, style = style, psym = psym, $
+                  join = join, symsize = symsize, colour = colour, $
+                  thick = thick, description = description, $
+                  sort = sort, ascii = ascii, noclip = noclip, $
+                  mouse = mouse, z_format = z_format, $
+                  z_nlevels = z_nlevels, z_levels = z_levels, $
+                  z_colours = z_colours, z_style = z_style, $
+                  z_thick = z_thick, z_range = z_range, $
+                  z_label = z_label, z_pxsize = z_pxsize, $
+                  z_invert = z_invert, z_fill = z_fill, $
+                  z_log = z_log, z_ctable = z_ctable, $
+                  y_axis = y_axis, make_current = make_current, $
+                  x_values = x_values, y_values = y_values, $
+                  z_values = z_values, xy_file = xy_file, $
+                  z_file = z_file, z_lmap=z_lmap, $
+                  errors = errors, errtype = errtype, neval = neval, $
+                  frange = frange, x_func = x_func, y_func = y_func, $
+                  z_func = z_func, z_missing = z_missing, $
+                  z_charsize = z_charsize, status = status, $
+                  z_mode = z_mode, x_scale = x_scale, $
+                  y_scale = y_scale, x_shift = x_shift, $
+                  y_shift = y_shift, z_scale = z_scale, $
+                  z_shift=z_shift, retain_unset = retain_unset
 \end{verbatim}
 
 \subsection{Arguments:}
@@ -1974,7 +1982,7 @@ graff_update, file, idx, name=name, polar = polar, rescale = rescale, $
 
 \begin{description}
 \item[\texttt{file} \textit{string}] The graffer file to modify.
-\item[\texttt{idx} \textit{int}] input The dataset index to modify
+\item[\texttt{idx} \textit{int}] The dataset index to modify
   (starting at 1).
 \end{description}
 
@@ -1983,74 +1991,96 @@ graff_update, file, idx, name=name, polar = polar, rescale = rescale, $
 
 \begin{description}
 \item[\texttt{name} \textit{string}] Find the dataset to update by
-  searching the descriptor fields to match the name.
-\item[\texttt{frange} \textit{float}] The range of x, y or t over which
-  to plot a function
+  searching the descriptor fields to
+  match the name.
 \item[\texttt{polar} \textit{int}] If unset or 0 rectangular, 1 = polar
   in radians, 2 = polar in degrees.
-\item[\texttt{rescale} \textit{input}] set, then reset the scaling of
-  the plot with the autoscale routine.
+  rescale  input If set, then reset the scaling of the
+  plot with the autoscale routine.
 \item[\texttt{style} \textit{int}] The standard IDL linestyle codes
-\item[\texttt{psym} \textit{int}] The GRAFFER symbol code - extended
-  IDL symbol codes.
-\item[\texttt{join} \textit{int}] The style of joining: 0 - none 1 -
-  sloping lines 2 - histogram
-\item[\texttt{symsize} \textit{float}] The size for the symbols
-  (relative to standard)
+\item[\texttt{psym} \textit{int}] The GRAFFER symbol code - extended IDL
+  symbol
+  codes.
+\item[\texttt{join} \textit{int}] The style of joining: 0 - none
+  1 - sloping lines
+  2 - histogram
+\item[\texttt{symsize} \textit{float}] The size for the symbols (relative to
+  standard)
 \item[\texttt{colour} \textit{int}] Colour number - standard GRAFFER
-  colours (which may well not work on current device).
+  colours (which may
+  well not work on
+  current device).
+  May also be a triple or a long value
+  with a "packed" colour
 \item[\texttt{thick} \textit{float}] Line thickness.
 \item[\texttt{neval} \textit{int}] The number of times to evaluate a
-  function. (2-elements for z\_func)
+  function. (2-elements for funcz)
 \item[\texttt{description} \textit{str}] A description of the data set.
-\item[\texttt{sort} \textit{input}] to sort the values on the X axis.
-\item[\texttt{ascii} \textit{input}] set, then save as an ASCII GRAFFER
-  file (by default a binary graffer file is generated).
-\item[\texttt{noclip} \textit{input}] set, then disable clipping to the
-  axis box.
+\item[\texttt{/sort}] Whether to sort the values on the X
+  axis.
+\item[\texttt{/ascii}] If set, then save as an ASCII GRAFFER
+  file (by default a binary graffer file
+  is generated).
+\item[\texttt{/noclip}] If  set, then disable clipping to the
+  axis box. 
 \item[\texttt{mouse} \textit{int}] If explicitly set to zero then
   disable mouse-editing of the dataset.
 \item[\texttt{z\_format} \textit{int}] For 2-D datasets, select display
   format (0=contour, 1=colour image)
-\item[\texttt{z\_nlevels} \textit{int}] For 2D datasets, select number
-  of automatic contours
-\item[\texttt{z\_levels} \textit{float}] For 2D datasets, select levels
-  for explicit contours
-\item[\texttt{z\_colours} \textit{int}] input For 2D datasets, select
-  the colours for the contours
-\item[\texttt{z\_style} \textit{int}] For 2D datasets, select
-  linestyles for contours
+\item[\texttt{z\_nlevels} \textit{int}] For 2D datasets, select number of
+  automatic contours
+\item[\texttt{z\_lmap} \textit{int}] Select mapping for automatic contour
+  levels. 0=linear, 1=log, 2=sqrt
+\item[\texttt{z\_levels} \textit{float}] For 2D datasets, select levels for
+  explicit contours
+\item[\texttt{z\_colours} \textit{int}] For 2D datasets, select the colours
+  for the contours
+\item[\texttt{z\_style} \textit{int}] For 2D datasets, select linestyles for contours
 \item[\texttt{z\_thick} \textit{float}] For 2D datasets, select line
   thicknesses for contours
-\item[\texttt{z\_label} \textit{int}] Specify the interval of contours
-  for labelling.
-\item[\texttt{/z\_fill}] If set, then fill the contours.
-\item[\texttt{z\_range} \textit{int}] For 2-D datasets, specify the
-  cutoff range for image displays
-\item[\texttt{z\_pxsize} \textit{float}] For 2D datasets, specify the
-  pixel size to use in images for PS device.
-\item[\texttt{/z\_invert}] For image display, invert the colour table
-  if set.
-\item[\texttt{/z\_log}] If set, then map the Z values logarithmically.
-\item[\texttt{z\_ctable} \textit{int}] Select a colour table for 2-D
-  display of images.
-\item[\texttt{y\_axis} \textit{int}] Select to which Y-axis the dataset
-  will be scaled.
+\item[\texttt{z\_label} \textit{int}] Specify the interval of contours for labelling.
+\item[\texttt{/z\_fill}]  input If set, then fill the contours.
+\item[\texttt{z\_range} \textit{int}] For 2-D datasets, specify the cutoff
+  range for image displays
+\item[\texttt{z\_pxsize} \textit{float}] For 2D datasets, specify the pixel
+  size to use in images for PS device.
+\item[\texttt{/z\_invert}] image display, invert the colour
+  table if set.
+\item[\texttt{z\_mode} \textit{int}] Z image scaling mode, 0=linear, 1=log, 2=sqrt.
+\item[\texttt{z\_ctable} \textit{int}] Select a colour table for 2-D display
+  of images.
+\item[\texttt{y\_axis} \textit{int}] Specify which Y axis to use. (0 or 1)
 \item[\texttt{/make\_current}] If set, then make the modified dataset
-  into the current dataset when the file is next opened.
+  into the current dataset when the file
+  is next opened.
 \item[\texttt{x\_values} \textit{double}] New X values.
 \item[\texttt{y\_values} \textit{double}] New Y values.
 \item[\texttt{z\_values} \textit{double}] New Z values.
-\item[\texttt{x\_func} \textit{string}] New x=f(y), or x=f(t)
-\item[\texttt{y\_func} \textit{string}] New y=f(x), or y=f(t).
-\item[\texttt{z\_func} \textit{string}] New z=f(x,y).
+\item[\texttt{x\_func} \textit{string}] New x=f(y) or x=f(t).
+\item[\texttt{y\_func} \textit{string}] New y=f(x) or y=f(t).
+\item[\texttt{z\_func} \textit{string}] New f(x,y).
 \item[\texttt{xy\_file} \textit{string}] File for new 1-D data.
 \item[\texttt{z\_file} \textit{string}] File for new 2-D data.
 \item[\texttt{errors} \textit{double}] New error values.
 \item[\texttt{errtype} \textit{string}] Specify error types as code
-  (e.g. "XXY" for asymmetrical errors in X and symmetric errors in Y)
-\item[\texttt{frange} \texttt{float}] The range of x, y or t over which
-  to plot a function
+  (e.g. "XXY" for asymmetrical errors in
+  X and symmetric errors in Y)
+\item[\texttt{frange}  \textit{float}] The range of x, y or t over which to
+  plot a function
+\item[\texttt{z\_missing} \textit{float}] A missing value to use for warped images.
+\item[\texttt{x\_scale} \textit{float}] Scale X values by this factor
+\item[\texttt{x\_shift} \textit{float}] Shift X values by this factor
+\item[\texttt{y\_scale} \textit{float}] Scale Y values by this factor
+\item[\texttt{y\_shift} \textit{float}] Shift Y values by this factor
+\item[\texttt{z\_scale} \textit{float}] Scale Z values by this factor
+  (2-D datasets only).
+\item[\texttt{z\_shift} \textit{float}] Shift Z values by this factor
+  (2-D datasets only). 
+\item[\texttt{status} \textit{int}] A named variable to be set to 0 on
+  failure or 1 on success
+\item[\texttt{/retain\_unset}] input If set, then unspecified data fields
+  are retained when a subset of data
+  fields is given.
 \end{description}
 
 \subsection{Restrictions:}
@@ -2082,8 +2112,8 @@ graff_export, file, index, name = name, outfile = outfile
 \label{sec:ge-keys}
 
 \begin{description}
-\item[\texttt{name}	\textit{string}] The descriptor of the dataset to write.
-\item[\texttt{outfile}	\textit{string}] The file to which to write the dataset
+\item[\texttt{name} \textit{string}] The descriptor of the dataset to write.
+\item[\texttt{outfile} \textit{string}] The file to which to write the dataset
 \end{description}
 
 \subsection{Notes}
@@ -2097,7 +2127,7 @@ if the name is not found, then the program exits without writing.
 \section{GRAFF\_ANNOTATE}
 \label{sec:graff_annotate}
 
-	Add or modify an annotation to a graffer file.
+ Add or modify an annotation to a graffer file.
 
 \subsection{Interface}
 \label{sec:ga-inter}
@@ -2124,40 +2154,40 @@ graff_annotate, file[, value, <keywords>]
  \begin{description}
 \item[\texttt{id} \textit{string}] The ID tag of the annotation to modify.
 \item[\texttt{index} \textit{int}] The index number (1-based) of the annotation
-		to modify
+  to modify
 \item[\texttt{/substring}] If set, then VALUE may match an initial substring.
 \item[\texttt{/case\_squash}] If set, then VALUE is matched without regard
-		to case.
+  to case.
 \item[\texttt{text} \textit{string}] New text for the annotation.
 \item[\texttt{newid} \textit{string}] A new ID for the annotation.
 \item[\texttt{colour} \textit{int}] The colour for the annotation.
 \item[\texttt{size} \textit{float}] The font size for the annotation
 \item[\texttt{orient} \textit{float}] The orientation of the annotation
-		(anticlockwise, degrees)
+  (anticlockwise, degrees)
 \item[\texttt{align} \textit{float}] The alignment (0=left, 1=right, 0.5=centre)
 \item[\texttt{ffamily} \textit{int}] The font family to use 
 \item[\texttt{font} \textit{int}] Set the font shape for the desired font.
 \item[\texttt{x} \textit{float}] Set the X-coordinate of the origin
 \item[\texttt{y} \textit{float}] Set the Y-coordinate of the origin
 \item[\texttt{norm} \textit{int}] Set the coordinate system, 0=data,
-		1=normalized, 2 = "frame".
+  1=normalized, 2 = "frame".
 \item[\texttt{axis} \textit{int}] For data coordinates, set which Y axis to use.
 \item[\texttt{status} \textit{int}] A named variable, set to 1 on success, 0 on
-		failure.
+  failure.
 \end{description}
 
 \subsection{ Notes}
 \label{sec:ga-notes}
 
-	Specifying more than one identification is an error, if no
-	identification is given then a new annotation is created.
-	For a new annotation, at least TEXT, X and Y must be given
+ Specifying more than one identification is an error, if no
+ identification is given then a new annotation is created.
+ For a new annotation, at least TEXT, X and Y must be given
 
  \section{GRAFF\_GET\_DATA}
  \label{sec:graff-get-data}
 
  
-	Extract data from a graffer file.
+ Extract data from a graffer file.
 
  \subsection{Usage:}
  \label{sec:ggd-usage}
