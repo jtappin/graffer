@@ -212,7 +212,10 @@ contains
        data%zdata%shade_levels = 256
     end if
     
-    if (allocated(data%xydata)) deallocate(data%xydata)
+    if (allocated(data%xydata%x)) deallocate(data%xydata%x)
+    if (allocated(data%xydata%y)) deallocate(data%xydata%y)
+    if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
+    if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
 
     if (allocated(data%zdata%x)) deallocate(data%zdata%x)
     if (allocated(data%zdata%y)) deallocate(data%zdata%y)

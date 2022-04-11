@@ -207,8 +207,15 @@ contains
        return
     end if
 
-    if (allocated(data%xydata)) &
-         & deallocate(data%xydata)
+    if (allocated(data%xydata%x)) &
+         & deallocate(data%xydata%x)
+    if (allocated(data%xydata%y)) &
+         & deallocate(data%xydata%y)
+    if (allocated(data%xydata%x_err)) &
+         & deallocate(data%xydata%x_err)
+    if (allocated(data%xydata%y_err)) &
+         & deallocate(data%xydata%y_err)
+    
     if (allocated(data%zdata%x)) &
          & deallocate(data%zdata%x)
     if (allocated(data%zdata%y)) &
@@ -227,10 +234,10 @@ contains
 
        call move_alloc(z, data%zdata%z)
     else
-       allocate(data%xydata(2, size(x)))
+       allocate(data%xydata%x(size(x)), data%xydata%y(size(x)))
 
-       data%xydata(1,:) = x
-       data%xydata(2,:) = y
+       data%xydata%x = x
+       data%xydata%y = y
     end if
 
     data%funct%evaluated = .true.
