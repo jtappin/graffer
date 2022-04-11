@@ -1,0 +1,40 @@
+ 
+Restructuring concept
+
+The current data structure for the oldest form of data, the XY dataset,
+is decidedly "clunky" with a 2 to 8 by N array, in which it is only
+possible to determine the significance of error bars by a look-up table
+with the DS type.
+
+Idea:
+All other DS types have a structure to contain the data. So make the XY
+dataset also a structure with fields:
+
+X: 1-D array of X values
+Y: 1-D array of Y values
+X_err: [1,2] by N array of X error limits
+Y_err: [1,2] by N array of Y error limits
+
+IDL:
+xydata = {graff_xydata,
+       	  x: ptr_new(), $     ; 1-d array N
+	  y: ptr_new(), $     ; 1-d array N
+	  x_err: ptr_new(), $ ; 1 or 2 x N
+	  y_err: ptr_new()}   ; 1 or 2 x N
+
+Fortran:
+type :: graff_xydata
+     real(kind=real64), dimension(:), allocatable :: x, y
+     real(kind=real64), dimension(:,:), allocatable :: x_err, y_err
+end type graff_xydata
+
+File record tags (BINARY)
+
+currently VS is the tag for the data.
+New to be:
+VX: X values
+VY: Y values
+VXE: X errors
+VYE: Y errors
+
+For ASCII data, probably best to retain the VS ... VE bracketted form.

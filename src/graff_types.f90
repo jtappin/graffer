@@ -70,6 +70,12 @@ module graff_types
      integer(kind=int32) :: shade_levels=256
   end type graff_zdata
 
+  ! XY dataset
+  type :: graff_xydata
+     real(kind=real64), dimension(:), allocatable :: x, y
+     real(kind=real64), dimension(:,:), allocatable :: x_err, y_err
+  end type graff_xydata
+
   ! Function specific stuff
   type :: graff_fdata
      real(kind=real64), dimension(2,2) :: range
@@ -81,7 +87,7 @@ module graff_types
   type :: graff_data
      integer(kind=int32) :: ndata=0_int32, ndata2=0_int32
      integer(kind=int16) :: type=0_int16, mode=0_int16
-     real(kind=real64), dimension(:,:), allocatable :: xydata
+     type(graff_xydata) :: xydata
      type(graff_zdata) :: zdata
      type(graff_fdata) :: funct
      character(len=120) :: descript=''

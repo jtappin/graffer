@@ -709,9 +709,10 @@ contains
     character(len=256), dimension(:), allocatable :: tag_val
 
     integer, parameter, dimension(0:*) :: elements = [2,3,4,3,4,4,5,5,6]
-    integer :: ios, ntags, itag, ncols
+    integer :: ios, ntags, itag, ncols, i
     character(len=120) :: iom
-
+    real(kind=real64), dimension(:), allocatable :: xytmp
+    
     nflag = .false.
     nflag2 = .false.
     tflag = .false.
@@ -763,7 +764,7 @@ contains
              data%min_val = gr_dbl_val(tag_val(itag+1))
           case('MX')
              data%max_val = gr_dbl_val(tag_val(itag+1))
-             
+
           case('N')
              data%ndata = gr_lon_val(tag_val(itag+1))
              nflag = .true.
@@ -775,6 +776,27 @@ contains
           case('T')
              data%type = gr_int_val(tag_val(itag+1))
              tflag = .true.
+             
+             select case (ds%type)
+             case(0:2)
+                nxe = 0
+             case(3,5,6)
+                nxe = 1
+             case(4,7,8)
+                nxe = 2
+             case default
+                nxe = 0
+             end select
+             select case(ds%type)
+             case(0,3,4)
+                nye = 0
+             case(1,5,7)
+                nye = 1
+             case(2,6,8)
+                nye = 2
+             case default
+                nye = 0
+             end select
 
           case('Y')
              data%y_axis = gr_int_val(tag_val(itag+1))
@@ -896,7 +918,7 @@ contains
                 call gr_message("gr_get_ds_asc: Contour thickness "//&
                      & "list given without count - ignored")
              end if
-         case('ZTL')
+          case('ZTL')
              if (cflag(4)) then
                 if (allocated(data%zdata%thick)) deallocate(data%zdata%thick)
                 allocate(data%zdata%thick(data%zdata%n_thick))
@@ -921,7 +943,7 @@ contains
              data%zdata%charsize = gr_flt_val(tag_val(itag+1))
           case('ZLM')
              data%zdata%lmap = gr_int_val(tag_val(itag+1))
-             
+
           case('ZR')
              data%zdata%range = gr_dbl_val(tag_val(itag+1), 2)
           case('ZP')
@@ -972,7 +994,7 @@ contains
                 call gr_message("gr_get_ds_asc: Function found "// &
                      & "in XY data set - ignored")
              else if (data%type /= -3) then
-               call gr_message("gr_get_ds_asc: X function found "// &
+                call gr_message("gr_get_ds_asc: X function found "// &
                      & "in plain function - ignored")
              else 
                 call gr_str_val(inln, 'FX', data%funct%funct(1))
@@ -1020,9 +1042,27 @@ contains
                 if (ncols /= elements(data%type)) &
                      & call gr_message("gr_get_ds_asc: WARNING "// &
                      & "Data columns wrong could get corrupt DS")
-                if (allocated(data%xydata)) deallocate(data%xydata)
-                allocate(data%xydata(elements(data%type), data%ndata))
-                read(unit, *) data%xydata
+
+                if (allocated(data%xydata%x)) deallocate(data%xydata%x)
+                if (allocated(data%xydata%y)) deallocate(data%xydata%y)
+                if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
+                if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
+                allocate(data%xydata%x, data%ndata))
+                allocate(data%xydata%y, data%ndata))
+                if (nxe /= 0) allocate(data%xydata%x_err(nxe, data%ndata))
+                if (nye /= 0) allocate(data%xydata%y_err(nye, data%ndata))
+
+                allocate(xytmp(ncols))
+
+                do i = 1, data%ndata
+                   read(unit, *) xytmp
+                   data%xydata%x(i) = xytmp(1)
+                   data%xydata%y(i) = xytmp(2)
+                   if (nxe /= 0) data%xydata%x_err(:,i) = xytmp(3:3+nxe-1)
+                   if (nye /= 0) data%xydata%y_err(:,i) = xytmp(3+nxe:)
+                end do
+                deallocate(xytmp)
+
                 read(unit, "(a)") inln
                 if (index(inln, 'VE:') == 0) then 
                    call gr_message("gr_get_ds_asc: WARNING Data "// &
@@ -1068,7 +1108,7 @@ contains
                    if (index(inln, "ZYE:") > 0) exit
                 end do
              else if (data%type /= 9) then
-               call gr_message("gr_get_ds_asc: 2-D Data found "//&
+                call gr_message("gr_get_ds_asc: 2-D Data found "//&
                      & "in function or 1-D dataset - ignored")
                 do
                    read(unit, '(a)') inln
@@ -1136,7 +1176,7 @@ contains
        data%max_val = d_nan()
     end if
 
- 
+
     if (.not. jflag) then
        select case(data%psym)
        case(10)
@@ -1240,12 +1280,13 @@ contains
     ! Write an ASCII Graffer file.
 
     character(len=256) :: outfile
-    integer :: ios, unit, nvals, i
+    integer :: ios, unit, nvals, i, j
     character(len=120) :: iom, vfmt
     character(len=28) :: date
     type(graff_data), pointer :: data
     type(graff_text), pointer :: text
-
+    real(kind=real64), dimension(:), allocatable :: xytmp
+    
     ok = .true.
 
     outfile = trim(pdefs%dir)//trim(pdefs%name)
@@ -1361,12 +1402,39 @@ contains
        if (data%ndata > 0) then
           select case(data%type)
           case(0:8)
-             nvals = size(data%xydata, 1)
+             select case(data%type)
+             case(0:2)
+                nxe = 0
+             case(3,5,6)
+                nxe = 1
+             case(4,7,8)
+                nxe = 2
+             end select
+             select case(data%type)
+             case(0,3,4)
+                nye = 0
+             case(1,5,7)
+                nye = 1
+             case(2,6,8)
+                nye = 2
+             end select
+             nvals = 2+nxe+nye
+ 
              write(vfmt, "('(',I0,'(g0,1x))')") nvals
              write(unit, "(a,i0)") "VS:", nvals
-             write(unit, vfmt) data%xydata
-             write(unit, "(a)") "VE:"
 
+             allocate(xytmp(nvals))
+             do j = 1, data%ndata
+                xytmp(1) = data%xydata%x(j)
+                xytmp(2) = data%xydata%y(j)
+                if (nxe /= 0) xytmp(3:3-nxe-1) = data%xydata%x_err(:,j)
+                if (nye /= 0) xytmp(3+nxe:) = data%xydata%y_err(:,j)
+                
+                write(unit, vfmt) xytmp
+             end do
+             write(unit, "(a)") "VE:"
+             deallocate(xytmp)
+             
           case(9)
              write(unit, "(2a,i0)") "ZX2:", f_c_logical(data%zdata%x_is_2d), &
                   & ":ZY2:", f_c_logical(data%zdata%y_is_2d)

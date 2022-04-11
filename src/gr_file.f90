@@ -797,9 +797,10 @@ contains
 
     integer, parameter, dimension(*) :: elements = [2, 3, 4, 3, 4, 4, 5, 5, 6]
 
-    integer(kind=int32) :: ndims
+    integer(kind=int32) :: ndims, nxe, nye
     integer(kind=int32), dimension(:), allocatable :: dims
     integer(kind=int32) :: asize
+    real(kind=real64), dimension(:,:), allocatable :: xytmp
 
     do
        status = rec%read(gr_unit, swap_end)
@@ -903,6 +904,29 @@ contains
        case('T')
           call rec%get_value(ds%type, status)
           tflag = .true.
+
+          select case (ds%type)
+          case(0:2)
+             nxe = 0
+          case(3,5,6)
+             nxe = 1
+          case(4,7,8)
+             nxe = 2
+          case default
+             nxe = 0
+          end select
+          select case(ds%type)
+          case(0,3,4)
+             nye = 0
+          case(1,5,7)
+             nye = 1
+          case(2,6,8)
+             nye = 2
+          case default
+             nye = 0
+          end select
+
+
        case ('M')
           call rec%get_value(ds%mode, status)
 
@@ -1024,16 +1048,111 @@ contains
        case ('FY')
           call rec%get_value(ds%funct%funct(2), status)
 
-       case ('VS')
-          if (allocated(ds%xydata)) deallocate(ds%xydata)
+       case ('VS')               ! Old multiplexed format.
+          if (.not. tflag) then
+             status = 2
+             call gr_message("GR_READ_DS: Old style dataset precedes type flag.", &
+                  & type=GTK_MESSAGE_ERROR)
+             exit
+          end if
+          if (allocated(ds%xydata%x)) deallocate(ds%xydata%x)
+          if (allocated(ds%xydata%y)) deallocate(ds%xydata%y)
+          if (allocated(ds%xydata%x_err)) deallocate(ds%xydata%x_err)
+          if (allocated(ds%xydata%y_err)) deallocate(ds%xydata%y_err)
           if (size(dims) == 2) then
-             allocate(ds%xydata(dims(1), dims(2)))
+             allocate(ds%xydata%x(dims(2)), ds%xydata%y(dims(2)))
+             if (nxe > 0) allocate(ds%xydata%x_err(nxe,dims(2)))
+             if (nye > 0) allocate(ds%xydata%y_err(nye,dims(2)))
              ds%ndata = dims(2)
           else
-             allocate(ds%xydata(dims(1), 1))
+             allocate(ds%xydata%x(1), dx%xydata%y(1))
+             if (nxe > 0) allocate(ds%xydata%x_err(nxe,1))
+             if (nye > 0) allocate(ds%xydata%y_err(nye,1))
              ds%ndata = 1
           end if
-          call rec%get_value(ds%xydata, status)
+          call rec%get_value(xytmp, status)
+          ds%xydata%x = xytmp(1,:)
+          ds%xydata%y = xytmp(2,:)
+          if (nxe > 0) ds%xydata%x_err = xytmp(3:3+nxe-1,:)
+          if (nye > 0) ds%xydata%y_err = xytmp(3+nxe:,:)
+
+          nflag = .true.
+
+       case('VX')
+          if (nflag .and. dims(1) /= ds%ndata) then
+             call gr_message("GR_READ_DS: Number of X values does not"//&
+                  &" match dataset length", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (allocated(ds%xydata%x)) deallocate(ds%xydata%x)
+          allocate(ds%xydata%x(dims(1)))
+          call rec%get_value(ds%xydata%x, status)
+
+          if (.not. nflag) then
+             ds%ndata = dims(1)
+             nflag = .true.
+          end if
+
+       case('VY')
+          if (nflag .and. dims(1) /= ds%ndata) then
+             call gr_message("GR_READ_DS: Number of Y values does not"//&
+                  &" match dataset length", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (allocated(ds%xydata%y)) deallocate(ds%xydata%y)
+          allocate(ds%xydata%y(dims(1)))
+          call rec%get_value(ds%xydata%y, status)
+
+          if (.not. nflag) then
+             ds%ndata = dims(1)
+             nflag = .true.
+          end if
+
+       case('VXE')
+          if (nflag .and. dims(2) /= ds%ndata) then
+             call gr_message("GR_READ_DS: Number of X error values does not"//&
+                  &" match dataset length", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (.not. tflag .or. dims(1) /= nxe) then
+             call gr_message("GR_READ_DS: Number of X error values does not"//&
+                  &" match dataset type", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (allocated(ds%xydata%x_errs)) deallocate(ds%xydata%x_errs)
+          allocate(ds%xydata%x_errs(dims(1)), dims(2))
+          call rec%get_value(ds%xydata%x_errs, status)
+
+          if (.not. nflag) then
+             ds%ndata = dims(2)
+             nflag = .true.
+          end if
+
+       case('VYE')
+          if (nflag .and. dims(2) /= ds%ndata) then
+             call gr_message("GR_READ_DS: Number of Y error values does not"//&
+                  &" match dataset length", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (.not. tflag .or. dims(1) /= nye) then
+             call gr_message("GR_READ_DS: Number of Y error values does not"//&
+                  &" match dataset type", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (allocated(ds%xydata%y_errs)) deallocate(ds%xydata%y_errs)
+          allocate(ds%xydata%y_errs(dims(1)), dims(2))
+          call rec%get_value(ds%xydata%y_errs, status)
+
+          if (.not. nflag) then
+             ds%ndata = dims(2)
+             nflag = .true.
+          end if
 
        case('ZXS')
           if (allocated(ds%zdata%x)) deallocate(ds%zdata%x)
@@ -1251,8 +1370,14 @@ contains
        
        select case(gdata%type)
        case(0:8)             ! X-Y types
-          if (allocated(gdata%xydata)) &
-               & call rec%set_value('VS ', gdata%xydata, unit)
+          if (allocated(gdata%xydata%x) &
+               & call rec%set_value('VX ', gdata%xydata%x, unit)
+          if (allocated(gdata%xydata%y) &
+               & call rec%set_value('VY ', gdata%xydata%y, unit)
+          if (allocated(gdata%xydata%x_err) &
+               & call rec%set_value('VXE', gdata%xydata%x_err, unit)
+          if (allocated(gdata%xydata%y_err) &
+               & call rec%set_value('VYE', gdata%xydata%y_err, unit)
 
        case(9)               ! 2-D data
           call rec%set_value('ZXS', gdata%zdata%x, unit)
