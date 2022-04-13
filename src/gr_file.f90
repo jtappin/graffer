@@ -905,28 +905,9 @@ contains
           call rec%get_value(ds%type, status)
           tflag = .true.
 
-          select case (ds%type)
-          case(0:2)
-             nxe = 0
-          case(3,5,6)
-             nxe = 1
-          case(4,7,8)
-             nxe = 2
-          case default
-             nxe = 0
-          end select
-          select case(ds%type)
-          case(0,3,4)
-             nye = 0
-          case(1,5,7)
-             nye = 1
-          case(2,6,8)
-             nye = 2
-          case default
-             nye = 0
-          end select
-
-
+          nxe = nx_errors(ds%type)
+          nye = ny_errors(ds%type)
+          
        case ('M')
           call rec%get_value(ds%mode, status)
 

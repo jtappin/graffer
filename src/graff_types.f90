@@ -218,6 +218,11 @@ module graff_types
        & "Data: X, Y, errors: -X, +X, ±Y", &
        & "Data: X, Y, errors: -X, +X, -Y, +Y", &
        & "Data: Z, X, Y"]
+
+  integer(kind=int32), dimension(-4:9), parameter :: nx_errors = &
+       & [0,0,0,0, 0, 0, 0, 1, 2, 1, 1, 2, 2, 0]
+  integer(kind=int32), dimension(-4:9), parameter :: ny_errors = &
+       & [0,0,0,0, 0, 1, 2, 0, 0, 1, 2, 1, 2, 0]
   
   ! Axis style bits
 

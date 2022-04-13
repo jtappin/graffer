@@ -49,7 +49,7 @@ contains
     logical, dimension(2), target :: iupdate = [.false., .true.]
     type(c_ptr) :: base, junk, sbox, jb, mnu, smnu
     character(len=150), dimension(:), allocatable :: values
-    integer :: i, nfields
+    integer :: i, nfields, nxe, nye
     character(len=11), dimension(9), parameter :: errnames = &
          & [character(len=11) :: 'None', '±Y', '-Y +Y', '±X', '-X +X', &
          & '±X ±Y', '±X -Y +Y', '-X +X ±Y', '-X +X -Y +Y']
@@ -79,12 +79,33 @@ contains
        call hl_gtk_box_pack(base, junk, expand=FALSE)
     end if
 
-    if (allocated(data%xydata)) then
+    if (allocated(data%xydata%x)) then
+       nxe = nx_errors(data%type)
+       nye = ny_errors(data%type)
        allocate(values(data%ndata))
-       nfields = size(data%xydata(:,1))
-       do i = 1, data%ndata
-          write(values(i), "(6(1pg0,2x))") data%xydata(:,i)
-       end do
+       nfields = 2 + nxe + nye
+       if (nxe > 0 .and. nye > 0) then
+          do i = 1, data%ndata
+             write(values(i), "(6(1pg0,2x))") data%xydata%x(i), &
+                  & data%xydata%y(i), data%xydata%x_err(:,i), &
+                  & data%xydata%y_err(:,i) 
+          end do
+       else if (nxe > 0) then
+          do i = 1, data%ndata
+             write(values(i), "(6(1pg0,2x))") data%xydata%x(i), &
+                  & data%xydata%y(i), data%xydata%x_err(:,i)
+          end do
+       else if (nye > 0) then
+          do i = 1, data%ndata
+             write(values(i), "(6(1pg0,2x))") data%xydata%x(i), &
+                  & data%xydata%y(i), data%xydata%y_err(:,i) 
+          end do
+       else
+          do i = 1, data%ndata
+             write(values(i), "(6(1pg0,2x))") data%xydata%x(i), &
+                  & data%xydata%y(i)
+          end do
+       end if
     else
        allocate(values(1))
        values(1) = ''
@@ -238,7 +259,11 @@ contains
        if (ok) then
           data => pdefs%data(pdefs%cset)
 
-          if (allocated(data%xydata)) deallocate(data%xydata)
+          if (allocated(data%xydata%x)) deallocate(data%xydata%x)
+          if (allocated(data%xydata%y)) deallocate(data%xydata%y)
+          if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
+          if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
+         
           if (allocated(data%zdata%x)) deallocate(data%zdata%x)
           if (allocated(data%zdata%y)) deallocate(data%zdata%y)
           if (allocated(data%zdata%z)) deallocate(data%zdata%z)

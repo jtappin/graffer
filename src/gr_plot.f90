@@ -513,13 +513,14 @@ contains
     ! Plot an X-Y dataset
 
     real(kind=plflt), allocatable, dimension(:) :: x, y
-    real(kind=plflt), pointer, dimension(:) :: r, th
+    real(kind=plflt), allocatable, dimension(:,:) :: xerr, yerr
     real(kind=plflt), allocatable, dimension(:) :: xh, yh
-    real(kind=real64), pointer, dimension(:,:) :: xydata
+    integer(kind=int32), allocatable, dimension(:) :: idx
+    
     type(graff_data), pointer :: data
 
     integer :: i
-    logical :: xlog, ylog, xyall
+    logical :: xlog, ylog, issort
     real(kind=plflt), parameter :: dtor = pl_pi/180._plflt
     real(kind=plflt) :: scale
     integer :: nseg, iseg
@@ -528,7 +529,7 @@ contains
     
     logical :: sflag
     data => pdefs%data(index)
-    if (.not. allocated(data%xydata)) return
+    if (.not. allocated(data%xydata%x)) return
 
     call gr_plot_transform(dataset=index, full=data%noclip)
 
@@ -540,25 +541,39 @@ contains
     end if
 
     if (data%sort) then
-       allocate(xydata(size(data%xydata,1), size(data%xydata,2)))
-       xyall = .true.
-       call sort(data%xydata, xydata)
+       allocate(x(data%ndata), idx(data%ndata))
+       call sort(data%xydata%x, x, idx)
+       deallocate(x)
+       issort = .true.
     else
-       xydata => data%xydata
-       xyall = .false.
+       issort = .false.
     end if
 
     nseg = 1     ! single segment
     
     allocate(x(data%ndata), y(data%ndata))
-
+    if (allocated(data%xydata%x_err)) &
+         & allocate(xerr(nx_errors(data%type),data%ndata))
+    if (allocated(data%xydata%y_err)) &
+         & allocate(yerr(ny_errors(data%type),data%ndata))
+    
     allocate(invalid(data%ndata))
     invalid(:) = .false.
     
     if (data%mode == 0) then
-       x = xydata(1,:)
+       if (issort) then
+          x = data%xydata%x(idx)
+          y = data%xydata%y(idx)
+          if (allocated(xerr)) xerr = data%xydata%x_err(:,idx)
+          if (allocated(yerr)) yerr = data%xydata%y_err(:,idx)
+       else
+          x = data%xydata%x(:)
+          y = data%xydata%y(:)
+          if (allocated(xerr)) xerr = data%xydata%x_err(:,:)
+          if (allocated(yerr)) yerr = data%xydata%y_err(:,:)
+       end if
+       
        if (xlog) x = log10(x)
-       y = xydata(2,:)
        
        if (ieee_is_finite(data%min_val)) &
             & invalid = invalid .or. y < data%min_val
@@ -602,13 +617,12 @@ contains
        isegb(1,1) = 1
        isegb(2,1) = data%ndata
        
-       r => xydata(1,:)
-       th => xydata(2,:)
-       x = r * cos(th*scale)
+       x = data%xydata%x * cos(data%xydata%y*scale)
        if (xlog) x = log10(x)
-       y = r * sin(th*scale)
+       y = data%xydata%x * sin(data%xydata%y*scale)
        if (ylog) y = log10(y)
     end if
+    
     if (data%colour == -1) return
 
     if (data%colour == -2) then
@@ -627,7 +641,8 @@ contains
        if (data%mode == 0) then
           do i = 1, nseg
              call gr_plot_xy_errors(index, x(isegb(1,i):isegb(2,i)), &
-                  & y(isegb(1,i):isegb(2,i)), xydata(:,isegb(1,i):isegb(2,i)))
+                  & y(isegb(1,i):isegb(2,i)), xerr(:,isegb(1,i):isegb(2,i)), &
+                  &  yerr(:,isegb(1,i):isegb(2,i)))
           end do
        else
           call gr_plot_rt_errors(index)
@@ -654,6 +669,7 @@ contains
        do i = 1, nseg
           call plline(xh(isegb(1,i):isegb(2,i)), yh(isegb(1,i):isegb(2,i)))
        end do
+       deallocate(xh,yh)
     end select
 
 
@@ -661,7 +677,11 @@ contains
          & call gr_plot_symbol(x, y, data%psym, &
          & data%symsize, use = .not. invalid) 
 
-    if (xyall) deallocate(xydata)
+    deallocate(x,y)
+    
+    if (allocated(xerr)) deallocate(xerr)
+    if (allocated(yerr)) deallocate(yerr)
+    
   end subroutine gr_1dd_plot
 
   subroutine gr_1df_plot(index)

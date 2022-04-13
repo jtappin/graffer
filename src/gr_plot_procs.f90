@@ -46,10 +46,10 @@ contains
   ! ERROR BARS 
   ! ********************************************
 
-  subroutine gr_plot_xy_errors(index, x, y, xydata)
+  subroutine gr_plot_xy_errors(index, x, y, xerr, yerr)
     integer, intent(in) :: index
     real(kind=plflt), intent(in), dimension(:) :: x, y
-    real(kind=plflt), intent(in), dimension(:,:) :: xydata
+    real(kind=plflt), intent(in), dimension(:,:) :: xerr, yerr
 
     ! Error bars for regular XY plots
 
@@ -71,119 +71,33 @@ contains
          & ehi(data%ndata))
 
     !    call plsmin(0._plflt, data%symsize)
-    select case (data%type)
-    case(1)
-       elo = xydata(2,:)-xydata(3,:)
-       ehi = xydata(2,:)+xydata(3,:)
+    if (size(yerr) > 0) then
+       elo = y - yerr(1,:)
+       if (size(yerr,1) == 2) then
+          ehi = y + yerr(2,:)
+       else
+          ehi = y + yerr(1,:)
+       end if
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       !       call plerry (x, elo, ehi)
        call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
-    case(2)
-       elo = xydata(2,:)-xydata(3,:)
-       ehi = xydata(2,:)+xydata(4,:)
-       if (ylog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
+    end if
+    if (size(xerr) > 0) then
+       elo = x - xerr(1,:)
+       if (size(xerr,1) == 2) then
+          ehi = x + xerr(2,:)
+       else
+          ehi = x + xerr(1,:)
        end if
-       !       call plerry (x, elo, ehi)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
-
-    case(3)
-       elo = xydata(1,:)-xydata(3,:)
-       ehi = xydata(1,:)+xydata(3,:)
        if (xlog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       !       call plerrx (elo, ehi, y)
        call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
-
-    case(4)
-       elo = xydata(1,:)-xydata(3,:)
-       ehi = xydata(1,:)+xydata(4,:)
-       if (xlog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
-       end if
-       !       call plerrx (elo, ehi, y)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
-
-    case(5)
-       elo = xydata(1,:)-xydata(3,:)
-       ehi = xydata(1,:)+xydata(3,:)
-       if (xlog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
-       end if
-       !       call plerrx (elo, ehi, y)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
-       elo = xydata(2,:)-xydata(4,:)
-       ehi = xydata(2,:)+xydata(4,:)
-       if (ylog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
-       end if
-       !       call plerry (x, elo, ehi)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
-
-    case(6)
-       elo = xydata(1,:)-xydata(3,:)
-       ehi = xydata(1,:)+xydata(3,:)
-       if (xlog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
-       end if
-       !       call plerrx (elo, ehi, y)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
-       elo = xydata(2,:)-xydata(4,:)
-       ehi = xydata(2,:)+xydata(5,:)
-       if (ylog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
-       end if
-       !       call plerry (x, elo, ehi)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
-       
-    case(7)
-       elo = xydata(1,:)-xydata(3,:)
-       ehi = xydata(1,:)+xydata(4,:)
-       if (xlog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
-       end if
-       !       call plerrx (elo, ehi, y)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
-       elo = xydata(2,:)-xydata(5,:)
-       ehi = xydata(2,:)+xydata(5,:)
-       if (ylog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
-       end if
-       !       call plerry (x, elo, ehi)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
-
-    case(8)
-       elo = xydata(1,:)-xydata(3,:)
-       ehi = xydata(1,:)+xydata(4,:)
-       if (xlog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
-       end if
-       !       call plerrx (elo, ehi, y)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
-       elo = xydata(2,:)-xydata(5,:)
-       ehi = xydata(2,:)+xydata(6,:)
-       if (ylog) then
-          elo = log10(elo)
-          ehi = log10(ehi)
-       end if
-       !       call plerry (x, elo, ehi)
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
-
-    end select
+    end if
+        
     !    call plsmin(0._plflt, 1._plflt)
     
   end subroutine gr_plot_xy_errors
@@ -291,8 +205,8 @@ contains
 
     ! Error bars for polar plots.
 
-    real(kind=plflt), pointer, dimension(:,:) :: xydata
     real(kind=plflt), pointer, dimension(:) :: r, th
+    real(kind=plflt), pointer, dimension(:,:) :: rerr, therr
     real(kind=plflt), allocatable, dimension(:) :: xhi, xlo, yhi, ylo
     real(kind=plflt), parameter :: dtor = pl_pi/180._plflt
     real(kind=plflt) :: scale
@@ -307,83 +221,39 @@ contains
        scale = dtor
     end if
 
-    r => data%xydata(1,:)
-    th => data%xydata(2,:)
-
-    xydata => data%xydata
+    r => data%xydata%x
+    th => data%xydata%y
+    if (allocated(data%xydata%x_err)) rerr => data%xydata%x_err
+    if (allocated(data%xydata%y_err)) therr => data%xydata%y_err
+    
     allocate(xlo(data%ndata), xhi(data%ndata), &
          & ylo(data%ndata), yhi(data%ndata))
 
-    select case (data%type)
-    case(1)
-       xlo = r * cos((th-xydata(3,:))*scale)
-       xhi = r * cos((th+xydata(3,:))*scale)
-       ylo = r * sin((th-xydata(3,:))*scale)
-       yhi = r * sin((th+xydata(3,:))*scale)
+    if (associated(therr)) then
+       xlo = r * cos((th-therr(1,:))*scale)
+       ylo = r * sin((th-therr(1,:))*scale)
+       if (size(therr,1) == 2) then
+          xhi = r * cos((th+therr(2,:))*scale)
+          xhi = r * sin((th+therr(2,:))*scale)
+       else
+          xhi = r * cos((th+therr(1,:))*scale)
+          yhi = r * sin((th+therr(1,:))*scale)
+       end if
        call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-    case(2)
-       xlo = r * cos((th-xydata(3,:))*scale)
-       xhi = r * cos((th+xydata(4,:))*scale)
-       ylo = r * sin((th-xydata(3,:))*scale)
-       yhi = r * sin((th+xydata(4,:))*scale)
+    end if
+
+    if (associated(rerr)) then
+       xlo = (r-rerr(1,:)) * cos(th*scale)
+       ylo = (r-rerr(1,:)) * sin(th*scale)
+       if (size(rerr,1) == 2) then
+          xhi = (r+rerr(2,:)) * cos(th*scale)
+          yhi = (r+rerr(2,:)) * sin(th*scale)
+       else
+          xhi = (r+rerr(1,:)) * cos(th*scale)
+          yhi = (r+rerr(1,:)) * sin(th*scale)
+       end if
        call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-    case(3)
-       xlo = (r-xydata(3,:)) * cos(th*scale)
-       xhi = (r+xydata(3,:)) * cos(th*scale)
-       ylo = (r-xydata(3,:)) * sin(th*scale)
-       yhi = (r+xydata(3,:)) * sin(th*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-    case(4)
-       xlo = (r-xydata(3,:)) * cos(th*scale)
-       xhi = (r+xydata(4,:)) * cos(th*scale)
-       ylo = (r-xydata(3,:)) * sin(th*scale)
-       yhi = (r+xydata(4,:)) * sin(th*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-    case(5)
-       xlo = (r-xydata(3,:)) * cos(th*scale)
-       xhi = (r+xydata(3,:)) * cos(th*scale)
-       ylo = (r-xydata(3,:)) * sin(th*scale)
-       yhi = (r+xydata(3,:)) * sin(th*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-       xlo = r * cos((th-xydata(4,:))*scale)
-       xhi = r * cos((th+xydata(4,:))*scale)
-       ylo = r * sin((th-xydata(4,:))*scale)
-       yhi = r * sin((th+xydata(4,:))*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-    case(6)
-       xlo = (r-xydata(3,:)) * cos(th*scale)
-       xhi = (r+xydata(3,:)) * cos(th*scale)
-       ylo = (r-xydata(3,:)) * sin(th*scale)
-       yhi = (r+xydata(3,:)) * sin(th*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-       xlo = r * cos((th-xydata(4,:))*scale)
-       xhi = r * cos((th+xydata(5,:))*scale)
-       ylo = r * sin((th-xydata(4,:))*scale)
-       yhi = r * sin((th+xydata(5,:))*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-    case(7)
-       xlo = (r-xydata(3,:)) * cos(th*scale)
-       xhi = (r+xydata(4,:)) * cos(th*scale)
-       ylo = (r-xydata(3,:)) * sin(th*scale)
-       yhi = (r+xydata(4,:)) * sin(th*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-       xlo = r * cos((th-xydata(5,:))*scale)
-       xhi = r * cos((th+xydata(5,:))*scale)
-       ylo = r * sin((th-xydata(5,:))*scale)
-       yhi = r * sin((th+xydata(5,:))*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-    case(8)
-       xlo = (r-xydata(3,:)) * cos(th*scale)
-       xhi = (r+xydata(4,:)) * cos(th*scale)
-       ylo = (r-xydata(3,:)) * sin(th*scale)
-       yhi = (r+xydata(4,:)) * sin(th*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-       xlo = r * cos((th-xydata(5,:))*scale)
-       xhi = r * cos((th+xydata(6,:))*scale)
-       ylo = r * sin((th-xydata(5,:))*scale)
-       yhi = r * sin((th+xydata(6,:))*scale)
-       call gr_polar_errors(index, xlo, xhi, ylo, yhi)
-    end select
+    end if
 
   end subroutine gr_plot_rt_errors
 

@@ -201,11 +201,11 @@ contains
              else
                 scale = 1.0_real64
              end if
-             data%xydata(1,point_after) = sqrt(xnew**2 + ynew**2)
-             data%xydata(2,point_after) = atan2(ynew, xnew)*scale
+             data%xydata%x(point_after) = sqrt(xnew**2 + ynew**2)
+             data%xydata%y(point_after) = atan2(ynew, xnew)*scale
           else
-             data%xydata(1,point_after) = xnew
-             data%xydata(2,point_after) = ynew
+             data%xydata%x(point_after) = xnew
+             data%xydata%y(point_after) = ynew
           end if
           call gr_plot_draw(.true.)
        end if
@@ -256,26 +256,20 @@ contains
 
     ! Add a point to a dataset
 
-    real(kind=real64), dimension(:,:), allocatable :: xytmp
-    integer :: n1, i, j
+    real(kind=real64), dimension(:), allocatable :: xtmp, ytmp
+    real(kind=real64), dimension(:,:), allocatable :: xetmp, yetmp
+    integer :: nxe, nye, i, j
     real(kind=real64) :: scale
 
     if (point_after == -1) return
 
-    select case (data%type)
-    case(0)
-       n1 = 2
-    case(1,3)
-       n1 = 3
-    case(2,4,5)
-       n1 = 4
-    case(6,7)
-       n1 = 5
-    case(8)
-       n1 = 6
-    end select
-    allocate(xytmp(n1, data%ndata+1))
+    nxe = nx_errors(data%type)
+    nye = ny_errors(data%type)
 
+    allocate(xtmp(data%ndata+1),ytmp(data%ndata+1))
+    if (nxe > 0) allocate(xetmp(nxe,data%ndata+1))
+    if (nye > 0) allocate(yetmp(nye,data%ndata+1))
+    
     if (data%mode == 2) then
        scale = 180._real64/pl_pi
     else
@@ -285,20 +279,32 @@ contains
     do i = 1, data%ndata+1
        if (i == point_after+1) then
           if (data%mode == 0) then
-             xytmp(:2, i) = [point_x, point_y]
+             xtmp(i) = point_x
+             ytmp(i) = point_y
           else
-             xytmp(:2, i) = [sqrt(point_x**2 + point_y**2), &
-                  & atan2(point_y, point_x)*scale]
+             xtmp(i) = sqrt(point_x**2 + point_y**2)
+             ytmp(i) = atan2(point_y, point_x)*scale
           end if
-          if (n1 > 2) xytmp(3:,i) = 0._real64
+          if (nxe > 0) xetmp(:,i) = 0._real64
+          if (nye > 0) yetmp(:,i) = 0._real64
        else
-          xytmp(:,i) = data%xydata(:,j)
+          xtmp(i) = data%xydata%x(j)
+          ytmp(i) = data%xydata%y(j)
+          if (nxe > 0) xetmp(:,i) = data%xydata%x_err(:,j)
+          if (nye > 0) yetmp(:,i) = data%xydata%y_err(:,j)
           j = j+1
        end if
     end do
 
-    if (allocated(data%xydata)) deallocate(data%xydata)
-    call move_alloc(xytmp, data%xydata)
+    if (allocated(data%xydata%x)) deallocate(data%xydata%x, data%xydata%y)
+    if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
+    if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
+    
+    call move_alloc(xtmp, data%xydata%x)
+    call move_alloc(ytmp, data%xydata%y)
+    if (nxe > 0) call move_alloc(xetmp, data%xydata%x_err)
+    if (nxe > 0) call move_alloc(yetmp, data%xydata%y_err)
+
     data%ndata = data%ndata + 1
   end subroutine gr_point_add
 
@@ -307,36 +313,41 @@ contains
 
     ! Delete a point from a dataset
 
-    real(kind=real64), dimension(:,:), allocatable :: xytmp
-    integer :: n1, i, j
+    real(kind=real64), dimension(:), allocatable :: xtmp, ytmp
+    real(kind=real64), dimension(:,:), allocatable :: xetmp, yetmp
+    integer :: nxe, nye, i, j
 
     if (point_after <= 0) return
     if (data%ndata == 1) then
-       if (allocated(data%xydata)) deallocate(data%xydata)
+       if (allocated(data%xydata%x)) deallocate(data%xydata)
        data%ndata = 0
     else
-       select case (data%type)
-       case(0)
-          n1 = 2
-       case(1,3)
-          n1 = 3
-       case(2,4,5)
-          n1 = 4
-       case(6,7)
-          n1 = 5
-       case(8)
-          n1 = 6
-       end select
-       allocate(xytmp(n1, data%ndata-1))
+       nxe = nx_errors(data%type)
+       nye = ny_errors(data%type)
+
+       allocate(xtmp(data%ndata+1),ytmp(data%ndata-1))
+       if (nxe > 0) allocate(xetmp(nxe,data%ndata-1))
+       if (nye > 0) allocate(yetmp(nye,data%ndata-1))
 
        j = 1
        do i = 1, data%ndata
           if (i == point_after) cycle
-          xytmp(:,j) = data%xydata(:,i)
+          xtmp(j) = data%xydata%x(i)
+          ytmp(j) = data%xydata%y(i)
+          if (nxe > 0) xetmp(:,j) = data%xydata%x_err(:,i)
+          if (nye > 0) yetmp(:,j) = data%xydata%y_err(:,i)
           j = j+1
        end do
-       if (allocated(data%xydata)) deallocate(data%xydata)
-       call move_alloc(xytmp, data%xydata)
+
+       if (allocated(data%xydata%x)) deallocate(data%xydata%x, data%xydata%y)
+       if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
+       if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
+
+       call move_alloc(xtmp, data%xydata%x)
+       call move_alloc(ytmp, data%xydata%y)
+       if (nxe > 0) call move_alloc(xetmp, data%xydata%x_err)
+       if (nxe > 0) call move_alloc(yetmp, data%xydata%y_err)
+
        data%ndata = data%ndata - 1
     end if
   end subroutine gr_point_delete
