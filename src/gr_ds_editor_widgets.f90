@@ -240,7 +240,7 @@ contains
     logical, pointer :: iupdate
     character(len=200), dimension(:), allocatable :: cvals
     real(kind=real64), dimension(:,:), allocatable :: xyvals
-    integer :: nlines, nfields
+    integer :: nlines, nfields, nxe, nye
     logical :: ok, keep
     type(graff_data), pointer :: data
     integer(kind=c_int) :: ieopt
@@ -272,8 +272,21 @@ contains
           data%type = int(hl_gtk_radio_menu_group_get_select(error_grp), int16)
           call gtk_entry_set_text(ds_type_id, &
                & trim(typedescrs(data%type))//c_null_char)
-          call move_alloc(xyvals, data%xydata)
 
+          nxe = nx_errors(data%type)
+          nye = ny_errors(data%type)
+          allocate(data%xydata%x(nlines),data%xydata%y(nlines))
+          
+          data%xydata%x = xyvals(1,:)
+          data%xydata%y = xyvals(2,:)
+          if (nxe > 0) then
+             allocate(data%xydata%x_err(nxe,nlines))
+             data%xydata%x_err = xyvals(3:3+nxe-1,:)
+          end if
+          if (nye > 0) then
+             allocate(data%xydata%y_err(nye,nlines))
+             data%xydata%y_err = xyvals(3+nxe:,:)
+          end if
           call gr_plot_draw(.true.)
        else
           keep = ieopt == 1

@@ -244,7 +244,7 @@ contains
                & data%xydata%x <= maxval(par)  .and. &
                & data%xydata%x >= minval(par)
        else
-          mask = ieee_is_finite(data%xydata(2,:))
+          mask = ieee_is_finite(data%xydata%y)
        end if
        
        if (ieee_is_finite(data%min_val)) &
@@ -311,7 +311,7 @@ contains
 
     real(kind=real64) :: scale
     real(kind=real64), dimension(:), allocatable :: r, th, x, y
-    real(kind=real64), dimension(:,:), pointer :: xydata
+    type(graff_xydata), pointer :: xydata
     logical, dimension (:), allocatable :: mask
     real(kind=real64), pointer, dimension(:) :: par
 
@@ -644,7 +644,7 @@ contains
 
     real(kind=real64) :: scale
     real(kind=real64), dimension(:), allocatable :: r, th, y, x
-    real(kind=real64), dimension(:,:), pointer :: xydata
+    type(graff_xydata), pointer :: xydata
     logical, dimension(:), allocatable :: mask
     real(kind=real64), pointer, dimension(:) :: par
 
@@ -715,7 +715,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       th = (xydata(%y+xydata%y_err(2,:))*scale
+       th = (xydata%y+xydata%y_err(2,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -754,7 +754,7 @@ contains
        
     case(4)
        r = xydata%x-xydata%x_err(1,:)
-       th = xydata(2,:)*scale
+       th = xydata%y*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)

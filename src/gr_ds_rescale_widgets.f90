@@ -218,7 +218,7 @@ contains
           if (shifts(2) /= 0._real64) data%xydata%y = &
                & data%xydata%y + shifts(2)
 
-          if (nx_errors(data%type) /= 0 .and. (scales(1) /= 1._real64) &
+          if (nx_errors(data%type) /= 0 .and. scales(1) /= 1._real64) &
                & data%xydata%x_err = data%xydata%x_err * scales(1)
           if (ny_errors(data%type) /= 0 .and. scales(2) /= 1._real64) &
                 data%xydata%y_err = data%xydata%y_err * scales(2)

@@ -709,7 +709,7 @@ contains
     character(len=256), dimension(:), allocatable :: tag_val
 
     integer, parameter, dimension(0:*) :: elements = [2,3,4,3,4,4,5,5,6]
-    integer :: ios, ntags, itag, ncols, i
+    integer :: ios, ntags, itag, ncols, i, nxe, nye
     character(len=120) :: iom
     real(kind=real64), dimension(:), allocatable :: xytmp
     
@@ -777,8 +777,8 @@ contains
              data%type = gr_int_val(tag_val(itag+1))
              tflag = .true.
 
-             nxe = nx_errors(ds%type)
-             nye = ny_errors(ds%type)
+             nxe = nx_errors(data%type)
+             nye = ny_errors(data%type)
  
           case('Y')
              data%y_axis = gr_int_val(tag_val(itag+1))
@@ -1029,8 +1029,8 @@ contains
                 if (allocated(data%xydata%y)) deallocate(data%xydata%y)
                 if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
                 if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
-                allocate(data%xydata%x, data%ndata))
-                allocate(data%xydata%y, data%ndata))
+                allocate(data%xydata%x(data%ndata))
+                allocate(data%xydata%y(data%ndata))
                 if (nxe /= 0) allocate(data%xydata%x_err(nxe, data%ndata))
                 if (nye /= 0) allocate(data%xydata%y_err(nye, data%ndata))
 
@@ -1262,7 +1262,7 @@ contains
     ! Write an ASCII Graffer file.
 
     character(len=256) :: outfile
-    integer :: ios, unit, nvals, i, j
+    integer :: ios, unit, nvals, i, j, nxe, nye
     character(len=120) :: iom, vfmt
     character(len=28) :: date
     type(graff_data), pointer :: data

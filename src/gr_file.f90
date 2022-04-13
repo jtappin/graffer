@@ -1046,7 +1046,7 @@ contains
              if (nye > 0) allocate(ds%xydata%y_err(nye,dims(2)))
              ds%ndata = dims(2)
           else
-             allocate(ds%xydata%x(1), dx%xydata%y(1))
+             allocate(ds%xydata%x(1), ds%xydata%y(1))
              if (nxe > 0) allocate(ds%xydata%x_err(nxe,1))
              if (nye > 0) allocate(ds%xydata%y_err(nye,1))
              ds%ndata = 1
@@ -1104,9 +1104,9 @@ contains
              status=2
              exit
           end if
-          if (allocated(ds%xydata%x_errs)) deallocate(ds%xydata%x_errs)
-          allocate(ds%xydata%x_errs(dims(1)), dims(2))
-          call rec%get_value(ds%xydata%x_errs, status)
+          if (allocated(ds%xydata%x_err)) deallocate(ds%xydata%x_err)
+          allocate(ds%xydata%x_err(dims(1), dims(2)))
+          call rec%get_value(ds%xydata%x_err, status)
 
           if (.not. nflag) then
              ds%ndata = dims(2)
@@ -1126,9 +1126,9 @@ contains
              status=2
              exit
           end if
-          if (allocated(ds%xydata%y_errs)) deallocate(ds%xydata%y_errs)
-          allocate(ds%xydata%y_errs(dims(1)), dims(2))
-          call rec%get_value(ds%xydata%y_errs, status)
+          if (allocated(ds%xydata%y_err)) deallocate(ds%xydata%y_err)
+          allocate(ds%xydata%y_err(dims(1), dims(2)))
+          call rec%get_value(ds%xydata%y_err, status)
 
           if (.not. nflag) then
              ds%ndata = dims(2)
@@ -1351,13 +1351,13 @@ contains
        
        select case(gdata%type)
        case(0:8)             ! X-Y types
-          if (allocated(gdata%xydata%x) &
+          if (allocated(gdata%xydata%x)) &
                & call rec%set_value('VX ', gdata%xydata%x, unit)
-          if (allocated(gdata%xydata%y) &
+          if (allocated(gdata%xydata%y)) &
                & call rec%set_value('VY ', gdata%xydata%y, unit)
-          if (allocated(gdata%xydata%x_err) &
+          if (allocated(gdata%xydata%x_err)) &
                & call rec%set_value('VXE', gdata%xydata%x_err, unit)
-          if (allocated(gdata%xydata%y_err) &
+          if (allocated(gdata%xydata%y_err)) &
                & call rec%set_value('VYE', gdata%xydata%y_err, unit)
 
        case(9)               ! 2-D data
