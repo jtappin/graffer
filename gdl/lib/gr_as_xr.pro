@@ -117,28 +117,16 @@ pro Gr_as_xr, data, yrange, ytype, range, visible = visible, positive $
      end
      
      Else: begin                ; XY data, much easier (or it was)
-        yy = (*data.xydata)[1, 0:data.ndata-1]
-        if (data.type le 2) then begin
-           xp = (*data.xydata)[0, 0:data.ndata-1]
-           xm = (*data.xydata)[0, 0:data.ndata-1]
-        endif else if (data.type eq 3 or $
-                       data.type eq 5 or $
-                       data.type eq 6) then begin
-           xp = (*data.xydata)[0, 0:data.ndata-1] +  $
-                (finite((*data.xydata)[2, 0:data.ndata-1]) and $
-                 (*data.xydata)[2, 0:data.ndata-1])
-           xm = (*data.xydata)[0, 0:data.ndata-1] - $
-                (finite((*data.xydata)[2, 0:data.ndata-1]) and $
-                 (*data.xydata)[2, 0:data.ndata-1])
-        endif else begin
-           xp = (*data.xydata)[0, 0:data.ndata-1] +  $
-                (finite((*data.xydata)[3, 0:data.ndata-1]) and $
-                 (*data.xydata)[3, 0:data.ndata-1])
-           xm = (*data.xydata)[0, 0:data.ndata-1] - $
-                (finite((*data.xydata)[2, 0:data.ndata-1]) and $
-                 (*data.xydata)[2, 0:data.ndata-1])
-        endelse
-        
+        yy = ((*data.xydata).y)[0:data.ndata-1]
+        xm = ((*data.xydata).x)[0:data.ndata-1]
+        xp = xm
+        if ptr_valid((*data.xydata).x_err) then begin
+           xe = ((*data.xydata).x_err)[*, 0:data.ndata-1]
+           xe and= finite(xe)
+           xm -= xe[0, *]
+           xp += xe[-1, *]
+        endif
+      
         if keyword_set(visible) then $
            locs = where(finite(xm) and $
                         yy ge yrange[0] and yy le yrange[1], nf) $

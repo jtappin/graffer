@@ -31,7 +31,7 @@ pro graff_xydata__define
   xydata = {graff_xydata, $
             x: ptr_new(), $
             y: ptr_new(), $
-            xerr: ptr_new(), $
-            yerr: ptr_new()}
+            x_err: ptr_new(), $
+            y_err: ptr_new()}
 
 end

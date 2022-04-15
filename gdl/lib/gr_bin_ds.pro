@@ -198,8 +198,40 @@ pro Gr_bin_ds, data, nset, ilu, msgid
         'FX': xydata.funct(0) = value
         'FY': xydata.funct(1) = value
         
-        'VS': xydata = double(value)
+        'VS': begin
+           xyvals = double(value)
+           nerr = gr_n_errors(data[nset].type)
+           sv = size(xyvals)
+           if sv[1] ne 2+nerr[0]+nerr[1] then begin
+              graff_msg, msgid, $
+                         "Number of data columns does not match DS type."
+              continue
+           endif
+           xydata.x = ptr_new(reform(xyvals[0, *]))
+           xydata.y = ptr_new(reform(xyvals[1, *]))
+           if nerr[0] ne 0 then $
+              xydata.x_err = ptr_new(xyvals[2:1+nerr[0], *]))
+           if nerr[1] ne 0 then $
+              xydata.y_err = ptr_new(xyvals[2+nerr[0]:*, *]))
+        end
 
+        'VX': begin
+           xv = double(value)
+           xydata.x = ptr_new(xv)
+        end
+        'VY': begin
+           yv = double(value)
+           xydata.y = ptr_new(yv)
+        end
+        'VXE': begin
+           xev = double(value)
+           xydata.x_err = ptr_new(xev)
+        end
+        'VYE': begin
+           yev = double(value)
+           xydata.y_err = ptr_new(yev)
+        end
+        
         'ZXS': begin
            xv = double(value)
            xydata.x_is_2d = ndims eq 2
@@ -235,8 +267,7 @@ pro Gr_bin_ds, data, nset, ilu, msgid
            9: if (nflag2) then begin
               xydata = {graff_zdata}
            endif else dflag = 0b
-           
-           Else: 
+           Else: xydata = {graff_xydata}
         endcase
      endif
      

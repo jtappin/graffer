@@ -208,10 +208,35 @@ pro Gr_asc_save, pdefs
            
            
         endif else begin        ; Ordinary data
-           sxy = size(xydata)
-           fmtd = '('+string(sxy(1), format = "(I0)")+'g19.12)'
-           printf, ilu, 'VS:', sxy(1), format = "(A,I2)"
-           printf, ilu, xydata, format = fmtd
+           x = *xydata.x
+           y = *xydata.y
+           if n1 eq 1 then begin
+              x = [x, 0.d]
+              y = [y, 0.d]
+           endif
+           if ptr_valid(xydata.x_err) then begin
+              x_err = *xydata.x_err
+              if n1 eq 1 then x_err = [[x_err], [dblarr(2)]]
+              sxe = size(x_err, /dim)
+              nxe = sxe[0]
+           endif else nxe = 0
+           
+           if ptr_valid(xydata.y_err) then begin
+              y_err = *xydata.y_err
+              if n1 eq 1 then y_err = [[y_err], [dblarr(2)]]
+              sye = size(y_err, /dim)
+              nye = sye[0]
+           endif else nye = 0
+  
+           xyvals = dblarr(2+nxe+nye, n1 > 2)
+           xyvals[0, *] = x
+           xyvals[1, *] = y
+           if nxe gt 0 then xyvals[2:2+nxe-1, *] = x_err
+           if nye gt 0 then xyvals[2+nxe:*, *] = y_err
+
+           fmtd = '('+string(2+nxe+nye, format = "(I0)")+'g19.12)'
+           printf, ilu, 'VS:', n1 > 2, format = "(A,I2)"
+           printf, ilu, xyvals, format = fmtd
            printf, ilu, 'VE:', format = "(a)"
         endelse
      endif

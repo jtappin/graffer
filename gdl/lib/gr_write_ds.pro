@@ -87,10 +87,18 @@ endif else begin
         8: printf, ilu, '#XXYY'
     endcase
 
-    sxy = size(xydata, /dim)
-    fmt = string(sxy[0], format = "('(',I0,'G19.12)')")
+    nerr = gr_n_errors((*pdefs.data)[index].type)
+    ncc = 2 + nerr[0]+nerr[1]
+    xyvals = dblarr(nss, (*pdefs.data)[index].ndata)
     
-    printf, ilu, xydata, format = fmt
+    xyvals[0, *] = xydata.x
+    xyvals[1, *] = xydata.y
+    if nerr[0] ne 0 then xyvals[2:1+nerr[0], *] = xydata.x_err
+    if nerr[1] ne 0 then xyvals[2+nerr[0]:*, *] = xydata.y_err
+    
+    fmt = string(ncc, format = "('(',I0,'G19.12)')")
+    
+    printf, ilu, xyvals, format = fmt
     
     free_lun, ilu
     

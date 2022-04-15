@@ -19,7 +19,8 @@
 ; History:
 ;	Original: 29/8/95; SJT
 ;	Replace handles with pointers: 28/6/05; SJT
-;	Replace dialgues with system ones: 30/6/05; SJT
+;	Replace dialogues with system ones: 30/6/05; SJT
+;	Update 1-D format: 14/4/22; SJT
 ;-
 
 pro Graff_dsdel, pdefs
@@ -31,15 +32,16 @@ pro Graff_dsdel, pdefs
             'delete the current', $
             'data set containing', $
             cdesc]
-     ans = dialog_message(msg, /question, $
-                          dialog_parent = pdefs.ids.graffer, resource $
-                          = $
-                          'Graffer')
+     ans = dialog_message(msg, $
+                          /question, $
+                          dialog_parent = pdefs.ids.graffer, $
+                          resource = 'Graffer')
      if ans eq 'No' then return
   endif else begin
      msg = ["Can't delete the only", $
             "data set present"]
-     ans = dialog_message(msg, dialog_parent = pdefs.ids.graffer, $
+     ans = dialog_message(msg, $
+                          dialog_parent = pdefs.ids.graffer, $
                           resource = 'Graffer')
      return
   endelse
@@ -47,8 +49,12 @@ pro Graff_dsdel, pdefs
   if (*pdefs.data)[pdefs.cset].type eq 9 then $
      ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
                (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).z
-
+               (*(*pdefs.data)[pdefs.cset].xydata).z $
+  else if (*pdefs.data)[j].type ge 0 then ptr_free, $
+     (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
+     (*(*pdefs.data)[j].xydata).x_err, $
+     (*(*pdefs.data)[j].xydata).y_err
+  
   ptr_free, (*pdefs.data)[pdefs.cset].xydata
 
   ptr_free, (*pdefs.data)[pdefs.cset].zopts.levels, $

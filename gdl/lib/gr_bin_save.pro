@@ -196,7 +196,12 @@ pro Gr_bin_save, pdefs, auto = auto
            
         endif else begin        ; Ordinary data
            sxy = size(xydata)
-           graff_put_rec, ilu, 'VS ', xydata
+           graff_put_rec, ilu, 'VX ', *xydata.x
+           graff_put_rec, ilu, 'VY ', *xydata.y
+           if ptr_valid(xydata.x_err) then $
+              graff_put_rec, ilu, 'VXE', *xydata.x_err
+           if ptr_valid(xydata.y_err) then $
+              graff_put_rec, ilu, 'VYE', *xydata.y_err
         endelse
      endif
                                 ; We only need to save the 2-D

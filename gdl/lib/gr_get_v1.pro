@@ -34,6 +34,11 @@ pro Gr_get_v1, pdefs, ilu, file_v
 
 on_ioerror, nofile
 
+print, "V1 datasets are no longer supported."
+print, "If you have one, please leave an issue on the GITHUB page,"
+print, "https://github.com/jtappin/graffer , and I will try to add the support."
+return
+
 rs = ''
 
 readf, ilu, rs                  ; Plot headers

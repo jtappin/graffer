@@ -124,9 +124,14 @@ xydata.Range = range
 xydata.Funct = func
 
 if (*pdefs.data)[pdefs.cset].type eq 9 then $ ; Overwriting a 2-D
-  ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ; dataset
-            (*(*pdefs.data)[pdefs.cset].xydata).y, $
-            (*(*pdefs.data)[pdefs.cset].xydata).z
+   ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ;  dataset
+             (*(*pdefs.data)[pdefs.cset].xydata).y, $
+             (*(*pdefs.data)[pdefs.cset].xydata).z $
+else if (*pdefs.data)[pdefs.cset].type ge 0 then $; Overwriting a 1-D
+   ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ; dataset
+             (*(*pdefs.data)[pdefs.cset].xydata).y, $
+             (*(*pdefs.data)[pdefs.cset].xydata).x_err, $ 
+             (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
 ptr_free, (*pdefs.data)[pdefs.cset].xydata
 (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
