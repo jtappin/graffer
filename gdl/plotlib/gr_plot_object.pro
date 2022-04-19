@@ -55,21 +55,21 @@ pro Gr_plot_object, pdefs, no_null = no_null, charsize = charsize, $
 
   common graffer_options, optblock
   
-  if (pdefs.xtype and min(pdefs.xrange) le 0) then begin
+  if pdefs.xtype && min(pdefs.xrange) le 0 then begin
      graff_msg, pdefs.ids.message, ['WARNING: zero or negative limit in ' + $
                                     'log plot', $ 
                                     '         not plotting']
      return    
   endif
 
-  if (pdefs.ytype and min(pdefs.yrange) le 0) then begin
+  if pdefs.ytype && min(pdefs.yrange) le 0 then begin
      graff_msg, pdefs.ids.message, ['WARNING: zero or negative limit in ' + $
                                     'log plot', $ 
                                     '         not plotting']
      return    
   endif
 
-  if pdefs.y_right and pdefs.ytype_r and min(pdefs.yrange_r) le 0 then begin
+  if pdefs.y_right && pdefs.ytype_r && min(pdefs.yrange_r) le 0 then begin
      graff_msg, pdefs.ids.message, ['WARNING: zero or negative limit in ' + $
                                     'log plot', $ 
                                     '         not plotting']
@@ -77,15 +77,15 @@ pro Gr_plot_object, pdefs, no_null = no_null, charsize = charsize, $
   endif
 
   xrange = pdefs.xrange
-  yrange = pdefs.yrange
+  yrange = pdef s.yrange
 
-  if (xrange(0) eq xrange(1)) then begin
+  if (xrange[0] eq xrange[1]) then begin
      graff_msg, pdefs.ids.message, ['WARNING: degenerate x-axis ' + $
                                     'range', $
                                     '         not plotting']
      return    
   endif
-  if (yrange(0) eq yrange(1)) then begin
+  if (yrange[0] eq yrange[1]) then begin
      print, yrange
      graff_msg, pdefs.ids.message, ['WARNING: degenerate y-axis ' + $
                                     'range', $
@@ -119,12 +119,10 @@ pro Gr_plot_object, pdefs, no_null = no_null, charsize = charsize, $
      pdefs.ytransform[1] = !y
   endif
 
-  ;; cts = (*pdefs.data).psym eq 0 and ((*pdefs.data).type le 0 or $
-  ;;                                    (*pdefs.data).type eq 9)
   ndata = (*pdefs.data).ndata
   type = (*pdefs.data).type
 
-  plot2 = keyword_set(plot_all) or (not optblock.s2d)
+  plot2 = keyword_set(plot_all) || (~optblock.s2d)
 
   reaxis = 0b
   for i = 0, pdefs.nsets-1 do begin
@@ -139,13 +137,13 @@ pro Gr_plot_object, pdefs, no_null = no_null, charsize = charsize, $
                     /setup
         ;; !y = pdefs.ytransform[(*pdefs.data)[i].y_axis]
      
-     if (type(i) eq -4) then begin
+     if (type[i] eq -4) then begin
         if (plot2) then $
            gr_2df_plot, pdefs, i, csiz, $
                         grey_ps = grey_ps, shaded = reaxis ; 2 D function
-     endif else if (type(i) lt 0) then begin
+     endif else if (type[i] lt 0) then begin
         gr_1df_plot, pdefs, i, csiz             ; Function, data is struct
-     endif else if (type(i) eq 9) then begin    ; 2 D data
+     endif else if (type[i] eq 9) then begin    ; 2 D data
         if (plot2) then $
            gr_2dd_plot, pdefs, i, csiz, grey_ps = grey_ps, $
                         shaded = reaxis
@@ -163,7 +161,7 @@ pro Gr_plot_object, pdefs, no_null = no_null, charsize = charsize, $
 ; the primary Y-axis
 
   gr_pl_axes, pdefs, csiz, /setup
-  ;; !y = pdefs.ytransform[0]
+
   if (pdefs.key.use && ~pdefs.transient.current_only) then $
      gr_pl_key, pdefs, csiz     ; Must follow
                                 ; plotting the traces else grayscale
@@ -179,7 +177,7 @@ pro Gr_plot_object, pdefs, no_null = no_null, charsize = charsize, $
      opf = !P.font
      
      for j = 0, pdefs.ntext-1 do $
-        gr_pl_text, (*pdefs.text)(j), csiz, no_null = $
+        gr_pl_text, (*pdefs.text)[i], csiz, no_null = $
                     keyword_set(no_null) 
      
 
