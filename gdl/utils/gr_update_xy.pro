@@ -260,10 +260,10 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
         xydata[2:*, *] = errors
      endif else  ntype = 0
 
-     ptr_free, data[index].xydata
-     data[index].xydata = ptr_new(xydata)
-     data[index].type = ntype
-     data[index].ndata = ny
+     ptr_free, data.xydata
+     data.xydata = ptr_new(xydata)
+     data.type = ntype
+     data.ndata = ny
 
      return, 1
   endif
@@ -296,10 +296,10 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
         xydata[2:*, *] = errors
      endif else  ntype = 0
 
-     ptr_free, data[index].xydata
-     data[index].xydata = ptr_new(xydata)
-     data[index].type = ntype
-     data[index].ndata = ny
+     ptr_free, data.xydata
+     data.xydata = ptr_new(xydata)
+     data.type = ntype
+     data.ndata = ny
 
      return, 1
   endif
