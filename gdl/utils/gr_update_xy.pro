@@ -13,8 +13,8 @@
 ;	data	struct	The dataset structure for the dataset.
 ;	x_values double	The new X-values.
 ;	y_values double	The new Y values.
-;	errors	double	The new error values.
-;	errtype	string	The error typecode.
+;	x_errors double	The new X error values.
+;	y_errors double	The new Y error values.
 ;	retain	bool	Controls treatment of unspecified fields.
 ;
 ; Notes:
@@ -23,44 +23,79 @@
 ;
 ; History:
 ;	Partially extracted from graff_update: 1/4/22; SJT
+;	Major rebuild: 18/4/22; SJT
 ;-
 
-function gr_update_xy, data, x_values, y_values, errors, errtype, $
+function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
                        retain
 
+
+  typemap = [[0, 3, 4], $
+             [1, 5, 7], $
+             [2, 6, 8]]
 
 ; Sanity checks.
   xflag = n_elements(x_values) ne 0
   yflag = n_elements(y_values) ne 0
-  eflag = n_elements(errors) ne 0
-
-  if eflag then begin
-     se = size(errors)
-     case se[0] of
+  xeflag = n_elements(x_errors) ne 0
+  yeflag = n_elements(y_errors) ne 0
+  
+  if xeflag then begin
+     sxe = size(x_errors)
+     case sxe[0] of
         1: begin
-           nerr = se[1]
-           net = 1
+           nxev = sxe[1]
+           nxerr = 1
         end
         2: begin
-           nerr = se[2]
-           if se[1] gt 6 then begin
+           nxev = sxe[2]
+           if sxe[1] gt 2 then begin
               message, /continue, $
-                       "ERRORS must have between 1 and 6 values per " + $
+                       "X_ERRORS must have 1 or 2 values per " + $
                        "point."
               return, 0
            endif
-           net = se[1]
+           nxerr = sxe[1]
         end
         else: begin
            message, /continue, $
-                    "ERRORS must be a 1 or 2 dimensional array, " + $
+                    "X_ERRORS must be a 1 or 2 dimensional array, " + $
                     "not updating data."
            return, 0
         end
      endcase
   endif else begin
-     nerr = 0
-     net = 0
+     nxerr = 0
+     nxev = 0
+  endelse
+  
+  if yeflag then begin
+     sye = size(y_errors)
+     case sye[0] of
+        1: begin
+           nyev = sye[1]
+           nyerr = 1
+        end
+        2: begin
+           nyev = sye[2]
+           if sye[1] gt 2 then begin
+              message, /continue, $
+                       "Y_ERRORS must have 1 or 2 values per " + $
+                       "point."
+              return, 0
+           endif
+           nyerr = sye[1]
+        end
+        else: begin
+           message, /continue, $
+                    "Y_ERRORS must be a 1 or 2 dimensional array, " + $
+                    "not updating data."
+           return, 0
+        end
+     endcase
+  endif else begin
+     nyerr = 0
+     nyev = 0
   endelse
 
   nx = n_elements(x_values)
@@ -77,9 +112,15 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
                  "elements."
         return, 0
      endif
-     if eflag && nerr ne ny then begin
+     if xeflag && nxev ne ny then begin
         message, /continue, $
-                 "ERRORS must have the same number of " + $
+                 "X_ERRORS must have the same number of " + $
+                 "values as X & Y."
+        return, 0
+     endif
+     if yeflag && nyev ne ny then begin
+        message, /continue, $
+                 "Y_ERRORS must have the same number of " + $
                  "values as X & Y."
         return, 0
      endif
@@ -96,9 +137,15 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
                  "dataset if RETAIN_UNSET is present."
         return, 0
      endif
-     if eflag && nerr ne data.ndata then begin
+     if xeflag && nxev ne data.ndata then begin
         message, /continue, $
-                 "ERRORS must not change the length of the " + $
+                 "X_ERRORS must not change the length of the " + $
+                 "dataset if RETAIN_UNSET is present."
+        return, 0
+     endif 
+     if yeflag && nyev ne data.ndata then begin
+        message, /continue, $
+                 "Y_ERRORS must not change the length of the " + $
                  "dataset if RETAIN_UNSET is present."
         return, 0
      endif 
@@ -112,116 +159,74 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
                  "X_VALUES must be complex."
         return, 0
      endif else cplxflag = 1b
-  endif else if eflag then begin
-     if yflag && nerr ne ny then begin
-        message, /continue, $
-                 "ERRORS must have the same number of " + $
-                 "values as Y."
-        return, 0
+  endif else if xeflag || yeflag then begin
+     if xeflag then begin
+        if yflag && nxev ne ny then begin
+           message, /continue, $
+                    "X_ERRORS must have the same number of " + $
+                    "values as Y."
+           return, 0
+        endif
+        if nxev ne data.ndata then begin
+           message, /continue, $
+                    "If no Y values are given X_ERRORS must not " + $
+                    "change the number of elements."
+           return, 0
+        endif
      endif
-     if nerr ne data.ndata then begin
-        message, /continue, $
-                 "If no Y values are given ERRORS must not " + $
-                 "change the number of elements."
-        return, 0
+     if yeflag then begin
+        if yflag && nyev ne ny then begin
+           message, /continue, $
+                    "Y_ERRORS must have the same number of " + $
+                    "values as Y."
+           return, 0
+        endif
+        if nyev ne data.ndata then begin
+           message, /continue, $
+                    "If no Y values are given Y_ERRORS must not " + $
+                    "change the number of elements."
+           return, 0
+        endif
      endif
+     
   endif
 
   if retain then begin
      xydata = *(data.xydata)
 
 ; Remove inapplicable errors if only X or Y is given
-     if ~eflag then begin
-        if xflag && yflag then begin
-           ntype = 0
-           xydata = xydata[0:1, *]
-        endif else if xflag then begin
-           case data.type of
-              3: begin
-                 ntype = 0
-                 xydata = xydata[0:1, *]
-              end
-              4: begin
-                 ntype = 0
-                 xydata = xydata[0:1, *]
-              end
-              5: begin
-                 ntype = 1
-                 xydata = xydata[[0, 1, 3], *]
-              end
-              6: begin
-                 ntype = 2
-                 xydata = xydata[[0, 1, 3, 4], *]
-              end
-              7: begin
-                 ntype = 1
-                 xydata = xydata[[0, 1, 4], *]
-              end
-              8: begin
-                 ntype = 2
-                 xydata = xydata[[0, 1, 4, 5], *]
-              end
-              else: ntype = data.type
-           endcase
-        endif else if yflag then begin
-           case data.type of
-              1: begin
-                 ntype = 0
-                 xydata = xydata[0:1, *]
-              end
-              2: begin
-                 ntype = 0
-                 xydata = xydata[0:1, *]
-              end
-              5: begin
-                 ntype = 1
-                 xydata = xydata[0:2, *]
-              end
-              6: begin
-                 ntype = 1
-                 xydata = xydata[0:2, *]
-              end
-              7: begin
-                 ntype = 2
-                 xydata = xydata[0:3, *]
-              end
-              8: begin
-                 ntype = 2
-                 xydata = xydata[0:3, *]
-              end
-              else: ntype = data.type
-           endcase
-        endif
-     endif else begin
-        if keyword_set(errtype) then begin
-           if strlen(errtype) ne net then $
-              message, "ERRTYPE incompatible with specified errors"
-           case strupcase(errtype) of
-              'Y': ntype = 1
-              'YY': ntype = 2
-              'X': ntype = 3
-              'XX': ntype = 4
-              'XY': ntype = 5
-              'XYY': ntype = 6
-              'XXY': ntype = 7
-              'XXYY': ntype = 8
-           endcase
-        endif else case net of
-           1: ntype = 1
-           2: ntype = 5
-           3: ntype = 6
-           4: ntype = 8
-        endcase
-        xydata = [xydata[0:1], reform(errors, net, nerr)]
-     endelse
-     if cplxflag then begin
-        xydata[0, *] = real_part(x_values)
-        xydata[1, *] = imaginary(x_values)
-     endif else begin
-        if xflag then xydata[0, *] = x_values
-        if yflag then xydata[1, *] = y_values
-     endelse
 
+     if xflag then begin
+        ptr_free, xydata.x, xydata.x_err
+        if cmplxflag && ~yflag then begin
+           ptr_free, xydata.y, xydata.y_err
+           xydata.x = ptr_new(real_part(x_values))
+           xydata.y = ptr_new(imaginary(x_values))
+        endif else xydata.x = ptr_new(x_values)
+        nxe = 0
+     endif
+     
+     if yflag then begin
+        ptr_free, xydata.y, xydata.y_err
+        xydata.y = ptr_new(y_values)
+        nye = 0
+     endif
+     
+     if xeflag then begin
+        ptr_free, xydata.x_err
+        xydata.x_err = ptr_new(x_errors)
+        nxe = nxerr
+     endif
+     if yeflag then begin
+        ptr_free, xydata.y_err
+        xydata.y_err = ptr_new(y_errors)
+        nye = nyerr
+     endif
+     
+     ntype = typemap[nxe, nye]
+     
+     ptr_free, data.xydata.x, data.xydata.y, $
+               data.xydata.x_err, data.xydata.y_err
      ptr_free, data.xydata
      data.xydata = ptr_new(xydata)
      data.type = ntype
@@ -229,77 +234,46 @@ function gr_update_xy, data, x_values, y_values, errors, errtype, $
      return, 1
   endif
   
-  if yflag then begin                 ; Values given
-     xydata = dblarr(2+net, ny)
+  if yflag then begin           ; Values given
+     xydata = {graff_xydata}
 
-     xydata[1, *] = y_values
+     xydata.y = ptr_new(y_values)
      
-     if xflag then xydata[0, *] = x_values $
-     else xydata[0, *] = dindgen(ny)
+     if xflag then xydata.x = ptr_new(x_values) $
+     else xydata.x = ptr_new(dindgen(ny))
 
-     if eflag then begin
-        if keyword_set(errtype) then begin
-           if strlen(errtype) ne net then $
-              message, "ERRTYPE incompatible with specified errors"
-           case strupcase(errtype) of
-              'Y': ntype = 1
-              'YY': ntype = 2
-              'X': ntype = 3
-              'XX': ntype = 4
-              'XY': ntype = 5
-              'XYY': ntype = 6
-              'XXY': ntype = 7
-              'XXYY': ntype = 8
-           endcase
-        endif else case net of
-           1: ntype = 1
-           2: ntype = 5
-           3: ntype = 6
-           4: ntype = 8
-        endcase
-        xydata[2:*, *] = errors
-     endif else  ntype = 0
+     if xeflag then xydata.x_err = ptr_new(x_errors)
+     if yeflag then xydata.y_err = ptr_new(y_errors)
 
-     ptr_free, data[index].xydata
-     data[index].xydata = ptr_new(xydata)
-     data[index].type = ntype
-     data[index].ndata = ny
+     ntype = typemap[nxerr, nyerr]
+
+     ptr_free, data.xydata.x, data.xydata.y, $
+               data.xydata.x_err, data.xydata.y_err
+     ptr_free, data.xydata
+     
+     data.xydata = ptr_new(xydata)
+     data.type = ntype
+     data.ndata = ny
 
      return, 1
   endif
 
   if cplxflag then begin
-     xydata = dblarr(2+net, nx)
-     xydata[0, *] = real_part(x_values)
-     xydata[1, *] = imaginary(y_values)
+     xydata = {graff_xydata}
+     xydata.x = ptr_new(real_part(x_values))
+     xydata.y = ptr_new(imaginary(y_values))
      
-     if eflag then begin
-        if keyword_set(errtype) then begin
-           if strlen(errtype) ne net then $
-              message, "ERRTYPE incompatible with specified errors"
-           case strupcase(errtype) of
-              'Y': ntype = 1
-              'YY': ntype = 2
-              'X': ntype = 3
-              'XX': ntype = 4
-              'XY': ntype = 5
-              'XYY': ntype = 6
-              'XXY': ntype = 7
-              'XXYY': ntype = 8
-           endcase
-        endif else case net of
-           1: ntype = 1
-           2: ntype = 5
-           3: ntype = 6
-           4: ntype = 8
-        endcase
-        xydata[2:*, *] = errors
-     endif else  ntype = 0
+     if xeflag then xydata.x_err = ptr_new(x_errors)
+     if yeflag then xydata.y_err = ptr_new(y_errors)
 
-     ptr_free, data[index].xydata
-     data[index].xydata = ptr_new(xydata)
-     data[index].type = ntype
-     data[index].ndata = ny
+     ntype = typemap[nxerr, nyerr]
+
+     ptr_free, data.xydata.x, data.xydata.y, $
+               data.xydata.x_err, data.xydata.y_err
+     ptr_free, data.xydata
+     data.xydata = ptr_new(xydata)
+     data.type = ntype
+     data.ndata = nx
 
      return, 1
   endif

@@ -22,7 +22,8 @@ pro graff_update, file, idx, name = name, polar = polar, $
                   x_values = x_values, y_values = y_values, $
                   z_values = z_values, funcx = funcx, funcy = funcy, $
                   funcz = funcz, xy_file = xy_file, z_file = z_file, $
-                  errors = errors, errtype = errtype, neval = neval, $
+                  errors = errors, errtype = errtype, $
+                  x_errors = x_errors, y_errors = y_errors, neval = neval, $
                   frange = frange, x_func = x_func, y_func = y_func, $
                   z_func = z_func, z_missing = z_missing, $
                   z_charsize = z_charsize, status = status, $
@@ -53,7 +54,8 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;                  x_values = x_values, y_values = y_values, $
 ;                  z_values = z_values, xy_file = xy_file, $
 ;                  z_file = z_file, z_lmap=z_lmap, $
-;                  errors = errors, errtype = errtype, neval = neval, $
+;                  errors = errors, errtype = errtype, , $
+;                  x_errors = x_errors, y_errors = y_errors, neval = neval, $
 ;                  frange = frange, x_func = x_func, y_func = y_func, $
 ;                  z_func = z_func, z_missing = z_missing, $
 ;                  z_charsize = z_charsize, status = status, $
@@ -139,10 +141,12 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;	z_func	string	input	New f(x,y).
 ;	xy_file	string	input	File for new 1-D data.
 ;	z_file	string	input	File for new 2-D data.
-;	errors	double	input	New error values.
+;	errors	double	input	New error values (deprecated).
 ;	errtype	string	input	Specify error types as code
 ;				(e.g. "XXY" for asymmetrical errors in
 ;				X and symmetric errors in Y)
+;	x_errors double	input	New X error values.
+;	y_errors double	input	New Y error values.
 ;	frange  float	input	The range of x, y or t over which to
 ;				plot a function
 ;	z_missing float	input	A missing value to use for warped images.
@@ -272,7 +276,8 @@ pro graff_update, file, idx, name = name, polar = polar, $
   endif
 
   dataflag = keyword_set(x_values) || keyword_set(y_values) || $
-             keyword_set(z_values) || keyword_set(errors)
+             keyword_set(z_values) || keyword_set(errors) || $
+             keyword_set(x_errors) || keyword_set(y_errors)
   
   if (keyword_set(polar) && ((*pdefs.data)[index].type ge -3 && $
                              (*pdefs.data)[index].type le 8)) then $
@@ -440,42 +445,27 @@ pro graff_update, file, idx, name = name, polar = polar, $
 
      if dataflag then begin
         data = (*pdefs.data)[index]
-        ok = gr_update_xy(data, x_values, y_values, errors, $
-                          errtype, keyword_set(retain_unset))
+        if keyword_set(errors) && $
+           ~(keyword_set(x_errors) || keyword_set(y_errors)) then begin
+           message, /cont, "X_ERRORS & Y_ERRORS are now preferred to ERRORS."
+           ok = gr_update_xy_old(data, x_values, y_values, errors, $
+                                 errtype, keyword_set(retain_unset))
+        endif else $
+           ok = gr_update_xy(data, x_values, y_values, x_errors, $
+                             y_errors, keyword_set(retain_unset))
         if ok then (*pdefs.data)[index] = data
      endif else if n_elements(mscale) eq 4 then begin
 
         xydata = *(*pdefs.data)[index].xydata
 
-        xydata[0, *] = xydata[0, *] * mscale[0] + mscale[1]
-        xydata[1, *] = xydata[1, *] * mscale[2] + mscale[3]
-        case type of
-           0:
-           1: xydata[2, *] = xydata[2, *]*mscale[2]        ; Y
-           2: xydata[2:3, *] = xydata[2:3, *]*mscale[2]    ; YY
-           
-           3: xydata[2, *] = xydata[2, *]*mscale[0]        ; X
-           4: xydata[2:3, *] = xydata[2:3, *]*mscale[0]    ; XX
-           
-           5: begin             ; XY
-              xydata[2, *] = xydata[2, *]*mscale[0]
-              xydata[3, *] = xydata[3, *]*mscale[2]
-           end
-           
-           6: begin             ; XYY
-              xydata[2, *] = xydata[2, *]*mscale[0]
-              xydata[3:4, *] = xydata[3:4, *]*mscale[2]
-           end
-           7: begin             ; XXY
-              xydata[2:3, *] = xydata[2:3, *]*mscale[0]
-              xydata[4, *] = xydata[4, *]*mscale[2]
-           end
-           
-           8: begin             ; XXYY
-              xydata[2:3, *] = xydata[2:3, *]*mscale[0]
-              xydata[4:5, *] = xydata[4:5, *]*mscale[2]
-           end
-        endcase
+        *xydata.x = *xydata.x * mscale[0] + mscale[1]
+        *xydata.y = *xydata.y * mscale[2] + mscale[3]
+
+        if ptr_valid(xydata.x_err) then $
+           *xydata.x_err = *xydata.x_err * mscale[0] + mscale[1]
+        if ptr_valid(xydata.y_err) then $
+           *xydata.y_err = *xydata.y_err * mscale[2] + mscale[3]
+        
         *(*pdefs.data)[index].xydata = xydata
 
      endif
@@ -495,7 +485,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
         xydata = *(*pdefs.data)[index].xydata
         *xydata.x = *xydata.x*mscale[0] + mscale[1]
         *xydata.y = *xydata.y*mscale[2] + mscale[3]
-        *xydata.z = *xydata.z*mscale[5] + mscale[5]
+        *xydata.z = *xydata.z*mscale[4] + mscale[5]
 
         *(*pdefs.data)[index].xydata = xydata
      endif
