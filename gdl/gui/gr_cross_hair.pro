@@ -93,7 +93,8 @@ pro gr_cross_hair, pdefs, xy
      2: begin                   ; Add point mode, draw the
                                 ; new line segment
         lp = (*pdefs.data)[pdefs.cset].ndata-1
-        xy0 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, lp]
+        xy0 = [(*(*(*pdefs.data)[pdefs.cset].xydata).x)[lp], $
+               (*(*(*pdefs.data)[pdefs.cset].xydata).y)[lp]]
         if (pdefs.transient.opflag) then begin
            plots, [xy0[0], pdefs.transient.opos[0]], $
                   [xy0[1], pdefs.transient.opos[1]]
@@ -109,7 +110,8 @@ pro gr_cross_hair, pdefs, xy
                                 ; segment(s).
         lp = (*pdefs.data)[pdefs.cset].ndata-1
         if pdefs.transient.imove eq 0 then begin
-           xy0 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, 1]
+           xy0 = [(*(*(*pdefs.data)[pdefs.cset].xydata).x)[1], $
+                  (*(*(*pdefs.data)[pdefs.cset].xydata).y)[1]]
            if (pdefs.transient.opflag) then begin
               plots, [xy0[0], pdefs.transient.opos[0]], $
                      [xy0[1], pdefs.transient.opos[1]]
@@ -121,7 +123,8 @@ pro gr_cross_hair, pdefs, xy
               pdefs.transient.opflag = 1b
            endif
         endif else if pdefs.transient.imove eq lp then begin
-           xy0 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, lp-1]
+           xy0 = [(*(*(*pdefs.data)[pdefs.cset].xydata).x)[lp-1], $
+                  (*(*(*pdefs.data)[pdefs.cset].xydata).y)[lp-1]]
            if (pdefs.transient.opflag) then begin
               plots, [xy0[0], pdefs.transient.opos[0]], $
                      [xy0[1], pdefs.transient.opos[1]]
@@ -134,8 +137,10 @@ pro gr_cross_hair, pdefs, xy
            endif
         endif else begin 
            im = pdefs.transient.imove
-           xy0 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, im-1]
-           xy1 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, im+1]
+           xy0 = [(*(*(*pdefs.data)[pdefs.cset].xydata).x)[im-1], $
+                  (*(*(*pdefs.data)[pdefs.cset].xydata).y)[im-1]]
+           xy1 = [(*(*(*pdefs.data)[pdefs.cset].xydata).x)[im+1], $
+                  (*(*(*pdefs.data)[pdefs.cset].xydata).y)[im+1]]
            if (pdefs.transient.opflag) then begin
               plots, [xy0[0], pdefs.transient.opos[0], xy1[0]], $
                      [xy0[1], pdefs.transient.opos[1], xy1[1]]

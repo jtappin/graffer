@@ -194,10 +194,6 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 
   common graffer_options, optblock
 
-  typemap = [[0, 3, 4], $
-             [1, 5, 7], $
-             [2, 6, 8]]
-  
   if keyword_set(funcx) then begin 
      if keyword_set(x_func) then $
         message, /continue, $
@@ -436,7 +432,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
         endif else message, "Y errors must have 1 or 2 dimensions."
      endif else nye = 0
 
-     ety = typemap[nxe, nye]
+     ety = gr_err_type(nxe, nye)
      
      if keyword_set(errors) then begin
         if ~(keyword_set(x_errors) || keyword_set(y_errors)) then begin

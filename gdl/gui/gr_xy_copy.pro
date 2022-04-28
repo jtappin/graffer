@@ -30,45 +30,51 @@ function gr_xy_copy, pdefs, index, force = force
 ;	Original (after gr_xy_read): 7/2/12; SJT
 ;-
 
-if ((*pdefs.data)[index].type lt 0 || $
-    (*pdefs.data)[index].type eq 9 || $
-    ~ptr_valid((*pdefs.data)[index].xydata)) then begin
-    junk = dialog_message(['Source dataset is not an XY', $
-                           'dataset, aborting'], $
+  if ((*pdefs.data)[index].type lt 0 || $
+      (*pdefs.data)[index].type eq 9 || $
+      ~ptr_valid((*pdefs.data)[index].xydata)) then begin
+     junk = dialog_message(['Source dataset is not an XY', $
+                            'dataset, aborting'], $
+                           dialog_parent = pdefs.ids.graffer, $
+                           resource = 'Graffer', $
+                           /info)
+     return, 0
+  endif
+
+  if ((*pdefs.data)[pdefs.cset].type lt 0 || $
+      (*pdefs.data)[pdefs.cset].type eq 9) && ~keyword_set(force) then $
+         begin 
+     ans = dialog_message(['Current data set is a function', $
+                           'or a 2-D dataset, reading 1-D data', $
+                           'will overwrite it.', $
+                           'Do you really want to do this?'], $
+                          /question, $
                           dialog_parent = pdefs.ids.graffer, $
-                          resource = 'Graffer', $
-                          /info)
-    return, 0
-endif
+                          resource = 'Graffer')
+     if ans eq 'No' then return, 0
+  endif
 
-if ((*pdefs.data)[pdefs.cset].type lt 0 || $
-    (*pdefs.data)[pdefs.cset].type eq 9) && ~keyword_set(force) then $
-  begin 
-    ans = dialog_message(['Current data set is a function', $
-                          'or a 2-D dataset, reading 1-D data', $
-                          'will overwrite it.', $
-                          'Do you really want to do this?'], $
-                         /question, $
-                         dialog_parent = pdefs.ids.graffer, $
-                         resource = 'Graffer')
-    if ans eq 'No' then return, 0
-endif
+  if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+     (*(*pdefs.data)[pdefs.cset].xydata).x, $
+     (*(*pdefs.data)[pdefs.cset].xydata).y, $
+     (*(*pdefs.data)[pdefs.cset].xydata).z $
+  else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+     (*(*pdefs.data)[pdefs.cset].xydata).x, $
+     (*(*pdefs.data)[pdefs.cset].xydata).y, $
+     (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+     (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
-if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-  (*(*pdefs.data)[pdefs.cset].xydata).x, $
-  (*(*pdefs.data)[pdefs.cset].xydata).y, $
-  (*(*pdefs.data)[pdefs.cset].xydata).z
 
-ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  ptr_free, (*pdefs.data)[pdefs.cset].xydata
 
-(*pdefs.data)[pdefs.cset].xydata = $
-  ptr_new(*(*pdefs.data)[index].xydata)
+  (*pdefs.data)[pdefs.cset].xydata = $
+     ptr_new(*(*pdefs.data)[index].xydata)
 
-(*pdefs.data)[pdefs.cset].type = (*pdefs.data)[index].type
-(*pdefs.data)[pdefs.cset].ndata = (*pdefs.data)[index].ndata
-(*pdefs.data)[pdefs.cset].ndata2 = (*pdefs.data)[index].ndata2
-(*pdefs.data)[pdefs.cset].mode = (*pdefs.data)[index].mode
+  (*pdefs.data)[pdefs.cset].type = (*pdefs.data)[index].type
+  (*pdefs.data)[pdefs.cset].ndata = (*pdefs.data)[index].ndata
+  (*pdefs.data)[pdefs.cset].ndata2 = 0
+  (*pdefs.data)[pdefs.cset].mode = (*pdefs.data)[index].mode
 
-return, 1
+  return, 1
 
 end

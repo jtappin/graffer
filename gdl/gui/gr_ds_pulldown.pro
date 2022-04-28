@@ -144,7 +144,13 @@ pro Gr_dss_event, event
         if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
            (*(*pdefs.data)[pdefs.cset].xydata).x, $
            (*(*pdefs.data)[pdefs.cset].xydata).y, $
-           (*(*pdefs.data)[pdefs.cset].xydata).z
+           (*(*pdefs.data)[pdefs.cset].xydata).z $
+        else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+           (*(*pdefs.data)[pdefs.cset].xydata).x, $
+           (*(*pdefs.data)[pdefs.cset].xydata).y, $
+           (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+           (*(*pdefs.data)[pdefs.cset].xydata).y_err
+
 
         (*pdefs.data)[pdefs.cset].ndata = 0
         (*pdefs.data)[pdefs.cset].type = 0

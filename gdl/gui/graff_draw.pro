@@ -37,7 +37,7 @@ function Graff_draw, pdefs, event, track_flag
 ;	Fixed distance computation in insert mode (I think): 27/3/12; SJT
 ;-
 
-  fl1d = ((*pdefs.data)[pdefs.cset].type ge 0 and  $
+  fl1d = ((*pdefs.data)[pdefs.cset].type ge 0 &&  $
           (*pdefs.data)[pdefs.cset].type le 8)
 
   if (track_flag) then begin
@@ -54,11 +54,24 @@ function Graff_draw, pdefs, event, track_flag
   xy = [x, y]
   exy = double([event.x, event.y])
 
-  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) && $
-     n_elements(*(*pdefs.data)[pdefs.cset].xydata) gt 0 then $ 
-        xydata = *(*pdefs.data)[pdefs.cset].xydata $
-  else xydata = dblarr(2, 2)
-
+  nxe = 0l
+  nye = 0l
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     xvals = *(*(*pdefs.data)[pdefs.cset].xydata).x
+     yvals = *(*(*pdefs.data)[pdefs.cset].xydata).y
+     if ptr_valid((*(*pdefs.data)[pdefs.cset].xydata).x_err) then begin
+        xerrs = *(*(*pdefs.data)[pdefs.cset].xydata).x_err
+        nxe = n_elements(xerrs[*, 0])
+     endif
+     if ptr_valid((*(*pdefs.data)[pdefs.cset].xydata).y_err) then begin
+        yerrs = *(*(*pdefs.data)[pdefs.cset].xydata).y_err
+        nye = n_elements(yerrs[*, 0])
+     endif
+  endif else begin
+     xvals = dblarr(2)
+     yvals = dblarr(2)
+  endelse
+  
   svflag = 0
 
   if ((*pdefs.data)[pdefs.cset].type lt 0 or $
@@ -78,17 +91,18 @@ function Graff_draw, pdefs, event, track_flag
   if fl1d then case ((*pdefs.data)[pdefs.cset].mode) of
      0: begin
         xyd = xy
-        xydatar = xydata
+        xdatar = xvals
+        ydatar = yvals
      end
      1: begin
         xyd = [sqrt(total(xy^2)), atan(xy[1], xy[0])]
-        xydatar = [xydata[0, *]*cos(xydata[1, *]), $
-                   xydata[0, *]*sin(xydata[1, *])]
+        xdatar = xdatar * cos(ydatar)
+        ydatar = xdatar * sin(ydatar)
      end
      2: begin
         xyd = [sqrt(total(xy^2)), atan(xy[1], xy[0])*!Radeg]
-        xydatar = [xydata[0, *]*cos(xydata[1, *]*!Dtor), $
-                   xydata[0, *]*sin(xydata[1, *]*!Dtor)]
+        xdatar = xdatar * cos(ydatar*!dtor)
+        ydatar = xdatar * sin(ydatar*!dtor)
      end
   endcase
 
@@ -101,7 +115,7 @@ function Graff_draw, pdefs, event, track_flag
            2: begin             ; Middle button, initiate move
               
               if (ndata ge 1) then begin
-                 gr_coord_convert, xydatar[0, *], xydatar[1, *], $
+                 gr_coord_convert, xdatar, ydatar, $
                                    ddx, ddy, /data, /to_device
                  dist = sqrt((ddx-event.x)^2 + $
                              (ddy-event.y)^2)
@@ -122,8 +136,7 @@ function Graff_draw, pdefs, event, track_flag
               if (ndata ge 1) then begin
                  if (event.modifiers and 2l) eq 2 and ndata ge 2 then begin
                     off = dblarr(ndata-1)
-                    gr_coord_convert, xydatar[0, *], $
-                                      xydatar[1, *], ddx, ddy, $
+                    gr_coord_convert, xdatar, ydatar, ddx, ddy, $
                                       /data, /to_device
                     for j = 0, ndata-2 do begin
                        xl = ddx[j+1] < ddx[j]
@@ -160,13 +173,30 @@ function Graff_draw, pdefs, event, track_flag
                     endfor
                     omin = min(off, imin)
                     if omin lt 5. then begin
-                       xydata = [[xydata[*, 0:imin]], $
-                                 [dblarr(ncols)], $
-                                 [xydata[*, imin+1:*]]]
-                       xydata[0:1, imin+1] = xyd
+                       xvals = [xvals[0:imin], xyd[0], xvals[imin+1:*]]
+                       yvals = [yvals[0:imin], xyd[1], yvals[imin+1:*]]
+                       if nxe gt 0 then $
+                          xerrs = [[xerrs[*, 0:imin]], [dblarr(nxe)], $
+                                   [xerrs[*, imin+1:*]]]
+                       if nye gt 0 then $
+                          yerrs = [[yerrs[*, 0:imin]], [dblarr(nye)], $
+                                   [yerrs[*, imin+1:*]]]
+
+                       xydata = {graff_xydata}
+                       xydata.x = ptr_new(xvals)
+                       xydata.y = ptr_new(yvals)
+                       if nxe gt 0 then xydata.x_err = ptr_new(xerrs)
+                       if nye gt 0 then xydata.y_err = ptr_new(yerrs)
+                       
                        (*pdefs.data)[pdefs.cset].ndata ++
                        pdefs.transient.imove = imin+1
+                       ptr_free, $
+                          (*(*pdefs.data)[pdefs.cset].xydata).x, $ $
+                          (*(*pdefs.data)[pdefs.cset].xydata).y, $ $
+                          (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                          (*(*pdefs.data)[pdefs.cset].xydata).y_err
                        ptr_free, (*pdefs.data)[pdefs.cset].xydata
+                       
                        (*pdefs.data)[pdefs.cset].xydata = $
                           ptr_new(xydata) 
                        gr_cross_hair, pdefs
@@ -176,20 +206,36 @@ function Graff_draw, pdefs, event, track_flag
                                           "pixels of selected location" 
                  endif else if (event.modifiers and 1l) eq 1 and $
                     ndata ge 2 then begin 
-                    gr_coord_convert, xydatar[0, *], $
-                                      xydatar[1, *], ddx, ddy, $
+                    gr_coord_convert, xdatar, ydatar, ddx, ddy, $
                                       /data, /to_device
                     xy0 = [ddx[0],  ddy[0]]
                     xy1 = [ddx[ndata-1], ddy[ndata-1]]
                     d0 = sqrt(total((xy0-exy)^2))
                     d1 = sqrt(total((xy1-exy)^2))
-                    if d0 lt d1 then begin 
-                       xydata = [[dblarr(ncols)], $
-                                 [xydata]]
-                       xydata[0:1, 0] = xyd
+                    if d0 lt d1 then begin
+                       xvals = [xyd[0], xvals]
+                       yvals = [xyd[1], yvals]
+                       if nxe gt 0 then $
+                          xerrs = [[dblarr(nxe)], [xerrs]]
+                       if nye gt 0 then $
+                          yerrs = [[dblarr(nye)], [yerrs]]
+                       
+                       xydata = {graff_xydata}
+                       xydata.x = ptr_new(xvals)
+                       xydata.y = ptr_new(yvals)
+                       if nxe gt 0 then xydata.x_err = ptr_new(xerrs)
+                       if nye gt 0 then xydata.y_err = ptr_new(yerrs)
+
                        (*pdefs.data)[pdefs.cset].ndata ++
                        pdefs.transient.imove = 0
+                       
+                       ptr_free, $
+                          (*(*pdefs.data)[pdefs.cset].xydata).x, $ $
+                          (*(*pdefs.data)[pdefs.cset].xydata).y, $ $
+                          (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                          (*(*pdefs.data)[pdefs.cset].xydata).y_err
                        ptr_free, (*pdefs.data)[pdefs.cset].xydata
+
                        (*pdefs.data)[pdefs.cset].xydata = $
                           ptr_new(xydata) 
                        gr_cross_hair, pdefs
@@ -206,7 +252,7 @@ function Graff_draw, pdefs, event, track_flag
            end
            4: begin 
               if (ndata ge 1) then begin
-                 gr_coord_convert, xydatar[0, *], xydatar[1, *], $
+                 gr_coord_convert, xdatar, ydatar, $
                                    ddx, ddy, /data, /to_device
                  dist = sqrt((ddx-event.x)^2 + $
                              (ddy-event.y)^2)
@@ -235,27 +281,51 @@ function Graff_draw, pdefs, event, track_flag
                  ndl = dblarr(ncols)
                  ndl(0) = xyd
                  old_data = (*pdefs.data)[pdefs.cset]
-                 old_xy = xydata
+                 ;; old_x = xvals
+                 ;; old_y = yvals
+                 ;; if nxe gt 0 then old_xerr = xerrs
+                 ;; it nye gt 0 then old_yerr = yerrs
                  
                  if pdefs.transient.mode eq 4 then begin
-                    xydata[*, pdefs.transient.imove] = ndl
+                    xvals[pdefs.transient.imove] = xyd[0]
+                    yvals[pdefs.transient.imove] = xyd[1]
                     line = pdefs.transient.imove
                  endif else begin
-                    if (ndata le 1) then  $
-                       xydata[*, ndata] = ndl $
-                    else xydata = [[xydata], [ndl]]
-                    
+                    if (ndata le 1) then begin
+                       xvals[ndata] = xyd[0]
+                       yvals[ndata] = xyd[1]
+                       if nxe gt 0 then xerrs[*, ndata] = 0.d
+                       if nye gt 0 then yerrs[*, ndata] = 0.d
+                    endif else begin
+                       xvals = [xvals, xyd[0]]
+                       yvals = [yvals, xyd[1]]
+                       if nxe gt 0 then xerrs = [[xerrs], [dblarr(nxe)]]
+                       if nye gt 0 then yerrs = [[yerrs], [dblarr(nye)]]
+                    endelse
                     (*pdefs.data)[pdefs.cset].ndata ++
                     line = (*pdefs.data)[pdefs.cset].ndata-1
                  endelse
-
+                 
                  if ((*pdefs.data)[pdefs.cset].type ne 0) then begin
+                    xydata = {graff_xydata}
+                    xydata.x = ptr_new(xvals)
+                    xydata.y = ptr_new(yvals)
+                    if nxe gt 0 then xydata.x_err = ptr_new(xerrs)
+                    if nye gt 0 then xydata.y_err = ptr_new(yerrs)
+                    
+                    ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                              (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                              (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                              $
+                              (*(*pdefs.data)[pdefs.cset].xydata).y_err
+                    
                     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+                    
                     (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
                     svflag = 1
                     ichange = gr_xy_wid(pdefs, line = line)
                     if (ichange eq 0) then begin
-                       *old_data.xydata = old_xy
+;                       *old_data.xydata = old_xy
                        (*pdefs.data)[pdefs.cset] = old_data
                     endif
                  endif else ichange = 1
@@ -264,12 +334,36 @@ function Graff_draw, pdefs, event, track_flag
                  (*pdefs.data)[pdefs.cset].ndata --
                  imove = pdefs.transient.imove
                  xydata = *(*pdefs.data)[pdefs.cset].xydata
-                 if imove eq 0 then xydata = xydata[*, 1:*] $
-                 else xydata = [[xydata[*, 0:imove-1]], $
-                                [xydata[*, imove+1:*]]]
+                 if imove eq 0 then begin
+                    *xydata.x = (*xydata.x)[1:*]
+                    *xydata.y = (*xydata.y)[1:*]
+                    if ptr_valid(xydata.x_err) then $
+                       *xydata.x_err = (*xydata.x_err)[*, 1:*]
+                    if ptr_valid(xydata.y_err) then $
+                       *xydata.y_err = (*xydata.y_err)[*, 1:*]
+                 endif else begin
+                    *xydata.x = [(*xydata.x)[0:imove-1], $
+                                 (*xydata.x)[imove+1:*]]
+                    *xydata.y = [(*xydata.y)[0:imove-1], $
+                                 (*xydata.y)[imove+1:*]]
+                    if ptr_valid(xydata.x_err) then $
+                       *xydata.x_err = [[(*xydata.x_err)[*, $
+                                                         0:imove-1]], $
+                                        [(*xydata.x_err)[*, imove+1:*]]]
+                    if ptr_valid(xydata.y_err) then $
+                       *xydata.y_err = [[(*xydata.y_err)[*, $
+                                                         0:imove-1]], $
+                                        [(*xydata.y_err)[*, imove+1:*]]]))
+                 endelse
+                 
+                 ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ $
+                           (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                           (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                           (*(*pdefs.data)[pdefs.cset].xydata).y_err
                  ptr_free, (*pdefs.data)[pdefs.cset].xydata
                  (*pdefs.data)[pdefs.cset].xydata = $
-                    ptr_new(xydata) 
+                    ptr_new(xydata)
+                 
                  gr_cross_hair, pdefs
                  pdefs.transient.imove = -1
               endif
@@ -282,15 +376,22 @@ function Graff_draw, pdefs, event, track_flag
 
               if (event.modifiers and 3) eq 0 then begin
                  old_data = (*pdefs.data)[pdefs.cset]
-                 old_xy = xydata
-                 xydata[0:1, pdefs.transient.imove] = xyd
+                 xydata = *old_data.xydata
+                 xo = *(xydata.x)[pdefs.transient.imove]
+                 yo = *(xydata.y)[pdefs.transient.imove]
+                 *(xydata.x)[pdefs.transient.imove] = xyd[0]
+                 *(xydata.y)[pdefs.transient.imove] = xyd[1]
+
                  if ((*pdefs.data)[pdefs.cset].type ne 0) then begin
                     *(*pdefs.data)[pdefs.cset].xydata = xydata
                     ichange = gr_xy_wid(pdefs, $
                                         line = pdefs.transient.imove)
                     if (ichange eq 0) then begin
-                       *old_data.xydata = old_xy
-                       (*pdefs.data)[pdefs.cset] = old_data
+                       ;; *old_data.xydata = old_xy
+                       ;; (*pdefs.data)[pdefs.cset] = old_data
+                       *(xydata.x)[pdefs.transient.imove] = xo
+                       *(xydata.y)[pdefs.transient.imove] = yo
+                       *(*pdefs.data)[pdefs.cset].xydata = xydata
                     endif
                  endif else begin
                     ichange = 1
@@ -306,6 +407,7 @@ function Graff_draw, pdefs, event, track_flag
                                 ; Right: delete.
               if (pdefs.transient.imove ge 0) then begin
                  imin = pdefs.transient.imove
+                 xydata = *(*pdefs.data)[pdefs.cset].xydata
                  if (ndata le 2) then begin
                     if (imin eq 0) then xydata(*, 0) = xydata(*, 1)
                  endif else if (imin eq 0) then  $

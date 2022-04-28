@@ -29,11 +29,6 @@
 function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
                        retain
 
-
-  typemap = [[0, 3, 4], $
-             [1, 5, 7], $
-             [2, 6, 8]]
-
 ; Sanity checks.
   xflag = n_elements(x_values) ne 0
   yflag = n_elements(y_values) ne 0
@@ -223,7 +218,7 @@ function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
         nye = nyerr
      endif
      
-     ntype = typemap[nxe, nye]
+     ntype = gr_err_type(nxe, nye)
      
      ptr_free, data.xydata.x, data.xydata.y, $
                data.xydata.x_err, data.xydata.y_err
@@ -245,7 +240,7 @@ function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
      if xeflag then xydata.x_err = ptr_new(x_errors)
      if yeflag then xydata.y_err = ptr_new(y_errors)
 
-     ntype = typemap[nxerr, nyerr]
+     ntype = gr_err_type(nxerr, nyerr)
 
      ptr_free, data.xydata.x, data.xydata.y, $
                data.xydata.x_err, data.xydata.y_err
@@ -266,7 +261,7 @@ function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
      if xeflag then xydata.x_err = ptr_new(x_errors)
      if yeflag then xydata.y_err = ptr_new(y_errors)
 
-     ntype = typemap[nxerr, nyerr]
+     ntype = gr_err_type(nxerr, nyerr)
 
      ptr_free, data.xydata.x, data.xydata.y, $
                data.xydata.x_err, data.xydata.y_err

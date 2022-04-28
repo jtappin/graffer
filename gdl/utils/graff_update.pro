@@ -462,9 +462,9 @@ pro graff_update, file, idx, name = name, polar = polar, $
         *xydata.y = *xydata.y * mscale[2] + mscale[3]
 
         if ptr_valid(xydata.x_err) then $
-           *xydata.x_err = *xydata.x_err * mscale[0] + mscale[1]
+           *xydata.x_err = *xydata.x_err * mscale[0]
         if ptr_valid(xydata.y_err) then $
-           *xydata.y_err = *xydata.y_err * mscale[2] + mscale[3]
+           *xydata.y_err = *xydata.y_err * mscale[2]
         
         *(*pdefs.data)[index].xydata = xydata
 

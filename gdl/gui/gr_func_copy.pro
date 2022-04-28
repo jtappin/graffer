@@ -31,19 +31,19 @@ function gr_func_copy, pdefs, index, force = force
 
 ; Check that the source is a function
 
-if (*pdefs.data)[index].type ge 0 || $
-  ~ptr_valid((*pdefs.data)[index].xydata) then begin
-    graff_msg, pdefs.ids.hlptxt, "Source DS is not a function, " + $
-      "aborting"
-    return, 0
-endif else stype = (*pdefs.data)[index].type
+  if (*pdefs.data)[index].type ge 0 || $
+     ~ptr_valid((*pdefs.data)[index].xydata) then begin
+     graff_msg, pdefs.ids.hlptxt, "Source DS is not a function, " + $
+                "aborting"
+     return, 0
+  endif else stype = (*pdefs.data)[index].type
 
 ; Check that the current dataset is a function or empty
-if ptr_valid((*pdefs.data)[pdefs.cset].xydata) && ~keyword_set(force) $
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) && ~keyword_set(force) $
   then begin
-    ttype = (*pdefs.data)[pdefs.cset].type
+     ttype = (*pdefs.data)[pdefs.cset].type
 
-    if ttype ge 0 then begin
+     if ttype ge 0 then begin
         if (*pdefs.data)[pdefs.cset].ndata gt 0 then begin
             resp = dialog_message(["Current dataset is not a function", $
                                    "do you want to overwrite it?"], $
@@ -52,12 +52,17 @@ if ptr_valid((*pdefs.data)[pdefs.cset].xydata) && ~keyword_set(force) $
                                   resource = "Graffer")
             if resp eq "No" then return, 0
             if ttype eq 9 then ptr_free, $
-              (*(*pdefs.data)[pdefs.cset].xydata).x, $
-              (*(*pdefs.data)[pdefs.cset].xydata).y, $
-              (*(*pdefs.data)[pdefs.cset].xydata).z
+               (*(*pdefs.data)[pdefs.cset].xydata).x, $
+               (*(*pdefs.data)[pdefs.cset].xydata).y, $
+               (*(*pdefs.data)[pdefs.cset].xydata).z $
+            else if ttype ge 0 then ptr_free, $
+               (*(*pdefs.data)[pdefs.cset].xydata).x, $
+               (*(*pdefs.data)[pdefs.cset].xydata).y, $
+               (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+               (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
-        endif
-    endif else if ttype ne stype then begin 
+         endif
+     endif else if ttype ne stype then begin 
         resp = dialog_message(["Current dataset and the source", $
                                "are different function types", $
                                "do you want to overwrite?"], $
@@ -65,23 +70,24 @@ if ptr_valid((*pdefs.data)[pdefs.cset].xydata) && ~keyword_set(force) $
                               dialog_parent = pdefs.ids.graffer, $
                               resource = "Graffer")
         if resp eq "No" then return, 0
-    endif
-endif
+     endif
+    
+  endif
 
-xydata = *(*pdefs.data)[index].xydata
+  xydata = *(*pdefs.data)[index].xydata
 
-if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then $
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then $
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
 
-(*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
-(*pdefs.data)[pdefs.cset].type = stype
+  (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
+  (*pdefs.data)[pdefs.cset].type = stype
 
-if (*pdefs.data)[pdefs.cset].ndata eq 0 then $
-  (*pdefs.data)[pdefs.cset].ndata = (*pdefs.data)[index].ndata
-if stype eq -4 && (*pdefs.data)[pdefs.cset].ndata2 eq 0 then $
-  (*pdefs.data)[pdefs.cset].ndata2 = (*pdefs.data)[index].ndata2
-(*pdefs.data)[pdefs.cset].mode = (*pdefs.data)[index].mode
+  if (*pdefs.data)[pdefs.cset].ndata eq 0 then $
+     (*pdefs.data)[pdefs.cset].ndata = (*pdefs.data)[index].ndata
+  if stype eq -4 && (*pdefs.data)[pdefs.cset].ndata2 eq 0 then $
+     (*pdefs.data)[pdefs.cset].ndata2 = (*pdefs.data)[index].ndata2
+  (*pdefs.data)[pdefs.cset].mode = (*pdefs.data)[index].mode
 
-return, 1
+  return, 1
 
 end

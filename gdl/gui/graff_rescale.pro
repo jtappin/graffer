@@ -278,38 +278,16 @@ function Graff_rescale, pdefs
      *xydata.z = *xydata.z*ev.value[4] + ev.value[5]
      
   endif else begin
-     xydata[0, *] = xydata[0, *]*ev.value[0] + ev.value[1]
-     xydata[1, *] = xydata[1, *]*ev.value[2] + ev.value[3]
-     case (*pdefs.data)[pdefs.cset].type of ; Handle error scaling
-        0:                                  ; No errors nothing to do
-        
-        1: xydata[2, *] = xydata[2, *]*ev.value[2]     ; Y
-        2: xydata[2:3, *] = xydata[2:3, *]*ev.value[2] ; YY
-        
-        3: xydata[2, *] = xydata[2, *]*ev.value[0]     ; X
-        4: xydata[2:3, *] = xydata[2:3, *]*ev.value[0] ; XX
-        
-        5: begin                ; XY
-           xydata[2, *] = xydata[2, *]*ev.value[0]
-           xydata[3, *] = xydata[3, *]*ev.value[2]
-        end
-        
-        6: begin                ; XYY
-           xydata[2, *] = xydata[2, *]*ev.value[0]
-           xydata[3:4, *] = xydata[3:4, *]*ev.value[2]
-        end
-        7: begin                ; XXY
-           xydata[2:3, *] = xydata[2:3, *]*ev.value[0]
-           xydata[4, *] = xydata[4, *]*ev.value[2]
-        end
-        
-        8: begin                ; XXYY
-           xydata[2:3, *] = xydata[2:3, *]*ev.value[0]
-           xydata[4:5, *] = xydata[4:5, *]*ev.value[2]
-        end
-     endcase
-  endelse
+     *xydata.x = *xydata.x*ev.value[0] + ev.value[1]
+     *xydata.y = *xydata.y*ev.value[2] + ev.value[3]
 
+     if ptr_valid(xydata.x_err) then $
+        *xydata.x_err = *xydata.x_err*ev.value[0]
+     if ptr_valid(xydata.y_err) then $
+        *xydata.y_err = *xydata.y_err*ev.value[2]
+     
+  endelse
+  
   *(*pdefs.data)[pdefs.cset].xydata = xydata
 
   return, 1

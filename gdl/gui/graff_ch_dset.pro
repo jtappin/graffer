@@ -128,7 +128,6 @@ pro Graff_ch_dset, pdefs
                                 ; structure
      
      (*pdefs.data) = [(*pdefs.data), {graff_data}]
-;    (*pdefs.data)[pdefs.cset].Xydata =   ptr_new(dblarr(2, 2))
      (*pdefs.data)[pdefs.cset].Pline =    1
      (*pdefs.data)[pdefs.cset].Symsize =  1.
      (*pdefs.data)[pdefs.cset].Colour =   1

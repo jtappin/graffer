@@ -327,7 +327,13 @@ function Gr_tlv_z, pdefs
   if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
      (*(*pdefs.data)[pdefs.cset].xydata).x, $
      (*(*pdefs.data)[pdefs.cset].xydata).y, $
-     (*(*pdefs.data)[pdefs.cset].xydata).z
+     (*(*pdefs.data)[pdefs.cset].xydata).z $
+  else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+     (*(*pdefs.data)[pdefs.cset].xydata).x, $
+     (*(*pdefs.data)[pdefs.cset].xydata).y, $
+     (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+     (*(*pdefs.data)[pdefs.cset].xydata).y_err
+
 
   ptr_free, (*pdefs.data)[pdefs.cset].xydata
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)

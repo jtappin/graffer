@@ -47,32 +47,21 @@ function Gr_fit_funct, pdefs, ftype, npt, slice, fset, pr, resid, $
 
   xy = *(*pdefs.data)[fset].xydata
 
-  if (ftype[2] eq 0) then case ((*pdefs.data)[fset].type) of
-     0:                             ; No errs
-     1: wy = transpose(xy(2, *))    ; Y
-     2: wy = total(xy(2:3, *), 1)/2. ; +-Y
-     3: wx = transpose(xy(2, *))     ; X
-     4: wx = total(xy(2:3, *), 1)/2. ; +-X
-     5: begin
-        wx = transpose(xy(2, *))
-        wy = transpose(xy(3, *)) ; XY
-     end
-     6: begin
-        wx = transpose(xy(2, *))
-        wy = total(xy(3:4, *), 1)/2. ; X+-Y
-     end
-     7: begin
-        wx = total(xy(2:3, *), 1)/2.
-        wy = transpose(xy(4, *)) ; +-XY
-     end
-     8: begin
-        wx = total(xy(2:3, *), 1)/2.
-        wy = total(xy(4:5, *), 1)/2. ; +-X+-Y
-     end
-  endcase
-
-  x = transpose(xy(0, *))
-  y = transpose(xy(1, *))
+  if (ftype[2] eq 0) then begin
+     if ptr_valid(xy.x_err) then begin
+        sxe = size(*xy.x_err, /dim)
+        if sxe[0] eq 1 then wx = reform(*xy.x_err, sxe[1]) $
+        else wx = total(*xy.x_err, 1)/2.d
+     endif
+     if ptr_valid(xy.y_err) then begin
+        sye = size(*xy.y_err, /dim)
+        if sye[0] eq 1 then wy = reform(*xy.y_err, sye[1]) $
+        else wy = total(*xy.y_err, 1)/2.d
+     endif
+  endif
+  
+  x = *xy.x
+  y = *xy.y
 
   if (slice ne '') then begin
      if strpos(slice, '[') ne 0 && $
@@ -94,8 +83,8 @@ function Gr_fit_funct, pdefs, ftype, npt, slice, fset, pr, resid, $
 
   if keyword_set(nan) then begin
      case ftype[0] of
-        0: good = where(finite(x) and finite(y), ngood)         ; Polynomial
-        4: good = where(finite(x) and finite(y), ngood)         ; Piecewise
+        0: good = where(finite(x) and finite(y), ngood)            ; Polynomial
+        4: good = where(finite(x) and finite(y), ngood)            ; Piecewise
         1: good = where(finite(x) and finite(y) and y gt 0, ngood) ; Exp
         2: good = where(finite(x) and finite(y) and x gt 0, ngood) ; Log
         3: good = where(finite(x) and finite(y) and x gt 0 and y gt 0, $
@@ -176,8 +165,13 @@ function Gr_fit_funct, pdefs, ftype, npt, slice, fset, pr, resid, $
   if (*pdefs.data)[pdefs.cset].type eq 9 then $      ; Overwriting a 2-D
      ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ; dataset
                (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).z
-
+               (*(*pdefs.data)[pdefs.cset].xydata).z $
+  else if (*pdefs.data)[pdefs.cset].type ge 0 then $
+          ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ 
+                    (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                    (*(*pdefs.data)[pdefs.cset].xydata).x_err, $ 
+                    (*(*pdefs.data)[pdefs.cset].xydata).y_err
+  
   ptr_free, (*pdefs.data)[pdefs.cset].xydata
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
   (*pdefs.data)[pdefs.cset].type = fftype
