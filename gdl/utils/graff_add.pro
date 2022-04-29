@@ -426,7 +426,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
            if sye[1] gt 2 then begin
               message, /continue, $
                        "Excess y-error columns ignored."
-              yerr = yerr[0:1, *])
+              yerr = yerr[0:1, *]
               nye = 2
            endif else nye = sye[1] 
         endif else message, "Y errors must have 1 or 2 dimensions."

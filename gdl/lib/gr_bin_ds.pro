@@ -210,9 +210,9 @@ pro Gr_bin_ds, data, nset, ilu, msgid
            xydata.x = ptr_new(reform(xyvals[0, *]))
            xydata.y = ptr_new(reform(xyvals[1, *]))
            if nerr[0] ne 0 then $
-              xydata.x_err = ptr_new(xyvals[2:1+nerr[0], *]))
+              xydata.x_err = ptr_new(xyvals[2:1+nerr[0], *])
            if nerr[1] ne 0 then $
-              xydata.y_err = ptr_new(xyvals[2+nerr[0]:*, *]))
+              xydata.y_err = ptr_new(xyvals[2+nerr[0]:*, *])
         end
 
         'VX': begin

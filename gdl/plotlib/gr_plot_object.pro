@@ -77,7 +77,7 @@ pro Gr_plot_object, pdefs, no_null = no_null, charsize = charsize, $
   endif
 
   xrange = pdefs.xrange
-  yrange = pdef s.yrange
+  yrange = pdefs.yrange
 
   if (xrange[0] eq xrange[1]) then begin
      graff_msg, pdefs.ids.message, ['WARNING: degenerate x-axis ' + $

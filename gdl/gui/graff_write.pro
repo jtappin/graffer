@@ -100,7 +100,7 @@ function Graff_write, pdefs, event, track_flag
                        (*pdefs.text)[1:*] $ 
                        
                     else if (imin eq pdefs.ntext-1) then $
-                       (*pdefs.text) = (*pdefs.text)[0:imin-1) $
+                       (*pdefs.text) = (*pdefs.text)[0:imin-1] $
                                        
                     else (*pdefs.text) = $
                        [(*pdefs.text)[0:imin-1], $

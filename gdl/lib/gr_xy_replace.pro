@@ -110,7 +110,7 @@ pro gr_xy_replace, pdefs, x, y, xerr = xerr, yerr = yerr, index = $
         status = 0
         return
      endif
-     if ctype ne 0 & n_elements(x) ne cndata then begin
+     if ctype ne 0 && n_elements(x) ne cndata then begin
         graff_msg, pdefs.ids.message, $
                    ["Dataset has error limits, no new values " + $
                     "supplied", $

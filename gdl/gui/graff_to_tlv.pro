@@ -36,31 +36,31 @@ function gr_tlv_event, event
 
         if widget_info(state.yeid, /valid) && state.names.y_err ne '' then $
            (scope_varfetch(state.names.y_err, level = 1, /enter)) = $
-           reform(*(state.xydata.y_err)[0, *]
+           reform(*(state.xydata.y_err)[0, *])
         
         if widget_info(state.yeidl, /valid) && $
            state.names.y_err_l[0] ne '' then $
               (scope_varfetch(state.names.y_err_l[0], level = 1, /enter)) = $
-           reform(*(state.xydata.y_err)[0, *]
+           reform(*(state.xydata.y_err)[0, *])
         
         if widget_info(state.yeidh, /valid) && $
            state.names.y_err_l[1] ne '' then $
               (scope_varfetch(state.names.y_err_l[1], level = 1, /enter)) = $
-           reform(*(state.xydata.y_err)[1, *]
+           reform(*(state.xydata.y_err)[1, *])
 
         if widget_info(state.xeid, /valid) && state.names.x_err ne '' then $
            (scope_varfetch(state.names.x_err, level = 1, /enter)) = $
-           reform(*(state.xydata.x_err)[0, *]
+           reform(*(state.xydata.x_err)[0, *])
         
         if widget_info(state.xeidl, /valid) && $
            state.names.x_err_l[0] ne '' then $
               (scope_varfetch(state.names.x_err_l[0], level = 1, /enter)) = $
-           reform(*(state.xydata.x_err)[0, *]
+           reform(*(state.xydata.x_err)[0, *])
         
         if widget_info(state.xeidh, /valid) && $
            state.names.x_err_l[1] ne '' then $
               (scope_varfetch(state.names.x_err_l[1], level = 1, /enter)) = $
-           reform(*(state.xydata.x_err)[1, *]
+           reform(*(state.xydata.x_err)[1, *])
         
         evr.exit = 1
      end

@@ -38,7 +38,7 @@ function gr_n_errors, type, x = x, y = y
   nxe = [0l, 0l, 0l, 1l, 2l, 1l, 1l, 2l, 2l]
   nye = [0l, 1l, 2l, 0l, 0l, 1l, 2l, 1l, 2l]
 
-  if keyword_set(x) then return nxe[type] 
+  if keyword_set(x) then return, nxe[type] 
   if keyword_set(y) then return, nye[type]
   return, [nxe[type], nye[type]]
 

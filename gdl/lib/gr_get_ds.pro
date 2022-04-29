@@ -345,9 +345,9 @@ pro Gr_get_ds, data, nset, ilu, msgid
                  xydata.x = ptr_new(reform(xyvals[0, *]))
                  xydata.y = ptr_new(reform(xyvals[1, *]))
                  if nerr[0] ne 0 then xydata.x_err = $
-                    ptr_new((xyvals[2:1+nerr[0], *])
-                 if nerr[01 ne 0 then xydata.y_err = $
-                    ptr_new((xyvals[2+nerr[0]:*, *])
+                    ptr_new(xyvals[2:1+nerr[0], *])
+                 if nerr[1] ne 0 then xydata.y_err = $
+                    ptr_new(xyvals[2+nerr[0]:*, *])
                  
                  readf, ilu, inline
                  if (strpos(inline, 'VE:') eq -1) then $

@@ -181,7 +181,7 @@ pro gr_cross_hair, pdefs, xy
                  pdefs.transient.opflag = 1b
               endif
            end
-    
+        endcase
      end
      4: begin                   ; Move point mode, draw the new line
                                 ; segment(s).
@@ -273,7 +273,7 @@ pro gr_cross_hair, pdefs, xy
                  pdefs.transient.opflag = 1b
               endif
            end
-    
+        endcase
       end 
      8: begin                   ; Delete point mode, circle
                                 ; the selected point.

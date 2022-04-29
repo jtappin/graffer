@@ -87,10 +87,10 @@ pro Gr_append, pdefs, n1, n2, delete = delete, sort = sort
         y1 = [y1[0:data[n1].ndata-1], y2[0:data[n2].ndata-1]]
         if xeflag then $
            xe1 = [[xe1[*, 0:data[n1].ndata-1]], $
-                  [xe2[*, 0:data[n2].ndata-1]]
+                  [xe2[*, 0:data[n2].ndata-1]]]
         if yeflag then $
            ye1 = [[ye1[*, 0:data[n1].ndata-1]], $
-                  [ye2[*, 0:data[n2].ndata-1]]
+                  [ye2[*, 0:data[n2].ndata-1]]]
      endelse
      
      if (keyword_set(sort)) then begin
