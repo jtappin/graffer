@@ -134,7 +134,9 @@ function Graff_draw, pdefs, event, track_flag
                                 ; and if the control key is pressed, then
                                 ; selects insert mode)
               if (ndata ge 1) then begin
-                 if (event.modifiers and 2l) eq 2 and ndata ge 2 then begin
+                 if (event.modifiers and 2l) eq 2 and ndata ge 2 then $
+                    begin
+                                ; Control, insert between points.
                     off = dblarr(ndata-1)
                     gr_coord_convert, xdatar, ydatar, ddx, ddy, $
                                       /data, /to_device
@@ -205,7 +207,8 @@ function Graff_draw, pdefs, event, track_flag
                                           "No segment is within 5 " + $
                                           "pixels of selected location" 
                  endif else if (event.modifiers and 1l) eq 1 and $
-                    ndata ge 2 then begin 
+                    ndata ge 2 then begin
+                                ; Shift at selected end
                     gr_coord_convert, xdatar, ydatar, ddx, ddy, $
                                       /data, /to_device
                     xy0 = [ddx[0],  ddy[0]]
@@ -241,6 +244,7 @@ function Graff_draw, pdefs, event, track_flag
                        gr_cross_hair, pdefs
                        pdefs.transient.mode = 4
                     endif else begin
+                                ; No mod at end.
                        gr_cross_hair, pdefs
                        pdefs.transient.mode = 2
                     endelse

@@ -21,13 +21,15 @@
 ;			errors as a 2-element array.
 ;	status	int	A named variable to return the status. (1 =
 ;			success, 0 = fail (not an XY dataset)).
+;	ndata	long	A variable to return the number of points in
+;			the dataset.
 ;
 ; History:
 ;	Original: 27/4/22; SJT
 ;-
 
 pro gr_xy_extract, pdefs, x, y, xerr, yerr, index = index, nerr = $
-                   nerr, status = status
+                   nerr, status = status, ndata = ndata
 
   if n_elements(index) eq 0 then index = pdefs.cset
 
@@ -40,6 +42,16 @@ pro gr_xy_extract, pdefs, x, y, xerr, yerr, index = index, nerr = $
      return
   endif
 
+  if ~ptr_valid(*(*pdefs.data)[pdefs.cset].xydata) || $
+     (*pdefs.data)[pdefs.cset].ndata eq 0 then ndata = 0l $
+  else ndata = (*pdefs.data)[pdefs.cset].ndata
+
+  if ndata eq 0 then begin      ; No data to extract.
+     nerr = [0l, 0l]
+     status = 1
+     return
+  endif
+  
   nerr = gr_n_errors((*pdefs.data)[index].type)
 
   x = *(*(*pdefs.data)[pdefs.cset].xydata).x
