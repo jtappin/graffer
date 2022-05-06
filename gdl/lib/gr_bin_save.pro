@@ -46,7 +46,7 @@ pro Gr_bin_save, pdefs, auto = auto
 
   if (keyword_set(auto)) then begin
      file = pdefs.dir+'#'+pdefs.name+'#'
-     graff_msg, pdefs.ids.message, 'Autosaving'
+     graff_msg, pdefs.ids.message, 'Autosaving', /help
   endif else begin
      if pdefs.dir ne './' then $
         file = pdefs.dir+pdefs.name $

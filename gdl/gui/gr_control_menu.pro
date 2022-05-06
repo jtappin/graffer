@@ -42,14 +42,14 @@ pro Gr_ctl_event, event
      ichange = 0b
      
      if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.hlptxt, ''
+        graff_msg, pdefs.ids.hlptxt, /help, ''
         goto, miss_case
      endif
   endif
 
   case event.value of
      'File.Exit': if track_flag then  $
-        graff_msg, pdefs.ids.hlptxt, 'EXIT from GRAFFER' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'EXIT from GRAFFER' $
      else begin
         if (pdefs.chflag) then begin
            case dialog_message(['Plot has been modified', $
@@ -75,11 +75,11 @@ pro Gr_ctl_event, event
         ichange = 0b
      end
      
-     'Hard Copy': graff_msg, pdefs.ids.hlptxt, 'Make PostScript version ' + $
+     'Hard Copy': graff_msg, pdefs.ids.hlptxt, /help, 'Make PostScript version ' + $
                              'of plot'
      
      'Hard Copy.Options ...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Define hardcopy parameters and ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Define hardcopy parameters and ' + $
                    'make copy' $
      else begin
         ichange = gr_hardopts(pdefs)
@@ -87,38 +87,38 @@ pro Gr_ctl_event, event
      endelse
      
      'Hard Copy.PostScript': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Make PS hardcopy' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Make PS hardcopy' $
      else begin
         graff_hard, pdefs, /redraw
         ichange = 0b
      endelse
      
      'Hard Copy.EPS': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Make EPS hardcopy' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Make EPS hardcopy' $
      else begin
         graff_hard, pdefs, /redraw, /encapsulated
         ichange = 0b
      endelse
 
      'Hard Copy.PDF': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Make PDF hardcopy' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Make PDF hardcopy' $
      else begin
         graff_hard, pdefs, /redraw, /pdf
         ichange = 0b
      endelse
 
      'Hard Copy.PDF (LaTeX)': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Make embeddable PDF hardcopy' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Make embeddable PDF hardcopy' $
      else begin
         graff_hard, pdefs, /redraw, /pdf, /encapsulated
         ichange = 0b
      endelse
 
  
-     'File': graff_msg, pdefs.ids.hlptxt, 'Saving and opening files'
+     'File': graff_msg, pdefs.ids.hlptxt, /help, 'Saving and opening files'
      
      'File.Save': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Save plot to currently selected ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Save plot to currently selected ' + $
                    'filename' $
      else begin
         graff_save, pdefs
@@ -127,7 +127,7 @@ pro Gr_ctl_event, event
      end
 
      'File.Save as ...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Save plot to new file name in ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Save plot to new file name in ' + $
                    'binary format' $
      else begin
         dir = pdefs.dir
@@ -146,7 +146,7 @@ pro Gr_ctl_event, event
         end
      end
      'File.Save ascii as ...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Save plot to new file name in ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Save plot to new file name in ' + $
                    'ascii format' $
      else begin
         dir = pdefs.dir
@@ -165,11 +165,11 @@ pro Gr_ctl_event, event
         endif
      end
      
-     'File.Dump screen': graff_msg, pdefs.ids.hlptxt, 'Make a screen ' + $
+     'File.Dump screen': graff_msg, pdefs.ids.hlptxt, /help, 'Make a screen ' + $
                                     'dump to an image file'
      
      'File.Dump screen.PNG': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Dump to PNG (Portable Network ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Dump to PNG (Portable Network ' + $
                    'Graphics) file' $ 
      else begin
         graff_dump, pdefs, /png
@@ -177,7 +177,7 @@ pro Gr_ctl_event, event
         idraw_flag = 0
      end
      'File.Dump screen.TIFF': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Dump to TIFF (Tagged Image File ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Dump to TIFF (Tagged Image File ' + $
                    'Format) file' $
      else begin
         graff_dump, pdefs, /tiff
@@ -185,7 +185,7 @@ pro Gr_ctl_event, event
         idraw_flag = 0
      end
      'File.Dump screen.Variable': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Save to a variable at the ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Save to a variable at the ' + $
                    '$MAIN$ level.' $
      else begin
         name = gr_name_wid(event.top)
@@ -195,7 +195,7 @@ pro Gr_ctl_event, event
         idraw_flag = 0
      end
      'File.Dump screen.Choose ...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Dump to any image format' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Dump to any image format' $
      else begin
         graff_dump, pdefs, /dialogue
         ichange = 0b
@@ -203,7 +203,7 @@ pro Gr_ctl_event, event
      end
 
      'File.Open ...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, $
+        graff_msg, pdefs.ids.hlptxt, /help, $
                    'Open a Graffer file or create a new file' $
      else begin
         if (pdefs.chflag) then begin
@@ -247,17 +247,17 @@ pro Gr_ctl_event, event
      end
      
      'Options...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Set special options' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Set special options' $
      else begin
         gr_opt_set, pdefs
         idraw_flag = 0
         ichange = 0b
      end
      
-     'Help':  graff_msg, pdefs.ids.hlptxt, 'Display help topics'
+     'Help':  graff_msg, pdefs.ids.hlptxt, /help, 'Display help topics'
 
      'Help.User Guide...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Show the User Guide' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Show the User Guide' $
      else begin
         graff_docs, pdefs
         idraw_flag = 0
@@ -265,7 +265,7 @@ pro Gr_ctl_event, event
      end
 
      'Help.File Format...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Show the file format description' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Show the file format description' $
      else begin
         graff_docs, pdefs, /file_format
         idraw_flag = 0
@@ -273,7 +273,7 @@ pro Gr_ctl_event, event
      end
 
      'Help.About...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Show a quick description of the ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Show a quick description of the ' + $
                    'version of GRAFFER.' $
      else begin
         msg = ['GRAFFER Version '+string(pdefs.version, format = $

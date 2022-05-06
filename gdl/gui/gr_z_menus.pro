@@ -35,9 +35,9 @@ pro Gr_z_event, event
                                 ; there's only 1 object in this
                                 ; handler's domain
      if (event.enter eq 0) then $
-        graff_msg, pdefs.ids.hlptxt, '' $
+        graff_msg, pdefs.ids.hlptxt, /help, '' $
      else graff_msg, pdefs.ids.hlptxt, 'Select contoured or ' + $
-                     '"image" display format'
+                     '"image" display format', /help
      
   endif else begin
      (*pdefs.data)[pdefs.cset].zopts.format = event.index

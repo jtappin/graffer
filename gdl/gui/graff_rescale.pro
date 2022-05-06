@@ -41,18 +41,19 @@ function Rescale_event, event
   if (track_flag) then begin
      idraw = 0
      if (event.enter eq 0) then begin
-        graff_msg, wids.msg, ''
+        graff_msg, wids.msg, '', /help
         goto, miss_case
      endif
   endif
 
   case (but) of
      'CANCEL': if (track_flag) then $
-        graff_msg, wids.msg, "Abandon operation and return" $
+        graff_msg, wids.msg, /help, "Abandon operation and return" $
      else iexit = -1
      
      'DO': if (track_flag) then $
-        graff_msg, wids.msg, "Apply scalings and shifts and return" $
+        graff_msg, wids.msg, /help, $
+                   "Apply scalings and shifts and return" $
      else  begin
         if widget_info(wids.boxes[4], /valid) then naxes = 3 $
         else naxes = 2
@@ -72,40 +73,46 @@ function Rescale_event, event
      endelse
      
      'XSCALE': if (track_flag) then $
-        graff_msg, wids.msg, "Specify scaling factor for X values" $
+        graff_msg, wids.msg, /help, $
+                   "Specify scaling factor for X values" $
      else cw_enter_focus, wids.boxes[1]
 
      'XSHIFT': if (track_flag) then $
-        graff_msg, wids.msg, $
+        graff_msg, wids.msg, /help, $
                    "Specify shift for X values (post scaling units)" $
      else cw_enter_focus, wids.boxes[2]
 
      'YSCALE': if (track_flag) then $
-        graff_msg, wids.msg, "Specify scaling factor for Y values" $
+        graff_msg, wids.msg, /help, $
+                   "Specify scaling factor for Y values" $
      else cw_enter_focus, wids.boxes[3]
 
      'YSHIFT': if (track_flag) then $
-        graff_msg, wids.msg, $
+        graff_msg, wids.msg, /help, $
                    "Specify shift for Y values (post scaling units)" $
      else cw_enter_focus, wids.boxes[0]
      
      'ZSCALE': if (track_flag) then $
-        graff_msg, wids.msg, "Specify scaling factor for Z values" $
+        graff_msg, wids.msg, /help, $
+                   "Specify scaling factor for Z values" $
      else cw_enter_focus, wids.boxes[4]
 
      'ZSHIFT': if (track_flag) then $
-        graff_msg, wids.msg, $
+        graff_msg, wids.msg, /help, $
                    "Specify shift for Z values (post scaling units)" $
      else cw_enter_focus, wids.boxes[5]
 
      'DIVX': if (track_flag) then $
-        graff_msg, wids.msg, 'Set to divide by the X scale factor'
+        graff_msg, wids.msg, /help, $
+                   'Set to divide by the X scale factor'
 
      'DIVY': if (track_flag) then $
-        graff_msg, wids.msg, 'Set to divide by the Y scale factor'
+        graff_msg, wids.msg, /help, $
+                   'Set to divide by the Y scale factor'
 
      'DIVZ': if (track_flag) then $
-        graff_msg, wids.msg, 'Set to divide by the Z scale factor'
+        graff_msg, wids.msg, /help, $
+                   'Set to divide by the Z scale factor'
 
   endcase
 

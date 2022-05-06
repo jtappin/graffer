@@ -46,7 +46,7 @@ pro Gr_axis_event, event
      idraw_flag = 0
      ichange = 0b
      if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.hlptxt, ''
+        graff_msg, pdefs.ids.hlptxt, /help, ''
         goto, miss_case
      endif
   endif
@@ -55,47 +55,47 @@ pro Gr_axis_event, event
                                 ; X-axis properties
      
      'XMIN': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter minimum value on X axis ' + $
-                   '(floating point)' $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Enter minimum value on X axis (floating point)' $
      else  pdefs.xrange[0] = event.value
      
      'XMAX': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter maximum value on X axis ' + $
-                   '(floating point)' $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Enter maximum value on X axis (floating point)' $
      else pdefs.xrange[1] = event.value
      
      'XSTY': begin
         val = strsplit(event.value, '/', /extr)
         if (n_elements(val) eq 1) then $
-           graff_msg, pdefs.ids.hlptxt, $
+           graff_msg, pdefs.ids.hlptxt, /help, $
                       'Select X-axis style options' $
         else case val[1] of
            'Logarithmic': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
                  'Toggle linear or logarithmic X axis' $
               else pdefs.xtype = event.select
            end
            'Exact Range': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Select exact  or ' + $
-                            'rounded X axis range' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Select exact  or rounded X axis range' $
               else if event.select  then  $
                  pdefs.xsty.idl = pdefs.xsty.idl or 1 $
               else pdefs.xsty.idl = pdefs.xsty.idl and (not 1)
            end
            'Extended Range': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch "Extended" ' + $
-                            'X-axis range on or off' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Switch "Extended" X-axis range on or off' $
               else if event.select then $
                  pdefs.xsty.idl = pdefs.xsty.idl or 2 $
               else pdefs.xsty.idl = pdefs.xsty.idl and (not 2)
            end
            'Draw Axes': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch drawing of X axes ' + $
-                            'on or off' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Switch drawing of X axes on or off' $
               else if event.select then $
                  pdefs.xsty.idl = pdefs.xsty.idl and (not 4) $
               else pdefs.xsty.idl = pdefs.xsty.idl or 4
@@ -110,24 +110,24 @@ pro Gr_axis_event, event
            end
            'Minor Ticks': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch drawing of ' + $
+                 graff_msg, pdefs.ids.hlptxt, /help, 'Switch drawing of ' + $
                             'X axis minor tick marks on or off' $
               else pdefs.xsty.minor = ~event.select
            end
            'Annotation': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch axis annotation ' + $
-                 'on or off' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Switch axis annotation on or off' $
               else if event.select then $
                  pdefs.xsty.extra = pdefs.xsty.extra and (not 4) $
               else pdefs.xsty.extra = pdefs.xsty.extra or 4
            end
            'Time Labelling': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch time-format ' + $
+                 graff_msg, pdefs.ids.hlptxt, /help, 'Switch time-format ' + $
                             'labelling of X axis on or off' $
               else if event.select then begin
-                 to = gr_tm_opts(pdefs.xsty.time, $ $
+                 to = gr_tm_opts(pdefs.xsty.time, $ 
                                  pdefs.xsty.tzero, group = $
                                  pdefs.ids.graffer)
                  pdefs.xsty.time = to(0)
@@ -137,8 +137,8 @@ pro Gr_axis_event, event
            end
            'Origin Axis': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Toggle inclusion of X ' + $
-                            'axis at Y=0' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Toggle inclusion of X axis at Y=0' $
               else if event.select then case val(2) of
                  "On": pdefs.xsty.extra = (pdefs.xsty.extra or 2) $
                                           and (not 8)
@@ -148,52 +148,54 @@ pro Gr_axis_event, event
            end
            'Grid': begin
               if (track_flag and (n_elements(val) eq 2)) then $
-                 graff_msg, pdefs.ids.hlptxt, 'Select X-grid options' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Select X-grid options' $
               else  case val[2] of
                  ' None ': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'No grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'No grid lines' $
                     else if event.select then pdefs.xsty.grid = 0
                  end
                  
                  '______': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Solid grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Solid grid lines' $
                     else if event.select then pdefs.xsty.grid = 1
                  end
                  
                  '......': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Dotted grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Dotted grid lines' $
                     else if event.select then pdefs.xsty.grid = 2
                  end
                  
                  '_ _ _ ': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Dashed grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Dashed grid lines' $
                     else if event.select then pdefs.xsty.grid = 3
                  end
                  '_._._.': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Dash-dot grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Dash-dot grid lines' $
                     else if event.select then pdefs.xsty.grid = 4
                  end
                  '_...  ': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, $
+                       graff_msg, pdefs.ids.hlptxt, /help, $
                                   'Dash dot dot dot grid lines' $
                     else if event.select then pdefs.xsty.grid = 5
                  end
                  '__  __': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Long dash grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, $
+                                  'Long dash grid lines' $
                     else if event.select then pdefs.xsty.grid = 6
                  end
               endcase
            end
            'Autoscale': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Adjust the X-axis ' + $
+                 graff_msg, pdefs.ids.hlptxt, /help, 'Adjust the X-axis ' + $
                             'scaling to accomodate current data' $
               else case val[2] of
                  'Extend': gr_autoscale, pdefs, /xaxis 
@@ -205,89 +207,91 @@ pro Gr_axis_event, event
            end
            'Advanced ...': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Advanced axis ' + $
-                            'settings for the X axis' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Advanced axis settings for the X axis' $
               else ichange = gr_axis_adv_menu( pdefs, /xaxis)
            end
         endcase
      end
      'XLAB': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter label for the X axis' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Enter label for the X axis' $
      else pdefs.xtitle = event.value
      
                                 ; Y Axis properties
 
      'YMIN': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter minimum value on Y axis ' + $
-                   '(floating point)' $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Enter minimum value on Y axis (floating point)' $
      else pdefs.yrange[0] = event.value
      
      'YMAX': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter maximum value on Y axis ' + $
-                   '(floating point)' $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Enter maximum value on Y axis (floating point)' $
      else pdefs.yrange[1] = event.value
      
      'YSTY': begin
         val = strsplit(event.value, '/', /extr)
         if (n_elements(val) eq 1) then $
-           graff_msg, pdefs.ids.hlptxt, $
+           graff_msg, pdefs.ids.hlptxt, /help, $
                       'Select Y-axis style options' $
         else case val[1] of
            'Logarithmic': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
                  'Toggle linear or logarithmic Y axis' $
               else pdefs.ytype = event.select
            end
            'Exact Range': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Select exact  or ' + $
-                            'rounded Y axis range' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Select exact  or rounded Y axis range' $
               else if event.select  then  $
                  pdefs.ysty.idl = pdefs.ysty.idl or 1 $
               else pdefs.ysty.idl = pdefs.ysty.idl and (not 1)
            end
            'Extended Range': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch "Extended" ' + $
-                            'Y-axis range on or off' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Switch "Extended" Y-axis range on or off' $
               else if event.select then $
                  pdefs.ysty.idl = pdefs.ysty.idl or 2 $
               else pdefs.ysty.idl = pdefs.ysty.idl and (not 2)
            end
            'Draw Axes': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch drawing of Y axes ' + $
-                            'on or off' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Switch drawing of Y axes on or off' $
               else if event.select then $
                  pdefs.ysty.idl = pdefs.ysty.idl and (not 4) $
               else pdefs.ysty.idl = pdefs.ysty.idl or 4
            end
            'Draw Box Axis': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch drawing of ' + $
-                            'right-hand Y axis on or off' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Switch drawing of right-hand Y axis on or off' $
               else if event.select then $
                  pdefs.ysty.idl = pdefs.ysty.idl and (not 8) $
               else pdefs.ysty.idl = pdefs.ysty.idl or 8
            end
            'Minor Ticks': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch drawing of ' + $
-                            'Y axis minor tick marks on or off' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Switch drawing of Y axis minor tick ' + $
+                            'marks on or off' $
               else pdefs.ysty.minor = ~event.select
            end
            'Annotation': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch axis annotation ' + $
-                 'on or off' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Switch axis annotation on or off' $
               else if event.select then $
                  pdefs.ysty.extra = pdefs.ysty.extra and (not 4) $
               else pdefs.ysty.extra = pdefs.ysty.extra or 4
            end
            'Time Labelling': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch time-format ' + $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Switch time-format ' + $
                             'labelling of Y axis on or off' $
               else if event.select then begin
                  to = gr_tm_opts(pdefs.ysty.time, $
@@ -301,7 +305,7 @@ pro Gr_axis_event, event
            'Origin Axis': begin
               if track_flag then $
                  graff_msg, pdefs.ids.hlptxt, 'Toggle inclusion of Y ' + $
-                            'axis at X=0' $
+                            'axis at X=0', /help $
               else if event.select then case val(2) of
                  "On": pdefs.ysty.extra = (pdefs.ysty.extra or 2) $
                                           and (not 8)
@@ -311,52 +315,53 @@ pro Gr_axis_event, event
            end
            'Grid': begin
               if (track_flag and (n_elements(val) eq 2)) then $
-                 graff_msg, pdefs.ids.hlptxt, 'Select Y-grid options' $
+                 graff_msg, pdefs.ids.hlptxt, /help, 'Select Y-grid options' $
               else case val[2] of
                  ' None ': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'No grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'No grid lines' $
                     else if event.select then pdefs.ysty.grid = 0
                  end
                  
                  '______': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Solid grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Solid grid lines' $
                     else if event.select then pdefs.ysty.grid = 1
                  end
                  
                  '......': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Dotted grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Dotted grid lines' $
                     else if event.select then pdefs.ysty.grid = 2
                  end
                  
                  '_ _ _ ': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Dashed grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Dashed grid lines' $
                     else if event.select then pdefs.ysty.grid = 3
                  end
                  '_._._.': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Dash-dot grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Dash-dot grid lines' $
                     else if event.select then pdefs.ysty.grid = 4
                  end
                  '_...  ': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, $
+                       graff_msg, pdefs.ids.hlptxt, /help, $
                                   'Dash dot dot dot grid lines' $
                     else if event.select then pdefs.ysty.grid = 5
                  end
                  '__  __': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Long dash grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, $
+                                  'Long dash grid lines' $
                     else if event.select then pdefs.ysty.grid = 6
                  end
               endcase
            end
            'Autoscale': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Adjust the Y-axis ' + $
+                 graff_msg, pdefs.ids.hlptxt, /help, 'Adjust the Y-axis ' + $
                             'scaling to accomodate current data' $
               else case val[2] of
                  'Extend': gr_autoscale, pdefs, /yaxis 
@@ -368,14 +373,15 @@ pro Gr_axis_event, event
            end
            'Advanced ...': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Advanced axis ' + $
+                 graff_msg, pdefs.ids.hlptxt, /help, 'Advanced axis ' + $
                             'settings for the Y axis' $
               else ichange = gr_axis_adv_menu( pdefs, /yaxis)
            end
         endcase
      end
      'YLAB': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter label for the Y axis' $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Enter label for the Y axis' $
      else begin
         pdefs.ytitle = event.value
      end
@@ -383,14 +389,14 @@ pro Gr_axis_event, event
                                 ; Right-hand Y axis settings
      'YrMIN': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, 'Enter minimum value on Y(r) axis ' + $
-                   '(floating point)' $
+                   '(floating point)' /help $
      else begin
         pdefs.yrange_r[0] = event.value
      end
      
      'YrMAX': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, 'Enter maximum value on Y(r) axis ' + $
-                   '(floating point)' $
+                   '(floating point)' /help, $
      else begin
         pdefs.yrange_r(1) = event.value
      end
@@ -398,18 +404,18 @@ pro Gr_axis_event, event
      'YrSTY': begin
         val = strsplit(event.value, '/', /extr)
         if n_elements(val) eq 1 then $
-           graff_msg, pdefs.ids.hlptxt, $
+           graff_msg, pdefs.ids.hlptxt, /help, $
                       'Select Y(r)-axis style options' $
         else case val[1] of
            'Logarithmic': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
                  'Toggle linear or logarithmic Y(r) axis' $
               else pdefs.ytype_r = event.select
            end
            'Exact Range': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Select exact or ' + $
+                 graff_msg, pdefs.ids.hlptxt, /help, 'Select exact or ' + $
                             'rounded Y(r) axis range' $
               else if event.select then $
                  pdefs.ysty_r.idl = pdefs.ysty_r.idl or 1 $
@@ -417,7 +423,7 @@ pro Gr_axis_event, event
            end
            'Extended Range': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch "Extended" ' + $
+                 graff_msg, pdefs.ids.hlptxt, /help, 'Switch "Extended" ' + $
                             'Y(r)-axis range on or off' $
               else if event.select then $
                  pdefs.ysty_r.idl = pdefs.ysty_r.idl or 2 $
@@ -425,7 +431,7 @@ pro Gr_axis_event, event
            end
            'Draw Axes': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
                             'Switch drawing of Y(r) axis on or off' $
               else if event.select then $
                  pdefs.ysty_r.idl = pdefs.ysty_r.idl and (not 4) $
@@ -435,14 +441,14 @@ pro Gr_axis_event, event
 
            'Minor Ticks': begin
               if track_flag then $
-                 graff_msg, pdefs.ids.hlptxt, 'Switch drawing of ' + $
+                 graff_msg, pdefs.ids.hlptxt, /help, 'Switch drawing of ' + $
                             'Y(r) axis minor tick marks on or off' $
               else pdefs.ysty_r.minor = ~event.select
            end
            'Annotation': begin
               if track_flag then $ $
                  graff_msg, pdefs.ids.hlptxt, 'Switch axis annotation ' + $
-                 'on or off' $
+                 'on or off', /help $
               else if event.select then $
                  pdefs.ysty_r.extra = pdefs.ysty_r.extra and (not 4) $
               else pdefs.ysty_r.extra = pdefs.ysty_r.extra or 4
@@ -450,7 +456,7 @@ pro Gr_axis_event, event
            'Time Labelling': begin
               if track_flag then $
                  graff_msg, pdefs.ids.hlptxt, 'Switch time-format ' + $
-                            'labelling of Y(r) axis on or off' $
+                            'labelling of Y(r) axis on or off', /help $
               else if event.select then begin
                  to = gr_tm_opts(pdefs.ysty_r.time, $
                                  pdefs.ysty_r.tzero, group = $
@@ -463,7 +469,7 @@ pro Gr_axis_event, event
            'Origin Axis': begin
               if track_flag then $
                  graff_msg, pdefs.ids.hlptxt, 'Toggle inclusion of Y(r) ' + $
-                            'axis at Y=0' $
+                            'axis at Y=0', /help $
               else if event.select then case val[2] of
                  "On": pdefs.ysty_r.extra = (pdefs.ysty_r.extra or 2) $
                                             and (not 8)
@@ -473,44 +479,47 @@ pro Gr_axis_event, event
            end
            'Grid': begin
               if (track_flag and (n_elements(val) eq 2)) then $
-                 graff_msg, pdefs.ids.hlptxt, 'Select Y(r)-grid options' $
+                 graff_msg, pdefs.ids.hlptxt, /help, $
+                            'Select Y(r)-grid options' $
               else if event.select then case val[2] of
                  ' None ': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'No grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'No grid lines' $
                     else if event.select then pdefs.ysty_r.grid = 0
                  end
                  
                  '______': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Solid grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Solid grid lines' $
                     else if event.select then pdefs.ysty_r.grid = 1
                  end
                  
                  '......': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Dotted grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Dotted grid lines' $
                     else if event.select then pdefs.ysty_r.grid = 2
                  end
                  '_ _ _ ': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Dashed grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, 'Dashed grid lines' $
                     else if event.select then pdefs.ysty_r.grid = 3
                  end
                  '_._._.': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Dash-dot grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help, $
+                                  'Dash-dot grid lines' $
                     else if event.select then pdefs.ysty_r.grid = 4
                  end
                  '_...  ': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, $
+                       graff_msg, pdefs.ids.hlptxt, /help, $
                                   'Dash dot dot dot grid lines' $
                     else if event.select then pdefs.ysty_r.grid = 5
                  end
                  '__  __': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, 'Long dash grid lines' $
+                       graff_msg, pdefs.ids.hlptxt, /help $
+                                  'Long dash grid lines' $
                     else if event.select then pdefs.ysty_r.grid = 6
                  end
               endcase
@@ -518,7 +527,7 @@ pro Gr_axis_event, event
            'Autoscale': begin
               if track_flag then $
                  graff_msg, pdefs.ids.hlptxt, 'Adjust the Y(r)-axis ' + $
-                            'scaling to accomodate current data' $
+                            'scaling to accomodate current data', /help $
               else case val[2] of
                  'Extend': gr_autoscale, pdefs, yaxis = 2  
                  'Extend or Shrink': gr_autoscale, pdefs, yaxis = $
@@ -530,13 +539,14 @@ pro Gr_axis_event, event
            'Advanced ...': begin
               if track_flag then $
                  graff_msg, pdefs.ids.hlptxt, 'Advanced axis ' + $
-                            'settings for the Y(r) axis' $
+                            'settings for the Y(r) axis', /help $
               else ichange = gr_axis_adv_menu(pdefs, yaxis = 2)
            end
         endcase
      end
      'YrLAB': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter label for the Y(r) axis' $
+        graff_msg, pdefs.ids.hlptxt,/help, $
+                   'Enter label for the Y(r) axis' $
      else pdefs.ytitle_r = event.value
 
   endcase

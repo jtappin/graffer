@@ -45,7 +45,8 @@ pro gr_ds_event, event
 
   case object of
      'DESC': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Give the current data set a ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Give the current data set a ' + $
                    'memorable description' $
      else begin
         (*pdefs.data)[pdefs.cset].descript = event.value
@@ -55,7 +56,7 @@ pro gr_ds_event, event
      endelse
 
      'CURRENT_ONLY': if track_flag then $ 
-        graff_msg, pdefs.ids.hlptxt, $
+        graff_msg, pdefs.ids.hlptxt, /help, $
                    "Toggle display of only the current DS" $
      else begin
         pdefs.transient.current_only = event.select

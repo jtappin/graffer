@@ -34,27 +34,27 @@ pro Img_event, event
   track_flag = strpos(tag_names(event, /struct), 'TRACK') ne -1
   if (track_flag) then begin
      if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.hlptxt, ''
+        graff_msg, pdefs.ids.hlptxt, /help, ''
         goto, miss_case
      endif
   endif
 
   case but of
      'R1': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Enter lower bound of range" $
+        graff_msg, pdefs.ids.hlptxt, /help, "Enter lower bound of range" $
      else begin
         widget_control, event.id, get_value = r1
         zopts.range[0] = r1
      endelse
      'R2': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Enter upper bound of range" $
+        graff_msg, pdefs.ids.hlptxt, /help, "Enter upper bound of range" $
      else begin
         widget_control, event.id, get_value = r2
         zopts.range[1] = r2
      endelse
 
      'PX': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Enter pixel size in mm for PS " + $
+        graff_msg, pdefs.ids.hlptxt, /help, "Enter pixel size in mm for PS " + $
                    "output" $
      else begin
         widget_control, event.id, get_value = px
@@ -62,20 +62,20 @@ pro Img_event, event
      endelse
 
      'LOG': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Use logarithmic colour scaling?" $
+        graff_msg, pdefs.ids.hlptxt, /help, "Use logarithmic colour scaling?" $
      else zopts.ilog = event.index
 
      'INVERT': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Invert the colour map?" $
+        graff_msg, pdefs.ids.hlptxt, /help, "Invert the colour map?" $
      else zopts.invert = event.select
      
      'TAB': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Select colour table" $
+        graff_msg, pdefs.ids.hlptxt, /help, "Select colour table" $
      else if localct then zopts.ctable = event.index+1 $
      else pdefs.table = event.index
 
      'GAM': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Set the gamma value for the colour " + $
+        graff_msg, pdefs.ids.hlptxt, /help, "Set the gamma value for the colour " + $
                    "map" $
      else begin
         widget_control, event.id, get_value = g
@@ -84,7 +84,7 @@ pro Img_event, event
      endelse
 
      'MISS': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Set a value for points " + $
+        graff_msg, pdefs.ids.hlptxt, /help, "Set a value for points " + $
                    "that don't map into the data" $
      else begin
         widget_control, event.id, get_value = m

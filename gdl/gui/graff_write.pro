@@ -31,8 +31,9 @@ function Graff_write, pdefs, event, track_flag
 ;-
 
   if (track_flag) then begin
-     graff_msg, pdefs.ids.hlptxt, 'Left ' + $
-                '= add string, Middle = edit string, Right = delete string'
+     graff_msg, pdefs.ids.hlptxt, /help, $
+                'Left = add string, Middle = edit string, ' + $
+                'Right = delete string'
      return, 0
   endif
 

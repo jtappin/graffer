@@ -283,7 +283,8 @@
 ;		      - Harmonization of IDL & Fortran versions
 ;		Version 5.00:
 ;		      - Mods to allow it to work in GDL as well as IDL.
-;		      - Add subirectory structure.
+;		      - Add subdirectory structure.
+;		      - Restructure XY dataset format.
 ;-
 
 
@@ -319,7 +320,7 @@ pro Graff_event, event
      if (event.enter eq 0) then begin
         graff_msg, pdefs.ids.hlptxt, ''
         case object of          ; Special actions for exit events
-           'AUTOSAVE': graff_msg, pdefs.ids.message, ''
+           'AUTOSAVE': graff_msg, pdefs.ids.message, '', /help
            Else:
         endcase
         goto, miss_case
@@ -329,7 +330,7 @@ pro Graff_event, event
   case object of
      'TEXT': if (track_flag) then begin
         graff_msg, pdefs.ids.hlptxt, 'Toggle between drawing and text ' + $
-                   'modes'
+                   'modes', /help
      endif else begin
         gr_td_mode, event.index, pdefs
         ichange = 0b
@@ -337,7 +338,7 @@ pro Graff_event, event
      end    
      
      'CROSS': if (track_flag) then begin
-        graff_msg, pdefs.ids.hlptxt, "Toggle display of crosshairs"
+        graff_msg, pdefs.ids.hlptxt, "Toggle display of crosshairs", /help
      endif else begin
         gr_cross_hair, pdefs
         pdefs.transient.hairs = event.select
@@ -346,7 +347,7 @@ pro Graff_event, event
 
      'QSAVE': if (track_flag) then $
         graff_msg, pdefs.ids.hlptxt, 'Save plot to currently selected ' + $
-                   'filename' $
+                   'filename', /help $
      else begin
         graff_save, pdefs
         ichange = 0b
@@ -375,7 +376,7 @@ pro Graff_event, event
      
      'TABS': if (track_flag) then $
         graff_msg, pdefs.ids.hlptxt, "Select global settings menus or " + $
-                   "dataset menus" $
+                   "dataset menus", /help $
      else begin
         ichange = 0b 
         if event.tab eq 1 then gr_show_colour, pdefs
@@ -383,11 +384,12 @@ pro Graff_event, event
 
      'YTABS': if (track_flag) then $
         graff_msg, pdefs.ids.hlptxt, "Select primary or secondary Y axis " + $
-                   "settings" $
+                   "settings", /help $
      else ichange = 0b          ; ignore
      
      'YRIGHT': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, "Enable/disable secondary Y-axis" $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   "Enable/disable secondary Y-axis" $
      else begin
         pdefs.y_right = event.select
         widget_control, pdefs.ids.ybase_r, sensitive = pdefs.y_right

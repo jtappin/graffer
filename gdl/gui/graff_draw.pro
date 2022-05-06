@@ -28,7 +28,7 @@ function Graff_draw, pdefs, event, track_flag
 
   if (track_flag) then begin
      if fl1d then $ 
-        graff_msg, pdefs.ids.hlptxt, $
+        graff_msg, pdefs.ids.hlptxt, /help, $
                    ['Left = add point, Middle = edit point, Right = ' + $
                     'delete point, C-Left = insert point,', $
                     'S-Left = add at nearer end, change modifier to cancel.']
