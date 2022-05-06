@@ -92,16 +92,19 @@ function Gr_z_read, pdefs, file, force = force, index = index
   (*pdefs.data)[index].ndata = abs(nx)
   (*pdefs.data)[index].ndata2 = abs(ny)
 
-  if (*pdefs.data)[index].type eq 9 then ptr_free, $
-     (*(*pdefs.data)[index].xydata).x, $
-     (*(*pdefs.data)[index].xydata).y, $
-     (*(*pdefs.data)[index].xydata).z $
-  else if (*pdefs.data)[index].type  ge 0 then ptr_free, $
-     (*(*pdefs.data)[index].xydata).x, $
-     (*(*pdefs.data)[index].xydata).y, $
-     (*(*pdefs.data)[index].xydata).x_err, $
-     (*(*pdefs.data)[index].xydata).y_err
-  
+  if ptr_valid((*pdefs.data)[index].xydata) then begin
+     if (*pdefs.data)[index].type eq 9 then ptr_free, $
+        (*(*pdefs.data)[index].xydata).x, $
+        (*(*pdefs.data)[index].xydata).y, $
+        (*(*pdefs.data)[index].xydata).z $
+     else if (*pdefs.data)[index].type  ge 0 then ptr_free, $
+        (*(*pdefs.data)[index].xydata).x, $
+        (*(*pdefs.data)[index].xydata).y, $
+        (*(*pdefs.data)[index].xydata).x_err, $
+        (*(*pdefs.data)[index].xydata).y_err
+     ptr_free, (*pdefs.data)[index].xydata
+  endif
+
   xydata = {graff_zdata}
 
   xydata.x = ptr_new(x)
@@ -110,7 +113,6 @@ function Gr_z_read, pdefs, file, force = force, index = index
   xydata.x_is_2d = nx lt 0
   xydata.y_is_2d = ny lt 0
 
-  ptr_free, (*pdefs.data)[index].xydata
   (*pdefs.data)[index].xydata = ptr_new(xydata)
   (*pdefs.data)[index].type = 9
 

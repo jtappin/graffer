@@ -299,18 +299,20 @@ function Gr_xy_wid, pdefs, line = line
         endif
         (*pdefs.data)[pdefs.cset].ndata = nact
 
-        if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-           (*(*pdefs.data)(pdefs.cset).xydata).x, $
-           (*(*pdefs.data)(pdefs.cset).xydata).y, $
-           (*(*pdefs.data)(pdefs.cset).xydata).z $
-        else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
-           (*(*pdefs.data)(pdefs.cset).xydata).x, $
-           (*(*pdefs.data)(pdefs.cset).xydata).y, $
-           (*(*pdefs.data)(pdefs.cset).xydata).x_err, $
-           (*(*pdefs.data)(pdefs.cset).xydata).y_err
-
-        ptr_free, (*pdefs.data)[pdefs.cset].xydata
-
+        if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+           if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+              (*(*pdefs.data)(pdefs.cset).xydata).x, $
+              (*(*pdefs.data)(pdefs.cset).xydata).y, $
+              (*(*pdefs.data)(pdefs.cset).xydata).z $
+           else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+              (*(*pdefs.data)(pdefs.cset).xydata).x, $
+              (*(*pdefs.data)(pdefs.cset).xydata).y, $
+              (*(*pdefs.data)(pdefs.cset).xydata).x_err, $
+              (*(*pdefs.data)(pdefs.cset).xydata).y_err
+           
+           ptr_free, (*pdefs.data)[pdefs.cset].xydata
+        endif
+        
         ner = gr_n_errors(ev.type)
         
         xydata = {graff_xydata}

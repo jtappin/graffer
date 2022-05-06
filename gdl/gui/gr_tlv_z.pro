@@ -324,18 +324,21 @@ function Gr_tlv_z, pdefs
   (*pdefs.data)[pdefs.cset].ndata = sz[1]
   (*pdefs.data)[pdefs.cset].ndata2 = sz[2]
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-     (*(*pdefs.data)[pdefs.cset].xydata).x, $
-     (*(*pdefs.data)[pdefs.cset].xydata).y, $
-     (*(*pdefs.data)[pdefs.cset].xydata).z $
-  else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
-     (*(*pdefs.data)[pdefs.cset].xydata).x, $
-     (*(*pdefs.data)[pdefs.cset].xydata).y, $
-     (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
-     (*(*pdefs.data)[pdefs.cset].xydata).y_err
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+        (*(*pdefs.data)[pdefs.cset].xydata).x, $
+        (*(*pdefs.data)[pdefs.cset].xydata).y, $
+        (*(*pdefs.data)[pdefs.cset].xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+        (*(*pdefs.data)[pdefs.cset].xydata).x, $
+        (*(*pdefs.data)[pdefs.cset].xydata).y, $
+        (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+        (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
 
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
+  
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
   (*pdefs.data)[pdefs.cset].type = 9
 

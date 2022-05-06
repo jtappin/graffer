@@ -51,16 +51,17 @@ function gr_func_copy, pdefs, index, force = force
                                   dialog_parent = pdefs.ids.graffer, $
                                   resource = "Graffer")
             if resp eq "No" then return, 0
-            if ttype eq 9 then ptr_free, $
-               (*(*pdefs.data)[pdefs.cset].xydata).x, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).z $
-            else if ttype ge 0 then ptr_free, $
-               (*(*pdefs.data)[pdefs.cset].xydata).x, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y_err
-
+            if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+               if ttype eq 9 then ptr_free, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).z $
+               else if ttype ge 0 then ptr_free, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y_err
+            endif
          endif
      endif else if ttype ne stype then begin 
         resp = dialog_message(["Current dataset and the source", $

@@ -141,21 +141,21 @@ pro Gr_dss_event, event
         graff_msg, pdefs.ids.hlptxt, 'Erase the values in the current ' + $
                    'data set' $
      else begin
-        if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-           (*(*pdefs.data)[pdefs.cset].xydata).x, $
-           (*(*pdefs.data)[pdefs.cset].xydata).y, $
-           (*(*pdefs.data)[pdefs.cset].xydata).z $
-        else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
-           (*(*pdefs.data)[pdefs.cset].xydata).x, $
-           (*(*pdefs.data)[pdefs.cset].xydata).y, $
-           (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
-           (*(*pdefs.data)[pdefs.cset].xydata).y_err
-
+        if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+           if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+              (*(*pdefs.data)[pdefs.cset].xydata).x, $
+              (*(*pdefs.data)[pdefs.cset].xydata).y, $
+              (*(*pdefs.data)[pdefs.cset].xydata).z $
+           else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+              (*(*pdefs.data)[pdefs.cset].xydata).x, $
+              (*(*pdefs.data)[pdefs.cset].xydata).y, $
+              (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+              (*(*pdefs.data)[pdefs.cset].xydata).y_err
+           ptr_free, (*pdefs.data)[pdefs.cset].xydata
+        endif
 
         (*pdefs.data)[pdefs.cset].ndata = 0
         (*pdefs.data)[pdefs.cset].type = 0
-        ptr_free, (*pdefs.data)[pdefs.cset].xydata
-
      end
      
      'Other/Delete': if (track_flag) then $
