@@ -89,12 +89,12 @@ endif else begin
 
     nerr = gr_n_errors((*pdefs.data)[index].type)
     ncc = 2 + nerr[0]+nerr[1]
-    xyvals = dblarr(nss, (*pdefs.data)[index].ndata)
+    xyvals = dblarr(ncc, (*pdefs.data)[index].ndata)
     
-    xyvals[0, *] = xydata.x
-    xyvals[1, *] = xydata.y
-    if nerr[0] ne 0 then xyvals[2:1+nerr[0], *] = xydata.x_err
-    if nerr[1] ne 0 then xyvals[2+nerr[0]:*, *] = xydata.y_err
+    xyvals[0, *] = *xydata.x
+    xyvals[1, *] = *xydata.y
+    if nerr[0] ne 0 then xyvals[2:1+nerr[0], *] = *xydata.x_err
+    if nerr[1] ne 0 then xyvals[2+nerr[0]:*, *] = *xydata.y_err
     
     fmt = string(ncc, format = "('(',I0,'G19.12)')")
     

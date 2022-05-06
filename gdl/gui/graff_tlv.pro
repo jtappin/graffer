@@ -434,12 +434,12 @@ function Graff_tlv, pdefs
   uvs.xbid = widget_base(base, $
                          /row)
   uvs.xid = cw_enter(uvs.xbid, $
-                        value = '', $
-                        /text, $
-                        uvalue = 'X', $
-                        label = 'X Variable:', $
-                        xsize = 12, $
-                        /capture)
+                     value = '', $
+                     /text, $
+                     uvalue = 'X', $
+                     label = 'X Variable:', $
+                     xsize = 12, $
+                     /capture)
   junk = widget_button(uvs.xbid, $
                        value = 'Pick...', $
                        uvalue = 'XP')
@@ -447,12 +447,12 @@ function Graff_tlv, pdefs
   uvs.ybid = widget_base(base, $
                          /row)
   uvs.yid = cw_enter(uvs.ybid, $
-                        value = '', $
-                        /text, $
-                        uvalue = 'Y', $
-                        label = 'Y Variable:', $
-                        xsize = 12, $
-                        /capture)
+                     value = '', $
+                     /text, $
+                     uvalue = 'Y', $
+                     label = 'Y Variable:', $
+                     xsize = 12, $
+                     /capture)
   junk = widget_button(uvs.ybid, $
                        value = 'Pick...', $
                        uvalue = 'YP')
@@ -460,12 +460,12 @@ function Graff_tlv, pdefs
   uvs.eloxbid = widget_base(base, $
                             /row)
   uvs.eloxid = cw_enter(uvs.eloxbid, $
-                           value = '', $
-                           /text, $
-                           uvalue = 'ELOX', $
-                           label = 'Lower X error:', $
-                           xsize = 12, $
-                           /capture)
+                        value = '', $
+                        /text, $
+                        uvalue = 'ELOX', $
+                        label = 'Lower X error:', $
+                        xsize = 12, $
+                        /capture)
   junk = widget_button(uvs.eloxbid, $
                        value = 'Pick...', $
                        uvalue = 'ELOXP')
@@ -475,12 +475,12 @@ function Graff_tlv, pdefs
   uvs.ehixbid = widget_base(base, $
                             /row)
   uvs.ehixid = cw_enter(uvs.ehixbid, $
-                           value = '', $
-                           /text, $
-                           uvalue = 'EHIX', $
-                           label = 'Upper X error:', $
-                           xsize = 12, $
-                           /capture)
+                        value = '', $
+                        /text, $
+                        uvalue = 'EHIX', $
+                        label = 'Upper X error:', $
+                        xsize = 12, $
+                        /capture)
   junk = widget_button(uvs.ehixbid, $
                        value = 'Pick...', $
                        uvalue = 'EHIXP')
@@ -490,12 +490,12 @@ function Graff_tlv, pdefs
   uvs.eloybid = widget_base(base, $
                             /row)
   uvs.eloyid = cw_enter(uvs.eloybid, $
-                           value = '', $
-                           /text, $
-                           uvalue = 'ELOY', $
-                           label = 'Lower Y error:', $
-                           xsize = 12, $
-                           /capture)
+                        value = '', $
+                        /text, $
+                        uvalue = 'ELOY', $
+                        label = 'Lower Y error:', $
+                        xsize = 12, $
+                        /capture)
   junk = widget_button(uvs.eloybid, $
                        value = 'Pick...', $
                        uvalue = 'ELOYP')
@@ -504,12 +504,12 @@ function Graff_tlv, pdefs
   uvs.ehiybid = widget_base(base, $
                             /row)
   uvs.ehiyid = cw_enter(uvs.ehiybid, $
-                           value = '', $
-                           /text, $
-                           uvalue = 'EHIY', $
-                           label = 'Upper Y error:', $
-                           xsize = 12, $
-                           /capture)
+                        value = '', $
+                        /text, $
+                        uvalue = 'EHIY', $
+                        label = 'Upper Y error:', $
+                        xsize = 12, $
+                        /capture)
   junk = widget_button(uvs.ehiybid, $
                        value = 'Pick...', $
                        uvalue = 'EHIYP')
@@ -583,18 +583,19 @@ function Graff_tlv, pdefs
   if ptr_valid(uvs.yerr) then xydata.y_err = ptr_new(*uvs.yerr)
   
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-     (*(*pdefs.data)(pdefs.cset).xydata).x, $
-     (*(*pdefs.data)(pdefs.cset).xydata).y, $
-     (*(*pdefs.data)(pdefs.cset).xydata).z $
-  else if (*pdefs.data)[pdefs.cset].type ge 0 then $
-     ptr_free, (*(*pdefs.data)(pdefs.cset).xydata).x, $
-               (*(*pdefs.data)(pdefs.cset).xydata).y, $
-               (*(*pdefs.data)(pdefs.cset).xydata).x_err, $
-               (*(*pdefs.data)(pdefs.cset).xydata).y_err
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+        (*(*pdefs.data)(pdefs.cset).xydata).x, $
+        (*(*pdefs.data)(pdefs.cset).xydata).y, $
+        (*(*pdefs.data)(pdefs.cset).xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then $
+        ptr_free, (*(*pdefs.data)(pdefs.cset).xydata).x, $
+                  (*(*pdefs.data)(pdefs.cset).xydata).y, $
+                  (*(*pdefs.data)(pdefs.cset).xydata).x_err, $
+                  (*(*pdefs.data)(pdefs.cset).xydata).y_err
 
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
-  
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
   (*pdefs.data)[pdefs.cset].ndata = n_elements(*uvs.x)
   (*pdefs.data)[pdefs.cset].type = uvs.type

@@ -117,11 +117,11 @@ pro Gr_as_xr, data, yrange, ytype, range, visible = visible, positive $
      end
      
      Else: begin                ; XY data, much easier (or it was)
-        yy = ((*data.xydata).y)[0:data.ndata-1]
-        xm = ((*data.xydata).x)[0:data.ndata-1]
+        yy = *(*data.xydata).y
+        xm = *(*data.xydata).x
         xp = xm
         if ptr_valid((*data.xydata).x_err) then begin
-           xe = ((*data.xydata).x_err)[*, 0:data.ndata-1]
+           xe = *(*data.xydata).x_err
            xe and= finite(xe)
            xm -= xe[0, *]
            xp += xe[-1, *]

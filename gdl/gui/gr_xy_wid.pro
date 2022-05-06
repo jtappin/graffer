@@ -168,7 +168,7 @@ function Gr_xy_wid, pdefs, line = line
   else begin
      ner = gr_n_errors((*pdefs.data)[pdefs.cset].type)
      ncol = 2 + ner[0] + ner[1]
-     xyvals = dblarr(ncols, (*pdefs.data)[pdefs.cset].ndata)
+     xyvals = dblarr(ncol, (*pdefs.data)[pdefs.cset].ndata)
      xyvals[0, *] = *(*(*pdefs.data)[pdefs.cset].xydata).x
      xyvals[1, *] = *(*(*pdefs.data)[pdefs.cset].xydata).y
      if ner[0] ne 0 then  $
@@ -313,9 +313,9 @@ function Gr_xy_wid, pdefs, line = line
 
         ner = gr_n_errors(ev.type)
         
-        xydata = {graff_data}
-        xydata.x = ptr_new(xyvals[0, *])
-        xydata.y = ptr_new(xyvals[1, *])
+        xydata = {graff_xydata}
+        xydata.x = ptr_new(reform(xyvals[0, *]))
+        xydata.y = ptr_new(reform(xyvals[1, *]))
         if ner[0] ne 0 then xydata.x_err = ptr_new(xyvals[2:ner[0]+1, *])
         if ner[1] ne 0 then xydata.y_err = ptr_new(xyvals[2+ner[0]:*, *])
         

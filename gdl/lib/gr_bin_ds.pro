@@ -55,7 +55,8 @@ pro Gr_bin_ds, data, nset, ilu, msgid
 
   while (not eof(ilu)) do begin
      
-     graff_get_rec, ilu, tag, value, tcode, nvals = nvals, ndims = ndims
+     graff_get_rec, ilu, tag, value, tcode, nvals = nvals, ndims = ndims, $
+                    dims = dims
      
                                 ; Recognised tags:
                                 ; J - Joining option
@@ -207,6 +208,12 @@ pro Gr_bin_ds, data, nset, ilu, msgid
                          "Number of data columns does not match DS type."
               continue
            endif
+
+; Handle the old practice of adding a dummy point to 1-element datasets
+           
+           if sv[2] eq 2 && data[nset].ndata eq 1 then $
+              xyvals = xyvals[*, 0]
+           
            xydata.x = ptr_new(reform(xyvals[0, *]))
            xydata.y = ptr_new(reform(xyvals[1, *]))
            if nerr[0] ne 0 then $
@@ -239,7 +246,10 @@ pro Gr_bin_ds, data, nset, ilu, msgid
         end
         'ZYS': begin
            yv = double(value)
-           xydata.y_is_2d = ndims eq 2
+                                ; Slight extra complication here as
+                                ; the Fortran version writes a 1-D Y
+                                ; as 1xN.
+           xydata.y_is_2d = ndims eq 2 && dims[0] gt 1
            xydata.y = ptr_new(yv)
         end
         'ZZS': begin

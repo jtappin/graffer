@@ -48,8 +48,8 @@ pro Gr_get_ds, data, nset, ilu, msgid
   while (not eof(ilu)) do begin
      
      readf, ilu, inline
-     tag_val = strsplit(inline, ':', /extr)
-     for itag = 0, n_elements(tag_val) - 2, 2 do begin
+     tag_val = strsplit(inline, ':', /extr, /preserve_null)
+     for itag = 0, n_elements(tag_val) - 1, 2 do begin
         
                                 ; Recognised tags:
                                 ; J - Joining option
@@ -77,7 +77,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
                                 ; VS, VE - start & end XY data.
                                 ; DE - end dataset
         
-        case (tag_val(itag)) of
+        case tag_val(itag) of
            
            'J': begin
               data[nset].pline = gr_int_val(tag_val(itag+1), 1)
@@ -337,9 +337,9 @@ pro Gr_get_ds, data, nset, ilu, msgid
                  ncols = gr_int_val(tag_val(itag+1), 1)
                  if (ncols ne elements(data[nset].type)) then $
                     graff_msg, msgid,  $
-                               "WARNING Data columns wrong could get corrupt " + $
+                               "WARNING Data columns wrong, could get corrupt " + $
                                "DS"
-                 xyvals = dblarr(ncols, data[nset].ndata > 2)
+                 xyvals = dblarr(ncols, data[nset].ndata)
                  readf, ilu, xyvals
                  nerr = gr_n_errors(data[nset].type)
                  xydata.x = ptr_new(reform(xyvals[0, *]))
@@ -350,10 +350,15 @@ pro Gr_get_ds, data, nset, ilu, msgid
                     ptr_new(xyvals[2+nerr[0]:*, *])
                  
                  readf, ilu, inline
-                 if (strpos(inline, 'VE:') eq -1) then $
-                    graff_msg, msgid, $
-                               "WARNING Data rows wrong could get corrupt " + $
-                               "DS"
+                 if (strpos(inline, 'VE:') eq -1) then begin
+; Older files had a dummy line for 1-element datasets (to trick
+; IDL's incompetent handling of N×1 arrays).
+                    if data[nset].ndata eq 1 then readf, ilu, inline
+                    if strpos(inline, 'VE:') eq -1 then $
+                       graff_msg, msgid, $
+                                  "WARNING Data rows wrong could get corrupt " + $
+                                  "DS"
+                 endif
               endelse
            end
            'ZXS': begin
@@ -399,7 +404,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
                  xydata.y = ptr_new(yv)
                  readf, ilu, inline
                  if (strpos(inline, 'ZYE:') eq -1) then $
-                    graff_msg, msgid, $
+                    graff_msg, msgid, $0.2!mmm, 20!mmm,
                                "WARNING Data Y count wrong could get corrupt " + $
                                "DS"
               endelse
@@ -431,19 +436,22 @@ pro Gr_get_ds, data, nset, ilu, msgid
               "WARNING: 2-D X data requested after X data " + $
               "acquired" $
            else xydata.x_is_2d = gr_byt_val(tag_val(itag+1), 1)
-           'ZY2': if ptr_valid(xydata.x) then graff_msg, msgid, $
-              "WARNING: 2-D X data requested after X data " + $
+           'ZY2': if ptr_valid(xydata.y) then graff_msg, msgid, $
+              "WARNING: 2-D Y data requested after Y data " + $
               "acquired" $
            else xydata.y_is_2d = gr_byt_val(tag_val(itag+1), 1)
 
-           'DE': goto, ds_read
+           'DE': begin
+              print, "++++++ END OF DS ++++++"
+              goto, ds_read
+           end
            
            Else: graff_msg, msgid, $
                             "Unknown Dataset tag "+tag_val(itag)+" - ignored"
         endcase
         
         
-        if (nflag and tflag and not dflag) then begin
+        if nflag && tflag && ~dflag then begin
            dflag = 1b
            case data[nset].type of
               -4: xydata = {graff_zfunct}
@@ -457,6 +465,8 @@ pro Gr_get_ds, data, nset, ilu, msgid
               Else: xydata = {graff_xydata}
            endcase
         endif
+        print,  tag_val(itag), nflag, tflag, dflag, nset
+        help, xydata
      endfor
      
      New_line:
@@ -479,4 +489,6 @@ Ds_read:
 
   data[nset].xydata = ptr_new(xydata)
 
+  print, "Done", nset
+  
 end

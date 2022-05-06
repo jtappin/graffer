@@ -24,43 +24,43 @@ function gr_tlv_event, event
 
         if widget_info(state.zid, /valid) && state.names.z ne '' then $
            (scope_varfetch(state.names.z, level = 1, /enter)) = $
-           *(state.xydata.z)
+           *state.xydata.z
            
         if widget_info(state.xid, /valid) && state.names.x ne '' then $
            (scope_varfetch(state.names.x, level = 1, /enter)) = $
-           *(state.xydata.x)
+           *state.xydata.x
         
         if widget_info(state.yid, /valid) && state.names.y ne '' then $
               (scope_varfetch(state.names.y, level = 1, /enter)) = $
-              *(state.xydata.y) 
+              *state.xydata.y 
 
         if widget_info(state.yeid, /valid) && state.names.y_err ne '' then $
            (scope_varfetch(state.names.y_err, level = 1, /enter)) = $
-           reform(*(state.xydata.y_err)[0, *])
+           reform((*state.xydata.y_err)[0, *])
         
         if widget_info(state.yeidl, /valid) && $
            state.names.y_err_l[0] ne '' then $
               (scope_varfetch(state.names.y_err_l[0], level = 1, /enter)) = $
-           reform(*(state.xydata.y_err)[0, *])
+           reform((*state.xydata.y_err)[0, *])
         
         if widget_info(state.yeidh, /valid) && $
            state.names.y_err_l[1] ne '' then $
               (scope_varfetch(state.names.y_err_l[1], level = 1, /enter)) = $
-           reform(*(state.xydata.y_err)[1, *])
+           reform((*state.xydata.y_err)[1, *])
 
         if widget_info(state.xeid, /valid) && state.names.x_err ne '' then $
            (scope_varfetch(state.names.x_err, level = 1, /enter)) = $
-           reform(*(state.xydata.x_err)[0, *])
+           reform((*state.xydata.x_err)[0, *])
         
         if widget_info(state.xeidl, /valid) && $
            state.names.x_err_l[0] ne '' then $
               (scope_varfetch(state.names.x_err_l[0], level = 1, /enter)) = $
-           reform(*(state.xydata.x_err)[0, *])
+           reform((*state.xydata.x_err)[0, *])
         
         if widget_info(state.xeidh, /valid) && $
            state.names.x_err_l[1] ne '' then $
               (scope_varfetch(state.names.x_err_l[1], level = 1, /enter)) = $
-           reform(*(state.xydata.x_err)[1, *])
+           reform((*state.xydata.x_err)[1, *])
         
         evr.exit = 1
      end
@@ -106,7 +106,7 @@ pro graff_to_tlv, pdefs
   data = (*pdefs.data)[pdefs.cset]
 
   if not ptr_valid(data.xydata) then return
-  xydata = (*data).xydata
+  xydata = *data.xydata
   
   if data.type lt 0 then return ; Not applicable to functions.
 

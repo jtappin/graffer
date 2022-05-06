@@ -44,7 +44,7 @@ pro gr_xy_replace, pdefs, x, y, xerr = xerr, yerr = yerr, index = $
 
   nx = n_elements(x)
   ny = n_elements(y)
-  
+
   if keyword_set(xerr) then begin
      sxe = size(xerr)
      if sxe[0] eq 1 then begin
@@ -75,6 +75,8 @@ pro gr_xy_replace, pdefs, x, y, xerr = xerr, yerr = yerr, index = $
   
   itype = gr_err_type(nxe, nye)
 
+  print, nxe, nye, itype, ctype
+  
   if nx ne ny then begin
      graff_msg, pdefs.ids.message, $
                 "X & Y have different lengths, cannot use."
@@ -110,19 +112,23 @@ pro gr_xy_replace, pdefs, x, y, xerr = xerr, yerr = yerr, index = $
         status = 0
         return
      endif
-     if ctype ne 0 && n_elements(x) ne cndata then begin
-        graff_msg, pdefs.ids.message, $
-                   ["Dataset has error limits, no new values " + $
-                    "supplied", $
-                    "Cannot change length of dataset unless " + $
-                    "/allow_type_change is set."]
-        status = 0
-        return
-     endif
+     ;; if ctype ne 0 && n_elements(x) ne cndata then begin
+     ;;    graff_msg, pdefs.ids.message, $
+     ;;               ["Dataset has error limits, no new values " + $
+     ;;                "supplied", $
+     ;;                "Cannot change length of dataset unless " + $
+     ;;                "/allow_type_change is set."]
+     ;;    status = 0
+     ;;    return
+     ;; endif
 
   endif
 
-  if ctype lt 0 || ctype gt 8 then begin ; Replace a non-XY dataset.
+  if ctype lt 0 || ctype gt 8 || $
+     ~ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin ; Replace
+                                ; a non-XY dataset, or initalize a new
+                                ; one.
+     
      if ctype eq 9 then begin   ; Replacing a Z dataset, need to free
         ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
                   (*(*pdefs.data)[pdefs.cset].xydata).y, $

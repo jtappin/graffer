@@ -123,11 +123,11 @@ pro Gr_as_yr, data, xrange, xtype, range, visible = visible, positive $
      end
      
      Else: begin
-        xx = ((*data.xydata).x)[0:data.ndata-1]
-        ym = ((*data.xydata).y)[0:data.ndata-1]
+        xx = *(*data.xydata).x
+        ym = *(*data.xydata).y
         yp = ym
         if ptr_valid((*data.xydata).y_err) then begin
-           ye = ((*data.xydata).y_err)[*, 0:data.ndata-1]
+           ye = *(*data.xydata).y_err
            ye and= finite(ye)
            ym -= ye[0, *]
            yp += ye[-1, *]

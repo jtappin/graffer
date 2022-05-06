@@ -56,9 +56,9 @@ nxt = 0l & nyt = 0l & nrt = 0l
 while (not eof(ilu)) do begin
     
     readf, ilu, inline
-    tag_val = strsplit(inline, ':', /extr)
+    tag_val = strsplit(inline, ':', /extr, /preserve_null)
     
-    for itag = 0, n_elements(tag_val) - 2, 2 do begin
+    for itag = 0, n_elements(tag_val) - 1, 2 do begin
         case (tag_val(itag)) of
             
                                 ; The G keys are general graffer keys

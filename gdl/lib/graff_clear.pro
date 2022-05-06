@@ -31,7 +31,8 @@ pro Graff_clear, pdefs
      if (*pdefs.data)[j].type eq 9 then ptr_free, $
         (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
         (*(*pdefs.data)[j].xydata).z $
-     else if (*pdefs.data)[j].type ge 0 then ptr_free, $
+     else if (*pdefs.data)[j].type ge 0 && $
+        ptr_valid((*pdefs.data)[j].xydata) then ptr_free, $
         (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
         (*(*pdefs.data)[j].xydata).x_err, $
         (*(*pdefs.data)[j].xydata).y_err

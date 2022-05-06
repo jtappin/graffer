@@ -141,18 +141,20 @@ function Gr_xy_read, pdefs, file, force = force, index = index
 
   (*pdefs.data)[index].ndata = nact
 
-  if (*pdefs.data)[index].type eq 9 then ptr_free, $
-     (*(*pdefs.data)[index].xydata).x, $
-     (*(*pdefs.data)[index].xydata).y, $
-     (*(*pdefs.data)[index].xydata).z $
-  else if (*pdefs.data)[index].type ge 0 then ptr_free, $
-     (*(*pdefs.data)[index].xydata).x, $
-     (*(*pdefs.data)[index].xydata).y, $
-     (*(*pdefs.data)[index].xydata).x_err, $
-     (*(*pdefs.data)[index].xydata).y_err
+  if ptr_valid((*pdefs.data)[index].xydata) then begin
+     if (*pdefs.data)[index].type eq 9 then ptr_free, $
+        (*(*pdefs.data)[index].xydata).x, $
+        (*(*pdefs.data)[index].xydata).y, $
+        (*(*pdefs.data)[index].xydata).z $
+     else if (*pdefs.data)[index].type ge 0 then ptr_free, $
+        (*(*pdefs.data)[index].xydata).x, $
+        (*(*pdefs.data)[index].xydata).y, $
+        (*(*pdefs.data)[index].xydata).x_err, $
+        (*(*pdefs.data)[index].xydata).y_err
+     
+     ptr_free, (*pdefs.data)[index].xydata
+  endif
   
-  ptr_free, (*pdefs.data)[index].xydata
-
   xydata = {graff_xydata}
   xydata.x = ptr_new(reform(xyvals[0, *]))
   xydata.y = ptr_new(reform(xyvals[1, *]))

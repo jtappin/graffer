@@ -199,9 +199,9 @@ pro Gr_bin_save, pdefs, auto = auto
            graff_put_rec, ilu, 'VX ', *xydata.x
            graff_put_rec, ilu, 'VY ', *xydata.y
            if ptr_valid(xydata.x_err) then $
-              graff_put_rec, ilu, 'VXE', *xydata.x_err
+              graff_put_rec, ilu, 'VXE', *xydata.x_err, /force_2d
            if ptr_valid(xydata.y_err) then $
-              graff_put_rec, ilu, 'VYE', *xydata.y_err
+              graff_put_rec, ilu, 'VYE', *xydata.y_err, /force_2d
         endelse
      endif
                                 ; We only need to save the 2-D
@@ -230,7 +230,7 @@ pro Gr_bin_save, pdefs, auto = auto
         if zopts.n_cols gt 0 then begin
            graff_put_rec, ilu, 'ZC ', *(zopts.colours)
            if ptr_valid(zopts.raw_colours) then $
-              graff_put_rec, ilu, 'ZCR', *(zopts.raw_colours)
+              graff_put_rec, ilu, 'ZCR', *(zopts.raw_colours), /force_2d
         endif
 
         if zopts.n_sty gt 0 then graff_put_rec, ilu, 'ZS ', $

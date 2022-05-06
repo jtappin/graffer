@@ -54,21 +54,31 @@ function gr_xy_copy, pdefs, index, force = force
      if ans eq 'No' then return, 0
   endif
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-     (*(*pdefs.data)[pdefs.cset].xydata).x, $
-     (*(*pdefs.data)[pdefs.cset].xydata).y, $
-     (*(*pdefs.data)[pdefs.cset].xydata).z $
-  else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
-     (*(*pdefs.data)[pdefs.cset].xydata).x, $
-     (*(*pdefs.data)[pdefs.cset].xydata).y, $
-     (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
-     (*(*pdefs.data)[pdefs.cset].xydata).y_err
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+        (*(*pdefs.data)[pdefs.cset].xydata).x, $
+        (*(*pdefs.data)[pdefs.cset].xydata).y, $
+        (*(*pdefs.data)[pdefs.cset].xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+        (*(*pdefs.data)[pdefs.cset].xydata).x, $
+        (*(*pdefs.data)[pdefs.cset].xydata).y, $
+        (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+        (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
 
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
 
-  (*pdefs.data)[pdefs.cset].xydata = $
-     ptr_new(*(*pdefs.data)[index].xydata)
+  xydata = {graff_xydata}
+  xydata.x = ptr_new(*(*(*pdefs.data)[index].xydata).x)
+  xydata.y = ptr_new(*(*(*pdefs.data)[index].xydata).y)
+
+  if ptr_valid((*(*pdefs.data)[index].xydata).x_err) then $
+     xydata.x_err = ptr_new(*(*(*pdefs.data)[index].xydata).x_err)
+  if ptr_valid((*(*pdefs.data)[index].xydata).y_err) then $
+     xydata.y_err = ptr_new(*(*(*pdefs.data)[index].xydata).y_err)
+  
+  (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
 
   (*pdefs.data)[pdefs.cset].type = (*pdefs.data)[index].type
   (*pdefs.data)[pdefs.cset].ndata = (*pdefs.data)[index].ndata

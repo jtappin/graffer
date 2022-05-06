@@ -32,7 +32,7 @@ pro gr_xy_extract, pdefs, x, y, xerr, yerr, index = index, nerr = $
                    nerr, status = status, ndata = ndata
 
   if n_elements(index) eq 0 then index = pdefs.cset
-
+  
   if (*pdefs.data)[index].type lt 0 || $
      (*pdefs.data)[index].type gt 8 then begin
      graff_msg, pdefs.ids.message, $
@@ -42,10 +42,10 @@ pro gr_xy_extract, pdefs, x, y, xerr, yerr, index = index, nerr = $
      return
   endif
 
-  if ~ptr_valid(*(*pdefs.data)[pdefs.cset].xydata) || $
-     (*pdefs.data)[pdefs.cset].ndata eq 0 then ndata = 0l $
-  else ndata = (*pdefs.data)[pdefs.cset].ndata
-
+  if ~ptr_valid((*pdefs.data)[index].xydata) || $
+     (*pdefs.data)[index].ndata eq 0 then ndata = 0l $
+  else ndata = (*pdefs.data)[index].ndata
+  
   if ndata eq 0 then begin      ; No data to extract.
      nerr = [0l, 0l]
      status = 1
@@ -53,12 +53,14 @@ pro gr_xy_extract, pdefs, x, y, xerr, yerr, index = index, nerr = $
   endif
   
   nerr = gr_n_errors((*pdefs.data)[index].type)
-
-  x = *(*(*pdefs.data)[pdefs.cset].xydata).x
-  y = *(*(*pdefs.data)[pdefs.cset].xydata).y
+  
+  x = *(*(*pdefs.data)[index].xydata).x
+  y = *(*(*pdefs.data)[index].xydata).y
   if nerr[0] gt 0 && arg_present(xerr) then xerr = $
-     *(*(*pdefs.data)[pdefs.cset].xydata).x_err
+     *(*(*pdefs.data)[index].xydata).x_err
   if nerr[1] gt 0 && arg_present(yerr) then yerr = $
-     *(*(*pdefs.data)[pdefs.cset].xydata).y_err
+     *(*(*pdefs.data)[index].xydata).y_err
 
+  status = 1
+  
 end

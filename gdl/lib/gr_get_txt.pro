@@ -34,8 +34,8 @@ ffflag = 0b
 while (not eof(ilu)) do begin
     
     readf, ilu, inline
-    tag_val = strsplit(inline, ':', /extr)
-    for itag = 0, n_elements(tag_val) - 2, 2 do begin
+    tag_val = strsplit(inline, ':', /extr, /preserve_null)
+    for itag = 0, n_elements(tag_val) - 1, 2 do begin
         case (tag_val(itag)) of
             
                                 ; Recognized tags for Text items

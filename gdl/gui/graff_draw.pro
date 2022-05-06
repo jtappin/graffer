@@ -61,7 +61,7 @@ function Graff_draw, pdefs, event, track_flag
   endif
   
   gr_xy_extract, pdefs, xvals, yvals, xerrs, yerrs, ndata = ndata, $
-                 nerrs = nerrs, status = status
+                 nerr = nerrs, status = status
 
   if status ne 1 then begin
      graff_msg, pdefs.ids.message,  $ 
@@ -73,25 +73,28 @@ function Graff_draw, pdefs, event, track_flag
 ; convert the event position to real data coordinates.
   
   case ((*pdefs.data)[pdefs.cset].mode) of
+     0: xyd = xy
+     1: xyd = [sqrt(total(xy^2)), atan(xy[1], xy[0])]
+     2: xyd = [sqrt(total(xy^2)), atan(xy[1], xy[0])*!Radeg]
+  endcase
+  
+  if ndata gt 0 then case ((*pdefs.data)[pdefs.cset].mode) of
      0: begin
-        xyd = xy
         xdatar = xvals
         ydatar = yvals
      end
      1: begin
-        xyd = [sqrt(total(xy^2)), atan(xy[1], xy[0])]
         xdatar = xvals * cos(yvals)
         ydatar = xvals * sin(yvals)
      end
      2: begin
-        xyd = [sqrt(total(xy^2)), atan(xy[1], xy[0])*!Radeg]
         xdatar = xvals * cos(yvals*!dtor)
         ydatar = xvals * sin(yvals*!dtor)
      end
   endcase
 
   ichange = 0
-
+ 
 ; Handle the press events first.
 
   case event.press of
@@ -125,14 +128,14 @@ function Graff_draw, pdefs, event, track_flag
            if imin ge 0 then begin
               gr_cross_hair, pdefs
               pdefs.transient.imove = imin
-              pdef.transient.mode = 2
+              pdefs.transient.mode = 2
            endif
         endif else if (event.modifiers and 2l) eq 1l && $
            ndata ge 2 then begin
 
                                 ; If shift is pressed, then attach
                                 ; point at nearer end.
-            
+           
            gr_coord_convert, xdatar[[0, -1]], ydatar[[0, -1]], ddx, $
                              ddy, /data, /to_device
 
@@ -143,18 +146,18 @@ function Graff_draw, pdefs, event, track_flag
            else pdefs.transient.imove = ndata
 
            gr_cross_hair, pdefs
-           pdef.transient.mode = 2
+           pdefs.transient.mode = 2
 
         endif else begin
            pdefs.transient.imove = ndata
 
            gr_cross_hair, pdefs
-           pdef.transient.mode = 2
+           pdefs.transient.mode = 2
         endelse
      end
 
-     4: begin                   ; Right button select point to delete.
-         
+     4: if ndata ge 1 then begin ; Right button select point to delete.
+        
         gr_nearest, xdatar, ydatar, event.x, event.y, imin, md, $
                     max = 5.d
 
@@ -165,7 +168,7 @@ function Graff_draw, pdefs, event, track_flag
         endif else graff_msg, pdefs.ids.message, $
                               "No datum within 5 pixels of " + $
                               "selected location" 
-     end
+     endif
 
      else:                      ; Not a press event.
   endcase
@@ -195,19 +198,29 @@ function Graff_draw, pdefs, event, track_flag
         if (event.modifiers and 3) eq 0 then begin ; Pressing CTRL or
                                 ; shift before release is cancel.
 
+           help, xvals, yvals, xerrs, yerrs
            case pdefs.transient.imove of
               0: begin
-                 xvals = [xyd[0], xvals]
-                 yvals = [xyd[1], yvals]
-
-                 if nerrs[0] ne 0 then $
-                    xerrs = [[dblarr(nerrs[0])], [xerrs]]
-                 if nerrs[1] ne 0 then $
-                    yerrs = [[dblarr(nerrs[1])], [yerrs]]
+                 if ndata gt 0 then begin
+                    xvals = [xyd[0], xvals]
+                    yvals = [xyd[1], yvals]
+                    if nerrs[0] ne 0 then $
+                       xerrs = [[dblarr(nerrs[0])], [xerrs]]
+                    if nerrs[1] ne 0 then $
+                       yerrs = [[dblarr(nerrs[1])], [yerrs]]
+                 endif else begin
+                    xvals = xyd[0]
+                    yvals = xyd[1]
+                    if nerrs[0] ne 0 then $
+                       xerrs = [[dblarr(nerrs[0])]]
+                    if nerrs[1] ne 0 then $
+                       yerrs = [[dblarr(nerrs[1])]]
+                 endelse
+                 
               end
               ndata: begin
                  xvals = [xvals, xyd[0]]
-                 yvals = [yvals, xyd[1], yvals]
+                 yvals = [yvals, xyd[1]]
 
                  if nerrs[0] ne 0 then $
                     xerrs = [[xerrs], [dblarr(nerrs[0])]]
@@ -231,7 +244,8 @@ function Graff_draw, pdefs, event, track_flag
                              [yerrs[*, imp:*]]]
               end
            endcase
- 
+           help, xvals, yvals, xerrs, yerrs
+
            gr_xy_replace, pdefs, xvals, yvals, xerr = xerrs, $
                           yerr = yerrs
 
@@ -293,8 +307,9 @@ function Graff_draw, pdefs, event, track_flag
   endcase
 
   if event.type eq 2 && pdefs.transient.mode eq 8 then begin
-     gr_nearest, xdatar, ydatar, xd, yd, ddx, ddy, max = 5.
-        
+     gr_nearest, xdatar, ydatar, event.x, event.y, imin, md, $
+                 ddx, ddy, max = 5.
+     
      if imin eq -1 then begin
         pdefs.transient.imove = -1
         gr_cross_hair, pdefs
@@ -308,5 +323,6 @@ function Graff_draw, pdefs, event, track_flag
                   (*pdefs.data)[pdefs.cset].type ge 0 && $ 
                   (*pdefs.data)[pdefs.cset].ndata gt 0
 
-        
+
+  return, ichange
 end

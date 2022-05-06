@@ -30,7 +30,8 @@ pro graff_update, file, idx, name = name, polar = polar, $
                   z_mode = z_mode, x_scale = x_scale, $
                   y_scale = y_scale, x_shift = x_shift, $
                   y_shift = y_shift, z_scale = z_scale, $
-                  z_shift = z_shift, retain_unset = retain_unset
+                  z_shift = z_shift, retain_unset = retain_unset, $
+                  delete = delete
 
 ;+
 ; GRAFF_UPDATE
@@ -63,6 +64,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;                  y_scale = y_scale, x_shift = x_shift, $
 ;                  y_shift = y_shift,  z_scale = z_scale, $
 ;                  z_shift = z_shift, retain_unset = retain_unset
+;                  delete=delete
 ;
 ; Arguments:
 ;	file	string	input	The graffer file to modify.
@@ -161,6 +163,10 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;	/retain_unset	input	If set, then unspecified data fields
 ;				are retained when a subset of data
 ;				fields is given.
+;	/delete			If set, then delete the dataset. Will
+;				prompt for verification. Either an
+;				index or a name must be explicitly
+;				given.
 ;
 ; Restrictions:
 ;	Does not allow changing dataset type.
@@ -183,6 +189,8 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ; 	If specified, error limits must provide all errors.
 ; 	If a dataset has errors, but no new ones are given, then
 ; 	unchanged axes retain their errors, while changed axes lose theirs.
+; 	If /delete is given, then all other keywords apart from /ascii
+; 	and name are ignored.
 ; 	
 ; History:
 ;	Original (after graff_add): 20/12/11; SJT
@@ -198,6 +206,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
 ;	Start extraction of data updates: 1/4/22; SJT
 ;	/Retain_unset should now work: 2/4/22; SJT
 ;	Add Z shift & scale: 5/4/22; SJT
+;	Add /delete: 4/5/22; SJT
 ;-
 
   on_error, 2                   ; Return to caller on error
@@ -275,6 +284,27 @@ pro graff_update, file, idx, name = name, polar = polar, $
      return
   endif
 
+  if keyword_set(delete) then begin
+     if n_params() eq 1 && ~keyword_set(name) then begin
+        print, "Dataset to be deleted must be explicitly specified."
+        status = 0
+        return
+     endif
+     ans = ''
+     desc = (*pdefs.data)[index].descript
+     print, "Do you really want to delete dataset", index+1
+     print, "containing: ", desc
+     read, ans, prompt = "[y/N] :_"
+     if ans ne '' && truth(ans) then $
+        graff_dsdel, pdefs, index, /noprompt
+     if (keyword_set(ascii)) then gr_asc_save, pdefs $
+     else gr_bin_save, pdefs
+     graff_clear, pdefs
+
+     status = 1
+     return
+  endif
+  
   dataflag = keyword_set(x_values) || keyword_set(y_values) || $
              keyword_set(z_values) || keyword_set(errors) || $
              keyword_set(x_errors) || keyword_set(y_errors)
