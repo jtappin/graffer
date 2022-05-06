@@ -84,8 +84,8 @@ function Graff_funct, pdefs, y_funct = y_funct
 
   if ((*pdefs.data)[pdefs.cset].type eq -1 or $
       (*pdefs.data)[pdefs.cset].type eq -2) then begin 
-     funct = (*pdefs.data)[pdefs.cset].xydata.funct
-     range = (*pdefs.data)[pdefs.cset].xydata.range
+     funct = (*(*pdefs.data)[pdefs.cset].xydata).funct
+     range = (*(*pdefs.data)[pdefs.cset].xydata).range
      numpts = (*pdefs.data)[pdefs.cset].ndata
      dflag = 0b
   endif else begin
@@ -95,13 +95,14 @@ function Graff_funct, pdefs, y_funct = y_funct
                            'FUNCTION, ENTERING A SIMPLE FUNCTION', $
                            'WILL OVERWRITE IT', $
                            'DO YOU REALLY WANT TO DO THIS?'], $ $
-                          /question, dialog_parent = pdefs.ids.graffer, $
+                          /question, dialog_parent = $
+                          pdefs.ids.graffer, $
                           resource = 'Graffer') eq 'No' then return, 0
      
      funct = ''
      range = dblarr(2)
      numpts = 25
- endelse
+  endelse
 
   widget_control, pdefs.ids.graffer, sensitive = 0
 
@@ -182,17 +183,19 @@ function Graff_funct, pdefs, y_funct = y_funct
 
   (*pdefs.data)[pdefs.cset].ndata = ev.numpts 
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then $
-     ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).z $
-  else if (*pdefs.data)[pdefs.cset].type ge 0 then $
-     ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y_err
-  
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then $
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then $
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y_err
+     
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
   
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
   if (keyword_set(y_funct)) then (*pdefs.data)[pdefs.cset].type = -2 $

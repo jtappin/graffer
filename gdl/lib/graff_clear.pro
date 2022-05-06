@@ -28,16 +28,17 @@ pro Graff_clear, pdefs
 ;-
 
   for j = 0, pdefs.nsets-1 do begin
-     if (*pdefs.data)[j].type eq 9 then ptr_free, $
-        (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
-        (*(*pdefs.data)[j].xydata).z $
-     else if (*pdefs.data)[j].type ge 0 && $
-        ptr_valid((*pdefs.data)[j].xydata) then ptr_free, $
-        (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
-        (*(*pdefs.data)[j].xydata).x_err, $
-        (*(*pdefs.data)[j].xydata).y_err
+     if ptr_valid((*pdefs.data)[j].xydata) then begin
+        if (*pdefs.data)[j].type eq 9 then ptr_free, $
+           (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
+           (*(*pdefs.data)[j].xydata).z $
+        else if (*pdefs.data)[j].type ge 0 then ptr_free, $
+           (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
+           (*(*pdefs.data)[j].xydata).x_err, $
+           (*(*pdefs.data)[j].xydata).y_err
      
-     ptr_free, (*pdefs.data)[j].xydata
+        ptr_free, (*pdefs.data)[j].xydata
+     endif
      ptr_free, (*pdefs.data)[j].zopts.levels, $
                (*pdefs.data)[j].zopts.style, $
                (*pdefs.data)[j].zopts.thick, $

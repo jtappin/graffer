@@ -84,8 +84,8 @@ function Graff_pfunct, pdefs
 ;	Find if the dataset is already defined as a function
 
   if ((*pdefs.data)[pdefs.cset].type eq -3) then begin
-     funct = (*pdefs.data)[pdefs.cset].xydata.funct
-     range = (*pdefs.data)[pdefs.cset].xydata.range
+     funct = (*(*pdefs.data)[pdefs.cset].xydata).funct
+     range = (*(*pdefs.data)[pdefs.cset].xydata).range
      numpts = (*pdefs.data)[pdefs.cset].ndata
      dflag = 0b
   endif else begin
@@ -93,9 +93,11 @@ function Graff_pfunct, pdefs
      if dflag then $
         if dialog_message(['CURRENT DATA SET IS NOT A PARAMETRIC', $
                            'FUNCTION, ENTERING A PARAMETRIC FUNCTION', $
+                           $
                            'WILL OVERWRITE IT', $
                            'DO YOU REALLY WANT TO DO THIS?'], $ $
-                          /question, dialog_parent = pdefs.ids.graffer, $
+                          /question, dialog_parent = $
+                          pdefs.ids.graffer, $
                           resource = 'Graffer') eq 'No' then return, 0
 
      funct = strarr(2)
@@ -170,6 +172,7 @@ function Graff_pfunct, pdefs
 
   widget_control, tlb, /real
   widget_control, base, set_uvalue = uvs, event_func = 'pfunct_event', $
+                  $
                   /no_copy
 
   repeat begin
@@ -188,17 +191,19 @@ function Graff_pfunct, pdefs
 
   (*pdefs.data)[pdefs.cset].ndata = ev.numpts 
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then $
-     ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).z $
-  else if (*pdefs.data)[pdefs.cset].type ge 0 then $
-     ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y_err
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then $
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then $
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
 
   (*pdefs.data)[pdefs.cset].type = -3

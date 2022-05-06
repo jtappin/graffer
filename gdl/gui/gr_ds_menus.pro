@@ -342,7 +342,7 @@ pro Gr_ds_menus, optbb, pdefs
 
   pdefs.ids.mode = widget_droplist(jjb, $
                                    value = ['Rect', 'Polar', $
-                                            'Polar (°)'], $
+                                            'Polar (Â°)'], $
                                    uvalue = 'POLAR', $
                                    track = optblock.track, $
                                    title = 'Coords:')

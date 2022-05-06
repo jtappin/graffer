@@ -82,11 +82,6 @@ function Graff_zfunct, pdefs
 
 ;	Find if the dataset is already defined as a 2-D function
 
-  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) && $
-     n_elements(*((*pdefs.data)[pdefs.cset].xydata)) gt 0 then $
-        xydata = *(*pdefs.data)[pdefs.cset].xydata $
-  else xydata = dblarr(2)
-
   if ((*pdefs.data)[pdefs.cset].type eq -4) then begin
      funct = xydata.funct
      range = xydata.range
@@ -215,12 +210,20 @@ function Graff_zfunct, pdefs
   (*pdefs.data)[pdefs.cset].ndata = ev.numpts[0]
   (*pdefs.data)[pdefs.cset].ndata2 = ev.numpts[1]
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then $
-     ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).z
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then $
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then $
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
+  
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
   (*pdefs.data)[pdefs.cset].type = -4
 

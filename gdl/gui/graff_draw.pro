@@ -30,9 +30,8 @@ function Graff_draw, pdefs, event, track_flag
      if fl1d then $ 
         graff_msg, pdefs.ids.hlptxt, $
                    ['Left = add point, Middle = edit point, Right = ' + $
-                    'delete point', $
-                    'C-Left = insert point, S-Left = add at ' + $
-                    'nearer end, C|S @ release = cancel.']
+                    'delete point, C-Left = insert point,', $
+                    'S-Left = add at nearer end, change modifier to cancel.']
      return, 0
   endif
 
@@ -108,6 +107,7 @@ function Graff_draw, pdefs, event, track_flag
               pdefs.transient.imove = imin 
               gr_cross_hair, pdefs
               pdefs.transient.mode = 4
+              pdefs.transient.modifier = event.modifiers
            endif else graff_msg, pdefs.ids.message, $
                                  "No datum within 5 pixels of " + $
                                  "selected location" 
@@ -116,6 +116,7 @@ function Graff_draw, pdefs, event, track_flag
      
      1: begin                   ; Left button, initial insert.
         
+        pdefs.transient.modifier = event.modifiers
         if (event.modifiers and 2l) eq 2l && $
            ndata ge 2 then begin
 
@@ -165,6 +166,7 @@ function Graff_draw, pdefs, event, track_flag
            pdefs.transient.imove = imin 
            gr_cross_hair, pdefs
            pdefs.transient.mode = 8
+           pdefs.transient.modifier = event.modifiers
         endif else graff_msg, pdefs.ids.message, $
                               "No datum within 5 pixels of " + $
                               "selected location" 
@@ -179,8 +181,9 @@ function Graff_draw, pdefs, event, track_flag
      2: if pdefs.transient.mode eq 4 then begin ; Commit a move.
         
         gr_cross_hair, pdefs
-        if (event.modifiers and 3) eq 0 then begin ; Pressing CTRL or
-                                ; shift before release is cancel.
+        if event.modifiers eq pdefs.transient.modifier then begin
+                                ; Changing the modifier key(s)
+                                ; before release is cancel.
 
            xvals[pdefs.transient.imove] = xyd[0]
            yvals[pdefs.transient.imove] = xyd[1]
@@ -195,10 +198,9 @@ function Graff_draw, pdefs, event, track_flag
      1: if pdefs.transient.mode eq 2 then begin ; Commit an addition
         
         gr_cross_hair, pdefs
-        if (event.modifiers and 3) eq 0 then begin ; Pressing CTRL or
-                                ; shift before release is cancel.
-
-           help, xvals, yvals, xerrs, yerrs
+        if event.modifiers eq  pdefs.transient.modifier then begin
+                                ; Changing the modifier key(s)
+                                ; before release is cancel.
            case pdefs.transient.imove of
               0: begin
                  if ndata gt 0 then begin
@@ -244,7 +246,6 @@ function Graff_draw, pdefs, event, track_flag
                              [yerrs[*, imp:*]]]
               end
            endcase
-           help, xvals, yvals, xerrs, yerrs
 
            gr_xy_replace, pdefs, xvals, yvals, xerr = xerrs, $
                           yerr = yerrs
@@ -256,11 +257,12 @@ function Graff_draw, pdefs, event, track_flag
      endif
 
      4: if pdefs.transient.mode eq 8 then begin ; Commit a delete.
-
+        
         gr_cross_hair, pdefs
-        if (event.modifiers and 3) eq 0 && $
-           pdefs.transient.imove ge 0 then begin ; Pressing CTRL or
-                                ; shift before release is cancel.
+        if event.modifiers eq pdefs.transient.modifier && $
+           pdefs.transient.imove ge 0 then begin 
+                                ; Changing the modifier key(s)
+                                ; before release is cancel.
 
            case pdefs.transient.imove of
               0: begin          ; First point
@@ -281,7 +283,7 @@ function Graff_draw, pdefs, event, track_flag
 
               else: begin       ; any other
                  imm = pdefs.transient.imove-1
-                 imp = pdefs.transient.imove
+                 imp = pdefs.transient.imove+1
                  
                  xvals = [xvals[0:imm], xvals[imp:*]]
                  yvals = [yvals[0:imm], yvals[imp:*]]
@@ -309,6 +311,10 @@ function Graff_draw, pdefs, event, track_flag
   if event.type eq 2 && pdefs.transient.mode eq 8 then begin
      gr_nearest, xdatar, ydatar, event.x, event.y, imin, md, $
                  ddx, ddy, max = 5.
+
+                                ; When in delete mode, moving the
+                                ; cursor away from  the selected point
+                                ; deselects it.
      
      if imin eq -1 then begin
         pdefs.transient.imove = -1

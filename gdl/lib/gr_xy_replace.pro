@@ -34,6 +34,7 @@ pro gr_xy_replace, pdefs, x, y, xerr = xerr, yerr = yerr, index = $
                    index, status = status, allow_type_change = atc
 
 
+  msgid = pdefs.ids.message
   if n_elements(index) eq 0 then index = pdefs.cset
   
 ; Pull these out so that we don't have to mess around with too
@@ -75,8 +76,6 @@ pro gr_xy_replace, pdefs, x, y, xerr = xerr, yerr = yerr, index = $
   
   itype = gr_err_type(nxe, nye)
 
-  print, nxe, nye, itype, ctype
-  
   if nx ne ny then begin
      graff_msg, pdefs.ids.message, $
                 "X & Y have different lengths, cannot use."
@@ -168,7 +167,8 @@ pro gr_xy_replace, pdefs, x, y, xerr = xerr, yerr = yerr, index = $
 
 
   (*pdefs.data)[pdefs.cset].ndata = nx
-  (*pdefs.data)[pdefs.cset].type = itype
+  if keyword_set(act) then $
+     (*pdefs.data)[pdefs.cset].type = itype
 
   status = 1
 
