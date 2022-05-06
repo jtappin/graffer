@@ -299,7 +299,7 @@ pro Graff_event, event
   if (sp eq 3) then begin
      base = widget_info(/child, pdefs)
      widget_control, base, get_uvalue = pdefs
-  end else if (sp ne 8) then begin
+  endif else if (sp ne 8) then begin
      message, /continue, "** O U C H ** Corrupted internal data - " + $
               "bailing out"
      widget_control, event.top, /destroy
