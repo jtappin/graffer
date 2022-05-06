@@ -396,7 +396,7 @@ pro Gr_axis_event, event
      
      'YrMAX': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, 'Enter maximum value on Y(r) axis ' + $
-                   '(floating point)' /help, $
+                   '(floating point)' /help $
      else begin
         pdefs.yrange_r(1) = event.value
      end
@@ -518,7 +518,7 @@ pro Gr_axis_event, event
                  end
                  '__  __': begin
                     if track_flag then $
-                       graff_msg, pdefs.ids.hlptxt, /help $
+                       graff_msg, pdefs.ids.hlptxt, /help, $
                                   'Long dash grid lines' $
                     else if event.select then pdefs.ysty_r.grid = 6
                  end

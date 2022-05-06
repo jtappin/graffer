@@ -318,7 +318,7 @@ pro Graff_event, event
      ichange = 0b
      
      if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.hlptxt, ''
+        graff_msg, pdefs.ids.hlptxt, '', /help
         case object of          ; Special actions for exit events
            'AUTOSAVE': graff_msg, pdefs.ids.message, '', /help
            Else:
@@ -397,6 +397,11 @@ pro Graff_event, event
         widget_control, pdefs.ids.y_axis, sensitive = pdefs.y_right
         widget_control, pdefs.ids.x_origin, sensitive = ~pdefs.y_right
      endelse
+
+     'RECALL': if track_flag then $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   "Recall past diagnostic messages." $
+     else graff_msg_recall, pdefs.ids.graffer
      
      Else: begin
         graff_msg, pdefs.ids.message, 'Unknown UVALUE: '+object
@@ -700,6 +705,10 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
 
   pdefs.ids.hlptxt = pdefs.ids.message
 
+  junk = widget_button(tjb, $
+                       value = 'Recall', $
+                       uvalue = 'RECALL')
+  
                                 ; A box to show if the plot is changed
                                 ; since the last save.
 
