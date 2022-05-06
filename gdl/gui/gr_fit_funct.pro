@@ -87,8 +87,8 @@ function Gr_fit_funct, pdefs, ftype, npt, slice, fset, pr, resid, $
         4: good = where(finite(x) and finite(y), ngood)            ; Piecewise
         1: good = where(finite(x) and finite(y) and y gt 0, ngood) ; Exp
         2: good = where(finite(x) and finite(y) and x gt 0, ngood) ; Log
-        3: good = where(finite(x) and finite(y) and x gt 0 and y gt 0, $
-                        ngood)  ; Power-law
+        3: good = where(finite(x) and finite(y) and x gt 0 $
+                        and y gt 0, ngood) ; Power-law
      endcase
      
      if ngood eq 0 then begin
@@ -162,17 +162,20 @@ function Gr_fit_funct, pdefs, ftype, npt, slice, fset, pr, resid, $
 
   (*pdefs.data)[pdefs.cset].ndata = npt
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then $      ; Overwriting a 2-D
-     ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ; dataset
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).z $
-  else if (*pdefs.data)[pdefs.cset].type ge 0 then $
-          ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ 
-                    (*(*pdefs.data)[pdefs.cset].xydata).y, $
-                    (*(*pdefs.data)[pdefs.cset].xydata).x_err, $ 
-                    (*(*pdefs.data)[pdefs.cset].xydata).y_err
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then $      ; Overwriting a 2-D
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ; dataset
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then $
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ 
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).x_err, $ 
+                  (*(*pdefs.data)[pdefs.cset].xydata).y_err
+     
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
   
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
   (*pdefs.data)[pdefs.cset].type = fftype
 

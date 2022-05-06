@@ -177,9 +177,8 @@ pro Gr_plot_object, pdefs, no_null = no_null, charsize = charsize, $
      opf = !P.font
      
      for j = 0, pdefs.ntext-1 do $
-        gr_pl_text, (*pdefs.text)[i], csiz, no_null = $
+        gr_pl_text, (*pdefs.text)[j], csiz, no_null = $
                     keyword_set(no_null) 
-     
 
      !P.font = opf
      

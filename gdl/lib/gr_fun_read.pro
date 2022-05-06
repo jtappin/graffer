@@ -34,117 +34,119 @@ function Gr_fun_read, pdefs, file, force = force
 ;	Eliminate obsolete findfile call: 16/4/12; SJT
 ;-
 
-dflag = ((*pdefs.data)[pdefs.cset].ndata gt 0) and $
-        ((*pdefs.data)[pdefs.cset].type ge 0) and ~keyword_set(force)
+  dflag = ((*pdefs.data)[pdefs.cset].ndata gt 0) and $
+          ((*pdefs.data)[pdefs.cset].type ge 0) and ~keyword_set(force)
 
-if (dflag) then $
-  if dialog_message(['CURRENT DATA SET IS NOT A', $
-                     'FUNCTION, READING A FUNCTION', $
-                     'WILL OVERWRITE IT', $
-                     'DO YOU REALLY WANT TO DO THIS?'], $ 
-                    /question, dialog_parent = pdefs.ids.graffer, $
-                    resource = 'Graffer') eq 'No' then return, 0
+  if (dflag) then $
+     if dialog_message(['CURRENT DATA SET IS NOT A', $
+                        'FUNCTION, READING A FUNCTION', $
+                        'WILL OVERWRITE IT', $
+                        'DO YOU REALLY WANT TO DO THIS?'], $ 
+                       /question, dialog_parent = pdefs.ids.graffer, $
+                       resource = 'Graffer') eq 'No' then return, 0
 
-if file_test(pdefs.ds_dir, /directory) then path = pdefs.ds_dir $
-else cd, current = path
+  if file_test(pdefs.ds_dir, /directory) then path = pdefs.ds_dir $
+  else cd, current = path
 
-if (n_elements(file) gt 0 && file_test(file)) then begin
-    f = file
-    if (file_dirname(f) ne '.') then pdefs.ds_dir = file_dirname(f)
-endif else begin
-    widget_control, pdefs.ids.graffer, sensitive = 0
-    f = dialog_pickfile(filter = '*.dat', title = 'Graffer function ' + $
-                        'data', $
-                        /must, path = path, dialog_parent = $
-                        pdefs.ids.graffer, $
-                        get_path = newpath, resource = 'Graffer')
-    widget_control, pdefs.ids.graffer, sensitive = 1
+  if (n_elements(file) gt 0 && file_test(file)) then begin
+     f = file
+     if (file_dirname(f) ne '.') then pdefs.ds_dir = file_dirname(f)
+  endif else begin
+     widget_control, pdefs.ids.graffer, sensitive = 0
+     f = dialog_pickfile(filter = '*.dat', title = 'Graffer function ' + $
+                         'data', $
+                         /must, path = path, dialog_parent = $
+                         pdefs.ids.graffer, $
+                         get_path = newpath, resource = 'Graffer')
+     widget_control, pdefs.ids.graffer, sensitive = 1
 
-    if (f eq '') then return, 0
+     if (f eq '') then return, 0
 
-    pdefs.ds_dir = newpath
-endelse
+     pdefs.ds_dir = newpath
+  endelse
 
-on_ioerror, badfile
+  on_ioerror, badfile
 
-openr, ilu, /get, f
+  openr, ilu, /get, f
 
-dv = ''
-readf, ilu, dv
+  dv = ''
+  readf, ilu, dv
 
-case strcompress(/remove, strupcase(dv)) of
-    'Y': begin
+  case strcompress(/remove, strupcase(dv)) of
+     'Y': begin
         range = dblarr(2)
         nval = 0
         func = ''
         type = -1
-    end
-    'X': begin
+     end
+     'X': begin
         range = dblarr(2)
         nval = 0
         func = ''
         type = -2
-    end
-    'XY': begin
+     end
+     'XY': begin
         range = dblarr(2)
         nval = 0
         func = strarr(2)
         type = -3
-    end
-    'Z': begin
+     end
+     'Z': begin
         range = dblarr(2, 2)
         nval = intarr(2)
         func = ''
         type = -4
-    end
-    Else: begin
+     end
+     Else: begin
         free_lun, ilu
         graff_msg, pdefs.ids.message, ["Graffer function read " + $
                                        "failed:",  $
                                        "Unknown function type code"]
         return, 0
-    end
-endcase
+     end
+  endcase
 
-readf, ilu, range
-readf, ilu, nval
-readf, ilu, func
+  readf, ilu, range
+  readf, ilu, nval
+  readf, ilu, func
 
-free_lun, ilu
+  free_lun, ilu
 
 
-(*pdefs.data)[pdefs.cset].ndata = nval(0)
-if (type eq -4) then (*pdefs.data)[pdefs.cset].ndata2 = nval(1)
+  (*pdefs.data)[pdefs.cset].ndata = nval(0)
+  if (type eq -4) then (*pdefs.data)[pdefs.cset].ndata2 = nval(1)
 
-if (type eq -1 or type eq -2) then xydata = {graff_funct} $
-else if (type eq -3) then xydata = {graff_pfunct} $
-     else xydata = {graff_zfunct}
+  if (type eq -1 or type eq -2) then xydata = {graff_funct} $
+  else if (type eq -3) then xydata = {graff_pfunct} $
+  else xydata = {graff_zfunct}
 
-xydata.Range = range
-xydata.Funct = func
+  xydata.Range = range
+  xydata.Funct = func
 
-if (*pdefs.data)[pdefs.cset].type eq 9 then $ ; Overwriting a 2-D
-   ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ;  dataset
-             (*(*pdefs.data)[pdefs.cset].xydata).y, $
-             (*(*pdefs.data)[pdefs.cset].xydata).z $
-else if (*pdefs.data)[pdefs.cset].type ge 0 then $; Overwriting a 1-D
-   ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ; dataset
-             (*(*pdefs.data)[pdefs.cset].xydata).y, $
-             (*(*pdefs.data)[pdefs.cset].xydata).x_err, $ 
-             (*(*pdefs.data)[pdefs.cset].xydata).y_err
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then $      ; Overwriting a 2-D
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ;  dataset
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then $ ; Overwriting a 1-D
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $ ; dataset
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).x_err, $ 
+                  (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
-ptr_free, (*pdefs.data)[pdefs.cset].xydata
-(*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
+  
+  (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
+  (*pdefs.data)[pdefs.cset].type = type
 
-(*pdefs.data)[pdefs.cset].type = type
-
-return, 1
+  return, 1
 
 Badfile:
 
-graff_msg, pdefs.ids.message, ["Graffer function read failed:", $
-                               !Err_string]
+  graff_msg, pdefs.ids.message, ["Graffer function read failed:", $
+                                 !Err_string]
 
-return, 0
+  return, 0
 
 end
