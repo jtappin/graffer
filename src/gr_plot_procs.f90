@@ -46,18 +46,30 @@ contains
   ! ERROR BARS 
   ! ********************************************
 
-  subroutine gr_plot_xy_errors(index, x, y, xerr, yerr)
+  subroutine gr_plot_xy_errors(index,iseg)
     integer, intent(in) :: index
-    real(kind=plflt), intent(in), dimension(:) :: x, y
-    real(kind=plflt), intent(in), dimension(:,:) :: xerr, yerr
+    integer, dimension(2), intent(in) :: iseg
+    
+    real(kind=plflt), pointer, dimension(:) :: x, y
+    real(kind=plflt), pointer, dimension(:,:) :: xerr, yerr
 
     ! Error bars for regular XY plots
 
+    integer :: nbar
+    
     real(kind=plflt), allocatable, dimension(:) :: elo, ehi
     type(graff_data), pointer :: data
     logical :: xlog, ylog
 
     data => pdefs%data(index)
+
+    x => data%xydata%x
+    y => data%xydata%y
+
+    if (allocated(data%xydata%x_err)) xerr => data%xydata%x_err
+    if (allocated(data%xydata%y_err)) yerr => data%xydata%y_err
+
+    nbar = iseg(2)-iseg(1)+1
     call gr_plot_linesty(0_int16)
 
     xlog = pdefs%axtype(1) == 1
@@ -67,38 +79,41 @@ contains
        ylog = pdefs%axtype(2) == 1
     end if
 
-    allocate(elo(data%ndata), &
-         & ehi(data%ndata))
+    allocate(elo(nbar), ehi(nbar))
 
     !    call plsmin(0._plflt, data%symsize)
-    if (size(yerr) > 0) then
-       elo = y - yerr(1,:)
+    if (allocated(data%xydata%y_err)) then
+       elo = y(iseg(1):iseg(2)) - yerr(1,iseg(1):iseg(2))
        if (size(yerr,1) == 2) then
-          ehi = y + yerr(2,:)
+          ehi = y(iseg(1):iseg(2)) + yerr(2,iseg(1):iseg(2))
        else
-          ehi = y + yerr(1,:)
+          ehi = y(iseg(1):iseg(2)) + yerr(1,iseg(1):iseg(2))
        end if
        if (ylog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .false.)
+       call gr_rect_errors(x(iseg(1):iseg(2)), y(iseg(1):iseg(2)), &
+            & elo, ehi, data%symsize, .false.)
     end if
-    if (size(xerr) > 0) then
-       elo = x - xerr(1,:)
+    
+    if (allocated(data%xydata%x_err)) then
+       elo = x(iseg(1):iseg(2)) - xerr(1,iseg(1):iseg(2))
        if (size(xerr,1) == 2) then
-          ehi = x + xerr(2,:)
+          ehi = x(iseg(1):iseg(2)) + xerr(2,iseg(1):iseg(2))
        else
-          ehi = x + xerr(1,:)
+          ehi = x(iseg(1):iseg(2)) + xerr(1,iseg(1):iseg(2))
        end if
        if (xlog) then
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call gr_rect_errors(x, y, elo, ehi, data%symsize, .true.)
+       call gr_rect_errors(x(iseg(1):iseg(2)), y(iseg(1):iseg(2)), &
+            & elo, ehi, data%symsize, .true.)
     end if
         
     !    call plsmin(0._plflt, 1._plflt)
+    nullify(x,y,xerr,yerr)
     
   end subroutine gr_plot_xy_errors
 

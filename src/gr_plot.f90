@@ -232,6 +232,7 @@ contains
        call plinit()
 
        gr_is_widget = .false.
+       selected_device = device
     else
        if (present(area)) then
           plotting_area = area
@@ -256,10 +257,11 @@ contains
        gr_is_widget = .true.
 !!$       call plxormod(.false., status)
 !!$       call gtk_widget_set_sensitive(xhair_but, f_c_logical(status))
+       selected_device = 'widget'
     end if
     call plfontld(1)
     gr_plot_is_open = .true.
-    call plgdev(selected_device)
+
 !    call plsesc(ichar('!'))
 
   end subroutine gr_plot_open
@@ -308,15 +310,20 @@ contains
     call plend
     gr_plot_is_open = .false.
 
-    if (selected_device == 'pscairo' .and. hardset%action(1) /= '') then
+    if (selected_device == 'ps' .and. hardset%action(1) /= '') then
        call execute_command_line(trim(hardset%action(1))//' '//&
             & trim(local_name)//'.ps '//trim(hardset%action(2)))
-    else if ((selected_device == 'epsqt' .or. &
-         & selected_device == 'epscairo') .and. &
+    else if (selected_device == 'eps' .and. &
          & hardset%viewer(1) /= '') then
        call execute_command_line(trim(hardset%viewer(1))//' '//&
             & trim(local_name)//'.eps '//&
             & trim(hardset%viewer(2)), &
+            & wait=.false.)
+    else if ((selected_device == 'pdf' .or. &
+         & selected_device == 'epdf') .and. hardset%pdfviewer(1) /= '') then
+       call execute_command_line(trim(hardset%pdfviewer(1))//' '//&
+            & trim(local_name)//'.pdf '//&
+            & trim(hardset%pdfviewer(2)), &
             & wait=.false.)
     end if
 
@@ -640,9 +647,7 @@ contains
     if (data%type > 0) then
        if (data%mode == 0) then
           do i = 1, nseg
-             call gr_plot_xy_errors(index, x(isegb(1,i):isegb(2,i)), &
-                  & y(isegb(1,i):isegb(2,i)), xerr(:,isegb(1,i):isegb(2,i)), &
-                  &  yerr(:,isegb(1,i):isegb(2,i)))
+             call gr_plot_xy_errors(index,isegb(:,i))
           end do
        else
           call gr_plot_rt_errors(index)

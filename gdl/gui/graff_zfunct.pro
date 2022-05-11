@@ -83,6 +83,7 @@ function Graff_zfunct, pdefs
 ;	Find if the dataset is already defined as a 2-D function
 
   if ((*pdefs.data)[pdefs.cset].type eq -4) then begin
+     xydata = *(*pdefs.data)[pdefs.cset].xydata
      funct = xydata.funct
      range = xydata.range
      numpts = [(*pdefs.data)[pdefs.cset].ndata, $

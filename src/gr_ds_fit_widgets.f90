@@ -48,7 +48,7 @@ module gr_ds_fit_widgets
 
   type(graff_data), private :: old_ds
   
-  logical, private :: have_changed
+  logical, private :: have_changed, old_exists
 
 contains
   subroutine gr_fit_menu
@@ -65,7 +65,12 @@ contains
        return
     end if
 
-    call gr_ds_copy(from=pdefs%cset, destination = old_ds)
+    if (pdefs%data(pdefs%cset)%ndata > 0) then 
+       call gr_ds_copy(from=pdefs%cset, destination = old_ds)
+       old_exists = .true.
+    else
+       old_exists = .false.
+    end if
     
     fit_window = hl_gtk_window_new("Fitting"//c_null_char, &
          & destroy=c_funloc(gr_fit_quit), &
@@ -263,7 +268,13 @@ contains
 
     ! Cancel changes
 
-    call gr_ds_copy(source=old_ds, to=pdefs%cset, move=.true.)
+    if (old_exists) then
+       call gr_ds_copy(source=old_ds, to=pdefs%cset, move=.true.)
+       old_exists=.false.
+    else
+       call gr_ds_erase(pdefs%cset, data_only=.true.)
+    end if
+    
     have_changed = .false.
     call gtk_widget_destroy(fit_window)
  

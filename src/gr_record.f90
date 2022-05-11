@@ -913,10 +913,12 @@ contains
        call gr_get_int(this, sival, status)
        ival = sival
        return
-    else if (this%ndims == 2 .and. this%dims(2) > 1) then
-       call gr_message("GR_GET_INT_A: Try to read 1D array from 2-D")
-       status = 2
-       return
+    else if (this%ndims == 2) then
+       if (this%dims(2) > 1) then
+          call gr_message("GR_GET_INT_A: Try to read 1D array from 2-D")
+          status = 2
+          return
+       end if
     end if
 
     sz = size(ival)
@@ -965,10 +967,12 @@ contains
        call gr_get_long(this, slval, status)
        lval = slval
        return
-    else if (this%ndims == 2 .and. this%dims(2) > 1) then
-       call gr_message("GR_GET_LONG_A: Try to read 1D array from 2-D")
-       status = 2
-       return
+    else if (this%ndims == 2) then
+       if (this%dims(2) > 1) then
+          call gr_message("GR_GET_LONG_A: Try to read 1D array from 2-D")
+          status = 2
+          return
+       end if
     end if
 
     sz = size(lval)
@@ -1016,10 +1020,12 @@ contains
        call gr_get_float(this, srval, status)
        rval = srval
        return
-    else if (this%ndims == 2 .and. this%dims(2) > 1) then
-       call gr_message("GR_GET_FLOAT_A: Try to read 1D array from 2-D")
-       status = 2
-       return
+    else if (this%ndims == 2) then
+       if (this%dims(2) > 1) then
+          call gr_message("GR_GET_FLOAT_A: Try to read 1D array from 2-D")
+          status = 2
+          return
+       end if
     end if
 
     sz = size(rval)
@@ -1067,10 +1073,12 @@ contains
        call gr_get_double(this, sdval, status)
        dval = sdval
        return
-    else if (this%ndims == 2 .and. this%dims(2) > 1) then
-       call gr_message("GR_GET_DOUBLE_A: Try to read 1D array from 2-D")
-       status = 2
-       return
+    else if (this%ndims == 2) then
+       if (this%dims(2) > 1) then
+          call gr_message("GR_GET_DOUBLE_A: Try to read 1D array from 2-D")
+          status = 2
+          return
+       end if
     end if
 
     sz = size(dval)

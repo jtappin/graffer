@@ -107,7 +107,7 @@ contains
 
     type(gdkeventmotion), pointer :: fevent
     real(kind=c_double) :: xw, yw
-    real(kind=plflt) :: xmin, xmax, ymin, ymax, xh, yh
+!!$    real(kind=plflt) :: xmin, xmax, ymin, ymax, xh, yh
 
     character(len=20) :: tv
     logical :: xstatus

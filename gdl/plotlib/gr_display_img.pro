@@ -197,18 +197,32 @@ pro Gr_display_img, zin, xin, yin, range = range, $
   img = bytscl(zz, min = zrange[0], max = zrange[1])
   if keyword_set(inverted) then img =  255b-img
 
-  if keyword_set(ps_grey) then $
-     tv, img, cmxll, cmyll, xsize = cmxsize, ysize = cmysize, /centi $
-  else begin
+  if keyword_set(ps_grey) then begin
+; Temporary (?) fix for GDL
+     nxll = cmxll * !d.x_px_cm / double(!d.x_size)
+     nxsize = cmxsize * !d.x_px_cm / double(!d.x_size)
+     nyll = cmyll * !d.y_px_cm / double(!d.y_size)
+     nysize = cmysize * !d.y_px_cm / double(!d.y_size)
+     tv, img, nxll, nyll, xsize = nxsize, ysize = nysize, /norm
+;;     tv, img, cmxll, cmyll, xsize = cmxsize, ysize = cmysize, /centi $
+  endif else begin
      if n_elements(table) eq 0 then table = 0
      graff_ctable, table, cmap, gamma = gamma
      sz = size(img, /dim)
      img3 = bytarr([sz, 3])
      for j = 0, 2 do img3[*, *, j] = (cmap[*, j])[img]
-     if (!d.flags and 1) then $
-        tv, img3, cmxll, cmyll, xsize = cmxsize, ysize = cmysize, $
-            true = 3, /centi $ 
-     else $
+     if (!d.flags and 1) then begin
+; Temporary (?) fix for GDL
+        nxll = cmxll * !d.x_px_cm / double(!d.x_size)
+        nxsize = cmxsize * !d.x_px_cm / double(!d.x_size)
+        nyll = cmyll * !d.y_px_cm / double(!d.y_size)
+        nysize = cmysize * !d.y_px_cm / double(!d.y_size)
+        tv, img3, nxll, nyll, xsize = nxsize, ysize = nysize, $
+            /norm, true = 3
+
+        ;; tv, img3, cmxll, cmyll, xsize = cmxsize, ysize = cmysize, $
+;;            true = 3, /centi 
+     endif else $
         tv, img3, xcorn[0], ycorn[0], true = 3
   endelse
 end

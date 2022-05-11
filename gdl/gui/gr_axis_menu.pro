@@ -389,14 +389,14 @@ pro Gr_axis_event, event
                                 ; Right-hand Y axis settings
      'YrMIN': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, 'Enter minimum value on Y(r) axis ' + $
-                   '(floating point)' /help $
+                   '(floating point)', /help $
      else begin
         pdefs.yrange_r[0] = event.value
      end
      
      'YrMAX': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, 'Enter maximum value on Y(r) axis ' + $
-                   '(floating point)' /help $
+                   '(floating point)', /help $
      else begin
         pdefs.yrange_r(1) = event.value
      end

@@ -82,7 +82,7 @@ function Grt_event, event
 
   case but of
      'DONE': if (track_flag) then  $
-        graff_msg, pdefs.ids.popmsg,, /help, 'Text operation finished' $
+        graff_msg, pdefs.ids.popmsg, /help, 'Text operation finished' $
      else begin
         iexit = 1
         idraw = 0b

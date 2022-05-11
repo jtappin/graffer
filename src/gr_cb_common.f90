@@ -590,7 +590,7 @@ contains
                & //c_new_line// &
                & 'C-Left = insert point in closest segment,'//c_new_line//&
                & 'S-Left = add at nearer end,'//c_new_line//&
-               & 'C|S on any release = cancel.'//c_null_char)
+               & 'Change modifier on any release = cancel.'//c_null_char)
        end if
     end if
   end subroutine gr_draw_tips

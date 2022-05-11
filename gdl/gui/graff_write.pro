@@ -14,7 +14,7 @@ function Graff_write, pdefs, event, track_flag
 ; Usage:
 ;	ichange = graff_write(pdefs, event, track_flag)
 ;
-; Return value
+; Return value:
 ;	ichange	int	1 if changed, 0 if not
 ;
 ; Argument:
@@ -87,7 +87,7 @@ function Graff_write, pdefs, event, track_flag
            4: if (pdefs.ntext ne 0) then begin
                                 ; Right: delete.
 
-              gr_nearest, (*pdefs.text)[locs].x, (*pdefs.text)[locs].y, $
+              gr_nearest, (*pdefs.text).x, (*pdefs.text).y, $
                           event.x, event.y, imin, md, $
                           nsys = (*pdefs.text).norm, max = 5
               

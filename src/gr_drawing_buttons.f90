@@ -39,7 +39,9 @@ module gr_drawing_buttons
 
   real(kind=real64), private :: point_x, point_y
   integer, private :: point_after = -1
+  integer, private :: press_modifier = 0
 
+  integer, private, parameter :: SC_MASK = ior(GDK_SHIFT_MASK, GDK_CONTROL_MASK)
 contains
 
   subroutine gr_drawing_plot(fevent)
@@ -58,9 +60,9 @@ contains
     case(1)
        call gr_drawing_left(fevent, data)
     case(2)
-       call gr_drawing_centre(fevent, data)
+       if (data%ndata > 0) call gr_drawing_centre(fevent, data)
     case(3)
-       call gr_drawing_right(fevent, data)
+       if (data%ndata > 0) call gr_drawing_right(fevent, data)
     end select
 
   end subroutine gr_drawing_plot
@@ -87,6 +89,7 @@ contains
              point_after = 0
           else
              point_after = data%ndata
+             press_modifier = iand(fevent%state, SC_MASK)
           end if
        else if (fevent%state == GDK_CONTROL_MASK) then
           dr0 = gr_dist_seg(transient%x_dev, transient%y_dev, &
@@ -101,14 +104,16 @@ contains
        else
           point_after = -1    ! Invalid modifiers
        end if
+       if (point_after /= -1) press_modifier = fevent%state
+
     else if (fevent%type ==  GDK_BUTTON_RELEASE .and. point_after >= 0) then
-       if (iand(fevent%state, &
-            & ior(GDK_CONTROL_MASK, GDK_SHIFT_MASK)) == 0) then
+       if (iand(fevent%state, SC_MASK) == press_modifier) then
           call gr_plot_coords_d_w(fevent%x, fevent%y, point_x, point_y)
           call gr_point_add(data)
           call gr_plot_draw(.true.)
        end if
        point_after = -1
+       press_modifier = 0
     end if
   end subroutine gr_drawing_left
 
@@ -189,11 +194,10 @@ contains
           point_after = -1
        else
           point_after = minloc(dr, 1)
+          press_modifier = iand(fevent%state, SC_MASK)
        end if
     else if (fevent%type ==  GDK_BUTTON_RELEASE .and. point_after > 0) then
-       if (iand(fevent%state, &
-            & ior(GDK_CONTROL_MASK, GDK_SHIFT_MASK)) == 0) then
-
+       if (iand(fevent%state, SC_MASK) == press_modifier) then
           call gr_plot_coords_d_w(fevent%x, fevent%y, xnew, ynew)
           if (data%mode /= 0) then
              if (data%mode == 2) then
@@ -209,6 +213,8 @@ contains
           end if
           call gr_plot_draw(.true.)
        end if
+       point_after = -1
+       press_modifier = 0
     end if
   end subroutine gr_drawing_centre
 
@@ -232,10 +238,10 @@ contains
           point_after = -1
        else
           point_after = minloc(dr, 1)
+          press_modifier = iand(fevent%state, SC_MASK)
        end if
     else if (fevent%type ==  GDK_BUTTON_RELEASE .and. point_after > 0) then
-       if (iand(fevent%state, &
-            & ior(GDK_CONTROL_MASK, GDK_SHIFT_MASK)) == 0) then
+       if (iand(fevent%state, SC_MASK) == press_modifier) then
           iresp = hl_gtk_message_dialog_show( &
                & ["DELETE DATA POINT              ", &
                &  "This will delete the data point", &
@@ -248,6 +254,7 @@ contains
           end if
        end if
        point_after = -1
+       press_modifier = 0
     end if
   end subroutine gr_drawing_right
 

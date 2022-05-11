@@ -27,6 +27,8 @@ pro Graff_clear, pdefs
 ;	Update 1-D format: 14/4/22; SJT
 ;-
 
+  common graff_msg_log, messages
+
   for j = 0, pdefs.nsets-1 do begin
      if ptr_valid((*pdefs.data)[j].xydata) then begin
         if (*pdefs.data)[j].type eq 9 then ptr_free, $
@@ -52,4 +54,9 @@ pro Graff_clear, pdefs
   ptr_free, pdefs.key.list
   ptr_free, pdefs.remarks
 
+  if n_elements(messages) ne 0 then begin
+     messages.remove, /all
+     junk = temporary(messages)
+  endif
+  
 end
