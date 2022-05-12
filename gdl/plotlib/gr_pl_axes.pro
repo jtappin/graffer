@@ -39,7 +39,7 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
 ;	Y-time labelling: 12/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
 ;	Don't plot annotations if overlay: 2/10/17; SJT
-;	Add /setup, and tidy up logical vs. bitwiase ops: 13/12/21; SJT
+;	Add /setup, and tidy up logical vs. bitwise ops: 13/12/21; SJT
 ;-
 
   lcolor = 0l
