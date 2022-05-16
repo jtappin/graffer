@@ -590,7 +590,9 @@ contains
           call rec%get_value(pdefs%hardset%pdfviewer(1), status)
        case ('HPA')
           call rec%get_value(pdefs%hardset%pdfviewer(2), status)
-
+       case('HPP')
+          call rec%get_value(pdefs%hardset%prompt, status)
+          
        case ('HF ')
           call rec%get_value(pdefs%hardset%font_family, status)
        case ('HWS')
@@ -1498,7 +1500,8 @@ contains
     call rec%set_value('HVA', pdefs%hardset%viewer(2), unit)
     call rec%set_value('HPB', pdefs%hardset%pdfviewer(1), unit)
     call rec%set_value('HPA', pdefs%hardset%pdfviewer(2), unit)
-
+    call rec%set_value('HPP', pdefs%hardset%prompt, unit)
+    
     call rec%set_value('HF ', pdefs%hardset%font_family, unit)
     call rec%set_value('HWS', pdefs%hardset%font_wg_sl, unit)
     call rec%set_value('HFN', pdefs%hardset%name, unit)

@@ -102,7 +102,8 @@ contains
     pdefs%hardset%viewer = ''
     pdefs%hardset%pdfviewer = ''
     pdefs%hardset%name = ''
-
+    pdefs%hardset%prompt = [.true., .false., .false.]
+    
     pdefs%hardset%psdev = ''
     pdefs%hardset%epsdev = ''
     pdefs%hardset%pdfdev = ''

@@ -70,7 +70,7 @@ contains
   end subroutine gr_str_val
 
   function gr_log_val_s(string)
-    logical :: gr_log_val_s
+    logical(kind=int8) :: gr_log_val_s
     character(len=*), intent(in) :: string
 
     ! Convert a Tag value to a logical
@@ -92,7 +92,7 @@ contains
   end function gr_log_val_s
 
   function gr_log_val_a(string, num)
-    logical, dimension(:), allocatable :: gr_log_val_a
+    logical(kind=int8), dimension(:), allocatable :: gr_log_val_a
     character(len=*), intent(in) :: string
     integer, intent(in) :: num
 
@@ -629,7 +629,9 @@ contains
              call gr_str_val(inln, 'HPA', pdefs%hardset%pdfviewer(2))
              exit
 
- 
+          case('HPP')
+             pdefs%hardset%prompt = gr_log_val(tag_val(itag+1), 3)
+             
           case('HF')
              pdefs%hardset%font_family = gr_int_val(tag_val(itag+1))
           case('HWS')
@@ -1561,6 +1563,10 @@ contains
          & "HPB:", pdefs%hardset%pdfviewer(1), &
          & "HPA:", pdefs%hardset%pdfviewer(2)
 
+    write(unit, "(a,3i3)") 'HPP:', f_c_logical(pdefs%hardset%prompt(1)), &
+         & f_c_logical(pdefs%hardset%prompt(2)), &
+         & f_c_logical(pdefs%hardset%prompt(3))
+    
     write(unit, "(2(a,i0))") "HF:", pdefs%hardset%font_family, &
          & ":HWS:", pdefs%hardset%font_wg_sl
     write(unit, "(2a)") "HFN:", trim(pdefs%hardset%name)

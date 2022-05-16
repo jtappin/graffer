@@ -44,7 +44,8 @@ module gr_menu_hc_widgets
        & hc_pdf_view_cbo
   
   type(c_ptr), dimension(2), private :: hc_psize_sb, hc_off_sb
-
+  type(c_ptr), dimension(3), private :: hc_prompt_but
+  
   real, dimension(2,2), parameter, private :: phys_size = &
        & reshape([21.0, 29.7, 21.59, 27.94], [2, 2])
 
@@ -181,12 +182,12 @@ contains
 
     hc_name_entry = hl_gtk_entry_new(value=trim(hardset%name)//c_null_char, &
          & tooltip="Enter the name stem for the output file"//c_null_char)
-    call hl_gtk_table_attach(jb, hc_name_entry, 1_c_int, 0_c_int, &
-         & xspan=2_c_int)
+    call hl_gtk_table_attach(jb, hc_name_entry, 1_c_int, 0_c_int) !, &
+    !         & xspan=2_c_int)
     junk = hl_gtk_button_new("Clear"//c_null_char, &
          & clicked=c_funloc(gr_hc_name_clear), &
          & tooltip="Clear the name entry so the default is used."//c_null_char)
-    call hl_gtk_table_attach(jb, junk, 3_c_int, 0_c_int)
+    call hl_gtk_table_attach(jb, junk, 2_c_int, 0_c_int)
 
     junk = gtk_label_new("Print cmd:"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 0_c_int, 1_c_int)
@@ -195,8 +196,13 @@ contains
          & tooltip="Enter the command to print PS output"//c_null_char)
     call hl_gtk_table_attach(jb, hc_lp_entry, 1_c_int, 1_c_int)
 
-    junk = gtk_label_new("View cmd:"//c_null_char)
-    call hl_gtk_table_attach(jb, junk, 2_c_int, 1_c_int)
+    hc_prompt_but(1) = hl_gtk_check_button_new("Prompt?"//c_null_char, &
+         & initial_state = f_c_logical(hardset%prompt(1)), tooltip = &
+         & "Select whether to prompt for action?"//c_null_char)
+    call hl_gtk_table_attach(jb, hc_prompt_but(1), 2_c_int, 1_c_int)
+    
+    junk = gtk_label_new("EPS View cmd:"//c_null_char)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 2_c_int)
 
     hc_view_cbo = hl_gtk_combo_box_new(has_entry=TRUE, &
          & initial_choices=viewnames, tooltip= &
@@ -209,10 +215,15 @@ contains
          & trim(hardset%viewer(1))//c_null_char)
 
     call gtk_combo_box_set_active(hc_view_cbo, iviewer)
-    call hl_gtk_table_attach(jb, hc_view_cbo, 3_c_int, 1_c_int)
+    call hl_gtk_table_attach(jb, hc_view_cbo, 1_c_int, 2_c_int)
 
+    hc_prompt_but(2) = hl_gtk_check_button_new("Prompt?"//c_null_char, &
+         & initial_state = f_c_logical(hardset%prompt(2)), tooltip = &
+         & "Select whether to prompt for action?"//c_null_char)
+    call hl_gtk_table_attach(jb, hc_prompt_but(2), 2_c_int, 2_c_int)
+    
     junk = gtk_label_new("PDF View cmd:"//c_null_char)
-    call hl_gtk_table_attach(jb, junk, 0_c_int, 2_c_int)
+    call hl_gtk_table_attach(jb, junk, 0_c_int, 3_c_int)
 
     hc_pdf_view_cbo = hl_gtk_combo_box_new(has_entry=TRUE, &
          & initial_choices=viewnames, tooltip= &
@@ -225,8 +236,12 @@ contains
          & trim(hardset%viewer(1))//c_null_char)
 
     call gtk_combo_box_set_active(hc_pdf_view_cbo, iviewer_pdf)
-    call hl_gtk_table_attach(jb, hc_pdf_view_cbo, 1_c_int, 2_c_int)
+    call hl_gtk_table_attach(jb, hc_pdf_view_cbo, 1_c_int, 3_c_int)
 
+    hc_prompt_but(3) = hl_gtk_check_button_new("Prompt?"//c_null_char, &
+         & initial_state = f_c_logical(hardset%prompt(3)), tooltip = &
+         & "Select whether to prompt for action?"//c_null_char)
+    call hl_gtk_table_attach(jb, hc_prompt_but(3), 2_c_int, 3_c_int)
 
     je = gtk_expander_new("Advanced"//c_null_char)
     call hl_gtk_box_pack(base, je)
@@ -353,6 +368,11 @@ contains
           hardset%pdfviewer(1) = vtext
        end if
 
+       do i = 1, 3
+          hardset%prompt(i) = &
+               & c_f_logical(gtk_toggle_button_get_active(hc_prompt_but(i)))
+       end do
+       
        if (c_associated(ps_cbo)) then
           dsel = hl_gtk_combo_box_get_active(ps_cbo, ftext=dtext)
           if (dsel /= 0) then

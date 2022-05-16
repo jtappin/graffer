@@ -211,14 +211,29 @@ pro graff_hard, pdefs, encapsulated = encapsulated, pdf = pdf, $
 
   case idev of
      1: begin
-        if h.viewer[0] ne '' && ~keyword_set(no_spawn) then $
-           spawn, h.viewer[0]+' '+chardname+' '+h.viewer[1]
+        if h.viewer[0] ne '' && ~keyword_set(no_spawn) then begin
+           if h.prompt[1] then $
+              iact = dialog_message(/question, $
+                                    "Open the file in viewer "+ $
+                                    h.viewer[0]+"?") $
+           else iact = 'Yes'
+           if iact eq 'Yes' then $
+              spawn, h.viewer[0]+' '+chardname+' '+h.viewer[1]
+        endif
         graff_msg, pdefs.ids.message, 'Output file is: '+hardname
      end
      0: begin
         if h.action[0] ne '' && ~keyword_set(no_spawn) then begin
-           spawn, h.action[0]+' '+chardname+' '+h.action[1], cmdout
-           graff_msg, pdefs.ids.message, cmdout
+            if h.prompt[0] then $
+              iact = dialog_message(/question, $
+                                    "Print the file with "+ $
+                                    h.action[0]+"?") $
+            else iact = 'Yes'
+            if iact eq 'Yes' then begin
+               spawn, h.action[0]+' '+chardname+' '+h.action[1], cmdout
+               graff_msg, pdefs.ids.message, cmdout
+            endif else graff_msg, pdefs.ids.message, $
+                                  'Output file is: '+hardname
         endif else $
            graff_msg, pdefs.ids.message, 'Output file is: '+hardname
      end
@@ -228,8 +243,15 @@ pro graff_hard, pdefs, encapsulated = encapsulated, pdf = pdf, $
         spawn, 'gs -q -dBATCH -dNOPAUSE -sDEVICE=pdfwrite '+ $
                '-sOutputFile='+chardname+ $
                pssz+psname
-        if h.pdfviewer[0] ne '' && ~keyword_set(no_spawn) then $
-           spawn, h.pdfviewer[0]+' '+chardname+' '+h.pdfviewer[1]
+        if h.pdfviewer[0] ne '' && ~keyword_set(no_spawn) then begin
+           if h.prompt[2] then $
+              iact = dialog_message(/question, $
+                                    "Open the file in viewer "+ $
+                                    h.pdfviewer[0]+"?") $
+           else iact = 'Yes'
+           if iact eq 'Yes' then $
+              spawn, h.pdfviewer[0]+' '+chardname+' '+h.pdfviewer[1]
+        endif
         graff_msg, pdefs.ids.message, 'Output file is: '+hardname
         file_delete, psname
      end
@@ -242,8 +264,15 @@ pro graff_hard, pdefs, encapsulated = encapsulated, pdf = pdf, $
         spawn, 'gs -q -dBATCH -dNOPAUSE -sDEVICE=pdfwrite '+ $
                '-sOutputFile='+chardname+ $
                pssz+psname
-        if h.pdfviewer[0] ne '' && ~keyword_set(no_spawn) then $
-           spawn, h.pdfviewer[0]+' '+chardname+' '+h.pdfviewer[1]
+        if h.pdfviewer[0] ne '' && ~keyword_set(no_spawn) then begin
+           if h.prompt[2] then $
+              iact = dialog_message(/question, $
+                                    "Open the file in viewer "+ $
+                                    h.pdfviewer[0]+"?") $
+           else iact = 'Yes'
+           if iact eq 'Yes' then $
+              spawn, h.pdfviewer[0]+' '+chardname+' '+h.pdfviewer[1]
+        endif
         graff_msg, pdefs.ids.message, 'Output file is: '+hardname
         file_delete, psname
      end

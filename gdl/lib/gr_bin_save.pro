@@ -328,7 +328,8 @@ pro Gr_bin_save, pdefs, auto = auto
   graff_put_rec, ilu, 'HVA', pdefs.hardset.viewer[1]
   graff_put_rec, ilu, 'HPB', pdefs.hardset.pdfviewer[0]
   graff_put_rec, ilu, 'HPA', pdefs.hardset.pdfviewer[1]
-
+  graff_put_rec, ilu, 'HPP', pdefs.hardset.prompt
+  
   graff_put_rec, ilu, 'HF ', pdefs.hardset.font.family
   graff_put_rec, ilu, 'HWS', pdefs.hardset.font.wg_sl
   graff_put_rec, ilu, 'HFN', pdefs.hardset.name

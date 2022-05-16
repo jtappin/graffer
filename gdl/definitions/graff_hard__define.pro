@@ -44,6 +44,7 @@ Hardset = { graff_hard, $
             Action: strarr(2), $
             viewer: strarr(2), $
             pdfviewer: strarr(2), $
+            prompt: bytarr(3), $
             name: '', $
             psdev: '', $        ; These are ignored in the IDL version 
             epsdev: '', $       ; but preserved for the Fortran version.

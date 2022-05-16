@@ -144,6 +144,7 @@ module graff_types
      real(kind=real64), dimension(2) :: size=0._real64, off=0._real64
      character(len=120), dimension(2) :: action='', viewer='', &
           & pdfviewer=''
+     logical(kind=int8), dimension(3) :: prompt = [.true.,.false.,.false.]
      character(len=120) :: name=''
      character(len=16) :: psdev='', epsdev='', pdfdev='', svgdev=''
   end type graff_hard

@@ -299,7 +299,8 @@ contains
     ! Close a plplot stream and dispose of the output.
 
     type(graff_hard), pointer :: hardset
-
+    integer(kind=c_int) :: iresp
+    
     hardset => pdefs%hardset
 
 
@@ -311,17 +312,46 @@ contains
     gr_plot_is_open = .false.
 
     if (selected_device == 'ps' .and. hardset%action(1) /= '') then
-       call execute_command_line(trim(hardset%action(1))//' '//&
+       if (hardset%prompt(1)) then
+          iresp = hl_gtk_message_dialog_show( &
+               & ["Print or view file with " // &
+               &  trim(hardset%action(1))//"?"], &
+               & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION)
+       else
+          iresp = GTK_RESPONSE_YES
+       end if
+       if (iresp == GTK_RESPONSE_YES) &
+            & call execute_command_line(trim(hardset%action(1))//' '//&
             & trim(local_name)//'.ps '//trim(hardset%action(2)))
+
     else if (selected_device == 'eps' .and. &
          & hardset%viewer(1) /= '') then
-       call execute_command_line(trim(hardset%viewer(1))//' '//&
+       if (hardset%prompt(2)) then
+          iresp = hl_gtk_message_dialog_show( &
+               & ["View file with "// &
+               &  trim(hardset%viewer(1))//"?"], &
+               & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION)
+       else
+          iresp = GTK_RESPONSE_YES
+       end if
+       if (iresp == GTK_RESPONSE_YES) &
+            & call execute_command_line(trim(hardset%viewer(1))//' '//&
             & trim(local_name)//'.eps '//&
             & trim(hardset%viewer(2)), &
             & wait=.false.)
+
     else if ((selected_device == 'pdf' .or. &
          & selected_device == 'epdf') .and. hardset%pdfviewer(1) /= '') then
-       call execute_command_line(trim(hardset%pdfviewer(1))//' '//&
+       if (hardset%prompt(3)) then
+          iresp = hl_gtk_message_dialog_show( &
+               & ["View file with "// &
+               & trim(hardset%pdfviewer(1))//"?"], &
+               & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION)
+       else
+          iresp = GTK_RESPONSE_YES
+       end if
+       if (iresp == GTK_RESPONSE_YES) &
+            & call execute_command_line(trim(hardset%pdfviewer(1))//' '//&
             & trim(local_name)//'.pdf '//&
             & trim(hardset%pdfviewer(2)), &
             & wait=.false.)

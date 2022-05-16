@@ -394,7 +394,8 @@ pro Gr_asc_save, pdefs
           pdefs.hardset.viewer[1], format = "(2a,/2a)"
   printf, ilu, 'HPB:', pdefs.hardset.pdfviewer[0], 'HPA:', $
           pdefs.hardset.pdfviewer[1], format = "(2a,/2a)"
-
+  printf, ilu, 'HPP:', pdefs.hardset.prompt, format = "(a,3i3)"
+  
   printf, ilu, 'HF:', pdefs.hardset.font.family, ':HWS:', $
           pdefs.hardset.font.wg_sl, format = "(a,i3,a,i2)"
   printf, ilu, 'HFN:', pdefs.hardset.name, format = "(2a)"

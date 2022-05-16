@@ -379,6 +379,8 @@ while (not eof(ilu)) do begin
                 pdefs.hardset.pdfviewer[1] = gr_str_val(inline, 'HPA')
                 goto, new_line
             end
+            'HPP': pdefs.hardset.prompt = $
+               gr_get_byt_val(tag_val[itag+1], 3)
 
             'HF': pdefs.hardset.font.family = $
               gr_int_val(tag_val[itag+1], 1)

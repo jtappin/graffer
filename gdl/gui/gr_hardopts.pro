@@ -66,6 +66,8 @@ function Hopts_event, event
            endfor
            widget_control, settings.fileid, get_value = file
            settings.opts.name = file
+           for j = 0, 2 do settings.opts.prompt[j] = $
+              widget_info(settings.promptid[j], /button_set)
         endif
      endelse
 
@@ -381,7 +383,20 @@ function Hopts_event, event
         widget_control, settings.cmid[1, 2], set_value = ''
         settings.chflag = 1
      endelse
-     
+
+     'PSPROMPT': if track._lag then $
+        graff_msg, settings.action, /help, $
+                   'Choose whether to prompt before action' $
+     else settings.chflag = 1b
+     'EPPROMPT': if track_flag then $
+        graff_msg, settings.action, /help, $
+                   'Choose whether to prompt before action' $
+     else settings.chflag = 1b
+     'PDFPROMPT': if track_flag then $
+        graff_msg, settings.action, /help, $
+                   'Choose whether to prompt before action' $
+     else settings.chflag = 1b
+
      Else:     graff_msg, settings.action, "Whaat??????"       
   endcase
 
@@ -424,6 +439,7 @@ function Gr_hardopts, pdefs
   uvs = { $
         Opts:h, $
         Cmid:lonarr(2, 3), $
+        promptid: lonarr(3), $
         Wsid:0l, $
         Wsids:lonarr(4), $
         ctrid: 0l, $
@@ -672,6 +688,16 @@ function Gr_hardopts, pdefs
                        value = 'None', $
                        uvalue = 'PSNOVIEW')
 
+  jbb = widget_base(jb, $
+                    /nonexclusive, $
+                    /row)
+  uvs.promptid[0] = widget_button(jbb, $
+                                  value = 'Prompt?', $
+                                  track = optblock.track, $
+                                  uvalue = 'PSPROMPT')
+  widget_control, uvs.promptid[0], set_button = h.prompt[0]
+  
+
   jb = widget_base(spbase, /row)
   uvs.cmid[0, 1] = cw_enter(jb, $
                          label = 'EPS View Command:', $
@@ -697,6 +723,15 @@ function Gr_hardopts, pdefs
                        value = 'None', $
                        uvalue = 'EPNOVIEW')
 
+  jbb = widget_base(jb, $
+                    /nonexclusive, $
+                    /row)
+  uvs.promptid[1] = widget_button(jbb, $
+                                  value = 'Prompt?', $
+                                  track = optblock.track, $
+                                  uvalue = 'EPPROMPT')
+  widget_control, uvs.promptid[1], set_button = h.prompt[1]
+  
   jb = widget_base(spbase, /row)
   uvs.cmid[0, 2] = cw_enter(jb, $
                          label = 'PDF View Command:', $
@@ -722,6 +757,15 @@ function Gr_hardopts, pdefs
                        value = 'None', $
                        uvalue = 'PDNOVIEW')
 
+  jbb = widget_base(jb, $
+                    /nonexclusive, $
+                    /row)
+  uvs.promptid[2] = widget_button(jbb, $
+                                  value = 'Prompt?', $
+                                  track = optblock.track, $
+                                  uvalue = 'PDFPROMPT')
+  widget_control, uvs.promptid[2], set_button = h.prompt[2]
+  
   ;; widget_control, uvs.xoffid, sensitive = ~(h.eps and 1)
   ;; widget_control, uvs.yoffid, sensitive = ~(h.eps and 1)
   ;; widget_control, uvs.xleftid, sensitive = ~(h.eps and 1)
