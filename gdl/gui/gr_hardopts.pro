@@ -384,7 +384,7 @@ function Hopts_event, event
         settings.chflag = 1
      endelse
 
-     'PSPROMPT': if track._lag then $
+     'PSPROMPT': if track_flag then $
         graff_msg, settings.action, /help, $
                    'Choose whether to prompt before action' $
      else settings.chflag = 1b

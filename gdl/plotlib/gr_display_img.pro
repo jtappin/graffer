@@ -77,7 +77,7 @@ pro Gr_display_img, zin, xin, yin, range = range, $
   sx = size(xin)
   sy = size(yin)
   sz = size(zin)
-  tflag = sx[0] eq 2 or sy[0] eq 2
+  tflag = sx[0] eq 2 || (sy[0] eq 2 &&  sy[1] gt 1) ; Y can be 1xN
 
   if tflag then begin
      if sx[0] eq 1 then x = xin[*, intarr(sz[2])] $
@@ -194,7 +194,7 @@ pro Gr_display_img, zin, xin, yin, range = range, $
      endcase
   endelse
 
-  img = bytscl(zz, min = zrange[0], max = zrange[1])
+  img = bytscl(zz, min = zrange[0], max = zrange[1], /nan)
   if keyword_set(inverted) then img =  255b-img
 
   if keyword_set(ps_grey) then begin
