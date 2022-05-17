@@ -1053,12 +1053,15 @@ contains
              if (nye > 0) allocate(ds%xydata%y_err(nye,1))
              ds%ndata = 1
           end if
+          
+          allocate(xytmp(dims(1),ds%ndata))
           call rec%get_value(xytmp, status)
           ds%xydata%x = xytmp(1,:)
           ds%xydata%y = xytmp(2,:)
           if (nxe > 0) ds%xydata%x_err = xytmp(3:3+nxe-1,:)
           if (nye > 0) ds%xydata%y_err = xytmp(3+nxe:,:)
-
+          deallocate(xytmp)
+          
           nflag = .true.
 
        case('VX')
