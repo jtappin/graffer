@@ -72,7 +72,6 @@ function gr_func_copy, pdefs, index, force = force
                               resource = "Graffer")
         if resp eq "No" then return, 0
      endif
-    
   endif
 
   xydata = *(*pdefs.data)[index].xydata

@@ -28,7 +28,7 @@ pro gr_cross_hair, pdefs, xy
 ;	Disable cross hairs in GDL: 31/3/22; SJT
 ;-
 
-  if is_gdl() then return            ; GDL does not (currently)
+  if is_gdl() then return       ; GDL does not (currently)
                                 ; support xor and invert modes due to
                                 ; a cairo limitation. Should not get
                                 ; called but this is a safety lock.

@@ -91,55 +91,6 @@ function Hopts_event, event
         settings.opts.cmyk = event.index
      endelse
 
-     ;; 'EPS': if (track_flag) then $
-     ;;    graff_msg, settings.action, /help, 'Toggle use of Encapsulated '+ $
-     ;;               'PostScript and PDF generation' $
-     ;; else begin
-     ;;    settings.chflag or= (settings.opts.eps ne event.index)
-     ;;    settings.opts.eps = event.index
-     ;;    widget_control, settings.fileid, get_value = name
-     ;;    dir = file_dirname(name, /mark)
-     ;;    if dir eq './' then dir = ''
-     ;;    fname = file_basename(name)
-     ;;    dp = strpos(fname, '.', /reverse_search)
-     ;;    if dp ne -1 then begin
-     ;;       ;; if settings.opts.eps and 1b then extn = '.eps' $
-     ;;       ;; else extn = '.ps'
-     ;;       case settings.opts.eps of
-     ;;          0: extn = '.ps'
-     ;;          1: extn = '.eps'
-     ;;          else: extn = '.pdf'
-     ;;       endcase
-     ;;       name = dir+strmid(fname, 0, dp)
-     ;;       widget_control, settings.fileid, set_value = name+extn
-     ;;       widget_control, settings.cmid[1], set_value = $
-     ;;                       'LABEL:'+file_basename(name+extn) 
-     ;;    endif
-     ;;    case settings.opts.eps of
-     ;;       1: begin
-     ;;          for j = 0, 1 do widget_control, settings.cmid[j], $
-     ;;                                          set_value = $
-     ;;                                          settings.opts.viewer[j]
-     ;;          widget_control, settings.cmid[0], set_value = "LABEL:View " + $
-     ;;                          "Command:"
-     ;;       end
-     ;;       0: begin
-     ;;          for j = 0, 1 do widget_control, settings.cmid[j], $
-     ;;                                          set_value = $
-     ;;                                          settings.opts.action[j]
-     ;;          widget_control, settings.cmid[0], set_value = "LABEL:Spool " + $
-     ;;                          "Command:"
-     ;;       end
-     ;;       else: begin
-     ;;          for j = 0, 1 do widget_control, settings.cmid[j], $
-     ;;                                          set_value = $
-     ;;                                          settings.opts.pdfviewer[j]
-     ;;          widget_control, settings.cmid[0], set_value = $
-     ;;                          "LABEL:PDF View " + $
-     ;;                          "Command:"
-     ;;       end
-     ;;    endcase
-     ;; endelse
      
      'ORI': if (track_flag) then $
         graff_msg, settings.action, /help, 'Toggle landscape/portrait orientation' $
@@ -400,13 +351,6 @@ function Hopts_event, event
      Else:     graff_msg, settings.action, "Whaat??????"       
   endcase
 
-  ;; widget_control, settings.xoffid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.yoffid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.xleftid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.yleftid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.ctrid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.paperid, sensitive = ~(settings.opts.eps and 1)
-
 Miss_case:
 
   widget_control, event.handler, set_uvalue = settings, /no_copy
@@ -423,13 +367,6 @@ function Gr_hardopts, pdefs
   common graffer_options, optblock
 
   h = pdefs.hardset
-
-  ;; output_types = ['Normal', 'Encapsulated', $
-  ;;                 'PDF (Print)', 'PDF (LaTeX)']
-  ;; if ~gr_find_program("gs") then begin
-  ;;    h.eps and= 1b
-  ;;    output_types = output_types[0:1]
-  ;; endif
 
   tname = pdefs.name
   dp = strpos(tname, '.', /reverse_search)
@@ -476,12 +413,6 @@ function Gr_hardopts, pdefs
                          track = optblock.track)
   widget_control, junk, set_droplist_select = h.colour
 
-  ;; junk = widget_droplist(jb, $
-  ;;                        value = output_types, $
-  ;;                        uvalue = 'EPS', $
-  ;;                        track = optblock.track)
-  ;; widget_control, junk, set_droplist_select = h.eps
-
   junk = widget_droplist(jb, $
                          value = ['Landscape', 'Portrait'], $
                          uvalue = 'ORI', $
@@ -504,7 +435,6 @@ function Gr_hardopts, pdefs
                    /grid, $
                    /base_align_right)
 
-;  jb = widget_base(cl, /column)
   uvs.paperid = widget_droplist(cl, $
                                 value = ['A4', 'Letter'], $
                                 title = 'Paper size:', $
@@ -523,7 +453,6 @@ function Gr_hardopts, pdefs
                          track = optblock.track)
   widget_control, junk, set_droplist_select = h.timestamp
 
-;  jb = widget_base(cl, /column)
   uvs.xsid = cw_spin_box(cl, $
                          /double, $
                          /all, $
@@ -766,13 +695,6 @@ function Gr_hardopts, pdefs
                                   uvalue = 'PDFPROMPT')
   widget_control, uvs.promptid[2], set_button = h.prompt[2]
   
-  ;; widget_control, uvs.xoffid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.yoffid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.xleftid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.yleftid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.paperid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.ctrid, sensitive = ~(h.eps and 1)
-
   uvs.action = cw_enter(base, $
                         /text, $
                         /display, $

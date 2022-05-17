@@ -330,7 +330,7 @@ Donefor:
      uvs.x = ptr_new(x)
      uvs.y = ptr_new(y)
      if nerc[0] gt 0 then uvs.xerr = ptr_new(xerrs)
-     if nerc[0] gt 0 then uvs.yerr = ptr_new(yerrs)
+     if nerc[1] gt 0 then uvs.yerr = ptr_new(yerrs)
   endif
 
   widget_control, base, set_uvalue = uvs, /no_copy

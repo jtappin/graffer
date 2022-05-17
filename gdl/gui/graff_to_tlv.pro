@@ -246,7 +246,6 @@ pro graff_to_tlv, pdefs
         endcase
      endif       
   endelse
-  
 
   jb = widget_base(base, $
                    /row)

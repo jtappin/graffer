@@ -93,7 +93,6 @@ function Graff_pfunct, pdefs
      if dflag then $
         if dialog_message(['CURRENT DATA SET IS NOT A PARAMETRIC', $
                            'FUNCTION, ENTERING A PARAMETRIC FUNCTION', $
-                           $
                            'WILL OVERWRITE IT', $
                            'DO YOU REALLY WANT TO DO THIS?'], $ $
                           /question, dialog_parent = $
@@ -172,7 +171,6 @@ function Graff_pfunct, pdefs
 
   widget_control, tlb, /real
   widget_control, base, set_uvalue = uvs, event_func = 'pfunct_event', $
-                  $
                   /no_copy
 
   repeat begin
