@@ -77,22 +77,22 @@ pro Gr_get_ds, data, nset, ilu, msgid
                                 ; VS, VE - start & end XY data.
                                 ; DE - end dataset
         
-        case tag_val(itag) of
+        case tag_val[itag] of
            
            'J': begin
-              data[nset].pline = gr_int_val(tag_val(itag+1), 1)
+              data[nset].pline = gr_int_val(tag_val[itag+1], 1)
               jflag = 1b
            end
            
-           'P': data[nset].psym = gr_int_val(tag_val(itag+1), 1)
-           'S': data[nset].symsize = gr_flt_val(tag_val(itag+1), 1)
-           'L': data[nset].line = gr_int_val(tag_val(itag+1), 1)
-           'C': data[nset].colour = gr_int_val(tag_val(itag+1), 1)
-           'CV': data[nset].c_vals = gr_byt_val(tag_val(itag+1), 3)
-           'W': data[nset].thick = gr_int_val(tag_val(itag+1), 1)
-           'O': data[nset].sort = gr_byt_val(tag_val(itag+1), 1)
-           'K': data[nset].noclip = gr_byt_val(tag_val(itag+1), 1)
-           'E': data[nset].medit = gr_byt_val(tag_val(itag+1), 1)
+           'P': data[nset].psym = gr_int_val(tag_val[itag+1], 1)
+           'S': data[nset].symsize = gr_flt_val(tag_val[itag+1], 1)
+           'L': data[nset].line = gr_int_val(tag_val[itag+1], 1)
+           'C': data[nset].colour = gr_int_val(tag_val[itag+1], 1)
+           'CV': data[nset].c_vals = gr_byt_val(tag_val[itag+1], 3)
+           'W': data[nset].thick = gr_int_val(tag_val[itag+1], 1)
+           'O': data[nset].sort = gr_byt_val(tag_val[itag+1], 1)
+           'K': data[nset].noclip = gr_byt_val(tag_val[itag+1], 1)
+           'E': data[nset].medit = gr_byt_val(tag_val[itag+1], 1)
            'D': begin
               data[nset].descript = gr_str_val(inline, 'D')
               goto, new_line
@@ -100,37 +100,37 @@ pro Gr_get_ds, data, nset, ilu, msgid
 
            
            'N': begin
-              data[nset].ndata = gr_lon_val(tag_val(itag+1), 1)
+              data[nset].ndata = gr_lon_val(tag_val[itag+1], 1)
               nflag = 1b
            end
            'N2': begin
-              data[nset].ndata2 = gr_lon_val(tag_val(itag+1), 1)
+              data[nset].ndata2 = gr_lon_val(tag_val[itag+1], 1)
               nflag2 = 1b
            end
            'T': begin
-              data[nset].type = gr_int_val(tag_val(itag+1), 1)
+              data[nset].type = gr_int_val(tag_val[itag+1], 1)
               tflag = 1b
            end
 
            'Y': data[nset].y_axis = gr_int_val(tag_val[itag+1], 1)
 
-           'M': data[nset].mode = gr_int_val(tag_val(itag+1), 1)
+           'M': data[nset].mode = gr_int_val(tag_val[itag+1], 1)
            'MN': data[nset].min_val = gr_dbl_val(tag_val[itag+1], 1)
            'MX': data[nset].max_val = gr_dbl_val(tag_val[itag+1], 1)
 
            'ZF':  data[nset].zopts.format = $
-              gr_int_val(tag_val(itag+1), 1)
+              gr_int_val(tag_val[itag+1], 1)
            
            'ZNL': begin
               data[nset].zopts.n_levels = $
-                 abs(gr_int_val(tag_val(itag+1), 1))
-              cflag(0) = 1b
+                 abs(gr_int_val(tag_val[itag+1], 1))
+              cflag[0] = 1b
            end
            'ZLM': data[nset].zopts.lmap = $
               gr_int_val(tag_val[itag+1], 1)
 
-           'ZL': if (cflag(0)) then begin
-              levels = gr_dbl_val(tag_val(itag+1), $
+           'ZL': if (cflag[0]) then begin
+              levels = gr_dbl_val(tag_val[itag+1], $
                                   data[nset].zopts.n_levels) 
               data[nset].zopts.levels = ptr_new(levels)
               data[nset].zopts.set_levels = 1b
@@ -147,17 +147,17 @@ pro Gr_get_ds, data, nset, ilu, msgid
                          "list given without count - ignored"
 
            'ZNC': begin
-              data[nset].zopts.n_cols = gr_int_val(tag_val(itag+1), 1)
-              cflag(1) = 1b
+              data[nset].zopts.n_cols = gr_int_val(tag_val[itag+1], 1)
+              cflag[1] = 1b
            end
-           'ZC': if (cflag(1)) then begin
-              cols = gr_int_val(tag_val(itag+1), data[nset].zopts.n_cols)
+           'ZC': if (cflag[1]) then begin
+              cols = gr_int_val(tag_val[itag+1], data[nset].zopts.n_cols)
               data[nset].zopts.colours = ptr_new(cols)
            endif else $
               graff_msg, msgid, "** W A R N I N G ** Contour colour " + $
                          "list given without count - ignored"
            
-           'ZCL': if (cflag(1)) then begin
+           'ZCL': if (cflag[1]) then begin
               cols = intarr(data[nset].zopts.n_cols)
               readf, ilu, cols
               data[nset].zopts.colours = ptr_new(cols)
@@ -165,7 +165,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
               graff_msg, msgid, "** W A R N I N G ** Contour colour " + $
                          "list given without count - ignored"
            
-           'ZCR': if (cflag(1)) then begin
+           'ZCR': if (cflag[1]) then begin
               rcols = intarr(3, data[nset].zopts.n_cols)
               readf, ilu, rcols
               data[nset].zopts.colours = ptr_new(rcols)
@@ -174,7 +174,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
                          "list given without count - ignored"
            
            'ZCX': if cflag[1] then begin
-              nce = gr_int_val(tag_val(itag+1), $
+              nce = gr_int_val(tag_val[itag+1], $
                                data[nset].zopts.n_cols)
               cols = intarr(data[nset].zopts.n_cols)
               rcols = intarr(3, data[nset].zopts.n_cols)
@@ -203,16 +203,16 @@ pro Gr_get_ds, data, nset, ilu, msgid
               gr_flt_val(tag_val[itag+1], 1)
 
            'ZNS': begin
-              data[nset].zopts.n_sty = gr_int_val(tag_val(itag+1), 1)
-              cflag(2) = 1b
+              data[nset].zopts.n_sty = gr_int_val(tag_val[itag+1], 1)
+              cflag[2] = 1b
            end
-           'ZS': if (cflag(2)) then begin
-              sty = gr_int_val(tag_val(itag+1), data[nset].zopts.n_sty) 
+           'ZS': if (cflag[2]) then begin
+              sty = gr_int_val(tag_val[itag+1], data[nset].zopts.n_sty) 
               data[nset].zopts.style = ptr_new(sty)
            endif else $
               graff_msg, msgid, "** W A R N I N G ** Contour style " + $
                          "list given without count - ignored"
-           'ZSL': if (cflag(2)) then begin
+           'ZSL': if (cflag[2]) then begin
               sty = intarr(data[nset].zopts.n_sty) 
               readf, ilu, sty
               data[nset].zopts.style = ptr_new(sty)
@@ -221,16 +221,16 @@ pro Gr_get_ds, data, nset, ilu, msgid
                          "list given without count - ignored"
            
            'ZNT': begin
-              data[nset].zopts.n_thick = gr_int_val(tag_val(itag+1), 1)
-              cflag(3) = 1b
+              data[nset].zopts.n_thick = gr_int_val(tag_val[itag+1], 1)
+              cflag[3] = 1b
            end
-           'ZT': if (cflag(3)) then begin
-              thick = gr_int_val(tag_val(itag+1), data[nset].zopts.n_thick) 
+           'ZT': if (cflag[3]) then begin
+              thick = gr_int_val(tag_val[itag+1], data[nset].zopts.n_thick) 
               data[nset].zopts.thick = ptr_new(thick)
            endif else $
               graff_msg, msgid, "** W A R N I N G ** Contour thickness " + $
                          "list given without count - ignored"
-           'ZTL': if (cflag(3)) then begin
+           'ZTL': if (cflag[3]) then begin
               thick = intarr(data[nset].zopts.n_thick) 
               readf, ilu, thick
               data[nset].zopts.thick = ptr_new(thick)
@@ -239,7 +239,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
                          "list given without count - ignored"
            
            'ZCF': begin
-              data[nset].zopts.fill = gr_int_val(tag_val(itag+1), 1)
+              data[nset].zopts.fill = gr_int_val(tag_val[itag+1], 1)
               if data[nset].zopts.fill gt 1 then begin
                  graff_msg, msgid, $
                             "Downhill tick contours no longer " + $
@@ -248,23 +248,23 @@ pro Gr_get_ds, data, nset, ilu, msgid
               endif
            end
            'ZLI': data[nset].zopts.label = $
-              gr_int_val(tag_val(itag+1), 1)
+              gr_int_val(tag_val[itag+1], 1)
            'ZLO': data[nset].zopts.label_off = $
-              gr_int_val(tag_val(itag+1), 1)
+              gr_int_val(tag_val[itag+1], 1)
            'ZCS': data[nset].zopts.charsize = $
-              gr_flt_val(tag_val(itag+1), 1)
+              gr_flt_val(tag_val[itag+1], 1)
 
-           'ZR': data[nset].zopts.range = gr_dbl_val(tag_val(itag+1), 2)
-           'ZP': data[nset].zopts.pxsize = gr_flt_val(tag_val(itag+1), $
+           'ZR': data[nset].zopts.range = gr_dbl_val(tag_val[itag+1], 2)
+           'ZP': data[nset].zopts.pxsize = gr_flt_val(tag_val[itag+1], $
                                                       1)
-           'ZIL': data[nset].zopts.ilog = gr_byt_val(tag_val(itag+1), $
+           'ZIL': data[nset].zopts.ilog = gr_byt_val(tag_val[itag+1], $
                                                      1)
            'ZIN': data[nset].zopts.invert = $
-              gr_byt_val(tag_val(itag+1), 1)
+              gr_byt_val(tag_val[itag+1], 1)
            'ZSM': data[nset].zopts.smooth = $
-              gr_byt_val(tag_val(itag+1), 1)
+              gr_byt_val(tag_val[itag+1], 1)
            'ZSN': data[nset].zopts.shade_levels = $ 
-              gr_lon_val(tag_val(itag+1), 1)
+              gr_lon_val(tag_val[itag+1], 1)
 
            'ZM': data[nset].zopts.missing = $
               gr_dbl_val(tag_val[itag+1], 1)
@@ -276,9 +276,9 @@ pro Gr_get_ds, data, nset, ilu, msgid
               else if (data[nset].type ge 0) then $
                  graff_msg, msgid, "Range found in XY data set - ignored" $
               else if (data[nset].type eq -4) then $
-                 xydata.range = gr_dbl_val(tag_val(itag+1), 4) $
+                 xydata.range = gr_dbl_val(tag_val[itag+1], 4) $
               else $
-                 xydata.range = gr_dbl_val(tag_val(itag+1), 2)
+                 xydata.range = gr_dbl_val(tag_val[itag+1], 2)
            end
            'F': begin
               if (not dflag) then $
@@ -334,7 +334,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
                  repeat readf, ilu, inline  $
                  until strpos(inline, 'VE:') ne -1
               endif else begin
-                 ncols = gr_int_val(tag_val(itag+1), 1)
+                 ncols = gr_int_val(tag_val[itag+1], 1)
                  if (ncols ne elements(data[nset].type)) then $
                     graff_msg, msgid,  $
                                "WARNING Data columns wrong, could get corrupt " + $
@@ -404,7 +404,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
                  xydata.y = ptr_new(yv)
                  readf, ilu, inline
                  if (strpos(inline, 'ZYE:') eq -1) then $
-                    graff_msg, msgid, $0.2!mmm, 20!mmm,
+                    graff_msg, msgid, $
                                "WARNING Data Y count wrong could get corrupt " + $
                                "DS"
               endelse
@@ -435,11 +435,11 @@ pro Gr_get_ds, data, nset, ilu, msgid
            'ZX2': if ptr_valid(xydata.x) then graff_msg, msgid, $
               "WARNING: 2-D X data requested after X data " + $
               "acquired" $
-           else xydata.x_is_2d = gr_byt_val(tag_val(itag+1), 1)
+           else xydata.x_is_2d = gr_byt_val(tag_val[itag+1], 1)
            'ZY2': if ptr_valid(xydata.y) then graff_msg, msgid, $
               "WARNING: 2-D Y data requested after Y data " + $
               "acquired" $
-           else xydata.y_is_2d = gr_byt_val(tag_val(itag+1), 1)
+           else xydata.y_is_2d = gr_byt_val(tag_val[itag+1], 1)
 
            'DE': begin
               print, "++++++ END OF DS ++++++"
@@ -447,7 +447,7 @@ pro Gr_get_ds, data, nset, ilu, msgid
            end
            
            Else: graff_msg, msgid, $
-                            "Unknown Dataset tag "+tag_val(itag)+" - ignored"
+                            "Unknown Dataset tag "+tag_val[itag]+" - ignored"
         endcase
         
         
@@ -465,8 +465,6 @@ pro Gr_get_ds, data, nset, ilu, msgid
               Else: xydata = {graff_xydata}
            endcase
         endif
-        print,  tag_val(itag), nflag, tflag, dflag, nset
-        help, xydata
      endfor
      
      New_line:
@@ -488,7 +486,5 @@ Ds_read:
   endif
 
   data[nset].xydata = ptr_new(xydata)
-
-  print, "Done", nset
   
 end

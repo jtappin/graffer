@@ -15,8 +15,6 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
                thick, neval = neval, description = description, frange $
                = frange, sort = sort, graffer = graffer, errtype = $
                errtype, funcz = funcz, ascii = ascii, noclip = noclip, $
-               $
-               $
                min_val = min_val, max_val = max_val, $
                mouse = mouse, z_format = z_format, z_nlevels = $
                z_nlevels, z_levels = z_levels, z_colours = z_colours, $
