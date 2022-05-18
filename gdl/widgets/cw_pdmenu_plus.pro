@@ -401,7 +401,7 @@ pro cw_pdmenu_plus_build, parent, desc, idx, nbuttons, etype, is_mb, $
                                tracking_events = tracking_events, $
                                sensitive = desc[idx].sensitive, $
                                uname = desc[idx].uname, $
-;                            accel = desc[idx].accelerator, $
+                               accel = desc[idx].accelerator, $
                                _extra = _extra)
         end
         0: begin
@@ -411,7 +411,7 @@ pro cw_pdmenu_plus_build, parent, desc, idx, nbuttons, etype, is_mb, $
                                tracking_events = tracking_events, $
                                sensitive = desc[idx].sensitive, $
                                uname = desc[idx].uname, $
-;                            accel = desc[idx].accelerator, $
+                               accel = desc[idx].accelerator, $
                                _extra = _extra)
         end
         2: begin
@@ -421,7 +421,7 @@ pro cw_pdmenu_plus_build, parent, desc, idx, nbuttons, etype, is_mb, $
                                tracking_events = tracking_events, $
                                sensitive = desc[idx].sensitive, $
                                uname = desc[idx].uname, $
-;                            accel = desc[idx].accelerator, $
+                               accel = desc[idx].accelerator, $
                                _extra = _extra)
            widget_control, but, set_button = desc[idx].state
         end
