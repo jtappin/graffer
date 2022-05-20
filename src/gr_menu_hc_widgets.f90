@@ -63,7 +63,6 @@ contains
     type(graff_hard), pointer :: hardset
     logical, dimension(2), target :: iapply = [.false., .true.]
     integer(kind=c_int) :: iviewer, iviewer_pdf, i, dindex
-    integer :: pdot
 
     hardset => pdefs%hardset
 

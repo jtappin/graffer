@@ -37,6 +37,8 @@ install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_cont_col_get.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_dbl_rd.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_dbl_val.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gr_ds_erase.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/gr_ds_transpose.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_err_type.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_find_program.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_find_viewer.pro"

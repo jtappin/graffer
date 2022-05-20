@@ -45,7 +45,6 @@ contains
 
     type(c_ptr) :: jb, mnu, smnu, junk
     integer(kind=int16), dimension(2), target :: direct = [-1_int16, 1_int16]
-    character(len=32) :: typet
     
     fr = hl_gtk_box_new()
 

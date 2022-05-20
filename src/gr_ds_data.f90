@@ -43,7 +43,7 @@ contains
 
     ! Define the dataset data modification panel
 
-    type(c_ptr) :: mnu, smnu, jmnu, junk
+    type(c_ptr) :: mnu, smnu, junk
     integer(kind=int16), dimension(4), target :: ftypes = &
          & [-1_int16, -2_int16, -3_int16, -4_int16]
 

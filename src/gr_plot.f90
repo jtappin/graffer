@@ -76,7 +76,7 @@ contains
     integer :: pdot
     real(kind=plflt) :: page_aspect
     type(graff_hard), pointer :: hardset
-    logical :: status, isd
+    logical :: isd
     integer :: plrc
 
     if (gr_plot_is_open) return

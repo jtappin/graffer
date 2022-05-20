@@ -1038,10 +1038,10 @@ contains
 
     ! Delete a dataset.
 
-    integer(kind=int16) :: idx
+    integer(kind=int16) :: idx, nset0
     type(graff_data), dimension(:), allocatable :: datasets
-    integer(kind=int16) :: i, j, ikshift
-    integer :: nkey, nset0
+    integer(kind=int16) :: i, j
+    integer :: nkey
     logical, dimension(:), allocatable :: iskey
 
     if (present(index)) then
@@ -1093,13 +1093,13 @@ contains
           do i = 1, idx-1_int16
              if (iskey(i)) then
                 pdefs%key%list(j) = i-1
-                j = j+1
+                j = j+1_int16
              end if
           end do
           do i = idx+1_int16, nset0
              if (iskey(i)) then
                 pdefs%key%list(j) = i-2
-                j = j+1
+                j = j+1_int16
              end if
           end do
        end if
@@ -1162,7 +1162,7 @@ contains
     type(graff_data), pointer :: data
     real(kind=real64), allocatable, dimension(:,:) :: xyetmp
     real(kind=plflt), dimension(:,:), allocatable :: x,y,z
-    real(kind=real64), allocatable, dimension(:) :: x1, y1, xytmp
+    real(kind=real64), allocatable, dimension(:) :: xytmp
     integer, dimension(2) :: sz
     logical(kind=int8) :: x2, y2
     integer :: nx, ny
@@ -1210,11 +1210,11 @@ contains
        case(0)              ! No error bars
        case(1,2)              ! Y errors, become X
           call move_alloc(data%xydata%y_err, data%xydata%x_err)
-          data%type = data%type + 2
+          data%type = data%type + 2_int16
 
        case(3, 4)              ! X errors, become Y
           call move_alloc(data%xydata%x_err, data%xydata%y_err)
-          data%type = data%type - 2
+          data%type = data%type - 2_int16
 
        case(5,8)              ! XY errors exchange
           call move_alloc(data%xydata%x_err, xyetmp)

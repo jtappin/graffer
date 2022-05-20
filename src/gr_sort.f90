@@ -40,7 +40,6 @@ contains
 
     integer :: l, ir, i, j, n
     real(kind=real64) :: rb
-    logical :: is_idx
 
     n = size(a,1)
     if (size(b,1) /= n) then
