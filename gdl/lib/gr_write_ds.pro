@@ -28,54 +28,54 @@ pro Gr_write_ds, pdefs, file, index = index
 ;	Add index keyword: 25/1/12; SJT
 ;-
 
-if ~keyword_set(index) then index = pdefs.cset
+  if ~keyword_set(index) then index = pdefs.cset
 
-xydata = *(*pdefs.data)[index].xydata
+  xydata = *(*pdefs.data)[index].xydata
 
-!Error = 0                      ; Clear any error
+  !Error = 0                    ; Clear any error
 
-if ((*pdefs.data)[index].type eq 9) then begin ; 2-D data
-    
-    on_ioerror, bad_2
-    
-    openw, ilu, file, /get
-    nvals = [(*pdefs.data)[index].ndata, $
-             (*pdefs.data)[index].ndata2]
-    if xydata.x_is_2d then nvals[0] *= -1
-    if xydata.y_is_2d then nvals[1] *= -1
+  if ((*pdefs.data)[index].type eq 9) then begin ; 2-D data
+     
+     on_ioerror, bad_2
+     
+     openw, ilu, file, /get
+     nvals = [(*pdefs.data)[index].ndata, $
+              (*pdefs.data)[index].ndata2]
+     if xydata.x_is_2d then nvals[0] *= -1
+     if xydata.y_is_2d then nvals[1] *= -1
 
-    printf, ilu, nvals
-    printf, ilu, *xydata.x, format = "(5g19.12)"
-    printf, ilu, *xydata.y, format = "(5g19.12)"
-    printf, ilu, *xydata.z, format = "(5g19.12)"
-    free_lun, ilu
-    
-    Bad_2:
-    
-endif else if ((*pdefs.data)[index].type lt 0) then begin
-    
-    on_ioerror, bad_f
-    
-    openw, ilu, file, /get
-    printf, ilu, (['Y', 'X', 'XY', 'Z'])(-1-(*pdefs.data)[index].type)
-    printf, ilu, xydata.range
-    if ((*pdefs.data)[index].type eq -4) then  $
-      printf, ilu, (*pdefs.data)[index].ndata, $
-              (*pdefs.data)[index].ndata2 $ 
-    else $
-      printf, ilu, (*pdefs.data)[index].ndata
-    printf, ilu, xydata.funct, format = '(A)' ; Ensure 2 lines for
+     printf, ilu, nvals
+     printf, ilu, *xydata.x, format = "(5g19.12)"
+     printf, ilu, *xydata.y, format = "(5g19.12)"
+     printf, ilu, *xydata.z, format = "(5g19.12)"
+     free_lun, ilu
+     
+     Bad_2:
+     
+  endif else if ((*pdefs.data)[index].type lt 0) then begin
+     
+     on_ioerror, bad_f
+     
+     openw, ilu, file, /get
+     printf, ilu, (['Y', 'X', 'XY', 'Z'])(-1-(*pdefs.data)[index].type)
+     printf, ilu, xydata.range
+     if ((*pdefs.data)[index].type eq -4) then  $
+        printf, ilu, (*pdefs.data)[index].ndata, $
+                (*pdefs.data)[index].ndata2 $ 
+     else $
+        printf, ilu, (*pdefs.data)[index].ndata
+     printf, ilu, xydata.funct, format = '(A)' ; Ensure 2 lines for
                                 ; Parametrics
-    
-    free_lun, ilu
-    
-    Bad_f:
-    
-endif else begin
-    on_ioerror, bad_1
-    openw, ilu, file, /get
-    
-    case (*pdefs.data)[index].type of
+     
+     free_lun, ilu
+     
+     Bad_f:
+     
+  endif else begin
+     on_ioerror, bad_1
+     openw, ilu, file, /get
+     
+     case (*pdefs.data)[index].type of
         0:
         1: printf, ilu, '#Y'
         2: printf, ilu, '#YY'
@@ -85,27 +85,27 @@ endif else begin
         6: printf, ilu, '#XYY'
         7: printf, ilu, '#XXY'
         8: printf, ilu, '#XXYY'
-    endcase
+     endcase
 
-    nerr = gr_n_errors((*pdefs.data)[index].type)
-    ncc = 2 + nerr[0]+nerr[1]
-    xyvals = dblarr(ncc, (*pdefs.data)[index].ndata)
-    
-    xyvals[0, *] = *xydata.x
-    xyvals[1, *] = *xydata.y
-    if nerr[0] ne 0 then xyvals[2:1+nerr[0], *] = *xydata.x_err
-    if nerr[1] ne 0 then xyvals[2+nerr[0]:*, *] = *xydata.y_err
-    
-    fmt = string(ncc, format = "('(',I0,'G19.12)')")
-    
-    printf, ilu, xyvals, format = fmt
-    
-    free_lun, ilu
-    
-    Bad_1:
-endelse
+     nerr = gr_n_errors((*pdefs.data)[index].type)
+     ncc = 2 + nerr[0]+nerr[1]
+     xyvals = dblarr(ncc, (*pdefs.data)[index].ndata)
+     
+     xyvals[0, *] = *xydata.x
+     xyvals[1, *] = *xydata.y
+     if nerr[0] ne 0 then xyvals[2:1+nerr[0], *] = *xydata.x_err
+     if nerr[1] ne 0 then xyvals[2+nerr[0]:*, *] = *xydata.y_err
+     
+     fmt = string(ncc, format = "('(',I0,'G19.12)')")
+     
+     printf, ilu, xyvals, format = fmt
+     
+     free_lun, ilu
+     
+     Bad_1:
+  endelse
 
-if (!Error ne 0) then graff_msg, pdefs.ids.message, $
-  ['Write dataset failed:', !Err_string]
+  if (!Error ne 0) then graff_msg, pdefs.ids.message, $
+                                   ['Write dataset failed:', !Err_string]
 
 end

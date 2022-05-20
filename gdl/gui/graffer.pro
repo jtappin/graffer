@@ -34,8 +34,7 @@
 ;				used).
 ;	/tracking_events	Set explicitly to zero to prevent
 ;				widget tracking events when running in
-;				IDL. (Always disabled in GDL as
-;				they don't work properly).
+;				IDL.
 ;	/bitmaps	input	If set, then the plot symbol and
 ;				colour selection menus use bitmaps
 ;				rather than descriptions. 

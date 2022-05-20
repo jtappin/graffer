@@ -56,11 +56,13 @@ pro Gr_dsc_event, event
         endelse
      end
      'EDITOR': case event.value of
-        'Function': graff_msg, pdefs.ids.hlptxt, /help, 'Enter data in the form ' + $
+        'Function': graff_msg, pdefs.ids.hlptxt, /help, $
+                               'Enter data in the form ' + $
                                'of a function'
         
         'Function.y = f(x) ...':if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Function with Y as a function of X' $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Function with Y as a function of X' $
         else begin
            ichange = graff_funct(pdefs)
            idraw_flag = ichange
@@ -68,7 +70,8 @@ pro Gr_dsc_event, event
         endelse
         
         'Function.x = f(y) ...': if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Function with X as a function of Y' $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Function with X as a function of Y' $
         else begin
            ichange = graff_funct(pdefs, /y_funct)
            idraw_flag = ichange
@@ -76,7 +79,8 @@ pro Gr_dsc_event, event
         endelse 
         
         'Function.x = f(t), y = g(t) ...': if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Function with both X and Y ' + $
+           graff_msg, pdefs.ids.hlptxt, /help, '' + $
+                      'Function with both X and Y ' + $
                       'functions of a parameter T' $
         else  begin
            ichange = graff_pfunct(pdefs)
@@ -177,16 +181,28 @@ pro Gr_dsc_event, event
         end
         
         'XY data.Edit values ...': if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Enter X, Y, [error] data from a ' + $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Enter X, Y, [error] data from a ' + $
                       'widget entry box' $
         else begin
            ichange = gr_xy_wid(pdefs)
            idraw_flag = ichange
            if (ichange) then nch = 21
-        end
+        endelse
+
+        'XY data.Transpose': if track_flag then $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      "Transpose the current dataset." $
+        else begin
+           ichange = gr_ds_transpose(pdefs)
+           idraw_flag = ichange
+           if (ichange) then nch = 21
+        endelse
+
         
         'XY data.Top level variables ...': if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Get X, Y, [error] values from IDL ' + $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Get X, Y, [error] values from IDL ' + $
                       'top-level variables' $
         else  begin
            ichange = graff_tlv(pdefs)
@@ -194,6 +210,30 @@ pro Gr_dsc_event, event
            if (ichange) then nch = 21
         end
         
+        'XY data.Erase': if track_flag then $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Erase the values in the current ' + $
+                      'data set' $
+        else begin
+           if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+              if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+                 (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                 (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                 (*(*pdefs.data)[pdefs.cset].xydata).z $
+              else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+                 (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                 (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                 (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                 (*(*pdefs.data)[pdefs.cset].xydata).y_err
+              ptr_free, (*pdefs.data)[pdefs.cset].xydata
+           endif
+
+           (*pdefs.data)[pdefs.cset].ndata = 0
+           (*pdefs.data)[pdefs.cset].type = 0
+           draw_flag = 1b
+           nch = 21
+        end
+
      endcase
   endcase
 
@@ -241,7 +281,9 @@ pro Gr_ds_create, base, pdefs
              {ds_create_opts, 0, 'From file ...'}, $
              {ds_create_opts, 0, 'Top level variables ...'}, $
              {ds_create_opts, 2, 'Copy ...'}, $
-             {ds_create_opts, 2, 'Rescale Current ...'}, $
+             {ds_create_opts, 0, 'Rescale Current ...'}, $
+             {ds_create_opts, 0, 'Transpose'}, $
+             {ds_create_opts, 2, 'Erase'}, $
              {ds_create_opts, 3, 'Function'}, $
              {ds_create_opts, 0, 'y = f(x) ...'}, $
              {ds_create_opts, 0, 'x = f(y) ...'}, $

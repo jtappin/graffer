@@ -26,7 +26,7 @@
  \setlength{\evensidemargin}{0mm}
 
 \pagestyle{myheadings}
-\markboth{GRAFFER}{Version 4.13}
+\markboth{GRAFFER}{Version 5.00}
 
 %\usepackage{babel}
 \makeatother
@@ -41,7 +41,7 @@
 \author{\textsf{\textbf{\Large James Tappin}}\\
   \texttt{\textbf{\Large jtappin at gmail dot com}}}
 
-\date{\textsf{\textbf{\large April 2022}}}
+\date{\textsf{\textbf{\large May 2022}}}
 
 \maketitle
 
@@ -72,9 +72,9 @@ generated and spooled. The whole plot can then be saved in a GRAFFER
 file for future editing.
 
 GRAFFER is not and does not pretend to be a fully-fledged drawing tool
-(there are plenty of those around e.g. \texttt{xfig} or commercial
-products) but rather tries to do the things that they (well
-\texttt{xfig} at any rate) don't do well i.e.\ plotting data.
+(there are plenty of those around e.g. \texttt{xfig}, \texttt{inkscape}
+or commercial products) but rather tries to do the things that they
+(well \texttt{xfig} at any rate) don't do well i.e.\ plotting data.
 
 
 \subsection{Why is it?}
@@ -112,10 +112,19 @@ functional \texttt{iso\_c\_binding} module); for \texttt{gfortran},
 this means at least version 4.6.0. In addition \texttt{cmake} is
 required to build the program.
 
+The IDL/GDL version requires IDL or a recent GIT snapshot of GDL
+(\url{https://github.com/gnudatalanguage/gdl}, at the time of writing a
+number of key features needed were not in the latest release version).
+
 \subsection{Copyright etc.}
 
-GRAFFER and its component routines may be freely used, copied \&
-distributed under the terms of the GNU General Public Licence V3.
+The Fortran parts of GRAFFER may be freely
+used, copied \& distributed under the terms of the GNU General Public
+Licence V3.
+
+The IDL/GDL parts may be freely
+used, copied \& distributed under the terms of the GNU General Public
+Licence V2 or any later version.
 
 \section{Main features}
 
@@ -174,12 +183,19 @@ for a Bourne shell variant. This will add the path to the GRAFFER
 gdl/idl routines to the \texttt{GDL\_PATH} and \texttt{IDL\_PATH}
 environment variables.
 
-\subsection{Invoking it}
+If you are only installing the IDL/GDL part, then the paths must be
+configured manually.
+
+\subsection{Invoking it (Fortran)}
 
 If GRAFFER is properly installed and its installation directory is in
 your path, it can be started simply by typing:
 \begin{verbatim}
 graffer
+\end{verbatim}
+or
+\begin{verbatim}
+graffer file.grf
 \end{verbatim}
 at the command prompt. If a filename is given, then that file is opened
 or initialized as a new GRAFFER file. If no filename is given, then a
@@ -208,7 +224,7 @@ GRAFFER can accept a number of keywords to control its operation:
 
 \item [\texttt{-{}-geometry} or \texttt{-g}:] Specify a geometry for the
   drawing window in the form \textit{x}\texttt{x}\textit{y} (e.g.\
-  \texttt{-{}-geometry=800x800}). The default is \texttt{600x600}.
+  \texttt{-{}-geometry=800x800}). The default is \texttt{800x800}.
 \item[\texttt{-{}-mouse} or \texttt{-m}:] Allow interactive editing of
   new datasets  by default. May be negated as \texttt{-{}-nomouse} to
   override a setting in the resource file.
@@ -231,9 +247,48 @@ GRAFFER can accept a number of keywords to control its operation:
   \texttt{/usr/share/graffer}. 
 \item[\texttt{-{}-gdl} or \texttt{-{}-idl}:]
   Specify the command to run GDL or IDL to evaluate functions
-  (e.g. \texttt{--gdl /usr/local/bin/gdl-git}). Default it to try first
+  (e.g. \texttt{--gdl /usr/local/bin/gdl-git}). Default is to try first
   the \texttt{GRAFFER\_GDL} environment variable then to try first
   \texttt{gdl} and then \texttt{idl} in the user's path.
+\end{description}
+
+\subsection{Invoking it (IDL/GDL)}
+\label{sec:invoke-idl}
+
+If GRAFFER is in your \texttt{!path}, then you just need to type:
+\begin{verbatim}
+graffer
+\end{verbatim}
+or
+\begin{verbatim}
+graffer, 'file.grf'
+\end{verbatim}
+at the IDL or GDL prompt.
+
+\subsubsection{Keywords}
+\label{sec:idl-keywords}
+
+\begin{description}
+\item[\texttt{group}	\textit{long}]	The group leader of the widget tree.
+\item[\texttt{xsize}	\textit{int}]	The x dimension of the draw widget
+\item[\texttt{ysize}	\textit{int}]	The y dimension of the draw widget
+\item[\texttt{/noscroll}]	If set do not make the draw window
+scrolling even if it is bigger than
+800 pixels.
+\item[\texttt{/debug}]	If set, then run in debugging mode.
+\item[\texttt{/block}]			If set, then run the widgets in
+blocking mode
+\item[\texttt{/recover}]	If set, then attempt to recover from
+an autosave file.
+\item[\texttt{/ttype}]	If set, then make a new file use
+TrueType fonts. (Opening an existing
+file will still keep what that one
+used).
+\item[\texttt{/tracking\_events}]	Set explicitly to zero to prevent
+widget tracking events.
+\item[\texttt{/bitmaps}]	If set, then the plot symbol and
+colour selection menus use bitmaps
+rather than descriptions. 
 \end{description}
 
 \subsection{A quick tour of the main window}
@@ -554,7 +609,7 @@ specified:
 
 \begin{verbatim}
   sin(x)
-  3.2{*}x^2 - x + !pi
+  3.2*x^2 - x + !pi
   replicate(5.1,n_elements(x))
 \end{verbatim}
 \end{description}
@@ -585,7 +640,7 @@ not return an array\footnote{I suppose you could use \texttt{{[}5.1,
 
 \begin{verbatim}
   x * sin(y)
-  -1./sqrt(((x+.5)^2+y^2)>1e-6) - .5/sqrt(((x-1)^2+y^2)>1e-6) - (x^2 + y^2)
+  -1./sqrt(((x+.5)^2+y^2)>1e-6) - .5/sqrt(((x-1)^2+y^2)>1e-6) - r^2
 \end{verbatim}
 \end{description}
 In this latter case, note the use of the limiting operators to flatten
@@ -598,6 +653,9 @@ As there are two independent variables, there are two sets of limits
 and two evaluation counts. If you are on a system with limited memory,
 remember that the function evaluation requires (at least) 3 arrays of
 double precision numbers with $N_{x}\times N_{y}$\ points.
+
+Note also that \texttt{r} may be used and is automatically interpreted
+as \verb|sqrt(x^2 + y^2)|.
 
 \subsubsection{Copying another function}
 \label{sec:fcopy}

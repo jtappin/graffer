@@ -137,33 +137,14 @@ pro Gr_dss_event, event
         idraw_flag = 0
      end
      
-     'Other/Erase': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, /help, 'Erase the values in the current ' + $
-                   'data set' $
-     else begin
-        if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
-           if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-              (*(*pdefs.data)[pdefs.cset].xydata).x, $
-              (*(*pdefs.data)[pdefs.cset].xydata).y, $
-              (*(*pdefs.data)[pdefs.cset].xydata).z $
-           else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
-              (*(*pdefs.data)[pdefs.cset].xydata).x, $
-              (*(*pdefs.data)[pdefs.cset].xydata).y, $
-              (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
-              (*(*pdefs.data)[pdefs.cset].xydata).y_err
-           ptr_free, (*pdefs.data)[pdefs.cset].xydata
-        endif
-
-        (*pdefs.data)[pdefs.cset].ndata = 0
-        (*pdefs.data)[pdefs.cset].type = 0
-     end
      
      'Other/Delete': if (track_flag) then $
         graff_msg, pdefs.ids.hlptxt, /help, 'Delete the current data set' $
      else graff_dsdel, pdefs
 
      'Other/Copy': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, /help, 'Copy the current dataset to a new ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Copy the current dataset to a new ' + $
                    'dataset' $ 
      else begin
         current = pdefs.cset
@@ -228,7 +209,6 @@ pro Gr_ds_pulldown, base, pdefs
            {ds_pd_opts, 0, 'Select...'}, $
            {ds_pd_opts, 0, 'Merge...'},  $
            {ds_pd_opts, 0, 'Sort...'},  $
-           {ds_pd_opts, 0, 'Erase'}, $
            {ds_pd_opts, 0, 'Delete'}, $
            {ds_pd_opts, 0, 'Write...'}, $
            {ds_pd_opts, 0, 'Copy'}, $

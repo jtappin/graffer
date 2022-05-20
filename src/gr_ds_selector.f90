@@ -74,25 +74,7 @@ contains
     smnu = hl_gtk_menu_submenu_new(mnu, "Other ▼"//c_null_char, &
          & tooltip="Other dataset options"//c_null_char)
 
-    ds_rescale_id = hl_gtk_menu_item_new(smnu, "Rescale Current"//c_null_char, &
-         & activate=c_funloc(gr_ds_rescale_cb), &
-         & tooltip="Scale and/or shift the current dataset"//c_null_char, &
-         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
-
-    ds_transpose_id =  hl_gtk_menu_item_new(smnu, "Transpose"//c_null_char, &
-         & activate=c_funloc(gr_ds_transpose_cb), &
-         & tooltip="Exchange X & Y axes of the current dataset"//c_null_char, &
-         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
-    
-    junk = hl_gtk_menu_item_new(smnu, "Erase"//c_null_char, &
-         & activate=c_funloc(gr_ds_erase_cb), tooltip=&
-         & "Erase the data of the current dataset"//c_null_char)
-
-    junk = hl_gtk_menu_item_new(smnu, "Erase all"//c_null_char, &
-         & activate=c_funloc(gr_ds_erase_all_cb), tooltip=&
-         & "Erase the contents of the current dataset"//c_null_char)
-
-    junk = hl_gtk_menu_item_new(smnu, "Delete"//c_null_char, &
+   junk = hl_gtk_menu_item_new(smnu, "Delete"//c_null_char, &
          & activate=c_funloc(gr_ds_delete_cb), tooltip=&
          & "Delete the current dataset"//c_null_char)
 
@@ -233,49 +215,7 @@ contains
   end subroutine gr_ds_sort
 
 
-  subroutine gr_ds_erase_cb(widget, data) bind(c)
-    type(c_ptr), value :: widget, data
-
-    ! Erase the current dataset
-
-    integer(kind=c_int) :: iresp
-
-    iresp = hl_gtk_message_dialog_show(&
-         & ["This will destroy all data in", &
-         &  "the current dataset          ",&
-         &  "Do you want to continue?     "],&
-         & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION, &
-         & parent=gr_window)
-
-    if (iresp /= GTK_RESPONSE_YES) return
-
-    call gr_ds_erase(data_only=.true.)
-    call gr_plot_draw(.true.)
-
-  end subroutine gr_ds_erase_cb
-  
-  subroutine gr_ds_erase_all_cb(widget, data) bind(c)
-    type(c_ptr), value :: widget, data
-
-    ! Erase the current dataset
-
-    integer(kind=c_int) :: iresp
-
-    iresp = hl_gtk_message_dialog_show(&
-         & ["This will destroy all data and ", &
-         &  "settings in the current dataset", &
-         &  "Do you want to continue?       "],&
-         & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION, &
-         & parent=gr_window)
-
-    if (iresp /= GTK_RESPONSE_YES) return
-
-    call gr_ds_erase(data_only=.false.)
-    call gr_plot_draw(.true.)
-
-  end subroutine gr_ds_erase_all_cb
-
-  subroutine gr_ds_delete_cb(widget, data) bind(c)
+ subroutine gr_ds_delete_cb(widget, data) bind(c)
     type(c_ptr), value :: widget, data
 
     ! Delete the current dataset.
@@ -394,24 +334,5 @@ contains
 
     call gr_plot_draw(.false.)
   end subroutine gr_ds_current_only
-
-  subroutine gr_ds_rescale_cb(widget, data) bind(c)
-    type(c_ptr), value :: widget, data
-
-    ! Scale/shift data.
-
-    call gr_ds_rescale
-
-  end subroutine gr_ds_rescale_cb
-
-  subroutine gr_ds_transpose_cb(widget, data) bind(c)
-    type(c_ptr), value :: widget, data
-
-    ! Scale/shift data.
-
-    call gr_ds_transpose
-
-  end subroutine gr_ds_transpose_cb
-
 
 end module gr_ds_selector
