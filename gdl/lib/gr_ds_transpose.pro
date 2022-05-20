@@ -15,6 +15,7 @@
 ; Returns:
 ;	1 if the dataset could be transposed, 0 if not (uninitialized
 ;	or a function)
+;
 ; Arguments:
 ;	pdefs	struct	The top level GRAFFER structure.
 ;	index	long	Which dataset to transpose (defaults to
@@ -32,7 +33,7 @@ function gr_ds_transpose, pdefs, index
      graff_msg, pdefs.ids.message, "Cannot transpose a function."
      return, 0
   endif
-  if ~ ptr_valid((*pdefs.data)[index].xydata) then begin
+  if ~ptr_valid((*pdefs.data)[index].xydata) then begin
      graff_msg, pdefs.ids.message, $
                 "Cannot transpose an uninitialized dataset."
      return, 0
@@ -46,11 +47,11 @@ function gr_ds_transpose, pdefs, index
      z = *xydata.z
      ptr_free, xydata.x, xydata.y, xydata.z
 
-     if size(x, /ndim) eq 2 then x = transpose(x)
+     if size(x, /n_dim) eq 2 then x = transpose(x)
      xydata.y = ptr_new(x)
-     if size(y, /ndim) eq 2 then y = transpose(y)
+     if size(y, /n_dim) eq 2 then y = transpose(y)
      xydata.x = ptr_new(y)
-     xydata.z = ptr_new(transpose(z)
+     xydata.z = ptr_new(transpose(z))
 
      tmp = xydata.x_is_2d
      xydata.x_is_2d = xydata.y_is_2d

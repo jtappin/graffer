@@ -137,69 +137,6 @@ pro Gr_dsc_event, event
            if (ichange) then nch = 5
         end
         
-        'XY data.Copy ...':if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Copy from another XY dataset' $
-        else begin
-           ichange = gr_xycopy_menu(pdefs)
-           idraw_flag = ichange
-           if (ichange) then nch = 21
-        end
-        'XY data.2D Datasets': graff_msg, pdefs.ids.hlptxt, /help,  $
-                                          'Create a 2 dimensional dataset'
-        
-        'XY data.2D Datasets.Top level variables ...': if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Read 2D data from IDL top-level ' + $
-                      'variables' $
-        else begin
-           ichange = gr_tlv_z(pdefs)
-           idraw_flag = ichange
-           if (ichange) then nch = 21
-        end
-        
-        'XY data.2D Datasets.From file ...':if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Read 2D data from an external file' $
-        else begin
-           ichange = gr_z_read(pdefs)
-           idraw_flag = ichange
-           if (ichange) then nch = 21
-        end
-        
-        'XY data.2D Datasets.Copy ...': if (track_flag) then $ $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Copy from another 2D dataset' $
-        else begin
-           ichange = gr_zcopy_menu(pdefs)
-           idraw_flag = ichange
-           if (ichange) then nch = 21
-        end
-        
-        'XY data.Rescale Current ...': if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Rescale the current dataset' $
-        else begin
-           ichange = graff_rescale(pdefs)
-           idraw_flag = ichange
-           if (ichange) then nch = 21
-        end
-        
-        'XY data.Edit values ...': if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, $
-                      'Enter X, Y, [error] data from a ' + $
-                      'widget entry box' $
-        else begin
-           ichange = gr_xy_wid(pdefs)
-           idraw_flag = ichange
-           if (ichange) then nch = 21
-        endelse
-
-        'XY data.Transpose': if track_flag then $
-           graff_msg, pdefs.ids.hlptxt, /help, $
-                      "Transpose the current dataset." $
-        else begin
-           ichange = gr_ds_transpose(pdefs)
-           idraw_flag = ichange
-           if (ichange) then nch = 21
-        endelse
-
-        
         'XY data.Top level variables ...': if (track_flag) then $
            graff_msg, pdefs.ids.hlptxt, /help, $
                       'Get X, Y, [error] values from IDL ' + $
@@ -210,28 +147,94 @@ pro Gr_dsc_event, event
            if (ichange) then nch = 21
         end
         
-        'XY data.Erase': if track_flag then $
+        'XY Data.Edit values ...': if (track_flag) then $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Enter X, Y, [error] data from a ' + $
+                      'widget entry box' $
+        else begin
+           ichange = gr_xy_wid(pdefs)
+           idraw_flag = ichange
+           if (ichange) then nch = 21
+        endelse
+
+        'XY data.Copy ...':if (track_flag) then $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Copy from another XY dataset' $
+        else begin
+           ichange = gr_xycopy_menu(pdefs)
+           idraw_flag = ichange
+           if (ichange) then nch = 21
+        endelse
+        
+        'Z data': graff_msg, pdefs.ids.hlptxt, /help,  $
+                             'Create a 2 dimensional dataset'
+        
+        'Z data.Top level variables ...': if (track_flag) then $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Read 2D data from IDL top-level ' + $
+                      'variables' $
+        else begin
+           ichange = gr_tlv_z(pdefs)
+           idraw_flag = ichange
+           if (ichange) then nch = 21
+        end
+        
+        'Z data.From file ...':if (track_flag) then $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Read 2D data from an external file' $
+        else begin
+           ichange = gr_z_read(pdefs)
+           idraw_flag = ichange
+           if (ichange) then nch = 21
+        end
+        
+        'Z data.Copy ...': if (track_flag) then $ $
+           graff_msg, pdefs.ids.hlptxt, /help, 'Copy from another 2D dataset' $
+        else begin
+           ichange = gr_zcopy_menu(pdefs)
+           idraw_flag = ichange
+           if (ichange) then nch = 21
+        end
+
+        'Operators': if track_flag then $
+           graff_msg, pdefs.ids.hlptxt, /help, 'Common dataset operations'
+        
+        'Operators.Rescale Current ...': if (track_flag) then $
+           graff_msg, pdefs.ids.hlptxt, /help, 'Rescale the current dataset' $
+        else begin
+           ichange = graff_rescale(pdefs)
+           idraw_flag = ichange
+           if (ichange) then nch = 21
+        end
+        
+        'Operators.Transpose': if track_flag then $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      "Transpose the current dataset." $
+        else begin
+           ichange = gr_ds_transpose(pdefs)
+           idraw_flag = ichange
+           if (ichange) then nch = 21
+        endelse
+
+        'Operators.Erase': if track_flag then $
            graff_msg, pdefs.ids.hlptxt, /help, $
                       'Erase the values in the current ' + $
                       'data set' $
         else begin
-           if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
-              if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-                 (*(*pdefs.data)[pdefs.cset].xydata).x, $
-                 (*(*pdefs.data)[pdefs.cset].xydata).y, $
-                 (*(*pdefs.data)[pdefs.cset].xydata).z $
-              else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
-                 (*(*pdefs.data)[pdefs.cset].xydata).x, $
-                 (*(*pdefs.data)[pdefs.cset].xydata).y, $
-                 (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
-                 (*(*pdefs.data)[pdefs.cset].xydata).y_err
-              ptr_free, (*pdefs.data)[pdefs.cset].xydata
-           endif
+           ichange = gr_ds_erase(pdefs)
 
-           (*pdefs.data)[pdefs.cset].ndata = 0
-           (*pdefs.data)[pdefs.cset].type = 0
-           draw_flag = 1b
-           nch = 21
+           draw_flag = ichange
+           if ichange then nch = 21
+        end
+        'Operators.Full Erase': if track_flag then $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Erase the values and formatting in the current ' + $
+                      'data set' $
+        else begin
+           ichange = gr_ds_erase(pdefs, /full)
+
+           draw_flag = ichange
+           if ichange then nch = 21
         end
 
      endcase
@@ -276,22 +279,24 @@ pro Gr_ds_create, base, pdefs
              {ds_create_opts, 0, 'From file ...'}, $
              {ds_create_opts, 0, 'Edit values ...'}, $
              {ds_create_opts, 0, 'Top level variables ...'}, $
-             {ds_create_opts, 0, 'Copy ...'}, $
-             {ds_create_opts, 1, '2D Datasets'}, $
+             {ds_create_opts, 2, 'Copy ...'}, $
+             {ds_create_opts, 1, 'Z data'}, $
              {ds_create_opts, 0, 'From file ...'}, $
              {ds_create_opts, 0, 'Top level variables ...'}, $
              {ds_create_opts, 2, 'Copy ...'}, $
-             {ds_create_opts, 0, 'Rescale Current ...'}, $
-             {ds_create_opts, 0, 'Transpose'}, $
-             {ds_create_opts, 2, 'Erase'}, $
-             {ds_create_opts, 3, 'Function'}, $
+             {ds_create_opts, 1, 'Function'}, $
              {ds_create_opts, 0, 'y = f(x) ...'}, $
              {ds_create_opts, 0, 'x = f(y) ...'}, $
              {ds_create_opts, 0, 'x = f(t), y = g(t) ...'}, $
              {ds_create_opts, 0, 'z = f(x,y) ...'}, $
              {ds_create_opts, 0, 'From file ...'}, $
              {ds_create_opts, 0, 'Copy ...'}, $
-             {ds_create_opts, 2, 'Fit Dataset ...'}]
+             {ds_create_opts, 2, 'Fit Dataset ...'}, $
+             {ds_create_opts, 3, 'Operators'}, $
+             {ds_create_opts, 0, 'Rescale Current ...'}, $
+             {ds_create_opts, 0, 'Transpose'}, $
+             {ds_create_opts, 0, 'Erase'}, $
+             {ds_create_opts, 2, 'Full Erase'}]
 
   jb = widget_base(base, $
                    /row, $

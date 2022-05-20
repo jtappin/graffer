@@ -69,36 +69,19 @@ contains
          & activate=c_funloc(gr_ds_copy_from), &
          & tooltip="Copy data from another dataset"//c_null_char)
 
-
-    jmnu = hl_gtk_menu_submenu_new(smnu, "2D Datasets"//c_null_char, &
+    ! 2D data
+    
+    smnu = hl_gtk_menu_submenu_new(mnu, "Z Data ▼"//c_null_char, &
          & tooltip="Data for 2-D datasets"//c_null_char)
 
-    junk = hl_gtk_menu_item_new(jmnu, "From file ..."//c_null_char, &
+    junk = hl_gtk_menu_item_new(smnu, "From file ..."//c_null_char, &
          & activate=c_funloc(gr_ds_file_2d), &
          & tooltip="Read data from a file"//c_null_char)
 
-    junk = hl_gtk_menu_item_new(jmnu, "Copy ..."//c_null_char, &
+    junk = hl_gtk_menu_item_new(smnu, "Copy ..."//c_null_char, &
          & activate=c_funloc(gr_ds_copy_from_2d), &
          & tooltip="Copy data from another dataset"//c_null_char)
 
-
-    ds_rescale_id = hl_gtk_menu_item_new(smnu, "Rescale Current"//c_null_char, &
-         & activate=c_funloc(gr_ds_rescale_cb), &
-         & tooltip="Scale and/or shift the current dataset"//c_null_char, &
-         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
-
-    ds_transpose_id =  hl_gtk_menu_item_new(smnu, "Transpose"//c_null_char, &
-         & activate=c_funloc(gr_ds_transpose_cb), &
-         & tooltip="Exchange X & Y axes of the current dataset"//c_null_char, &
-         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
-    
-    junk = hl_gtk_menu_item_new(smnu, "Erase"//c_null_char, &
-         & activate=c_funloc(gr_ds_erase_cb), tooltip=&
-         & "Erase the data of the current dataset"//c_null_char)
-
-    junk = hl_gtk_menu_item_new(smnu, "Erase all"//c_null_char, &
-         & activate=c_funloc(gr_ds_erase_all_cb), tooltip=&
-         & "Erase the contents of the current dataset"//c_null_char)
 
      ! Functions
 
@@ -132,6 +115,28 @@ contains
     junk = hl_gtk_menu_item_new(smnu, "Fit dataset ..."//c_null_char, &
          & activate=c_funloc(gr_ds_fit), &
          & tooltip="Make a fit to a dataset."//c_null_char)
+
+    ! Operators
+    
+    smnu = hl_gtk_menu_submenu_new(mnu, "Operators ▼"//c_null_char, &
+         & tooltip="Common dataset operations."//c_null_char)
+    ds_rescale_id = hl_gtk_menu_item_new(smnu, "Rescale Current"//c_null_char, &
+         & activate=c_funloc(gr_ds_rescale_cb), &
+         & tooltip="Scale and/or shift the current dataset"//c_null_char, &
+         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
+
+    ds_transpose_id =  hl_gtk_menu_item_new(smnu, "Transpose"//c_null_char, &
+         & activate=c_funloc(gr_ds_transpose_cb), &
+         & tooltip="Exchange X & Y axes of the current dataset"//c_null_char, &
+         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
+    
+    junk = hl_gtk_menu_item_new(smnu, "Erase"//c_null_char, &
+         & activate=c_funloc(gr_ds_erase_cb), tooltip=&
+         & "Erase the data of the current dataset"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Erase all"//c_null_char, &
+         & activate=c_funloc(gr_ds_erase_all_cb), tooltip=&
+         & "Erase the contents of the current dataset"//c_null_char)
 
     ! Axis selection
 

@@ -229,6 +229,6 @@ pro Gr_ds_pulldown, base, pdefs
                         /row, $
                         ids = pids)
 
-  pdefs.ids.export = pids[11]
+  pdefs.ids.export = pids[10]
 
 end
