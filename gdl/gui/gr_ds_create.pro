@@ -47,7 +47,8 @@ pro Gr_dsc_event, event
 
   case but of
      "YAXIS": begin             ; The y-axis selector
-        if (track_flag) then graff_msg, pdefs.ids.hlptxt, /help, 'Select main or ' + $
+        if (track_flag) then graff_msg, pdefs.ids.hlptxt, /help, $
+                                        'Select main or ' + $
                                         'alternate Y-axis' $
         else begin
            (*pdefs.data)[pdefs.cset].y_axis = event.index
@@ -60,7 +61,7 @@ pro Gr_dsc_event, event
                                'Enter data in the form ' + $
                                'of a function'
         
-        'Function.y = f(x) ...':if (track_flag) then $
+        'Function.y = f(x) ...': if (track_flag) then $
            graff_msg, pdefs.ids.hlptxt, /help, $
                       'Function with Y as a function of X' $
         else begin
@@ -79,7 +80,7 @@ pro Gr_dsc_event, event
         endelse 
         
         'Function.x = f(t), y = g(t) ...': if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, '' + $
+           graff_msg, pdefs.ids.hlptxt, /help, $
                       'Function with both X and Y ' + $
                       'functions of a parameter T' $
         else  begin
@@ -125,11 +126,13 @@ pro Gr_dsc_event, event
            if (ichange) then nch = 21
         endelse
         
-        'XY data': graff_msg, pdefs.ids.hlptxt, /help, 'Enter data for current ' + $
+        'XY data': graff_msg, pdefs.ids.hlptxt, /help, $
+                              'Enter data for current ' + $
                               'data set'
         
         'XY data.From file ...': if (track_flag) then $
-           graff_msg, pdefs.ids.hlptxt, /help, 'Read X, Y, [error] data from an ' + $
+           graff_msg, pdefs.ids.hlptxt, /help, $
+                      'Read X, Y, [error] data from an ' + $
                       'external file' $
         else begin
            ichange = gr_xy_read(pdefs)
@@ -188,7 +191,7 @@ pro Gr_dsc_event, event
            if (ichange) then nch = 21
         end
         
-        'Z data.Copy ...': if (track_flag) then $ $
+        'Z data.Copy ...': if (track_flag) then $
            graff_msg, pdefs.ids.hlptxt, /help, 'Copy from another 2D dataset' $
         else begin
            ichange = gr_zcopy_menu(pdefs)
