@@ -195,7 +195,6 @@ pro Gr_bin_save, pdefs, auto = auto
            graff_put_rec, ilu, 'ZZS', *xydata.z
            
         endif else begin        ; Ordinary data
-           sxy = size(xydata)
            graff_put_rec, ilu, 'VX ', *xydata.x
            graff_put_rec, ilu, 'VY ', *xydata.y
            if ptr_valid(xydata.x_err) then $

@@ -26,7 +26,7 @@
 ;	Major rebuild: 18/4/22; SJT
 ;-
 
-function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
+function gr_update_xy, data, x_values, y_values, x_errors, y_errors, $
                        retain
 
 ; Sanity checks.
@@ -34,7 +34,7 @@ function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
   yflag = n_elements(y_values) ne 0
   xeflag = n_elements(x_errors) ne 0
   yeflag = n_elements(y_errors) ne 0
-  
+
   if xeflag then begin
      sxe = size(x_errors)
      case sxe[0] of
@@ -188,7 +188,7 @@ function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
 
   if retain then begin
      xydata = *(data.xydata)
-
+     
 ; Remove inapplicable errors if only X or Y is given
 
      if xflag then begin
@@ -218,14 +218,11 @@ function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
         nye = nyerr
      endif
      
-     ntype = gr_err_type(nxe, nye)
-     
-     ptr_free, data.xydata.x, data.xydata.y, $
-               data.xydata.x_err, data.xydata.y_err
-     ptr_free, data.xydata
-     data.xydata = ptr_new(xydata)
+     ntype = gr_err_type(nxerr, nyerr)
+
+     *data.xydata = xydata
      data.type = ntype
-     
+
      return, 1
   endif
   
@@ -242,8 +239,8 @@ function gr_update_xy, data, index, x_values, y_values, x_errors, y_errors, $
 
      ntype = gr_err_type(nxerr, nyerr)
 
-     ptr_free, data.xydata.x, data.xydata.y, $
-               data.xydata.x_err, data.xydata.y_err
+     ptr_free, (*data.xydata).x, (*data.xydata).y, $
+               (*data.xydata).x_err, (*data.xydata).y_err
      ptr_free, data.xydata
      
      data.xydata = ptr_new(xydata)

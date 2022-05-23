@@ -483,6 +483,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
         endif else $
            ok = gr_update_xy(data, x_values, y_values, x_errors, $
                              y_errors, keyword_set(retain_unset))
+        
         if ok then (*pdefs.data)[index] = data
      endif else if n_elements(mscale) eq 4 then begin
 
