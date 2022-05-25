@@ -150,7 +150,7 @@ pro Gr_dsc_event, event
            if (ichange) then nch = 21
         end
         
-        'XY Data.Edit values ...': if (track_flag) then $
+        'XY data.Edit values ...': if (track_flag) then $
            graff_msg, pdefs.ids.hlptxt, /help, $
                       'Enter X, Y, [error] data from a ' + $
                       'widget entry box' $
