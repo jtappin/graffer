@@ -52,7 +52,8 @@ function Hopts_event, event
 
   case but of
      'DO': if (track_flag) then $
-        graff_msg, settings.action, /help, 'Save the settings & make the hardcopy' $
+        graff_msg, settings.action, /help, $
+                   'Save the settings & make the hardcopy' $
      else begin
         iexit = 1
         if settings.chflag then begin
@@ -93,7 +94,8 @@ function Hopts_event, event
 
      
      'ORI': if (track_flag) then $
-        graff_msg, settings.action, /help, 'Toggle landscape/portrait orientation' $
+        graff_msg, settings.action, /help, $
+                   'Toggle landscape/portrait orientation' $
      else begin
         settings.chflag or= (settings.opts.orient ne event.index)
         settings.opts.orient = event.index
@@ -159,7 +161,8 @@ function Hopts_event, event
      end
      
      'XSI': if (track_flag) then $
-        graff_msg, settings.action, /help, 'Set the X size of the plot (in cm)' $
+        graff_msg, settings.action, /help, $
+                   'Set the X size of the plot (in cm)' $
      else begin
         settings.chflag = 1
         widget_control, event.id, get_value = sx
@@ -168,7 +171,8 @@ function Hopts_event, event
         widget_control, settings.xleftid, set_value = xlft
      end
      'YSI': if (track_flag) then $
-        graff_msg, settings.action, /help, 'Set the Y size of the plot (in cm)' $
+        graff_msg, settings.action, /help, $
+                   'Set the Y size of the plot (in cm)' $
      else begin
         settings.chflag = 1
         widget_control, event.id, get_value = sy
@@ -177,7 +181,8 @@ function Hopts_event, event
         widget_control, settings.yleftid, set_value = ylft
      end
      'XOFF': if (track_flag) then $
-        graff_msg, settings.action, /help, 'Set the X offset of the plot (in cm)' $
+        graff_msg, settings.action, /help, $
+                   'Set the X offset of the plot (in cm)' $
      else begin
         settings.chflag = 1
         widget_control, event.id, get_value = sx
@@ -186,7 +191,8 @@ function Hopts_event, event
         widget_control, settings.xleftid, set_value = xlft
      end
      'YOFF': if (track_flag) then $
-        graff_msg, settings.action, /help, 'Set the Y offset of the plot (in cm)' $
+        graff_msg, settings.action, /help, $
+                   'Set the Y offset of the plot (in cm)' $
      else begin
         settings.chflag = 1
         widget_control, event.id, get_value = sy
@@ -196,8 +202,8 @@ function Hopts_event, event
      end
      
      'FFAMILY': if (track_flag) then $
-        graff_msg, settings.action, /help, 'Select the font family for plot ' + $
-                   'annotation' $
+        graff_msg, settings.action, /help, $
+                   'Select the font family for plot annotation' $
      else begin
         settings.chflag or= (settings.opts.font.family ne event.index)
         settings.opts.font.family = event.index
@@ -207,16 +213,16 @@ function Hopts_event, event
                                            event.index le 5
      end
      'FWS': if (track_flag) then $
-        graff_msg, settings.action, /help, 'Select the weight & slant for plot ' + $
-                   'annotation' $
+        graff_msg, settings.action, /help, $
+                   'Select the weight & slant for plot annotation' $
      else begin
         settings.chflag or= (settings.opts.font.wg_sl ne event.value)
         settings.opts.font.wg_sl = event.value
      endelse
      
      'TIMEST': if (track_flag) then $
-        graff_msg, settings.action, /help, 'Toggle printing of a timestamp on ' + $
-                   'the plot' $
+        graff_msg, settings.action, /help, $
+                   'Toggle printing of a timestamp on the plot' $
      else begin
         settings.chflag or= (settings.opts.timestamp ne event.index)
         settings.opts.timestamp = event.index
@@ -250,29 +256,29 @@ function Hopts_event, event
      endelse
 
      'DFILE': if track_flag then $
-        graff_msg, settings.action, /help, 'Reset the output file name to the ' + $
-                   'default' $ 
+        graff_msg, settings.action, /help, $
+                   'Reset the output file name to the default' $ 
      else begin
         widget_control, settings.fileid, set_value = settings.tname
         settings.chflag = 1
      endelse
      
      'PSCMD':if (track_flag) then $
-        graff_msg, settings.action, /help, 'Enter the command for spooling a ' + $
-                   'PS plot file' $ 
+        graff_msg, settings.action, /help, $
+                   'Enter the command for spooling a PS plot file' $ 
      else settings.chflag = 1
      'EPCMD':if (track_flag) then $
-        graff_msg, settings.action, /help, 'Enter the command for viewing an ' + $
-                   'EPS plot file' $ 
+        graff_msg, settings.action, /help, $
+                   'Enter the command for viewing an EPS plot file' $ 
      else settings.chflag = 1
      'PDCMD':if (track_flag) then $
-        graff_msg, settings.action, /help, 'Enter the command for viewing a ' + $
-                   'PDF plot file' $ 
+        graff_msg, settings.action, /help, $
+                   'Enter the command for viewing a PDF plot file' $ 
      else settings.chflag = 1
 
      'PSSFX':if (track_flag) then $
         graff_msg, settings.action, /help, 'Enter the part of the ' + $
-                   'command for spooling a PS plot thst comes after ' + $
+                   'command for spooling a PS plot that comes after ' + $
                    'the filename' $ 
      else settings.chflag = 1
      'EPSFX':if (track_flag) then $
@@ -734,7 +740,7 @@ function Gr_hardopts, pdefs
 
   widget_control, pdefs.ids.graffer, /sensitive
 
-  if ev.exited eq -1 then return, -1 $
+  if ev.exited eq -1 then return, 0 $
   else return, uvs.chflag
 
 end
