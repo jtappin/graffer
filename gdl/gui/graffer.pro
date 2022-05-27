@@ -657,10 +657,10 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
   cbase = widget_base(cdbase, $
                       /column)
 
-  if (not keyword_set(xsize)) then xwsize = 800 $
+  if ~keyword_set(xsize) then xwsize = 800 $
   else xwsize = xsize > 800
 
-  if (not keyword_set(ysize)) then ywsize = 800 $
+  if ~keyword_set(ysize) then ywsize = 800 $
   else ywsize = ysize > 800
 
   if ((xwsize >  ywsize) gt 800 && ~keyword_set(noscroll)) then $
@@ -694,7 +694,7 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
                                 ; a timer event to control the autosave
   pdefs.ids.message = cw_enter(tjb, $
                                /display, $
-                               xsize = 78, $
+                               xsize = 70, $
                                ysize = 2, $
                                value = '', $
                                label = 'Messages:', $
@@ -726,7 +726,7 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
                        x_bitmap_extra = xbm)
   
   widget_control, pdefs.ids.graffer, /real
-  if (keyword_set(group)) then $
+  if keyword_set(group) then $
      widget_control, pdefs.ids.graffer, group = group
 
   widget_control, pdefs.ids.draw, get_value = windex
