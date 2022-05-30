@@ -47,7 +47,7 @@ contains
     real(kind=real64) :: axmin, axmax
     type(graff_data), pointer :: data
     integer :: status
-    logical :: ishrink, vis_only, xy_only
+    logical :: ishrink, vis_only, xy_only, is_log
     character(len=32) :: text
     integer(kind=int16) :: i
 
@@ -99,15 +99,15 @@ contains
 
        if (axis == 1) then
           if (data%mode == 0) then
-             call gr_autoscale_x_rect(data, axmin, axmax, vis_only)
+             call gr_autoscale_x_rect(i, axmin, axmax, vis_only)
           else
-             call gr_autoscale_x_polar(data, axmin, axmax, vis_only)
+             call gr_autoscale_x_polar(i, axmin, axmax, vis_only)
           end if
        else if (data%y_axis == axis-2 .or. .not. pdefs%y_right) then
           if (data%mode == 0) then
-             call gr_autoscale_y_rect(data, axmin, axmax, vis_only)
+             call gr_autoscale_y_rect(i, axmin, axmax, vis_only)
           else
-             call gr_autoscale_y_polar(data, axmin, axmax, vis_only)
+             call gr_autoscale_y_polar(i, axmin, axmax, vis_only)
           end if
        end if
     end do
@@ -157,15 +157,18 @@ contains
     call gr_plot_draw(.true.)
   end subroutine gr_autoscale
 
-  subroutine gr_autoscale_x_rect(data, axmin, axmax, visible)
-    type(graff_data), intent(in) :: data
+  subroutine gr_autoscale_x_rect(idx, axmin, axmax, visible)
+    integer(kind=int16), intent(in) :: idx
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
-    
+
     logical, dimension(:), allocatable :: mask, maske
     real(kind=real64), pointer, dimension(:) :: par
-    
+    type(graff_data), pointer :: data
+
     ! Auto scale the X axis for a rectangular coordinate DS
+
+    data => pdefs%data(idx)
 
     if ((data%type >= 0 .and. data%type <= 8) .or. &
          & data%type == -2 .or. data%type == -3) then
@@ -195,15 +198,20 @@ contains
     case(3,5,6)
        allocate(maske(data%ndata))
        maske = ieee_is_finite(data%xydata%x_err(1,:)) .and. mask
-       if (count(maske) > 0) then
-          axmin = min(axmin, minval(data%xydata%x- &
-               & data%xydata%x_err(1,:), maske))
-          axmax = max(axmax, maxval(data%xydata%x+ &
-               & data%xydata%x_err(1,:), maske))
-       end if
+       if (count(maske) > 0) &
+            & axmax = max(axmax, maxval(data%xydata%x+ &
+            & data%xydata%x_err(1,:), maske))
+       if (pdefs%axtype(1) == 1) &
+            maske = maske .and. data%xydata%x-data%xydata%x_err(1,:) > 0.
+       if (count(maske) > 0) &
+            & axmin = min(axmin, minval(data%xydata%x- &
+            & data%xydata%x_err(1,:), maske))
+
     case(4,7,8)
        allocate(maske(data%ndata))
        maske = ieee_is_finite(data%xydata%x_err(1,:)) .and. mask
+       if (pdefs%axtype(1) == 1) &
+            maske = maske .and. data%xydata%x-data%xydata%x_err(1,:) > 0.
        if (count(maske) > 0) &
             & axmin = min(axmin, minval(data%xydata%x- &
             & data%xydata%x_err(1,:), maske))
@@ -211,6 +219,7 @@ contains
        if (count(maske) > 0) &
             & axmax = max(axmax, maxval(data%xydata%x + &
             & data%xydata%x_err(2,:), maske))
+
     case(9)
        axmin = min(axmin, minval(data%zdata%x))
        axmax = max(axmax, maxval(data%zdata%x))
@@ -225,15 +234,18 @@ contains
     end select
   end subroutine gr_autoscale_x_rect
 
-  subroutine gr_autoscale_y_rect(data, axmin, axmax, visible)
-    type(graff_data), intent(in) :: data
+  subroutine gr_autoscale_y_rect(idx, axmin, axmax, visible)
+    integer(kind=int16), intent(in) :: idx
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
-    
+
     logical, dimension(:), allocatable :: mask, maske
     real(kind=real64), pointer, dimension(:) :: par
+    type(graff_data), pointer :: data
 
     ! Auto scale the Y axis for a rectangular coordinate DS
+
+    data => pdefs%data(idx)
 
     if ((data%type >= 0 .and. data%type <= 8) .or. &
          & data%type == -1 .or. data%type == -3) then
@@ -246,7 +258,7 @@ contains
        else
           mask = ieee_is_finite(data%xydata%y)
        end if
-       
+
        if (ieee_is_finite(data%min_val)) &
             & mask = mask .and. data%xydata%y >= data%min_val
        if (ieee_is_finite(data%max_val)) &
@@ -259,20 +271,23 @@ contains
        axmin = min(axmin, minval(data%xydata%y, mask))
        axmax = max(axmax, maxval(data%xydata%y, mask))
     end if
-    
+
     select case (data%type)
     case(1,5,7)
        allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata%y_err(1,:)) .and. mask
-       if (count(maske) > 0) then 
-          axmin = min(axmin, minval(data%xydata%y- &
-               & data%xydata%y_err(1,:), maske))
-          axmax = max(axmax, maxval(data%xydata%y+ &
-               & data%xydata%y_err(1,:), maske))
-       end if
+       maske = ieee_is_finite(data%xydata%y_err(1,:))  .and. mask
+       if (count(maske) > 0) &
+            & axmax = max(axmax, maxval(data%xydata%y+ &
+            & data%xydata%y_err(1,:), maske))
+       if (pdefs%axtype(data%y_axis+2) == 1) &
+            & maske = maske .and. data%xydata%y-data%xydata%y_err(1,:) > 0.
+       if (count(maske) > 0) &
+            & axmin = min(axmin, minval(data%xydata%y- &
+            & data%xydata%y_err(1,:), maske))
     case(2,6,8)
        allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata%y_err(1,:)) .and. mask
+       maske = ieee_is_finite(data%xydata%y_err(1,:)) .and. &
+            & data%xydata%y-data%xydata%y_err(1,:) > 0. .and. mask
        if (count(maske) > 0) &
             & axmin = min(axmin, minval(data%xydata%y- &
             & data%xydata%y_err(1,:), maske))
@@ -284,6 +299,7 @@ contains
     case(9)
        axmin = min(axmin, minval(data%zdata%y))
        axmax = max(axmax, maxval(data%zdata%y))
+
     case(-2)
        if (data%funct%range(1,1) /= data%funct%range(2,1)) then
           axmin = min(axmin, minval(data%funct%range(:,1)))
@@ -299,11 +315,11 @@ contains
        axmax = max(axmax, maxval(data%xydata%y, mask))
     end select
 
-     
+
   end subroutine gr_autoscale_y_rect
 
-  subroutine gr_autoscale_x_polar(data, axmin, axmax, visible)
-    type(graff_data), intent(in), target :: data
+  subroutine gr_autoscale_x_polar(idx, axmin, axmax, visible)
+    integer(kind=int16), intent(in) :: idx
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
 
@@ -314,7 +330,10 @@ contains
     type(graff_xydata), pointer :: xydata
     logical, dimension (:), allocatable :: mask
     real(kind=real64), pointer, dimension(:) :: par
+    type(graff_data), pointer :: data
 
+    data => pdefs%data(idx)
+    
     if (data%mode == 2) then
        scale = pi/180._real64
     else
@@ -635,8 +654,8 @@ contains
 
   end subroutine gr_autoscale_x_polar
 
-  subroutine gr_autoscale_y_polar(data, axmin, axmax, visible)
-    type(graff_data), intent(in), target :: data
+  subroutine gr_autoscale_y_polar(idx, axmin, axmax, visible)
+    integer(kind=int16), intent(in) :: idx
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
 
@@ -647,6 +666,9 @@ contains
     type(graff_xydata), pointer :: xydata
     logical, dimension(:), allocatable :: mask
     real(kind=real64), pointer, dimension(:) :: par
+    type(graff_data), pointer :: data
+
+    data => pdefs%data(idx)
 
     if (data%mode == 2) then
        scale = pi/180._real64

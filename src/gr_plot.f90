@@ -550,7 +550,6 @@ contains
     ! Plot an X-Y dataset
 
     real(kind=plflt), allocatable, dimension(:) :: x, y
-    real(kind=plflt), allocatable, dimension(:,:) :: xerr, yerr
     real(kind=plflt), allocatable, dimension(:) :: xh, yh
     integer(kind=int32), allocatable, dimension(:) :: idx
     
@@ -589,10 +588,6 @@ contains
     nseg = 1     ! single segment
     
     allocate(x(data%ndata), y(data%ndata))
-    if (allocated(data%xydata%x_err)) &
-         & allocate(xerr(nx_errors(data%type),data%ndata))
-    if (allocated(data%xydata%y_err)) &
-         & allocate(yerr(ny_errors(data%type),data%ndata))
     
     allocate(invalid(data%ndata))
     invalid(:) = .false.
@@ -601,13 +596,9 @@ contains
        if (issort) then
           x = data%xydata%x(idx)
           y = data%xydata%y(idx)
-          if (allocated(xerr)) xerr = data%xydata%x_err(:,idx)
-          if (allocated(yerr)) yerr = data%xydata%y_err(:,idx)
        else
           x = data%xydata%x(:)
           y = data%xydata%y(:)
-          if (allocated(xerr)) xerr = data%xydata%x_err(:,:)
-          if (allocated(yerr)) yerr = data%xydata%y_err(:,:)
        end if
        
        if (xlog) x = log10(x)
@@ -672,7 +663,7 @@ contains
     call gr_plot_linesty(data%line, scale=sqrt(data%thick))
 
     ! Moved error bars  before the line so that
-    ! isegb doesn't get changed
+    ! isegb doesn't get changed by histogram mode
     
     if (data%type > 0) then
        if (data%mode == 0) then
@@ -713,10 +704,7 @@ contains
          & data%symsize, use = .not. invalid) 
 
     deallocate(x,y)
-    
-    if (allocated(xerr)) deallocate(xerr)
-    if (allocated(yerr)) deallocate(yerr)
-    
+        
   end subroutine gr_1dd_plot
 
   subroutine gr_1df_plot(index)

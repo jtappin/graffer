@@ -57,7 +57,7 @@ contains
 
     integer :: nbar
     
-    real(kind=plflt), allocatable, dimension(:) :: elo, ehi
+    real(kind=plflt), allocatable, dimension(:) :: elo, ehi, xs, ys
     type(graff_data), pointer :: data
     logical :: xlog, ylog
 
@@ -79,8 +79,13 @@ contains
        ylog = pdefs%axtype(2) == 1
     end if
 
-    allocate(elo(nbar), ehi(nbar))
+    allocate(elo(nbar), ehi(nbar),xs(nbar), ys(nbar))
 
+    ys = y(iseg(1):iseg(2))
+    if (ylog) ys = log10(ys)
+    xs = x(iseg(1):iseg(2))
+    if (xlog) xs = log10(xs)
+    
     !    call plsmin(0._plflt, data%symsize)
     if (allocated(data%xydata%y_err)) then
        elo = y(iseg(1):iseg(2)) - yerr(1,iseg(1):iseg(2))
@@ -93,7 +98,7 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call gr_rect_errors(x(iseg(1):iseg(2)), y(iseg(1):iseg(2)), &
+       call gr_rect_errors(xs, ys, &
             & elo, ehi, data%symsize, .false.)
     end if
     
@@ -108,7 +113,7 @@ contains
           elo = log10(elo)
           ehi = log10(ehi)
        end if
-       call gr_rect_errors(x(iseg(1):iseg(2)), y(iseg(1):iseg(2)), &
+       call gr_rect_errors(xs, ys, &
             & elo, ehi, data%symsize, .true.)
     end if
         
@@ -152,7 +157,7 @@ contains
     else
        rinf = wyrange / 15.
     end if
-
+    
     if (isx) then
        ! Error bars in X
 

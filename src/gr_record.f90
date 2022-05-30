@@ -132,7 +132,7 @@ contains
     integer :: i
 
     ! List elements
-    integer(kind=int32) :: etcode, endims, edims
+    integer(kind=int32) :: etcode, endims, edims, dim1
     integer(kind=int8) :: ebval
     integer(kind=int32) :: elval
     integer(kind=int8), dimension(3) :: ebaval
@@ -186,6 +186,7 @@ contains
           return
        end if
        if (swap_end) call byte_swap(this%dims)
+
     end if
 
     if (this%tcode == idl_string) then

@@ -128,11 +128,11 @@ pro Gr_as_yr, data, xrange, xtype, range, visible = visible, positive $
         yp = ym
         if ptr_valid((*data.xydata).y_err) then begin
            ye = *(*data.xydata).y_err
-           ye and= finite(ye)
+           ye = finite(ye) and ye ; and= is the wrong way round
            ym -= ye[0, *]
            yp += ye[-1, *]
         endif
-      
+
         if finite(data.max_val) then yp <= data.max_val
         if finite(data.min_val) then ym >= data.min_val
 

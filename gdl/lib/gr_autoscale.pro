@@ -66,7 +66,7 @@ pro Gr_autoscale, pdefs, xaxis = xaxis, yaxis = yaxis, $
         if ((*pdefs.data)[i].mode ne 0) then $
            gr_as_xa, (*pdefs.data)[i], pdefs.xrange, yrange, range $ 
         else gr_as_xr, (*pdefs.data)[i], yrange, pdefs.ytype, range, $
-                       visible = visible, positive = pdefs.xtype
+                       visible = visible, positive = pdefs.xtype ne 0
         
      endfor
      
@@ -91,7 +91,7 @@ pro Gr_autoscale, pdefs, xaxis = xaxis, yaxis = yaxis, $
         if (*pdefs.data)[i].mode ne 0 then $
            gr_as_ya, (*pdefs.data)[i], pdefs.xrange, pdefs.yrange_r, range $ 
         else gr_as_yr, (*pdefs.data)[i], pdefs.xrange, pdefs.xtype, $
-                       range, visible = visible, positive = pdefs.ytype
+                       range, visible = visible, positive = pdefs.ytype_r ne 0
 
      endfor
      
@@ -116,7 +116,7 @@ pro Gr_autoscale, pdefs, xaxis = xaxis, yaxis = yaxis, $
         if (*pdefs.data)[i].mode ne 0 then $
            gr_as_ya, (*pdefs.data)[i], pdefs.xrange, pdefs.yrange, range $ 
         else gr_as_yr, (*pdefs.data)[i], pdefs.xrange, pdefs.xtype, $
-                       range, visible = visible, positive = pdefs.ytype
+                       range, visible = visible, positive = pdefs.ytype ne 0
 
      endfor
      

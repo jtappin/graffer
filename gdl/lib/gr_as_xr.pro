@@ -122,7 +122,7 @@ pro Gr_as_xr, data, yrange, ytype, range, visible = visible, positive $
         xp = xm
         if ptr_valid((*data.xydata).x_err) then begin
            xe = *(*data.xydata).x_err
-           xe and= finite(xe)
+           xe = finite(xe) and xe ; not and=
            xm -= xe[0, *]
            xp += xe[-1, *]
         endif
