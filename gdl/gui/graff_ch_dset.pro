@@ -142,7 +142,7 @@ pro Graff_ch_dset, pdefs
      (*pdefs.data)[pdefs.cset].zopts.style = ptr_new(0)
      (*pdefs.data)[pdefs.cset].zopts.N_thick =   1
      (*pdefs.data)[pdefs.cset].zopts.Thick =     ptr_new(1.)
-     (*pdefs.data)[pdefs.cset].zopts.Pxsize =    0.5
+     (*pdefs.data)[pdefs.cset].zopts.Pxsize =    0.1
 
      pdefs.nsets = pdefs.nsets+1
   endif

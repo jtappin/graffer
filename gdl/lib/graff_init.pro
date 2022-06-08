@@ -62,7 +62,7 @@ pro Graff_init, pdefs, file, version = version, ttype = ttype
 
   endif
   if n_elements(optblock) eq 0 then gr_rc_get, optblock
-
+  
   if (n_elements(file) eq 0) then begin
      fc = ''
      if (n_elements(dir) eq 0) then cd, curr = dir

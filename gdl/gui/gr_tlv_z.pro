@@ -359,7 +359,7 @@ function Gr_tlv_z, pdefs
      (*pdefs.data)[pdefs.cset].zopts.thick = ptr_new(1.)
   endif
   if (*pdefs.data)[pdefs.cset].zopts.pxsize eq 0. then $
-     (*pdefs.data)[pdefs.cset].zopts.pxsize = 0.5
+     (*pdefs.data)[pdefs.cset].zopts.pxsize = 0.1
 
   graff_set_vals, pdefs, /set_only
 

@@ -428,7 +428,7 @@ pro graff_update, file, idx, name = name, polar = polar, $
 
   if keyword_set(z_pxsize) then $
      (*pdefs.data)[index].zopts.pxsize = z_pxsize $
-  else (*pdefs.data)[index].zopts.Pxsize = 0.5
+  else (*pdefs.data)[index].zopts.Pxsize = 0.1
 
   if (n_elements(z_missing) ne 0) then $
      (*pdefs.data)[index].zopts.missing = z_missing

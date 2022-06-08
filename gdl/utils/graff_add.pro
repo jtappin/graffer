@@ -689,7 +689,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 
      if keyword_set(z_pxsize) then $
         (*pdefs.data)[pdefs.cset].zopts.pxsize = z_pxsize $
-     else (*pdefs.data)[pdefs.cset].zopts.Pxsize = 0.5
+     else (*pdefs.data)[pdefs.cset].zopts.Pxsize = 0.1
 
      (*pdefs.data)[pdefs.cset].zopts.invert = keyword_set(z_invert)
      if (n_elements(z_missing) ne 0) then $
