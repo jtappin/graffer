@@ -67,8 +67,8 @@ pro Gr_display_img, zin, xin, yin, range = range, $
   else mode = 0
 
   if (!D.flags and 1) then begin ; PS or similar with scalable pixels
-     if (not keyword_set(pixel_size)) then pixel_size = 0.5 ; default
-                                ; 0.5 mm pixels
+     if (not keyword_set(pixel_size)) then pixel_size = 0.1 ; default
+                                ; 0.1 mm pixels
      scfac = 10./([!D.x_px_cm, !D.y_px_cm] * pixel_size)
   endif else scfac = [1, 1]
 
