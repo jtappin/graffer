@@ -55,7 +55,7 @@ module gr_plot
   logical, private :: gr_plot_is_open = .false., gr_is_widget
 
   real(kind=plflt) :: xprev, yprev
-  character(len=80) :: selected_device
+!!  character(len=80) :: selected_device
   character(len=160), private :: error_str
 
   character(len=120), private :: local_name
@@ -130,24 +130,30 @@ contains
           else
              driver = hardset%psdev
           end if
-          if (hardset%psize == 0) then     ! A4
-             page_aspect = 297._plflt/210._plflt
-          else
-             page_aspect = 11._plflt/8.5_plflt
-          end if
+!!$          if (hardset%psize == 0) then     ! A4
+!!$             page_aspect = 297._plflt/210._plflt
+!!$          else
+!!$             page_aspect = 11._plflt/8.5_plflt
+!!$          end if
           call plsdev(driver)
-          if (hardset%orient) then
-             call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
-          else
-             call plsdidev (0._plflt, 1./page_aspect, 0._plflt, 0._plflt)
-          end if
+!!$          if (hardset%orient) then
+!!$             call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
+!!$          else
+!!$             call plsdidev (0._plflt, 1./page_aspect, 0._plflt, 0._plflt)
+!!$          end if
+          page_aspect = hardset%size(1)/hardset%size(2)
+
+          call plsori(1)
+          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
+          
           call plspage(0._plflt, 0._plflt, &
-               & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
-               & int(hardset%off(1)*cm2pt), &
-               & int(hardset%off(2)*cm2pt))
+               & int(hardset%size(1)*cm2pt), &
+               & int(hardset%off(2)*cm2pt), &
+               & int(hardset%off(1)*cm2pt))
 
           call plsfnam(trim(local_name)//'.ps')
+          
        case('eps')
           if (hardset%epsdev == '') then
              call gr_default_device('eps', driver)
@@ -168,6 +174,7 @@ contains
                & int(hardset%size(1)*cm2pt), &
                & 0, 0)
           call plsfnam(trim(local_name)//'.eps')
+          
        case('pdf')
           if (hardset%pdfdev == '') then
              call gr_default_device('pdf', driver)
@@ -181,17 +188,18 @@ contains
              page_aspect = 11._plflt/8.5_plflt
           end if
           call plsdev(driver)
-          if (hardset%orient) then
-             call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
-          else
-             call plsdidev (0._plflt, 1./page_aspect, 0._plflt, 0._plflt)
-          end if
+!!$          if (hardset%orient) then
+!!$             call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
+!!$          else
+!!$             call plsdidev (0._plflt, 1./page_aspect, 0._plflt, 0._plflt)
+!!$          end if
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
                & int(hardset%off(1)*cm2pt), &
                & int(hardset%off(2)*cm2pt))
           call plsfnam(trim(local_name)//'.pdf')
+
        case('epdf')
           if (hardset%pdfdev == '') then
              call gr_default_device('pdf', driver)
@@ -203,12 +211,13 @@ contains
 
           call plsdev(driver)
           call plsori(0)
-          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
+!!$          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
                & 0, 0)
           call plsfnam(trim(local_name)//'.pdf')
+          
        case('svg')
           if (hardset%svgdev == '') then
              call gr_default_device('svg', driver)
@@ -219,20 +228,19 @@ contains
 
           call plsdev(driver)
           call plsori(0)
-          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
+!!$          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
                & 0, 0)
           call plsfnam(trim(local_name)//'.svg')
-
        end select
 
        call plscolor(f_c_logical(hardset%colour))
        call plinit()
 
        gr_is_widget = .false.
-       selected_device = device
+       transient%selected_device = device
     else
        if (present(area)) then
           plotting_area = area
@@ -257,7 +265,7 @@ contains
        gr_is_widget = .true.
 !!$       call plxormod(.false., status)
 !!$       call gtk_widget_set_sensitive(xhair_but, f_c_logical(status))
-       selected_device = 'widget'
+       transient%selected_device = 'widget'
     end if
     call plfontld(1)
     gr_plot_is_open = .true.
@@ -311,7 +319,7 @@ contains
     call plend
     gr_plot_is_open = .false.
 
-    if (selected_device == 'ps' .and. hardset%action(1) /= '') then
+    if (transient%selected_device == 'ps' .and. hardset%action(1) /= '') then
        if (hardset%prompt(1)) then
           iresp = hl_gtk_message_dialog_show( &
                & ["Print or view file with " // &
@@ -324,7 +332,7 @@ contains
             & call execute_command_line(trim(hardset%action(1))//' '//&
             & trim(local_name)//'.ps '//trim(hardset%action(2)))
 
-    else if (selected_device == 'eps' .and. &
+    else if (transient%selected_device == 'eps' .and. &
          & hardset%viewer(1) /= '') then
        if (hardset%prompt(2)) then
           iresp = hl_gtk_message_dialog_show( &
@@ -340,8 +348,9 @@ contains
             & trim(hardset%viewer(2)), &
             & wait=.false.)
 
-    else if ((selected_device == 'pdf' .or. &
-         & selected_device == 'epdf') .and. hardset%pdfviewer(1) /= '') then
+    else if ((transient%selected_device == 'pdf' .or. &
+         & transient%selected_device == 'epdf') .and. &
+         & hardset%pdfviewer(1) /= '') then
        if (hardset%prompt(3)) then
           iresp = hl_gtk_message_dialog_show( &
                & ["View file with "// &
@@ -357,7 +366,7 @@ contains
             & wait=.false.)
     end if
 
-    selected_device = ''
+    transient%selected_device = ''
   end subroutine gr_plot_close
 
   subroutine gr_plot_draw(ichange)

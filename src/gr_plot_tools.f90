@@ -40,11 +40,16 @@ contains
     real(kind=plflt), intent(in) :: xin, yin
     real(kind=plflt), intent(out) :: xout, yout
 
-    integer(kind=c_int) :: width, height
+    real(kind=plflt) :: xscale, yscale
+    integer :: width, height, xoff, yoff
 
-    call hl_gtk_drawing_area_get_size(gr_drawing_area, &
-         & width=width, height=height)
+!!$    integer(kind=c_int) :: width, height
+!!$
+!!$    call hl_gtk_drawing_area_get_size(gr_drawing_area, &
+!!$         & width=width, height=height)
 
+    call plgpage(xscale, yscale, width, height, xoff, yoff )
+    
     xout = xin/real(width, plflt)
     yout = 1._plflt - yin/real(height, plflt)
 
@@ -82,10 +87,15 @@ contains
     real(kind=plflt), intent(in) :: xin, yin
     real(kind=plflt), intent(out) :: xout, yout
 
-    integer(kind=c_int) :: width, height
+    real(kind=plflt) :: xscale, yscale
+    integer :: width, height, xoff, yoff
 
-    call hl_gtk_drawing_area_get_size(gr_drawing_area, &
-         & width=width, height=height)
+!!$    integer(kind=c_int) :: width, height
+!!$
+!!$    call hl_gtk_drawing_area_get_size(gr_drawing_area, &
+!!$         & width=width, height=height)
+
+    call plgpage(xscale, yscale, width, height, xoff, yoff )
 
     xout = xin*real(width, plflt)
     yout = (1._plflt - yin)*real(height, plflt)
@@ -354,12 +364,20 @@ contains
 
     real(kind=plflt) :: p_xp, p_yp, p_xmin, p_xmax, p_ymin, p_ymax
     integer :: p_xleng, p_yleng, p_xoff, p_yoff
-    
+    real(kind=plflt) :: dc_ratio, nc_ratio, wx0,wx1,wy0,wy1
+
     call plgpage(p_xp, p_yp, p_xleng, p_yleng, p_xoff, p_yoff)
     call plgvpd(p_xmin, p_xmax, p_ymin, p_ymax)
 
-    gr_vp_aspect = p_yleng*(p_ymax-p_ymin) / &
-         & (p_xleng*(p_xmax-p_xmin))
+    if (transient%selected_device == 'eps' .or. &
+         & transient%selected_device == 'ps') then
+       gr_vp_aspect = p_xleng*(p_ymax-p_ymin) / &
+            & (p_yleng*(p_xmax-p_xmin))
+    else
+       gr_vp_aspect = p_yleng*(p_ymax-p_ymin) / &
+            & (p_xleng*(p_xmax-p_xmin))
+    end if
+
   end function gr_vp_aspect
     
   subroutine gr_plot_symbol(x, y, index, symsize, use)

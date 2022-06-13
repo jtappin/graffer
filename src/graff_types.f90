@@ -133,6 +133,7 @@ module graff_types
      logical(kind=int8) :: hairs=.true., opflag=.false., &
           & backup=.false., current_only=.false.
      real(kind=real64), dimension(:), allocatable :: x_dev, y_dev
+     character(len=10) :: selected_device
   end type graff_trans
 
   ! Hardcopy options

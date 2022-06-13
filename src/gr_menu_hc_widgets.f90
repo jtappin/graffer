@@ -140,7 +140,7 @@ contains
     junk = gtk_label_new("Offset: X (cm)"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 1_c_int, 1_c_int)
 
-    hc_off_sb(1) = hl_gtk_spin_button_new(0._c_double, 100._c_double, &
+    hc_off_sb(1) = hl_gtk_spin_button_new(-100._c_double, 100._c_double, &
          & 0.01_c_double, initial_value=real(hardset%off(1), c_double), &
          & tooltip=&
          & "Set the X offset of the 'paper' for hardcopies"//c_null_char)
@@ -149,7 +149,7 @@ contains
     junk = gtk_label_new("Y (cm)"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 3_c_int, 1_c_int)
 
-    hc_off_sb(2) = hl_gtk_spin_button_new(0._c_double, 100._c_double, &
+    hc_off_sb(2) = hl_gtk_spin_button_new(-100._c_double, 100._c_double, &
          & 0.01_c_double, initial_value=real(hardset%off(2), c_double), &
          &  tooltip=&
          & "Set the Y offset of the 'paper' for hardcopies"//c_null_char)
