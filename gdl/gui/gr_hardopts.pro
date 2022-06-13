@@ -670,14 +670,14 @@ function Gr_hardopts, pdefs
   jb = widget_base(spbase, /row)
   uvs.cmid[0, 2] = cw_enter(jb, $
                          label = 'PDF View Command:', $
-                         value = h.viewer[0], $
+                         value = h.pdfviewer[0], $
                          uvalue = 'PDCMD', $
                          xsize = 12, $
                          track = optblock.track, $
                          /capture)
 
   uvs.cmid[1, 2]= cw_enter(jb, $
-                         value = h.viewer[1], $
+                         value = h.pdfviewer[1], $
                          uvalue = 'PDSFX', $
                          xsize = 8, $
                          label = '<file>', $
@@ -734,7 +734,7 @@ function Gr_hardopts, pdefs
   endrep until (ev.exited ne 0)
 
   widget_control, base, get_uvalue = uvs, /no_copy
-  pdefs.hardset = uvs.opts
+  if ev.exited eq 1 then pdefs.hardset = uvs.opts
 
   widget_control, tlb, /destroy
 

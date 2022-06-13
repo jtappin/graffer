@@ -442,7 +442,6 @@ pro Gr_get_ds, data, nset, ilu, msgid
            else xydata.y_is_2d = gr_byt_val(tag_val[itag+1], 1)
 
            'DE': begin
-              print, "++++++ END OF DS ++++++"
               goto, ds_read
            end
            
