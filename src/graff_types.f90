@@ -134,6 +134,7 @@ module graff_types
           & backup=.false., current_only=.false.
      real(kind=real64), dimension(:), allocatable :: x_dev, y_dev
      character(len=10) :: selected_device
+     logical :: print_device
   end type graff_trans
 
   ! Hardcopy options
@@ -141,6 +142,7 @@ module graff_types
      logical(kind=int8) :: colour=.true., orient=.false., &
           & timestamp=.false., cmyk=.false.
      integer(kind=int8) :: psize=0_int8
+     real(kind=real64), dimension(2) :: print_size
      integer(kind=int16) :: font_family=1_int16, font_wg_sl=1_int16
      real(kind=real64), dimension(2) :: size=0._real64, off=0._real64
      character(len=120), dimension(2) :: action='', viewer='', &

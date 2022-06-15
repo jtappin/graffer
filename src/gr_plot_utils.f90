@@ -21,7 +21,7 @@ module gr_plot_utils
   use iso_fortran_env
   use iso_c_binding
 
-  use plplot !, only: plflt
+  use plplot, only: plflt
   use gtk_hl
   use gtk_sup
 
@@ -253,9 +253,6 @@ contains
     real(kind=plflt) :: dx, dy, xoff, yoff, roff
     real(kind=plflt) :: ch_raw, ch_scl
 
-    call plgchr(ch_raw, ch_scl)
-    print *, "Charsizes:", ch_raw, ch_scl
-    
     if (pdefs%isotropic) then
        corners = 0._plflt
        dx = pdefs%transform%world(2,1)- pdefs%transform%world(1,1)

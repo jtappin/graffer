@@ -1262,7 +1262,8 @@ contains
     call rec%set_value('GR ', pdefs%aspect, unit)
     call rec%set_value('GI ', pdefs%isotropic , unit)
     call rec%set_value('GHA', pdefs%match, unit)
-
+    call rec%set_value('GF ', pdefs%fontopt, unit)
+    
     ! X-axis information
 
     call rec%set_value('XR ', pdefs%axrange(:,1), unit)

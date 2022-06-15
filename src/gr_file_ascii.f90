@@ -409,7 +409,8 @@ contains
              pdefs%isotropic = gr_log_val(tag_val(itag+1))
           case('GHA')
              pdefs%match = gr_log_val(tag_val(itag+1))
-
+          case ('GF')
+             pdefs%fontopt = gr_int_val(tag_val(itag+1))
 
           case('XR')
              pdefs%axrange(:,1) = gr_dbl_val(tag_val(itag+1), 2)
@@ -1303,7 +1304,8 @@ contains
     write(unit, "(a,F9.5,f8.5)") "GR:", pdefs%aspect
     write(unit, "(2(a,i1))") "GI:", f_c_logical(pdefs%isotropic), ":GHA:", &
          &f_c_logical(pdefs%match)
-
+    write(unit, "(a,i2)") "GF:", pdefs%fontopt
+    
     write(unit, "(a,2(g0,' '))") "XR:",pdefs%axrange(:,1)
     write(unit, "(a,i0,5(a,i0))") "XL:", pdefs%axtype(1), ":XSI:", &
          & pdefs%axsty(1)%idl, ":XSE:", pdefs%axsty(1)%extra, &
