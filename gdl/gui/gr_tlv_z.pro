@@ -121,7 +121,8 @@ function Grf_tlz_event, event
         endelse
         sy = size(y)
         if (sy[0] eq 1 and sy[1] eq sz[2]) then iexit = 1 $
-        else if (sy[0] eq 2 and sy[1] eq sz[1] and sy[2] eq sz[2]) $
+        else if (sy[0] eq 2 && (sy[1] eq sz[1] || $
+                                sy[1] eq 1) && sy[2] eq sz[2]) $
         then iexit = 1 $
         else begin
            graff_msg, uvs.mid, 'Y: '+yvar+' Must be 1-D and match Y ' + $
