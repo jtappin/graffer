@@ -118,18 +118,18 @@ contains
     call hl_gtk_table_attach(jb, junk, 1_c_int, 0_c_int)
 
     hc_psize_sb(1) = hl_gtk_spin_button_new(0._c_double, 100._c_double, &
-         & 0.01_c_double, initial_value=real(hardset%size(1), c_double), &
+         & 0.1_c_double, initial_value=real(hardset%size(1), c_double), &
          & tooltip=&
-         & "Set the X dimension of the 'paper' for hardcopies"//c_null_char)
+         & "Set the X dimension of the page for hardcopies"//c_null_char)
     call hl_gtk_table_attach(jb, hc_psize_sb(1), 2_c_int, 0_c_int)
 
     junk = gtk_label_new("Y (cm)"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 3_c_int, 0_c_int)
 
     hc_psize_sb(2) = hl_gtk_spin_button_new(0._c_double, 100._c_double, &
-         & 0.01_c_double, initial_value=real(hardset%size(2), c_double), &
+         & 0.1_c_double, initial_value=real(hardset%size(2), c_double), &
          &  tooltip=&
-         & "Set the Y dimension of the 'paper' for hardcopies"//c_null_char)
+         & "Set the Y dimension of the page for hardcopies"//c_null_char)
     call hl_gtk_table_attach(jb, hc_psize_sb(2), 4_c_int, 0_c_int)
 
     junk = hl_gtk_button_new("Centre"//c_null_char, &
@@ -141,18 +141,18 @@ contains
     call hl_gtk_table_attach(jb, junk, 1_c_int, 1_c_int)
 
     hc_off_sb(1) = hl_gtk_spin_button_new(-100._c_double, 100._c_double, &
-         & 0.01_c_double, initial_value=real(hardset%off(1), c_double), &
+         & 0.1_c_double, initial_value=real(hardset%off(1), c_double), &
          & tooltip=&
-         & "Set the X offset of the 'paper' for hardcopies"//c_null_char)
+         & "Set the X offset of the page for hardcopies"//c_null_char)
     call hl_gtk_table_attach(jb, hc_off_sb(1), 2_c_int, 1_c_int)
 
     junk = gtk_label_new("Y (cm)"//c_null_char)
     call hl_gtk_table_attach(jb, junk, 3_c_int, 1_c_int)
 
     hc_off_sb(2) = hl_gtk_spin_button_new(-100._c_double, 100._c_double, &
-         & 0.01_c_double, initial_value=real(hardset%off(2), c_double), &
+         & 0.1_c_double, initial_value=real(hardset%off(2), c_double), &
          &  tooltip=&
-         & "Set the Y offset of the 'paper' for hardcopies"//c_null_char)
+         & "Set the Y offset of the page for hardcopies"//c_null_char)
     call hl_gtk_table_attach(jb, hc_off_sb(2), 4_c_int, 1_c_int)
 
     hc_ls_but = hl_gtk_check_button_new("Use landscape orientation"//&
