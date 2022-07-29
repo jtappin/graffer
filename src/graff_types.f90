@@ -70,6 +70,12 @@ module graff_types
      integer(kind=int32) :: shade_levels=256
   end type graff_zdata
 
+  ! XY dataset
+  type :: graff_xydata
+     real(kind=real64), dimension(:), allocatable :: x, y
+     real(kind=real64), dimension(:,:), allocatable :: x_err, y_err
+  end type graff_xydata
+
   ! Function specific stuff
   type :: graff_fdata
      real(kind=real64), dimension(2,2) :: range
@@ -81,7 +87,7 @@ module graff_types
   type :: graff_data
      integer(kind=int32) :: ndata=0_int32, ndata2=0_int32
      integer(kind=int16) :: type=0_int16, mode=0_int16
-     real(kind=real64), dimension(:,:), allocatable :: xydata
+     type(graff_xydata) :: xydata
      type(graff_zdata) :: zdata
      type(graff_fdata) :: funct
      character(len=120) :: descript=''
@@ -127,6 +133,8 @@ module graff_types
      logical(kind=int8) :: hairs=.true., opflag=.false., &
           & backup=.false., current_only=.false.
      real(kind=real64), dimension(:), allocatable :: x_dev, y_dev
+     character(len=10) :: selected_device
+     logical :: print_device
   end type graff_trans
 
   ! Hardcopy options
@@ -134,10 +142,12 @@ module graff_types
      logical(kind=int8) :: colour=.true., orient=.false., &
           & timestamp=.false., cmyk=.false.
      integer(kind=int8) :: psize=0_int8
+     real(kind=real64), dimension(2) :: print_size
      integer(kind=int16) :: font_family=1_int16, font_wg_sl=1_int16
      real(kind=real64), dimension(2) :: size=0._real64, off=0._real64
      character(len=120), dimension(2) :: action='', viewer='', &
           & pdfviewer=''
+     logical(kind=int8), dimension(3) :: prompt = [.true.,.false.,.false.]
      character(len=120) :: name=''
      character(len=16) :: psdev='', epsdev='', pdfdev='', svgdev=''
   end type graff_hard
@@ -212,6 +222,11 @@ module graff_types
        & "Data: X, Y, errors: -X, +X, ±Y", &
        & "Data: X, Y, errors: -X, +X, -Y, +Y", &
        & "Data: Z, X, Y"]
+
+  integer(kind=int32), dimension(-4:9), parameter :: nx_errors = &
+       & [0,0,0,0, 0, 0, 0, 1, 2, 1, 1, 2, 2, 0]
+  integer(kind=int32), dimension(-4:9), parameter :: ny_errors = &
+       & [0,0,0,0, 0, 1, 2, 0, 0, 1, 2, 1, 2, 0]
   
   ! Axis style bits
 

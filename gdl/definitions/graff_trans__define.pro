@@ -33,6 +33,7 @@ Transient = { graff_trans, $
               Opos:     dblarr(2), $
               Imove:    0l, $
               mode:     0, $
+              modifier: 0l, $
               Changes:  0, $
               hairs:    0b, $
               Opflag:   0b, $

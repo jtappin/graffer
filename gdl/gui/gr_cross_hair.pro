@@ -28,7 +28,7 @@ pro gr_cross_hair, pdefs, xy
 ;	Disable cross hairs in GDL: 31/3/22; SJT
 ;-
 
-  if is_gdl() then return            ; GDL does not (currently)
+  if is_gdl() then return       ; GDL does not (currently)
                                 ; support xor and invert modes due to
                                 ; a cairo limitation. Should not get
                                 ; called but this is a safety lock.
@@ -91,63 +91,190 @@ pro gr_cross_hair, pdefs, xy
         endif
      end
      2: begin                   ; Add point mode, draw the
-                                ; new line segment
-        lp = (*pdefs.data)[pdefs.cset].ndata-1
-        xy0 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, lp]
-        if (pdefs.transient.opflag) then begin
-           plots, [xy0[0], pdefs.transient.opos[0]], $
-                  [xy0[1], pdefs.transient.opos[1]]
-           pdefs.transient.opflag = 0b
-        endif
-        if n_params() eq 2 then begin
-           plots, [xy0[0], xy[0]], [xy0[1], xy[1]]
-           pdefs.transient.opos = xy[0:1]
-           pdefs.transient.opflag = 1b
-        endif
+                                ; new line segment(s)
+       
+        ndata = (*pdefs.data)[pdefs.cset].ndata
+        im = pdefs.transient.imove
+        case im of
+           0: begin             ; Prepending
+              x0 = (*(*(*pdefs.data)[pdefs.cset].xydata).x)[im]
+              y0 = (*(*(*pdefs.data)[pdefs.cset].xydata).y)[im]
+              case ((*pdefs.data)[pdefs.cset].mode) of
+                 0: begin
+                    x0r = x0
+                    y0r = y0
+                 end
+                 1: begin
+                    x0r = x0 * cos(y0)
+                    y0r = x0 * sin(y0)
+                 end
+                 2: begin
+                    x0r = x0 * cos(y0*!dtor)
+                    y0r = x0 * sin(y0*!dtor)
+                 end
+              endcase
+              if (pdefs.transient.opflag) then begin
+                 plots, [x0r, pdefs.transient.opos[0]], $
+                        [y0r, pdefs.transient.opos[1]]
+                 pdefs.transient.opflag = 0b
+              endif
+              if n_params() eq 2 then begin
+                 plots, [x0r, xy[0]], [x0r, xy[1]]
+                 pdefs.transient.opos = xy[0:1]
+                 pdefs.transient.opflag = 1b
+              endif
+           end
+           ndata: begin         ; Appending
+              x0 = (*(*(*pdefs.data)[pdefs.cset].xydata).x)[im-1]
+              y0 = (*(*(*pdefs.data)[pdefs.cset].xydata).y)[im-1]
+              case ((*pdefs.data)[pdefs.cset].mode) of
+                 0: begin
+                    x0r = x0
+                    y0r = y0
+                 end
+                 1: begin
+                    x0r = x0 * cos(y0)
+                    y0r = x0 * sin(y0)
+                 end
+                 2: begin
+                    x0r = x0 * cos(y0*!dtor)
+                    y0r = x0 * sin(y0*!dtor)
+                 end
+              endcase
+              if (pdefs.transient.opflag) then begin
+                 plots, [x0r, pdefs.transient.opos[0]], $
+                        [y0r, pdefs.transient.opos[1]]
+                 pdefs.transient.opflag = 0b
+              endif
+              if n_params() eq 2 then begin
+                 plots, [x0r, xy[0]], [x0r, xy[1]]
+                 pdefs.transient.opos = xy[0:1]
+                 pdefs.transient.opflag = 1b
+              endif
+           end
+           else: begin          ; Inserting
+              x0 = (*(*(*pdefs.data)[pdefs.cset].xydata).x)[im-1:im]
+              y0 = (*(*(*pdefs.data)[pdefs.cset].xydata).y)[im-1:im]
+              case ((*pdefs.data)[pdefs.cset].mode) of
+                 0: begin
+                    x0r = x0
+                    y0r = y0
+                 end
+                 1: begin
+                    x0r = x0 * cos(y0)
+                    y0r = x0 * sin(y0)
+                 end
+                 2: begin
+                    x0r = x0 * cos(y0*!dtor)
+                    y0r = x0 * sin(y0*!dtor)
+                 end
+              endcase
+              if (pdefs.transient.opflag) then begin
+                 plots, [x0r[0], pdefs.transient.opos[0], x0r[1]], $
+                        [y0r[0], pdefs.transient.opos[1], y0r[1]]
+                 pdefs.transient.opflag = 0b
+              endif
+              if n_params() eq 2 then begin
+                 plots, [x0r[0], xy[0], x0r[1]], $
+                        [x0r[0], xy[1], x0r[1]]
+                 pdefs.transient.opos = xy[0:1]
+                 pdefs.transient.opflag = 1b
+              endif
+           end
+        endcase
      end
      4: begin                   ; Move point mode, draw the new line
                                 ; segment(s).
-        lp = (*pdefs.data)[pdefs.cset].ndata-1
-        if pdefs.transient.imove eq 0 then begin
-           xy0 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, 1]
-           if (pdefs.transient.opflag) then begin
-              plots, [xy0[0], pdefs.transient.opos[0]], $
-                     [xy0[1], pdefs.transient.opos[1]]
-              pdefs.transient.opflag = 0b
-           endif
-           if n_params() eq 2 then begin
-              plots, [xy0[0], xy[0]], [xy0[1], xy[1]]
-              pdefs.transient.opos = xy[0:1]
-              pdefs.transient.opflag = 1b
-           endif
-        endif else if pdefs.transient.imove eq lp then begin
-           xy0 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, lp-1]
-           if (pdefs.transient.opflag) then begin
-              plots, [xy0[0], pdefs.transient.opos[0]], $
-                     [xy0[1], pdefs.transient.opos[1]]
-              pdefs.transient.opflag = 0b
-           endif
-           if n_params() eq 2 then begin
-              plots, [xy0[0], xy[0]], [xy0[1], xy[1]]
-              pdefs.transient.opos = xy[0:1]
-              pdefs.transient.opflag = 1b
-           endif
-        endif else begin 
-           im = pdefs.transient.imove
-           xy0 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, im-1]
-           xy1 = (*(*pdefs.data)[pdefs.cset].xydata)[0:1, im+1]
-           if (pdefs.transient.opflag) then begin
-              plots, [xy0[0], pdefs.transient.opos[0], xy1[0]], $
-                     [xy0[1], pdefs.transient.opos[1], xy1[1]]
-              pdefs.transient.opflag = 0b
-           endif
-           if n_params() eq 2 then begin
-              plots, [xy0[0], xy[0], xy1[0]], [xy0[1], xy[1], xy1[1]]
-              pdefs.transient.opos = xy[0:1]
-              pdefs.transient.opflag = 1b
-           endif
-        endelse
-     end 
+        ndata = (*pdefs.data)[pdefs.cset].ndata
+        im = pdefs.transient.imove
+        case im of
+           0: begin             ; First
+              x0 = (*(*(*pdefs.data)[pdefs.cset].xydata).x)[im+1]
+              y0 = (*(*(*pdefs.data)[pdefs.cset].xydata).y)[im+1]
+              case ((*pdefs.data)[pdefs.cset].mode) of
+                 0: begin
+                    x0r = x0
+                    y0r = y0
+                 end
+                 1: begin
+                    x0r = x0 * cos(y0)
+                    y0r = x0 * sin(y0)
+                 end
+                 2: begin
+                    x0r = x0 * cos(y0*!dtor)
+                    y0r = x0 * sin(y0*!dtor)
+                 end
+              endcase
+              if (pdefs.transient.opflag) then begin
+                 plots, [x0r, pdefs.transient.opos[0]], $
+                        [y0r, pdefs.transient.opos[1]]
+                 pdefs.transient.opflag = 0b
+              endif
+              if n_params() eq 2 then begin
+                 plots, [x0r, xy[0]], [x0r, xy[1]]
+                 pdefs.transient.opos = xy[0:1]
+                 pdefs.transient.opflag = 1b
+              endif
+           end
+           ndata-1: begin         ; Last
+              x0 = (*(*(*pdefs.data)[pdefs.cset].xydata).x)[im-1]
+              y0 = (*(*(*pdefs.data)[pdefs.cset].xydata).y)[im-1]
+              case ((*pdefs.data)[pdefs.cset].mode) of
+                 0: begin
+                    x0r = x0
+                    y0r = y0
+                 end
+                 1: begin
+                    x0r = x0 * cos(y0)
+                    y0r = x0 * sin(y0)
+                 end
+                 2: begin
+                    x0r = x0 * cos(y0*!dtor)
+                    y0r = x0 * sin(y0*!dtor)
+                 end
+              endcase
+              if (pdefs.transient.opflag) then begin
+                 plots, [x0r, pdefs.transient.opos[0]], $
+                        [y0r, pdefs.transient.opos[1]]
+                 pdefs.transient.opflag = 0b
+              endif
+              if n_params() eq 2 then begin
+                 plots, [x0r, xy[0]], [x0r, xy[1]]
+                 pdefs.transient.opos = xy[0:1]
+                 pdefs.transient.opflag = 1b
+              endif
+           end
+           else: begin          ; Inserting
+              x0 = (*(*(*pdefs.data)[pdefs.cset].xydata).x)[[im-1, im+1]]
+              y0 = (*(*(*pdefs.data)[pdefs.cset].xydata).y)[[im-1, im+1]]
+              case ((*pdefs.data)[pdefs.cset].mode) of
+                 0: begin
+                    x0r = x0
+                    y0r = y0
+                 end
+                 1: begin
+                    x0r = x0 * cos(y0)
+                    y0r = x0 * sin(y0)
+                 end
+                 2: begin
+                    x0r = x0 * cos(y0*!dtor)
+                    y0r = x0 * sin(y0*!dtor)
+                 end
+              endcase
+              if (pdefs.transient.opflag) then begin
+                 plots, [x0r[0], pdefs.transient.opos[0], x0r[1]], $
+                        [y0r[0], pdefs.transient.opos[1], y0r[1]]
+                 pdefs.transient.opflag = 0b
+              endif
+              if n_params() eq 2 then begin
+                 plots, [x0r[0], xy[0], x0r[1]], $
+                        [x0r[0], xy[1], x0r[1]]
+                 pdefs.transient.opos = xy[0:1]
+                 pdefs.transient.opflag = 1b
+              endif
+           end
+        endcase
+      end 
      8: begin                   ; Delete point mode, circle
                                 ; the selected point.
         th = !dpi*dindgen(73)/36.

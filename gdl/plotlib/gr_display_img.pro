@@ -67,8 +67,8 @@ pro Gr_display_img, zin, xin, yin, range = range, $
   else mode = 0
 
   if (!D.flags and 1) then begin ; PS or similar with scalable pixels
-     if (not keyword_set(pixel_size)) then pixel_size = 0.5 ; default
-                                ; 0.5 mm pixels
+     if (not keyword_set(pixel_size)) then pixel_size = 0.1 ; default
+                                ; 0.1 mm pixels
      scfac = 10./([!D.x_px_cm, !D.y_px_cm] * pixel_size)
   endif else scfac = [1, 1]
 
@@ -77,7 +77,7 @@ pro Gr_display_img, zin, xin, yin, range = range, $
   sx = size(xin)
   sy = size(yin)
   sz = size(zin)
-  tflag = sx[0] eq 2 or sy[0] eq 2
+  tflag = sx[0] eq 2 || (sy[0] eq 2 &&  sy[1] gt 1) ; Y can be 1xN
 
   if tflag then begin
      if sx[0] eq 1 then x = xin[*, intarr(sz[2])] $
@@ -194,21 +194,35 @@ pro Gr_display_img, zin, xin, yin, range = range, $
      endcase
   endelse
 
-  img = bytscl(zz, min = zrange[0], max = zrange[1])
+  img = bytscl(zz, min = zrange[0], max = zrange[1], /nan)
   if keyword_set(inverted) then img =  255b-img
 
-  if keyword_set(ps_grey) then $
-     tv, img, cmxll, cmyll, xsize = cmxsize, ysize = cmysize, /centi $
-  else begin
+  if keyword_set(ps_grey) then begin
+; Temporary (?) fix for GDL
+     nxll = cmxll * !d.x_px_cm / double(!d.x_size)
+     nxsize = cmxsize * !d.x_px_cm / double(!d.x_size)
+     nyll = cmyll * !d.y_px_cm / double(!d.y_size)
+     nysize = cmysize * !d.y_px_cm / double(!d.y_size)
+     tv, img, nxll, nyll, xsize = nxsize, ysize = nysize, /norm
+;;     tv, img, cmxll, cmyll, xsize = cmxsize, ysize = cmysize, /centi $
+  endif else begin
      if n_elements(table) eq 0 then table = 0
      graff_ctable, table, cmap, gamma = gamma
      sz = size(img, /dim)
      img3 = bytarr([sz, 3])
      for j = 0, 2 do img3[*, *, j] = (cmap[*, j])[img]
-     if (!d.flags and 1) then $
-        tv, img3, cmxll, cmyll, xsize = cmxsize, ysize = cmysize, $
-            true = 3, /centi $ 
-     else $
+     if (!d.flags and 1) then begin
+; Temporary (?) fix for GDL
+        nxll = cmxll * !d.x_px_cm / double(!d.x_size)
+        nxsize = cmxsize * !d.x_px_cm / double(!d.x_size)
+        nyll = cmyll * !d.y_px_cm / double(!d.y_size)
+        nysize = cmysize * !d.y_px_cm / double(!d.y_size)
+        tv, img3, nxll, nyll, xsize = nxsize, ysize = nysize, $
+            /norm, true = 3
+
+        ;; tv, img3, cmxll, cmyll, xsize = cmxsize, ysize = cmysize, $
+;;            true = 3, /centi 
+     endif else $
         tv, img3, xcorn[0], ycorn[0], true = 3
   endelse
 end

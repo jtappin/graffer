@@ -590,7 +590,9 @@ contains
           call rec%get_value(pdefs%hardset%pdfviewer(1), status)
        case ('HPA')
           call rec%get_value(pdefs%hardset%pdfviewer(2), status)
-
+       case('HPP')
+          call rec%get_value(pdefs%hardset%prompt, status)
+          
        case ('HF ')
           call rec%get_value(pdefs%hardset%font_family, status)
        case ('HWS')
@@ -797,9 +799,10 @@ contains
 
     integer, parameter, dimension(*) :: elements = [2, 3, 4, 3, 4, 4, 5, 5, 6]
 
-    integer(kind=int32) :: ndims
+    integer(kind=int32) :: ndims, nxe, nye
     integer(kind=int32), dimension(:), allocatable :: dims
     integer(kind=int32) :: asize
+    real(kind=real64), dimension(:,:), allocatable :: xytmp
 
     do
        status = rec%read(gr_unit, swap_end)
@@ -903,6 +906,10 @@ contains
        case('T')
           call rec%get_value(ds%type, status)
           tflag = .true.
+
+          nxe = nx_errors(ds%type)
+          nye = ny_errors(ds%type)
+          
        case ('M')
           call rec%get_value(ds%mode, status)
 
@@ -1024,16 +1031,114 @@ contains
        case ('FY')
           call rec%get_value(ds%funct%funct(2), status)
 
-       case ('VS')
-          if (allocated(ds%xydata)) deallocate(ds%xydata)
+       case ('VS')               ! Old multiplexed format.
+          if (.not. tflag) then
+             status = 2
+             call gr_message("GR_READ_DS: Old style dataset precedes type flag.", &
+                  & type=GTK_MESSAGE_ERROR)
+             exit
+          end if
+          if (allocated(ds%xydata%x)) deallocate(ds%xydata%x)
+          if (allocated(ds%xydata%y)) deallocate(ds%xydata%y)
+          if (allocated(ds%xydata%x_err)) deallocate(ds%xydata%x_err)
+          if (allocated(ds%xydata%y_err)) deallocate(ds%xydata%y_err)
           if (size(dims) == 2) then
-             allocate(ds%xydata(dims(1), dims(2)))
+             allocate(ds%xydata%x(dims(2)), ds%xydata%y(dims(2)))
+             if (nxe > 0) allocate(ds%xydata%x_err(nxe,dims(2)))
+             if (nye > 0) allocate(ds%xydata%y_err(nye,dims(2)))
              ds%ndata = dims(2)
           else
-             allocate(ds%xydata(dims(1), 1))
+             allocate(ds%xydata%x(1), ds%xydata%y(1))
+             if (nxe > 0) allocate(ds%xydata%x_err(nxe,1))
+             if (nye > 0) allocate(ds%xydata%y_err(nye,1))
              ds%ndata = 1
           end if
-          call rec%get_value(ds%xydata, status)
+          
+          allocate(xytmp(dims(1),ds%ndata))
+          call rec%get_value(xytmp, status)
+          ds%xydata%x = xytmp(1,:)
+          ds%xydata%y = xytmp(2,:)
+          if (nxe > 0) ds%xydata%x_err = xytmp(3:3+nxe-1,:)
+          if (nye > 0) ds%xydata%y_err = xytmp(3+nxe:,:)
+          deallocate(xytmp)
+          
+          nflag = .true.
+
+       case('VX')
+          if (nflag .and. dims(1) /= ds%ndata) then
+             call gr_message("GR_READ_DS: Number of X values does not"//&
+                  &" match dataset length", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (allocated(ds%xydata%x)) deallocate(ds%xydata%x)
+          allocate(ds%xydata%x(dims(1)))
+          call rec%get_value(ds%xydata%x, status)
+
+          if (.not. nflag) then
+             ds%ndata = dims(1)
+             nflag = .true.
+          end if
+
+       case('VY')
+          if (nflag .and. dims(1) /= ds%ndata) then
+             call gr_message("GR_READ_DS: Number of Y values does not"//&
+                  &" match dataset length", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (allocated(ds%xydata%y)) deallocate(ds%xydata%y)
+          allocate(ds%xydata%y(dims(1)))
+          call rec%get_value(ds%xydata%y, status)
+
+          if (.not. nflag) then
+             ds%ndata = dims(1)
+             nflag = .true.
+          end if
+
+       case('VXE')
+          if (nflag .and. dims(2) /= ds%ndata) then
+             call gr_message("GR_READ_DS: Number of X error values does not"//&
+                  &" match dataset length", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (.not. tflag .or. dims(1) /= nxe) then
+             call gr_message("GR_READ_DS: Number of X error values does not"//&
+                  &" match dataset type", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (allocated(ds%xydata%x_err)) deallocate(ds%xydata%x_err)
+          allocate(ds%xydata%x_err(dims(1), dims(2)))
+          call rec%get_value(ds%xydata%x_err, status)
+
+          if (.not. nflag) then
+             ds%ndata = dims(2)
+             nflag = .true.
+          end if
+
+       case('VYE')
+          if (nflag .and. dims(2) /= ds%ndata) then
+             call gr_message("GR_READ_DS: Number of Y error values does not"//&
+                  &" match dataset length", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (.not. tflag .or. dims(1) /= nye) then
+             call gr_message("GR_READ_DS: Number of Y error values does not"//&
+                  &" match dataset type", type=GTK_MESSAGE_ERROR)
+             status=2
+             exit
+          end if
+          if (allocated(ds%xydata%y_err)) deallocate(ds%xydata%y_err)
+          allocate(ds%xydata%y_err(dims(1), dims(2)))
+          call rec%get_value(ds%xydata%y_err, status)
+
+          if (.not. nflag) then
+             ds%ndata = dims(2)
+             nflag = .true.
+          end if
 
        case('ZXS')
           if (allocated(ds%zdata%x)) deallocate(ds%zdata%x)
@@ -1157,7 +1262,8 @@ contains
     call rec%set_value('GR ', pdefs%aspect, unit)
     call rec%set_value('GI ', pdefs%isotropic , unit)
     call rec%set_value('GHA', pdefs%match, unit)
-
+    call rec%set_value('GF ', pdefs%fontopt, unit)
+    
     ! X-axis information
 
     call rec%set_value('XR ', pdefs%axrange(:,1), unit)
@@ -1251,8 +1357,14 @@ contains
        
        select case(gdata%type)
        case(0:8)             ! X-Y types
-          if (allocated(gdata%xydata)) &
-               & call rec%set_value('VS ', gdata%xydata, unit)
+          if (allocated(gdata%xydata%x)) &
+               & call rec%set_value('VX ', gdata%xydata%x, unit)
+          if (allocated(gdata%xydata%y)) &
+               & call rec%set_value('VY ', gdata%xydata%y, unit)
+          if (allocated(gdata%xydata%x_err)) &
+               & call rec%set_value('VXE', gdata%xydata%x_err, unit)
+          if (allocated(gdata%xydata%y_err)) &
+               & call rec%set_value('VYE', gdata%xydata%y_err, unit)
 
        case(9)               ! 2-D data
           call rec%set_value('ZXS', gdata%zdata%x, unit)
@@ -1392,7 +1504,8 @@ contains
     call rec%set_value('HVA', pdefs%hardset%viewer(2), unit)
     call rec%set_value('HPB', pdefs%hardset%pdfviewer(1), unit)
     call rec%set_value('HPA', pdefs%hardset%pdfviewer(2), unit)
-
+    call rec%set_value('HPP', pdefs%hardset%prompt, unit)
+    
     call rec%set_value('HF ', pdefs%hardset%font_family, unit)
     call rec%set_value('HWS', pdefs%hardset%font_wg_sl, unit)
     call rec%set_value('HFN', pdefs%hardset%name, unit)

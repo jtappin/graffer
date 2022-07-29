@@ -70,7 +70,7 @@ contains
   end subroutine gr_str_val
 
   function gr_log_val_s(string)
-    logical :: gr_log_val_s
+    logical(kind=int8) :: gr_log_val_s
     character(len=*), intent(in) :: string
 
     ! Convert a Tag value to a logical
@@ -92,7 +92,7 @@ contains
   end function gr_log_val_s
 
   function gr_log_val_a(string, num)
-    logical, dimension(:), allocatable :: gr_log_val_a
+    logical(kind=int8), dimension(:), allocatable :: gr_log_val_a
     character(len=*), intent(in) :: string
     integer, intent(in) :: num
 
@@ -409,7 +409,8 @@ contains
              pdefs%isotropic = gr_log_val(tag_val(itag+1))
           case('GHA')
              pdefs%match = gr_log_val(tag_val(itag+1))
-
+          case ('GF')
+             pdefs%fontopt = gr_int_val(tag_val(itag+1))
 
           case('XR')
              pdefs%axrange(:,1) = gr_dbl_val(tag_val(itag+1), 2)
@@ -629,7 +630,9 @@ contains
              call gr_str_val(inln, 'HPA', pdefs%hardset%pdfviewer(2))
              exit
 
- 
+          case('HPP')
+             pdefs%hardset%prompt = gr_log_val(tag_val(itag+1), 3)
+             
           case('HF')
              pdefs%hardset%font_family = gr_int_val(tag_val(itag+1))
           case('HWS')
@@ -709,9 +712,10 @@ contains
     character(len=256), dimension(:), allocatable :: tag_val
 
     integer, parameter, dimension(0:*) :: elements = [2,3,4,3,4,4,5,5,6]
-    integer :: ios, ntags, itag, ncols
+    integer :: ios, ntags, itag, ncols, i, nxe, nye
     character(len=120) :: iom
-
+    real(kind=real64), dimension(:), allocatable :: xytmp
+    
     nflag = .false.
     nflag2 = .false.
     tflag = .false.
@@ -763,7 +767,7 @@ contains
              data%min_val = gr_dbl_val(tag_val(itag+1))
           case('MX')
              data%max_val = gr_dbl_val(tag_val(itag+1))
-             
+
           case('N')
              data%ndata = gr_lon_val(tag_val(itag+1))
              nflag = .true.
@@ -776,6 +780,9 @@ contains
              data%type = gr_int_val(tag_val(itag+1))
              tflag = .true.
 
+             nxe = nx_errors(data%type)
+             nye = ny_errors(data%type)
+ 
           case('Y')
              data%y_axis = gr_int_val(tag_val(itag+1))
 
@@ -896,7 +903,7 @@ contains
                 call gr_message("gr_get_ds_asc: Contour thickness "//&
                      & "list given without count - ignored")
              end if
-         case('ZTL')
+          case('ZTL')
              if (cflag(4)) then
                 if (allocated(data%zdata%thick)) deallocate(data%zdata%thick)
                 allocate(data%zdata%thick(data%zdata%n_thick))
@@ -921,7 +928,7 @@ contains
              data%zdata%charsize = gr_flt_val(tag_val(itag+1))
           case('ZLM')
              data%zdata%lmap = gr_int_val(tag_val(itag+1))
-             
+
           case('ZR')
              data%zdata%range = gr_dbl_val(tag_val(itag+1), 2)
           case('ZP')
@@ -972,7 +979,7 @@ contains
                 call gr_message("gr_get_ds_asc: Function found "// &
                      & "in XY data set - ignored")
              else if (data%type /= -3) then
-               call gr_message("gr_get_ds_asc: X function found "// &
+                call gr_message("gr_get_ds_asc: X function found "// &
                      & "in plain function - ignored")
              else 
                 call gr_str_val(inln, 'FX', data%funct%funct(1))
@@ -1020,9 +1027,27 @@ contains
                 if (ncols /= elements(data%type)) &
                      & call gr_message("gr_get_ds_asc: WARNING "// &
                      & "Data columns wrong could get corrupt DS")
-                if (allocated(data%xydata)) deallocate(data%xydata)
-                allocate(data%xydata(elements(data%type), data%ndata))
-                read(unit, *) data%xydata
+
+                if (allocated(data%xydata%x)) deallocate(data%xydata%x)
+                if (allocated(data%xydata%y)) deallocate(data%xydata%y)
+                if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
+                if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
+                allocate(data%xydata%x(data%ndata))
+                allocate(data%xydata%y(data%ndata))
+                if (nxe /= 0) allocate(data%xydata%x_err(nxe, data%ndata))
+                if (nye /= 0) allocate(data%xydata%y_err(nye, data%ndata))
+
+                allocate(xytmp(ncols))
+
+                do i = 1, data%ndata
+                   read(unit, *) xytmp
+                   data%xydata%x(i) = xytmp(1)
+                   data%xydata%y(i) = xytmp(2)
+                   if (nxe /= 0) data%xydata%x_err(:,i) = xytmp(3:3+nxe-1)
+                   if (nye /= 0) data%xydata%y_err(:,i) = xytmp(3+nxe:)
+                end do
+                deallocate(xytmp)
+
                 read(unit, "(a)") inln
                 if (index(inln, 'VE:') == 0) then 
                    call gr_message("gr_get_ds_asc: WARNING Data "// &
@@ -1068,7 +1093,7 @@ contains
                    if (index(inln, "ZYE:") > 0) exit
                 end do
              else if (data%type /= 9) then
-               call gr_message("gr_get_ds_asc: 2-D Data found "//&
+                call gr_message("gr_get_ds_asc: 2-D Data found "//&
                      & "in function or 1-D dataset - ignored")
                 do
                    read(unit, '(a)') inln
@@ -1136,7 +1161,7 @@ contains
        data%max_val = d_nan()
     end if
 
- 
+
     if (.not. jflag) then
        select case(data%psym)
        case(10)
@@ -1240,12 +1265,13 @@ contains
     ! Write an ASCII Graffer file.
 
     character(len=256) :: outfile
-    integer :: ios, unit, nvals, i
+    integer :: ios, unit, nvals, i, j, nxe, nye
     character(len=120) :: iom, vfmt
     character(len=28) :: date
     type(graff_data), pointer :: data
     type(graff_text), pointer :: text
-
+    real(kind=real64), dimension(:), allocatable :: xytmp
+    
     ok = .true.
 
     outfile = trim(pdefs%dir)//trim(pdefs%name)
@@ -1278,7 +1304,8 @@ contains
     write(unit, "(a,F9.5,f8.5)") "GR:", pdefs%aspect
     write(unit, "(2(a,i1))") "GI:", f_c_logical(pdefs%isotropic), ":GHA:", &
          &f_c_logical(pdefs%match)
-
+    write(unit, "(a,i2)") "GF:", pdefs%fontopt
+    
     write(unit, "(a,2(g0,' '))") "XR:",pdefs%axrange(:,1)
     write(unit, "(a,i0,5(a,i0))") "XL:", pdefs%axtype(1), ":XSI:", &
          & pdefs%axsty(1)%idl, ":XSE:", pdefs%axsty(1)%extra, &
@@ -1361,12 +1388,26 @@ contains
        if (data%ndata > 0) then
           select case(data%type)
           case(0:8)
-             nvals = size(data%xydata, 1)
+             nxe = nx_errors(data%type)
+             nye = ny_errors(data%type)
+
+             nvals = 2+nxe+nye
+ 
              write(vfmt, "('(',I0,'(g0,1x))')") nvals
              write(unit, "(a,i0)") "VS:", nvals
-             write(unit, vfmt) data%xydata
-             write(unit, "(a)") "VE:"
 
+             allocate(xytmp(nvals))
+             do j = 1, data%ndata
+                xytmp(1) = data%xydata%x(j)
+                xytmp(2) = data%xydata%y(j)
+                if (nxe /= 0) xytmp(3:3-nxe-1) = data%xydata%x_err(:,j)
+                if (nye /= 0) xytmp(3+nxe:) = data%xydata%y_err(:,j)
+                
+                write(unit, vfmt) xytmp
+             end do
+             write(unit, "(a)") "VE:"
+             deallocate(xytmp)
+             
           case(9)
              write(unit, "(2a,i0)") "ZX2:", f_c_logical(data%zdata%x_is_2d), &
                   & ":ZY2:", f_c_logical(data%zdata%y_is_2d)
@@ -1524,6 +1565,10 @@ contains
          & "HPB:", pdefs%hardset%pdfviewer(1), &
          & "HPA:", pdefs%hardset%pdfviewer(2)
 
+    write(unit, "(a,3i3)") 'HPP:', f_c_logical(pdefs%hardset%prompt(1)), &
+         & f_c_logical(pdefs%hardset%prompt(2)), &
+         & f_c_logical(pdefs%hardset%prompt(3))
+    
     write(unit, "(2(a,i0))") "HF:", pdefs%hardset%font_family, &
          & ":HWS:", pdefs%hardset%font_wg_sl
     write(unit, "(2a)") "HFN:", trim(pdefs%hardset%name)

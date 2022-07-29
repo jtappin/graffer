@@ -46,7 +46,7 @@ pro Gr_bin_save, pdefs, auto = auto
 
   if (keyword_set(auto)) then begin
      file = pdefs.dir+'#'+pdefs.name+'#'
-     graff_msg, pdefs.ids.message, 'Autosaving'
+     graff_msg, pdefs.ids.message, 'Autosaving', /help
   endif else begin
      if pdefs.dir ne './' then $
         file = pdefs.dir+pdefs.name $
@@ -195,8 +195,12 @@ pro Gr_bin_save, pdefs, auto = auto
            graff_put_rec, ilu, 'ZZS', *xydata.z
            
         endif else begin        ; Ordinary data
-           sxy = size(xydata)
-           graff_put_rec, ilu, 'VS ', xydata
+           graff_put_rec, ilu, 'VX ', *xydata.x
+           graff_put_rec, ilu, 'VY ', *xydata.y
+           if ptr_valid(xydata.x_err) then $
+              graff_put_rec, ilu, 'VXE', *xydata.x_err, /force_2d
+           if ptr_valid(xydata.y_err) then $
+              graff_put_rec, ilu, 'VYE', *xydata.y_err, /force_2d
         endelse
      endif
                                 ; We only need to save the 2-D
@@ -225,7 +229,7 @@ pro Gr_bin_save, pdefs, auto = auto
         if zopts.n_cols gt 0 then begin
            graff_put_rec, ilu, 'ZC ', *(zopts.colours)
            if ptr_valid(zopts.raw_colours) then $
-              graff_put_rec, ilu, 'ZCR', *(zopts.raw_colours)
+              graff_put_rec, ilu, 'ZCR', *(zopts.raw_colours), /force_2d
         endif
 
         if zopts.n_sty gt 0 then graff_put_rec, ilu, 'ZS ', $
@@ -323,7 +327,8 @@ pro Gr_bin_save, pdefs, auto = auto
   graff_put_rec, ilu, 'HVA', pdefs.hardset.viewer[1]
   graff_put_rec, ilu, 'HPB', pdefs.hardset.pdfviewer[0]
   graff_put_rec, ilu, 'HPA', pdefs.hardset.pdfviewer[1]
-
+  graff_put_rec, ilu, 'HPP', pdefs.hardset.prompt
+  
   graff_put_rec, ilu, 'HF ', pdefs.hardset.font.family
   graff_put_rec, ilu, 'HWS', pdefs.hardset.font.wg_sl
   graff_put_rec, ilu, 'HFN', pdefs.hardset.name

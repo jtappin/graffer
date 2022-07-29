@@ -436,7 +436,7 @@ contains
     integer(kind=int16), dimension(:,:), allocatable :: raw_colours
 
     integer :: ncols, ios, i, j, nsub
-    logical :: rewrite, changed
+    logical :: rewrite
     type(graff_zdata), pointer :: zdata
 
     rv = FALSE

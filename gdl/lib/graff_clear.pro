@@ -24,13 +24,23 @@ pro Graff_clear, pdefs
 ; History:
 ;	Extracted from GRAFF_EVENT: 18/8/95; SJT
 ;	Replace handles with pointers: 28/6/05; SJT
+;	Update 1-D format: 14/4/22; SJT
 ;-
 
+  common graff_msg_log, messages
+
   for j = 0, pdefs.nsets-1 do begin
-     if (*pdefs.data)[j].type eq 9 then ptr_free, $
-        (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
-        (*(*pdefs.data)[j].xydata).z
-     ptr_free, (*pdefs.data)[j].xydata
+     if ptr_valid((*pdefs.data)[j].xydata) then begin
+        if (*pdefs.data)[j].type eq 9 then ptr_free, $
+           (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
+           (*(*pdefs.data)[j].xydata).z $
+        else if (*pdefs.data)[j].type ge 0 then ptr_free, $
+           (*(*pdefs.data)[j].xydata).x, (*(*pdefs.data)[j].xydata).y, $
+           (*(*pdefs.data)[j].xydata).x_err, $
+           (*(*pdefs.data)[j].xydata).y_err
+     
+        ptr_free, (*pdefs.data)[j].xydata
+     endif
      ptr_free, (*pdefs.data)[j].zopts.levels, $
                (*pdefs.data)[j].zopts.style, $
                (*pdefs.data)[j].zopts.thick, $
@@ -44,4 +54,9 @@ pro Graff_clear, pdefs
   ptr_free, pdefs.key.list
   ptr_free, pdefs.remarks
 
+  if n_elements(messages) ne 0 then begin
+     messages.remove, /all
+     junk = temporary(messages)
+  endif
+  
 end

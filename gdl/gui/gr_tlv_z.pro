@@ -1,5 +1,5 @@
 ; LICENCE:
-; Copyright (C) 1995-2021: SJT
+; Copyright (C) 1995-2022: SJT
 ; This program is free software; you can redistribute it and/or modify  
 ; it under the terms of the GNU General Public License as published by  
 ; the Free Software Foundation; either version 2 of the License, or     
@@ -121,7 +121,8 @@ function Grf_tlz_event, event
         endelse
         sy = size(y)
         if (sy[0] eq 1 and sy[1] eq sz[2]) then iexit = 1 $
-        else if (sy[0] eq 2 and sy[1] eq sz[1] and sy[2] eq sz[2]) $
+        else if (sy[0] eq 2 && (sy[1] eq sz[1] || $
+                                sy[1] eq 1) && sy[2] eq sz[2]) $
         then iexit = 1 $
         else begin
            graff_msg, uvs.mid, 'Y: '+yvar+' Must be 1-D and match Y ' + $
@@ -324,12 +325,21 @@ function Gr_tlv_z, pdefs
   (*pdefs.data)[pdefs.cset].ndata = sz[1]
   (*pdefs.data)[pdefs.cset].ndata2 = sz[2]
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-     (*(*pdefs.data)[pdefs.cset].xydata).x, $
-     (*(*pdefs.data)[pdefs.cset].xydata).y, $
-     (*(*pdefs.data)[pdefs.cset].xydata).z
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+        (*(*pdefs.data)[pdefs.cset].xydata).x, $
+        (*(*pdefs.data)[pdefs.cset].xydata).y, $
+        (*(*pdefs.data)[pdefs.cset].xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+        (*(*pdefs.data)[pdefs.cset].xydata).x, $
+        (*(*pdefs.data)[pdefs.cset].xydata).y, $
+        (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+        (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
+
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
+  
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
   (*pdefs.data)[pdefs.cset].type = 9
 
@@ -350,7 +360,7 @@ function Gr_tlv_z, pdefs
      (*pdefs.data)[pdefs.cset].zopts.thick = ptr_new(1.)
   endif
   if (*pdefs.data)[pdefs.cset].zopts.pxsize eq 0. then $
-     (*pdefs.data)[pdefs.cset].zopts.pxsize = 0.5
+     (*pdefs.data)[pdefs.cset].zopts.pxsize = 0.1
 
   graff_set_vals, pdefs, /set_only
 

@@ -41,18 +41,19 @@ function Rescale_event, event
   if (track_flag) then begin
      idraw = 0
      if (event.enter eq 0) then begin
-        graff_msg, wids.msg, ''
+        graff_msg, wids.msg, '', /help
         goto, miss_case
      endif
   endif
 
   case (but) of
      'CANCEL': if (track_flag) then $
-        graff_msg, wids.msg, "Abandon operation and return" $
+        graff_msg, wids.msg, /help, "Abandon operation and return" $
      else iexit = -1
      
      'DO': if (track_flag) then $
-        graff_msg, wids.msg, "Apply scalings and shifts and return" $
+        graff_msg, wids.msg, /help, $
+                   "Apply scalings and shifts and return" $
      else  begin
         if widget_info(wids.boxes[4], /valid) then naxes = 3 $
         else naxes = 2
@@ -72,40 +73,46 @@ function Rescale_event, event
      endelse
      
      'XSCALE': if (track_flag) then $
-        graff_msg, wids.msg, "Specify scaling factor for X values" $
+        graff_msg, wids.msg, /help, $
+                   "Specify scaling factor for X values" $
      else cw_enter_focus, wids.boxes[1]
 
      'XSHIFT': if (track_flag) then $
-        graff_msg, wids.msg, $
+        graff_msg, wids.msg, /help, $
                    "Specify shift for X values (post scaling units)" $
      else cw_enter_focus, wids.boxes[2]
 
      'YSCALE': if (track_flag) then $
-        graff_msg, wids.msg, "Specify scaling factor for Y values" $
+        graff_msg, wids.msg, /help, $
+                   "Specify scaling factor for Y values" $
      else cw_enter_focus, wids.boxes[3]
 
      'YSHIFT': if (track_flag) then $
-        graff_msg, wids.msg, $
+        graff_msg, wids.msg, /help, $
                    "Specify shift for Y values (post scaling units)" $
      else cw_enter_focus, wids.boxes[0]
      
      'ZSCALE': if (track_flag) then $
-        graff_msg, wids.msg, "Specify scaling factor for Z values" $
+        graff_msg, wids.msg, /help, $
+                   "Specify scaling factor for Z values" $
      else cw_enter_focus, wids.boxes[4]
 
      'ZSHIFT': if (track_flag) then $
-        graff_msg, wids.msg, $
+        graff_msg, wids.msg, /help, $
                    "Specify shift for Z values (post scaling units)" $
      else cw_enter_focus, wids.boxes[5]
 
      'DIVX': if (track_flag) then $
-        graff_msg, wids.msg, 'Set to divide by the X scale factor'
+        graff_msg, wids.msg, /help, $
+                   'Set to divide by the X scale factor'
 
      'DIVY': if (track_flag) then $
-        graff_msg, wids.msg, 'Set to divide by the Y scale factor'
+        graff_msg, wids.msg, /help, $
+                   'Set to divide by the Y scale factor'
 
      'DIVZ': if (track_flag) then $
-        graff_msg, wids.msg, 'Set to divide by the Z scale factor'
+        graff_msg, wids.msg, /help, $
+                   'Set to divide by the Z scale factor'
 
   endcase
 
@@ -278,38 +285,16 @@ function Graff_rescale, pdefs
      *xydata.z = *xydata.z*ev.value[4] + ev.value[5]
      
   endif else begin
-     xydata[0, *] = xydata[0, *]*ev.value[0] + ev.value[1]
-     xydata[1, *] = xydata[1, *]*ev.value[2] + ev.value[3]
-     case (*pdefs.data)[pdefs.cset].type of ; Handle error scaling
-        0:                                  ; No errors nothing to do
-        
-        1: xydata[2, *] = xydata[2, *]*ev.value[2]     ; Y
-        2: xydata[2:3, *] = xydata[2:3, *]*ev.value[2] ; YY
-        
-        3: xydata[2, *] = xydata[2, *]*ev.value[0]     ; X
-        4: xydata[2:3, *] = xydata[2:3, *]*ev.value[0] ; XX
-        
-        5: begin                ; XY
-           xydata[2, *] = xydata[2, *]*ev.value[0]
-           xydata[3, *] = xydata[3, *]*ev.value[2]
-        end
-        
-        6: begin                ; XYY
-           xydata[2, *] = xydata[2, *]*ev.value[0]
-           xydata[3:4, *] = xydata[3:4, *]*ev.value[2]
-        end
-        7: begin                ; XXY
-           xydata[2:3, *] = xydata[2:3, *]*ev.value[0]
-           xydata[4, *] = xydata[4, *]*ev.value[2]
-        end
-        
-        8: begin                ; XXYY
-           xydata[2:3, *] = xydata[2:3, *]*ev.value[0]
-           xydata[4:5, *] = xydata[4:5, *]*ev.value[2]
-        end
-     endcase
-  endelse
+     *xydata.x = *xydata.x*ev.value[0] + ev.value[1]
+     *xydata.y = *xydata.y*ev.value[2] + ev.value[3]
 
+     if ptr_valid(xydata.x_err) then $
+        *xydata.x_err = *xydata.x_err*ev.value[0]
+     if ptr_valid(xydata.y_err) then $
+        *xydata.y_err = *xydata.y_err*ev.value[2]
+     
+  endelse
+  
   *(*pdefs.data)[pdefs.cset].xydata = xydata
 
   return, 1

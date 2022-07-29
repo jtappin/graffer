@@ -5,7 +5,7 @@
 ; the Free Software Foundation; either version 2 of the License, or     
 ; (at your option) any later version.                                   
 
-pro Graff_msg, mwid, message, help=help
+pro Graff_msg, mwid, message, help = help
 
 ;+
 ; GRAFF_MSG
@@ -26,8 +26,19 @@ pro Graff_msg, mwid, message, help=help
 ;	19/6/20; SJT
 ;-
 
-if (widget_info(mwid, /valid)) then $
-  widget_control, mwid, set_value = message $
-else print, message
+  common graff_msg_log, messages
 
+  if (widget_info(mwid, /valid)) then $
+     widget_control, mwid, set_value = message $
+  else print, message
+
+  if ~keyword_set(help) then begin
+     if n_elements(messages) eq 0 then messages = list()
+     now = systime()
+     dss = strsplit(now, /extr)
+     tp = scope_traceback(/str)
+     hdr = dss[3]+': '+tp[-2].routine
+
+     messages.add, [hdr, message]
+  endif
 end

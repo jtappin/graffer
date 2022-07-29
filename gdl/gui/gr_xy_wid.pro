@@ -146,14 +146,10 @@ end
 
 function Gr_xy_wid, pdefs, line = line
 
-    common graffer_options, optblock
+  common graffer_options, optblock
 
 ;	First extract the data
 
-  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) && $
-     n_elements(*((*pdefs.data)[pdefs.cset].xydata)) ne 0 then $
-        xydata = *(*pdefs.data)[pdefs.cset].xydata $
-  else xydata = dblarr(2)
 
   fflag = ((*pdefs.data)[pdefs.cset].type lt 0 or $
            (*pdefs.data)[pdefs.cset].type eq 9)
@@ -170,11 +166,20 @@ function Gr_xy_wid, pdefs, line = line
 
   if (fflag or (*pdefs.data)[pdefs.cset].ndata eq 0) then txt = '' $
   else begin
+     ner = gr_n_errors((*pdefs.data)[pdefs.cset].type)
+     ncol = 2 + ner[0] + ner[1]
+     xyvals = dblarr(ncol, (*pdefs.data)[pdefs.cset].ndata)
+     xyvals[0, *] = *(*(*pdefs.data)[pdefs.cset].xydata).x
+     xyvals[1, *] = *(*(*pdefs.data)[pdefs.cset].xydata).y
+     if ner[0] ne 0 then  $
+        xyvals[2:ner[0]+1, *] = *(*(*pdefs.data)[pdefs.cset].xydata).x_err
+     if ner[1] ne 0 then  $
+        xyvals[2+ner[0]:*, *] = *(*(*pdefs.data)[pdefs.cset].xydata).y_err
+     
      txt = strarr((*pdefs.data)[pdefs.cset].ndata)
-     sxy = size(xydata, /dim)
-     fmt = string(sxy[0], format = "('(',I0,'G19.12)')")
+     fmt = string(ncol, format = "('(',I0,'G19.12)')")
      for k = 0l, (*pdefs.data)[pdefs.cset].ndata-1 do $ 
-        txt[k] = string(xydata[*, k], format = fmt)
+        txt[k] = string(xyvals[*, k], format = fmt)
   endelse
 
   if (keyword_set(line)) then begin
@@ -285,22 +290,38 @@ function Gr_xy_wid, pdefs, line = line
 
      locs = where(strlen(strtrim(ev.value)) gt 0, nact)
      if (nact ne 0) then begin
-        xy_data = graff_decode_xy(ev.value(locs), nt)
+        xyvals = graff_decode_xy(ev.value(locs), nt)
         if (nt lt 0) then goto, badfile
         
         if ev.exited eq 2 then begin
-           idx = sort(xy_data[0, *])
-           xy_data = xy_data[*, idx]
+           idx = sort(xyvals[0, *])
+           xyvals = xyvals[*, idx]
         endif
         (*pdefs.data)[pdefs.cset].ndata = nact
 
-        if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-           (*(*pdefs.data)(pdefs.cset).xydata).x, $
-           (*(*pdefs.data)(pdefs.cset).xydata).y, $
-           (*(*pdefs.data)(pdefs.cset).xydata).z
-        ptr_free, (*pdefs.data)[pdefs.cset].xydata
-
-        (*pdefs.data)[pdefs.cset].xydata = ptr_new(xy_data)
+        if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+           if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+              (*(*pdefs.data)(pdefs.cset).xydata).x, $
+              (*(*pdefs.data)(pdefs.cset).xydata).y, $
+              (*(*pdefs.data)(pdefs.cset).xydata).z $
+           else if (*pdefs.data)[pdefs.cset].type ge 0 then ptr_free, $
+              (*(*pdefs.data)(pdefs.cset).xydata).x, $
+              (*(*pdefs.data)(pdefs.cset).xydata).y, $
+              (*(*pdefs.data)(pdefs.cset).xydata).x_err, $
+              (*(*pdefs.data)(pdefs.cset).xydata).y_err
+           
+           ptr_free, (*pdefs.data)[pdefs.cset].xydata
+        endif
+        
+        ner = gr_n_errors(ev.type)
+        
+        xydata = {graff_xydata}
+        xydata.x = ptr_new(reform(xyvals[0, *]))
+        xydata.y = ptr_new(reform(xyvals[1, *]))
+        if ner[0] ne 0 then xydata.x_err = ptr_new(xyvals[2:ner[0]+1, *])
+        if ner[1] ne 0 then xydata.y_err = ptr_new(xyvals[2+ner[0]:*, *])
+        
+        (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
         (*pdefs.data)[pdefs.cset].type = ev.type
      endif
   endif else goto, badfile

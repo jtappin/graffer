@@ -62,7 +62,7 @@ pro Graff_init, pdefs, file, version = version, ttype = ttype
 
   endif
   if n_elements(optblock) eq 0 then gr_rc_get, optblock
-
+  
   if (n_elements(file) eq 0) then begin
      fc = ''
      if (n_elements(dir) eq 0) then cd, curr = dir
@@ -109,6 +109,8 @@ pro Graff_init, pdefs, file, version = version, ttype = ttype
 ; overwritten if an old file existed.
 
   pdefs.hardset.action = ['lp ', '']
+  pdefs.hardset.prompt = [1b, 0b, 0b]
+  
   pdefs.hardset.Size = [23., 18.]
   pdefs.hardset.Off = [3.35, 1.5]
 

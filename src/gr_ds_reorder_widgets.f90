@@ -162,8 +162,6 @@ contains
 
     logical, pointer :: apply
     integer(kind=c_int) :: i
-    integer :: kidx, kidxt
-    integer(kind=int32), dimension(:), allocatable :: ktmp
     
     call c_f_pointer(data, apply)
 

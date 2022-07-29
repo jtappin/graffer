@@ -62,105 +62,109 @@ end
 
 function Grt_event, event
 
-widget_control, event.id, get_uvalue = but
-widget_control, event.handler, get_uvalue = pdefs, /no_copy
+  widget_control, event.id, get_uvalue = but
+  widget_control, event.handler, get_uvalue = pdefs, /no_copy
 
-iexit = 0
-idraw = 1
+  iexit = 0
+  idraw = 1
 
-track_flag = strpos(tag_names(event, /struct), 'TRACK') ne -1
-if (track_flag) then begin
-    idraw = 0
-    if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.popmsg, ''
+  track_flag = strpos(tag_names(event, /struct), 'TRACK') ne -1
+  if (track_flag) then begin
+     idraw = 0
+     if (event.enter eq 0) then begin
+        graff_msg, pdefs.ids.popmsg, '', /help
         goto, miss_case
-    endif
-endif
+     endif
+  endif
 
-    
-itxt = pdefs.transient.imove
+  
+  itxt = pdefs.transient.imove
 
-case but of
-    'DONE': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Text operation finished' $
-    else begin
+  case but of
+     'DONE': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, 'Text operation finished' $
+     else begin
         iexit = 1
         idraw = 0b
-    end
-    
-    'CANCEL': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Cancel text operation' $
-    else begin
+     end
+     
+     'CANCEL': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, 'Cancel text operation' $
+     else begin
         iexit = -1
         idraw = 0b
-    end
-    
-    'UPDATE': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Update screen' $
-    else begin
+     end
+     
+     'UPDATE': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, 'Update screen' $
+     else begin
         wset, pdefs.ids.windex
         gr_plot_object, pdefs
         wset, pdefs.ids.txwindex
-    endelse
-    
-    'TEXT': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Enter the text string' $
-    else (*pdefs.text)[itxt].text = event.value
-    
-    'ID': if (track_flag) then $
-       graff_msg, pdefs.ids.popmsg, "Enter an identifying tag for the " + $
-                  "annotation" $
-    else (*pdefs.text)[itxt].id = event.value
+     endelse
+     
+     'TEXT': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, 'Enter the text string' $
+     else (*pdefs.text)[itxt].text = event.value
+     
+     'ID': if (track_flag) then $
+        graff_msg, pdefs.ids.popmsg, /help, $
+                   "Enter an identifying tag for the annotation" $
+     else (*pdefs.text)[itxt].id = event.value
 
-    'CHS': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Set the character size' $
-    else (*pdefs.text)[itxt].size = event.value
+     'CHS': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, 'Set the character size' $
+     else (*pdefs.text)[itxt].size = event.value
 
-    'COL': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Select the text colour' $
-    else begin
-       if event.value eq graff_colours(/max_index)+1 then begin
-          ci = (*pdefs.text)[itxt].colour
-          if ci eq -2 then $
-             cc = gr_custom_colour((*pdefs.text)[itxt].c_vals, $
-                                   pdefs.ids.windex) $
-          else cc = gr_custom_colour(ci > 0, $
-                                   pdefs.ids.windex)
-          if n_elements(cc) eq 1 then begin
-             if ci ne -2 then $
-                widget_control, event.id, set_value = ci
-          endif else begin
-             (*pdefs.text)[itxt].colour = -2
-             (*pdefs.text)[itxt].c_vals = cc
-          endelse
-       endif else (*pdefs.text)[itxt].colour = event.value
-    endelse
+     'COL': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, 'Select the text colour' $
+     else begin
+        if event.value eq graff_colours(/max_index)+1 then begin
+           ci = (*pdefs.text)[itxt].colour
+           if ci eq -2 then $
+              cc = gr_custom_colour((*pdefs.text)[itxt].c_vals, $
+                                    pdefs.ids.windex) $
+           else cc = gr_custom_colour(ci > 0, $
+                                      pdefs.ids.windex)
+           if n_elements(cc) eq 1 then begin
+              if ci ne -2 then $
+                 widget_control, event.id, set_value = ci
+           endif else begin
+              (*pdefs.text)[itxt].colour = -2
+              (*pdefs.text)[itxt].c_vals = cc
+           endelse
+        endif else (*pdefs.text)[itxt].colour = event.value
+     endelse
 
-    'JUST': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Select text justification' $
-    else if (event.index le 2) then $
-      (*pdefs.text)[itxt].align = double(event.index)/2. $
-    else (*pdefs.text)[itxt].align = $
-      graff_just((*pdefs.text)[itxt].align, group = event.top) 
-    
-    'ORI': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Set orientation (Degrees anti clockwise)' $
-    else (*pdefs.text)[itxt].orient = event.value
-    'THI': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Select line width to draw text' $
-    else (*pdefs.text)[itxt].thick = event.value
-    
-    'TX': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Adjust X position of anchor' $
-    else (*pdefs.text)[itxt].x = event.value
-    'TY': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Adjust Y position of anchor' $
-    else (*pdefs.text)[itxt].y = event.value
-    
-    'TNORM': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Select data or viewport (normal) ' + $
-      'coordinates' $
-    else begin
+     'JUST': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, 'Select text justification' $
+     else if (event.index le 2) then $
+        (*pdefs.text)[itxt].align = double(event.index)/2. $
+     else (*pdefs.text)[itxt].align = $
+        graff_just((*pdefs.text)[itxt].align, group = event.top) 
+     
+     'ORI': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, $
+                   'Set orientation (Degrees anti clockwise)' $
+     else (*pdefs.text)[itxt].orient = event.value
+     'THI': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, $
+                   'Select line width to draw text' $
+     else (*pdefs.text)[itxt].thick = event.value
+     
+     'TX': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, $
+                   'Adjust X position of anchor' $
+     else (*pdefs.text)[itxt].x = event.value
+     'TY': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, $
+                   'Adjust Y position of anchor' $
+     else (*pdefs.text)[itxt].y = event.value
+     
+     'TNORM': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, $
+                   'Select data or viewport (normal) coordinates' $
+     else begin
         jb = widget_info(event.id, /parent)
         widget_control, jb, get_uvalue = poss
         cn = (*pdefs.text)[itxt].norm
@@ -168,30 +172,31 @@ case but of
         (*pdefs.text)[itxt].norm = event.index
 
         gr_coord_convert, (*pdefs.text)[itxt].x, $
-          (*pdefs.text)[itxt].y, xt, yt, $
-          data = cn eq 0, region = cn eq 1, frame = cn eq 2, $
-          to_data = event.index eq 0, to_region = event.index eq 1, $
-          to_frame = event.index eq 2
-         
+                          (*pdefs.text)[itxt].y, xt, yt, $
+                          data = cn eq 0, region = cn eq 1, frame = cn eq 2, $
+                          to_data = event.index eq 0, to_region = event.index eq 1, $
+                          to_frame = event.index eq 2
+        
         (*pdefs.text)[itxt].x = xt
         (*pdefs.text)[itxt].y = yt
         widget_control, poss(0), set_value = xt
         widget_control, poss(1), set_value = yt
         axd = widget_info(event.id, /sibling)
         if widget_info(/valid, axd) then widget_control, axd, $
-          sensitive = event.index eq 0
-    end
+           sensitive = event.index eq 0
+     end
 
-    'AXIS': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Select which to Y-axis to refer ' + $
-      'the data coordinates' $ 
+     'AXIS': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, $
+                   'Select to which Y-axis to refer ' + $
+                   'the data coordinates' $ 
 
-    else begin
+     else begin
         jb = widget_info(event.id, /parent)
         widget_control, jb, get_uvalue = poss
                                 ; Convert to normalized coordinates.
         gr_coord_convert, (*pdefs.text)[itxt].x, $
-          (*pdefs.text)[itxt].y, xt, yt, /data, /to_norm
+                          (*pdefs.text)[itxt].y, xt, yt, /data, /to_norm
 
                                 ; Update the Y-transform
         !y = pdefs.ytransform[event.index]
@@ -203,40 +208,41 @@ case but of
         (*pdefs.text)[itxt].y = ytt
         widget_control, poss(0), set_value = xtt
         widget_control, poss(1), set_value = ytt
-    endelse
+     endelse
 
-    'FAMILY': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Select font family' $
-    else begin
+     'FAMILY': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, $
+                   'Select font family' $
+     else begin
         (*pdefs.text)[itxt].ffamily = event.index-1
         gr_font_list, (*pdefs.text)[itxt].ffamily, flist, fnos
         locs = where((*pdefs.text)[itxt].font eq fnos, nf)
         if nf eq 0 then begin
-            idx = 0
-            (*pdefs.text)[itxt].font = fnos[0]
+           idx = 0
+           (*pdefs.text)[itxt].font = fnos[0]
         endif else idx = locs[0]
         widget_control, pdefs.ids.fontmenu, set_value = flist, $
-          set_droplist_select = idx
-    endelse
+                        set_droplist_select = idx
+     endelse
 
-    'FONT': if (track_flag) then  $
-      graff_msg, pdefs.ids.popmsg, 'Select text font' $
-    else begin
+     'FONT': if (track_flag) then  $
+        graff_msg, pdefs.ids.popmsg, /help, 'Select text font' $
+     else begin
         gr_font_list, (*pdefs.text)[itxt].ffamily, flist, fnos
         (*pdefs.text)[itxt].font = fnos[event.index]
-    endelse
-endcase
+     endelse
+  endcase
 
-if (idraw) then gr_text_disp, (*pdefs.text)[itxt]
+  if (idraw) then gr_text_disp, (*pdefs.text)[itxt]
 
 Miss_case:
 
-widget_control, event.handler, set_uvalue = pdefs, /no_copy
+  widget_control, event.handler, set_uvalue = pdefs, /no_copy
 
-return, {id:event.id, $
-         top:event.top, $
-         handler:event.handler, $
-         exited:iexit}
+  return, {id:event.id, $
+           top:event.top, $
+           handler:event.handler, $
+           exited:iexit}
 
 end
 

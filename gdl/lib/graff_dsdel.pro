@@ -10,68 +10,84 @@
 ;	Delete the current data set.
 ;
 ; Usage:
-;	graff_dsdel, pdefs
+;	graff_dsdel, pdefs[, index]
 ;
 ; Argument
-;	pdefs	struct	input	The graffer structure, needed if save
-;	requested.
+;	pdefs	struct	input	The graffer structure.
+;	index	long	input	The index of the dataset to delete.
+;
+; Keyword:
+;	/noprompt	If set, then do not prompt for confirmation.
 ;
 ; History:
 ;	Original: 29/8/95; SJT
 ;	Replace handles with pointers: 28/6/05; SJT
-;	Replace dialgues with system ones: 30/6/05; SJT
+;	Replace dialogues with system ones: 30/6/05; SJT
+;	Update 1-D format: 14/4/22; SJT
 ;-
 
-pro Graff_dsdel, pdefs
+pro Graff_dsdel, pdefs, index, noprompt = noprompt
 
   cdesc = (*pdefs.data)[pdefs.cset].descript
 
-  if (pdefs.nsets gt 1) then begin
-     msg = ['Do you really want to', $
-            'delete the current', $
-            'data set containing', $
-            cdesc]
-     ans = dialog_message(msg, /question, $
-                          dialog_parent = pdefs.ids.graffer, resource $
-                          = $
-                          'Graffer')
-     if ans eq 'No' then return
-  endif else begin
-     msg = ["Can't delete the only", $
-            "data set present"]
-     ans = dialog_message(msg, dialog_parent = pdefs.ids.graffer, $
-                          resource = 'Graffer')
-     return
-  endelse
+  if ~keyword_set(noprompt) then begin
+     if (pdefs.nsets gt 1) then begin
+        msg = ['Do you really want to', $
+               'delete the current', $
+               'data set containing', $
+               cdesc]
+        ans = dialog_message(msg, $
+                             /question, $
+                             dialog_parent = pdefs.ids.graffer, $
+                             resource = 'Graffer')
+        if ans eq 'No' then return
+     endif else begin
+        msg = ["Can't delete the only", $
+               "data set present"]
+        ans = dialog_message(msg, $
+                             dialog_parent = pdefs.ids.graffer, $
+                             resource = 'Graffer')
+        return
+     endelse
+  endif else if pdefs.nsets eq 0 then return
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then $
-     ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).z
-
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
-
-  ptr_free, (*pdefs.data)[pdefs.cset].zopts.levels, $
-            (*pdefs.data)[pdefs.cset].zopts.style, $
-            (*pdefs.data)[pdefs.cset].zopts.thick, $
-            (*pdefs.data)[pdefs.cset].zopts.colours, $
-            (*pdefs.data)[pdefs.cset].zopts.raw_colours
+  if n_params() eq 1 then index = pdefs.cset
+  
+  if ptr_valid((*pdefs.data)[index].xydata) then begin
+     if (*pdefs.data)[index].type eq 9 then $
+        ptr_free, (*(*pdefs.data)[index].xydata).x, $
+                  (*(*pdefs.data)[index].xydata).y, $
+                  (*(*pdefs.data)[index].xydata).z $
+     else if (*pdefs.data)[index].type ge 0 then ptr_free, $
+        (*(*pdefs.data)[index].xydata).x, $
+        (*(*pdefs.data)[index].xydata).y, $
+        (*(*pdefs.data)[index].xydata).x_err, $
+        (*(*pdefs.data)[index].xydata).y_err
+     
+     ptr_free, (*pdefs.data)[index].xydata
+  endif
+  
+  ptr_free, (*pdefs.data)[index].zopts.levels, $
+            (*pdefs.data)[index].zopts.style, $
+            (*pdefs.data)[index].zopts.thick, $
+            (*pdefs.data)[index].zopts.colours, $
+            (*pdefs.data)[index].zopts.raw_colours
 
   if ptr_valid(pdefs.key.list) then list = *pdefs.key.list
   ikey = bytarr(n_elements((*pdefs.data)))
 
   if (n_elements(list) ne 0) then ikey(list) = 1b
 
-  if (pdefs.cset eq 0) then begin
+  if (index eq 0) then begin
      *pdefs.data = (*pdefs.data)(1:*)
      ikey = ikey(1:*)
-  endif else if (pdefs.cset eq pdefs.nsets-1) then begin
-     *pdefs.data = (*pdefs.data)(0:pdefs.cset-1)
-     ikey = ikey(0:pdefs.cset-1)
+  endif else if (index eq pdefs.nsets-1) then begin
+     *pdefs.data = (*pdefs.data)(0:index-1)
+     ikey = ikey(0:index-1)
   endif else begin
-     (*pdefs.data) = [(*pdefs.data)(0:Pdefs.cset-1), $
-                      (*pdefs.data)(Pdefs.cset+1:*)]
-     ikey = [ikey(0:Pdefs.cset-1), ikey(Pdefs.cset+1:*)]
+     (*pdefs.data) = [(*pdefs.data)(0:index-1), $
+                      (*pdefs.data)(index+1:*)]
+     ikey = [ikey(0:index-1), ikey(index+1:*)]
   endelse
   list = where(ikey, nkey)
 
@@ -83,7 +99,7 @@ pro Graff_dsdel, pdefs
 
 
   pdefs.nsets = pdefs.nsets-1
-  pdefs.cset = pdefs.cset < (pdefs.nsets-1)
+  if pdefs.cset ge index then pdefs.cset--
 
   graff_set_vals, pdefs, /set_only
 

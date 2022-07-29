@@ -104,13 +104,15 @@ contains
     type(c_ptr), value :: widget, event, data
 
     ! Actions on cursor motion
+    ! Not a lot of stuff is commented out, so that it can be
+    ! restored if xor mode becomes available.
 
     type(gdkeventmotion), pointer :: fevent
     real(kind=c_double) :: xw, yw
-    real(kind=plflt) :: xmin, xmax, ymin, ymax, xh, yh
+!!$    real(kind=plflt) :: xmin, xmax, ymin, ymax, xh, yh
 
     character(len=20) :: tv
-    logical :: xstatus
+!!$    logical :: xstatus
 
     call c_f_pointer(event, fevent)
     call gr_plot_coords_d_w(fevent%x, fevent%y, xw, yw)

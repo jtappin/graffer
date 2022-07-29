@@ -69,7 +69,6 @@ contains
     real(kind=real32) :: rval
     real(kind=plflt) :: r8val
     
-    integer :: ival
     integer, dimension(2) :: ival2
     logical :: found
 

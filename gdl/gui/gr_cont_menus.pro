@@ -39,14 +39,14 @@ pro Cont_event, event
   track_flag = strpos(tag_names(event, /struct), 'TRACK') ne -1
   if (track_flag) then begin
      if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.hlptxt, ''
+        graff_msg, pdefs.ids.hlptxt, /help, ''
         goto, miss_case
      endif
   endif
 
   case but of
      'CMODE': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, $
+        graff_msg, pdefs.ids.hlptxt, /help, $
                    'Toggle explicit/automatic contour levels' $
      else begin
         zopts.set_levels = event.index
@@ -67,7 +67,8 @@ pro Cont_event, event
      end
      
      'LEVEL': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set explicit contour levels' $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Set explicit contour levels' $
      else begin
         widget_control, event.id, get_value = levels
         idx = uniq(levels, sort(levels))
@@ -78,19 +79,21 @@ pro Cont_event, event
      endelse
 
      'NLEVEL': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set number of automatic levels' $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Set number of automatic levels' $
      else begin
         widget_control, event.id, get_value = n_levels
         zopts.n_levels = n_levels
      endelse
 
      'CL_MAP': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Select mapping scheme for " + $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   "Select mapping scheme for " + $
                    "automatic levels" $
      else zopts.lmap = event.index
 
      'COLOUR': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set contour colours' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Set contour colours' $
      else begin
         widget_control, event.id, get_value = col
         gr_cont_col_get, col, icol, rcol, $
@@ -106,7 +109,7 @@ pro Cont_event, event
      endelse
      
      'THICK': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set contour thicknesses' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Set contour thicknesses' $
      else begin
         widget_control, event.id, get_value = thk
         if ptr_valid(zopts.thick) then ptr_free, zopts.thick
@@ -115,7 +118,7 @@ pro Cont_event, event
      endelse
      
      'STYLE': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set contour line styles' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Set contour line styles' $
      else begin
         widget_control, event.id, get_value = sty
         if ptr_valid(zopts.style) then ptr_free, zopts.style
@@ -124,7 +127,8 @@ pro Cont_event, event
      endelse
      
      'LABEL': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set contour labelling interval' $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Set contour labelling interval' $
      else begin
         widget_control, event.id, get_value = labi
         zopts.label = labi
@@ -142,21 +146,23 @@ pro Cont_event, event
      endelse
      
      'LABEL_OFF': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Set contour labelling offset" $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   "Set contour labelling offset" $
      else begin
         widget_control, event.id, get_value = labo
         zopts.label_off = labo
      endelse
 
      'CCSIZE': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set contour labelling character size' $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Set contour labelling character size' $
      else begin
         widget_control, event.id, get_value = ccs
         zopts.charsize = ccs
      endelse
 
      'FILL': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, $
+        graff_msg, pdefs.ids.hlptxt, /help, $
                    'Toggle filled/outline/feathered contours' $
      else zopts.fill = event.index
   endcase

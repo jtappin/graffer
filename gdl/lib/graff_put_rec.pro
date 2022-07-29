@@ -5,11 +5,11 @@
 ; the Free Software Foundation; either version 2 of the License, or     
 ; (at your option) any later version.                                   
 
-pro graff_put_rec, ilu, tag, value
+pro graff_put_rec, ilu, tag, value, force_2d = force_2d
 
 ;+
 ; GRAFF_PUT_REC
-;	Put a component of a Graffer V4 file to the output file.
+;	Put a component of a Graffer V4+ file to the output file.
 ;
 ; Usage:
 ;	graff_put_rec, ilu, tag, value
@@ -19,9 +19,15 @@ pro graff_put_rec, ilu, tag, value
 ;	tag	string	input	The name of the field tag for the variable.
 ;	value	any	input	The values to write in that tag.
 ;
+; Keyword:
+; 	/force_2d	If set, then force a 1-D array to be written
+; 			as N×1, should allow the absurdity of having a
+; 			dummy element for 1 point datasets to go.
+;
 ; History:
 ;	Original: 5/1/12; SJT
 ;	Add list types: 6/10/16; SJT
+;	Add /force_2d: 28/4/22; SJT
 ;-
 
   on_error, 2
@@ -38,17 +44,16 @@ pro graff_put_rec, ilu, tag, value
   endif
 
 ; Adjust the tag to 3 characters.
-  case strlen(tag) of
-     0: message, "GRAFF_PUT_REC: tag is empty"
-     1: wtag = tag+'  '
-     2: wtag = tag+' '
-     3: wtag = tag
-     else: begin
-        message, /continue, "GRAFF_PUT_RECORD Overlong tag truncated"
-        wtag = strmid(tag, 0, 3)
-     end
-  endcase
 
+  if strlen(tag) eq 0 then message, "GRAFF_PUT_REC: tag is empty"
+  if strlen(tag) gt 3 then $
+     message, /continue, "GRAFF_PUT_RECORD Overlong tag truncated"
+  wtag = '   '
+  strput, wtag, tag
+
+  if keyword_set(force_2d) && sz[0] eq 1 then $
+     sz = [2l, sz[1], 1l, sz[2:*]]
+  
   writeu, ilu, wtag, tcode, sz[0:sz[0]]
   if tcode eq 7 then writeu, ilu, strlen(value)
   if tcode ne 0 then writeu, ilu, value

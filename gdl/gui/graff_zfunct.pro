@@ -28,48 +28,48 @@
 
 function Zfunct_event, event
 
-widget_control, event.id, get_uvalue = but
+  widget_control, event.id, get_uvalue = but
 
-iexit = 0
+  iexit = 0
 
-funct = ''
-numpts = intarr(2)
-range = dblarr(2, 2)
-widget_control, event.handler, get_uvalue = uvs, /no_copy
-case but of
-    'ACTION': begin
+  funct = ''
+  numpts = intarr(2)
+  range = dblarr(2, 2)
+  widget_control, event.handler, get_uvalue = uvs, /no_copy
+  case but of
+     'ACTION': begin
         if (event.value eq 1) then begin
-            widget_control, uvs.fid, get_value = funct
-            for j = 0, 1 do begin
-                widget_control, uvs.nid(j), get_value = np
-                numpts(j) = np
-                for k = 0, 1 do begin
-                    widget_control, uvs.rgid(j, k), get_value = rng
-                    range(j, k) = rng
-                endfor
-            endfor
+           widget_control, uvs.fid, get_value = funct
+           for j = 0, 1 do begin
+              widget_control, uvs.nid(j), get_value = np
+              numpts(j) = np
+              for k = 0, 1 do begin
+                 widget_control, uvs.rgid(j, k), get_value = rng
+                 range(j, k) = rng
+              endfor
+           endfor
         endif
         iexit = event.value
-    end
-    
-    'XMIN': cw_enter_focus, uvs.rgid(1, 0)
-    'XMAX': cw_enter_focus, uvs.rgid(0, 1)
-    'YMIN': cw_enter_focus, uvs.rgid(1, 1)
-    'YMAX': cw_enter_focus, uvs.nid(0)
-    'NUM1': cw_enter_focus, uvs.nid(1)
-    'NUM2': cw_enter_focus, uvs.fid
-    'FUNC': cw_enter_focus, uvs.rgid(0, 0)
-    
-endcase
-widget_control, event.handler, set_uvalue = uvs, /no_copy
+     end
+     
+     'XMIN': cw_enter_focus, uvs.rgid(1, 0)
+     'XMAX': cw_enter_focus, uvs.rgid(0, 1)
+     'YMIN': cw_enter_focus, uvs.rgid(1, 1)
+     'YMAX': cw_enter_focus, uvs.nid(0)
+     'NUM1': cw_enter_focus, uvs.nid(1)
+     'NUM2': cw_enter_focus, uvs.fid
+     'FUNC': cw_enter_focus, uvs.rgid(0, 0)
+     
+  endcase
+  widget_control, event.handler, set_uvalue = uvs, /no_copy
 
-return, {id:event.id, $
-         top:event.top, $
-         handler:event.handler, $
-         Exited:iexit, $
-         funct:funct, $
-         numpts:numpts, $
-         range:range}
+  return, {id:event.id, $
+           top:event.top, $
+           handler:event.handler, $
+           Exited:iexit, $
+           funct:funct, $
+           numpts:numpts, $
+           range:range}
 
 end
 
@@ -82,12 +82,8 @@ function Graff_zfunct, pdefs
 
 ;	Find if the dataset is already defined as a 2-D function
 
-  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) && $
-     n_elements(*((*pdefs.data)[pdefs.cset].xydata)) gt 0 then $
-        xydata = *(*pdefs.data)[pdefs.cset].xydata $
-  else xydata = dblarr(2)
-
   if ((*pdefs.data)[pdefs.cset].type eq -4) then begin
+     xydata = *(*pdefs.data)[pdefs.cset].xydata
      funct = xydata.funct
      range = xydata.range
      numpts = [(*pdefs.data)[pdefs.cset].ndata, $
@@ -215,12 +211,20 @@ function Graff_zfunct, pdefs
   (*pdefs.data)[pdefs.cset].ndata = ev.numpts[0]
   (*pdefs.data)[pdefs.cset].ndata2 = ev.numpts[1]
 
-  if (*pdefs.data)[pdefs.cset].type eq 9 then $
-     ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
-               (*(*pdefs.data)[pdefs.cset].xydata).y, $
-               (*(*pdefs.data)[pdefs.cset].xydata).z
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then $
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then $
+        ptr_free, (*(*pdefs.data)[pdefs.cset].xydata).x, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).x_err, $
+                  (*(*pdefs.data)[pdefs.cset].xydata).y_err
 
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
+  endif
+  
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
   (*pdefs.data)[pdefs.cset].type = -4
 

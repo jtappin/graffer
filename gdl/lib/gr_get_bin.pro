@@ -278,6 +278,7 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
         'HVA': pdefs.hardset.viewer[1] = value
         'HPB': pdefs.hardset.pdfviewer[0] = value
         'HPA': pdefs.hardset.pdfviewer[1] = value
+        'HPP': pdefs.hardset.prompt = value
         
         'HF ': pdefs.hardset.font.family = value
         'HWS': pdefs.hardset.font.wg_sl = value

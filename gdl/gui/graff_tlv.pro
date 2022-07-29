@@ -43,9 +43,7 @@ function Grf_tlv_event, event
 
   iexit = 0
   case object of
-     'ACTION': if (event.value eq -1) then begin
-        iexit = -1 
-     endif else begin
+     'ACTION': if (event.value eq 1) then begin
         iexit = 1
         
         y_missing = 0b
@@ -111,9 +109,10 @@ function Grf_tlv_event, event
                  x = real_part(x[*])
                  nx = n_elements(x)
                  ny = nx
-               endif else begin
+              endif else begin
                  widget_control, uvs.mid, set_value = $
-                                 'If Y is not set, X must be a ' + $
+                                 'If Y is not set, X must be ' + $
+                                 'complex or a ' + $
                                  '2xN or Nx2 array'
                  iexit = 0
                  goto, donefor
@@ -138,49 +137,51 @@ function Grf_tlv_event, event
               goto, donefor
            endelse
         endif
+
+        nerc = gr_n_errors(uvs.type)
         
-        if (uvs.type ne 0) then begin
-           nce = ([0, 1, 2, 1, 2, 2, 3, 3, 4])[uvs.type]
-           errs = dblarr(nce, nx)
-           irr = 0 
-           isdot = ptr_valid(uvs.err)
-           if (isdot) then nerd = (size(*uvs.err))[0] $
-           else nerd = 0
-           if (exlm[uvs.type]) then begin
-              widget_control, uvs.eloxid, get_value = elvar
-              elvar = strtrim(elvar, 2)
-              if (elvar eq '') then begin
-                 widget_control, uvs.mid, set_value = 'Requested ' + $
-                                 'data type needs a lower X error'
-                 iexit = 0
-                 goto, donefor
-              endif
-              if (elvar eq '.') then begin
-                 if irr lt nerd then begin
-                    errtmp = *uvs.err[irr, *]
-                    nerl = n_elements(errtmp)
-                 endif else nerl = 0
-              endif else errtmp = grf_tlv_get(elvar, nerl)
-              if (nerl ne nx) then begin
-                 widget_control, uvs.mid, set_value = $
-                                 'Errors and data must be same length'
-                 iexit = 0
-                 goto, donefor
-              endif else errs(irr, *) = errtmp
-              irr = irr+1
+        if nerc[0] ne 0 then begin
+           if ptr_valid(uvs.xerr) then begin
+              sxer = size(uvs.xerr)
+              if sxer[0] eq 1 then nxer = 1 $
+              else nxer = sxer[1]
+           endif else nxer = 0
+           
+           xerrs = dblarr(nerc[0], nx)
+           
+           widget_control, uvs.eloxid, get_value = elvar
+           elvar = strtrim(elvar, 2)
+           if (elvar eq '') then begin
+              widget_control, uvs.mid, set_value = 'Requested ' + $
+                              'data type needs a lower X error'
+              iexit = 0
+              goto, donefor
            endif
-           if (exhm[uvs.type]) then begin
+           if (elvar eq '.') then begin
+              if nxer ge 1 then begin
+                 errtmp = *uvs.xerr[0, *]
+                 nerl = n_elements(errtmp)
+              endif else nerl = 0
+           endif else errtmp = grf_tlv_get(elvar, nerl)
+           
+           if (nerl ne nx) then begin
+              widget_control, uvs.mid, set_value = $
+                              'Errors and data must be same length'
+              iexit = 0
+              goto, donefor
+           endif else xerrs[0, *] = errtmp
+           if nerc[0] eq 2 then begin
               widget_control, uvs.ehixid, get_value = elvar
               elvar = strtrim(elvar, 2)
               if (elvar eq '') then begin
                  widget_control, uvs.mid, set_value = 'Requested ' + $
-                                 'data type needs a upper X error'
+                                 'data type needs an upper X error'
                  iexit = 0
                  goto, donefor
               endif
               if (elvar eq '.') then begin
-                 if irr lt nerd then begin
-                    errtmp = *uvs.err[irr, *]
+                 if nxer eq 2 then begin
+                    errtmp = *uvs.xerr[1, *]
                     nerl = n_elements(errtmp)
                  endif else nerl = 0
               endif else errtmp = grf_tlv_get(elvar, nerl)
@@ -189,58 +190,65 @@ function Grf_tlv_event, event
                                  'Errors and data must be same length'
                  iexit = 0
                  goto, donefor
-              endif else errs(irr, *) = errtmp
-              irr = irr+1
+              endif else xerrs[1, *] = errtmp
            endif
+        endif
+        
+        if nerc[1] ne 0 then begin
+           if ptr_valid(uvs.yerr) then begin
+              syer = size(uvs.yerr)
+              if syer[0] eq 1 then nyer = 1 $
+              else nyer = syer[1]
+           endif else nyer = 0
+
+           yerrs = dblarr(nerc[1], nx)
            
-           if (eylm[uvs.type]) then begin
-              widget_control, uvs.eloyid, get_value = elvar
-              elvar = strtrim(elvar, 2)
-              if (elvar eq '') then begin
-                 widget_control, uvs.mid, set_value = 'Requested ' + $
-                                 'data type needs a lower Y error'
-                 iexit = 0
-                 goto, donefor
-              endif
-              if (elvar eq '.') then begin
-                 if irr lt nerd then begin
-                    errtmp = *uvs.err[irr, *]
-                    nerl = n_elements(errtmp)
-                 endif else nerl = 0
-              endif else errtmp = grf_tlv_get(elvar, nerl)
-              if (nerl ne nx) then begin
-                 widget_control, uvs.mid, set_value = $
-                                 'Errors and data must be same length'
-                 iexit = 0
-                 goto, donefor
-              endif else errs(irr, *) = errtmp
-              irr = irr+1
+           widget_control, uvs.eloyid, get_value = elvar
+           elvar = strtrim(elvar, 2)
+           if (elvar eq '') then begin
+              widget_control, uvs.mid, set_value = 'Requested ' + $
+                              'data type needs a lower Y error'
+              iexit = 0
+              goto, donefor
            endif
-           if (eyhm[uvs.type]) then begin
+           if (elvar eq '.') then begin
+              if nyer ge 1 then begin
+                 errtmp = *uvs.yerr[0, *]
+                 nerl = n_elements(errtmp)
+              endif else nerl = 0
+           endif else errtmp = grf_tlv_get(elvar, nerl)
+           if (nerl ne nx) then begin
+              widget_control, uvs.mid, set_value = $
+                              'Errors and data must be same length'
+              iexit = 0
+              goto, donefor
+           endif else yerrs[0, *] = errtmp
+
+           if nerc[1] eq 2 then begin
               widget_control, uvs.ehiyid, get_value = elvar
               elvar = strtrim(elvar, 2)
               if (elvar eq '') then begin
                  widget_control, uvs.mid, set_value = 'Requested ' + $
-                                 'data type needs a upper Y error'
+                                 'data type needs an upper Y error'
                  iexit = 0
                  goto, donefor
               endif
               if (elvar eq '.') then begin
-                 if irr lt nerd then begin
-                    errtmp = *uvs.err[irr, *]
+                 if nyer eq 2 then begin
+                    errtmp = *uvs.yerr[1, *]
                     nerl = n_elements(errtmp)
-                 endif else nerl = 0
+                 endif else nerl = 01
               endif else errtmp = grf_tlv_get(elvar, nerl)
               if (nerl ne nx) then begin
                  widget_control, uvs.mid, set_value = $
                                  'Errors and data must be same length'
                  iexit = 0
                  goto, donefor
-              endif else errs(irr, *) = errtmp
-              irr = irr+1
+              endif else yerrs[2, *] = errtmp
            endif
-        endif 
-     endelse
+        endif
+     endif else iexit = -1
+     
      
      'X': cw_enter_focus, uvs.yid
      'Y': cw_enter_focus, uvs.eloxid
@@ -318,11 +326,11 @@ function Grf_tlv_event, event
 Donefor:
 
   if (iexit eq 1) then begin
+     ptr_free, uvs.x, uvs.y, uvs.xerr, uvs.yerr
      uvs.x = ptr_new(x)
      uvs.y = ptr_new(y)
-     if (uvs.type ge 1) then begin
-        uvs.err = ptr_new(errs)
-     endif
+     if nerc[0] gt 0 then uvs.xerr = ptr_new(xerrs)
+     if nerc[1] gt 0 then uvs.yerr = ptr_new(yerrs)
   endif
 
   widget_control, base, set_uvalue = uvs, /no_copy
@@ -342,8 +350,9 @@ function Graff_tlv, pdefs
 
   common Gr_tlvs_masks, exlm, exhm, eylm, eyhm
 
-  fflag = ((*pdefs.data)[pdefs.cset].type lt 0)
-  flag2 = ((*pdefs.data)[pdefs.cset].type ge 9)
+  dstype = (*pdefs.data)[pdefs.cset].type
+  fflag = (dstype lt 0)
+  flag2 = (dstype ge 9)
   if (fflag) then begin
      if dialog_message(['CURRENT DATA SET IS A FUNCTION', $
                         'OR A 2-D DATASET ENTERING DATA', $
@@ -352,9 +361,8 @@ function Graff_tlv, pdefs
                        /question, title = 'Overwriting ' + $
                        'function', dialog_parent = $
                        pdefs.ids.graffer, resource = 'Graffer') eq 'No' then $
-                          return, 0 
-     if  ptr_valid((*pdefs.data)[pdefs.cset].xydata) then $
-        ptr_free, (*pdefs.data)[pdefs.cset].xydata
+                          return, 0
+     dstype = 0
   endif
   if flag2 then begin
      if dialog_message(['CURRENT DATA SET IS A 2-D DATASET', $
@@ -364,9 +372,7 @@ function Graff_tlv, pdefs
                        'function', dialog_parent = $
                        pdefs.ids.graffer, resource = 'Graffer') eq 'No' then $
                           return, 0
-     (*pdefs.data)[pdefs.cset].type = 0 ; Force to a simple DS
-     if  ptr_valid((*pdefs.data)[pdefs.cset].xydata) then $
-        ptr_free, (*pdefs.data)[pdefs.cset].xydata
+     dstype = 0
   endif
 
   uvs = { $
@@ -387,34 +393,23 @@ function Graff_tlv, pdefs
         Mid:    0l, $
         X:      ptr_new(), $
         Y:      ptr_new(), $
-        Err:    ptr_new(), $
-        Type:   (*pdefs.data)[pdefs.cset].type $
+        xerr:    ptr_new(), $
+        yerr:    ptr_new(), $
+        Type:   dstype $
         }
 
-  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+  if dstype ge 0 && dstype le 8 && $
+     ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
      xydata = *(*pdefs.data)[pdefs.cset].xydata
-     if n_elements(xydata) ne 0 then begin
-        if (*pdefs.data)[pdefs.cset].ndata eq 1 then begin
-           xtmp = xydata[0, 0]
-           ytmp = xydata[1, 0]
-           uvs.x = ptr_new(xtmp)
-           uvs.y = ptr_new(ytmp)
-           if (*pdefs.data)[pdefs.cset].type gt 0 then begin
-              errtmp = xydata[2:*, 0]
-              uvs.err = ptr_new(errtmp)
-           endif
-        endif else begin
-           xtmp = xydata[0, *]
-           ytmp = xydata[1, *]
-           uvs.x = ptr_new(xtmp)
-           uvs.y = ptr_new(ytmp)
-           if (*pdefs.data)[pdefs.cset].type gt 0 then begin
-              errtmp = xydata[2:*, *]
-              uvs.err = ptr_new(errtmp)
-           endif
-        endelse
+     if ptr_valid(xydata.x) then begin
+        uvs.x = ptr_new(*xydata.x)
+        uvs.y = ptr_new(*xydata.y)
+        if ptr_valid(xydata.x_err) then $
+           uvs.xerr = ptr_new(*xydata.x_err)
+        if ptr_valid(xydata.y_err) then $
+           uvs.xerr = ptr_new(*xydata.y_err)
      endif
-  endif
+  endif else xydata = {graff_xydata} 
 
 ;	Check out the type of the current ds
 
@@ -439,12 +434,12 @@ function Graff_tlv, pdefs
   uvs.xbid = widget_base(base, $
                          /row)
   uvs.xid = cw_enter(uvs.xbid, $
-                        value = '', $
-                        /text, $
-                        uvalue = 'X', $
-                        label = 'X Variable:', $
-                        xsize = 12, $
-                        /capture)
+                     value = '', $
+                     /text, $
+                     uvalue = 'X', $
+                     label = 'X Variable:', $
+                     xsize = 12, $
+                     /capture)
   junk = widget_button(uvs.xbid, $
                        value = 'Pick...', $
                        uvalue = 'XP')
@@ -452,12 +447,12 @@ function Graff_tlv, pdefs
   uvs.ybid = widget_base(base, $
                          /row)
   uvs.yid = cw_enter(uvs.ybid, $
-                        value = '', $
-                        /text, $
-                        uvalue = 'Y', $
-                        label = 'Y Variable:', $
-                        xsize = 12, $
-                        /capture)
+                     value = '', $
+                     /text, $
+                     uvalue = 'Y', $
+                     label = 'Y Variable:', $
+                     xsize = 12, $
+                     /capture)
   junk = widget_button(uvs.ybid, $
                        value = 'Pick...', $
                        uvalue = 'YP')
@@ -465,64 +460,60 @@ function Graff_tlv, pdefs
   uvs.eloxbid = widget_base(base, $
                             /row)
   uvs.eloxid = cw_enter(uvs.eloxbid, $
-                           value = '', $
-                           /text, $
-                           uvalue = 'ELOX', $
-                           label = 'Lower X error:', $
-                           xsize = 12, $
-                           /capture)
+                        value = '', $
+                        /text, $
+                        uvalue = 'ELOX', $
+                        label = 'Lower X error:', $
+                        xsize = 12, $
+                        /capture)
   junk = widget_button(uvs.eloxbid, $
                        value = 'Pick...', $
                        uvalue = 'ELOXP')
 
-  widget_control, uvs.eloxbid, sensitive = $
-                  exlm((*pdefs.data)[pdefs.cset].type > 0) 
+  widget_control, uvs.eloxbid, sensitive = exlm[dstype]
 
   uvs.ehixbid = widget_base(base, $
                             /row)
   uvs.ehixid = cw_enter(uvs.ehixbid, $
-                           value = '', $
-                           /text, $
-                           uvalue = 'EHIX', $
-                           label = 'Upper X error:', $
-                           xsize = 12, $
-                           /capture)
+                        value = '', $
+                        /text, $
+                        uvalue = 'EHIX', $
+                        label = 'Upper X error:', $
+                        xsize = 12, $
+                        /capture)
   junk = widget_button(uvs.ehixbid, $
                        value = 'Pick...', $
                        uvalue = 'EHIXP')
-  widget_control, uvs.ehixbid, sensitive = $
-                  exhm((*pdefs.data)[pdefs.cset].type > 0) 
+  widget_control, uvs.ehixbid, sensitive = exhm[dstype]
 
 
   uvs.eloybid = widget_base(base, $
                             /row)
   uvs.eloyid = cw_enter(uvs.eloybid, $
-                           value = '', $
-                           /text, $
-                           uvalue = 'ELOY', $
-                           label = 'Lower Y error:', $
-                           xsize = 12, $
-                           /capture)
+                        value = '', $
+                        /text, $
+                        uvalue = 'ELOY', $
+                        label = 'Lower Y error:', $
+                        xsize = 12, $
+                        /capture)
   junk = widget_button(uvs.eloybid, $
                        value = 'Pick...', $
                        uvalue = 'ELOYP')
-  widget_control, uvs.eloybid, sensitive = $
-                  eylm((*pdefs.data)[pdefs.cset].type > 0) 
+  widget_control, uvs.eloybid, sensitive = eylm[dstype]
 
   uvs.ehiybid = widget_base(base, $
                             /row)
   uvs.ehiyid = cw_enter(uvs.ehiybid, $
-                           value = '', $
-                           /text, $
-                           uvalue = 'EHIY', $
-                           label = 'Upper Y error:', $
-                           xsize = 12, $
-                           /capture)
+                        value = '', $
+                        /text, $
+                        uvalue = 'EHIY', $
+                        label = 'Upper Y error:', $
+                        xsize = 12, $
+                        /capture)
   junk = widget_button(uvs.ehiybid, $
                        value = 'Pick...', $
                        uvalue = 'EHIYP')
-  widget_control, uvs.ehiybid, sensitive = $
-                  eyhm((*pdefs.data)[pdefs.cset].type > 0) 
+  widget_control, uvs.ehiybid, sensitive = eyhm[dstype]
 
   if ((*pdefs.data)[pdefs.cset].mode eq 0) then emds = ['None', $
                                                         '±Y', $
@@ -547,8 +538,7 @@ function Graff_tlv, pdefs
                           value = emds, $
                           title = 'Errors present : ', $
                           uvalue = 'ERRS')
-  widget_control, errid, set_droplist_select = $
-                  (*pdefs.data)[pdefs.cset].type > 0
+  widget_control, errid, set_droplist_select = dstype
 
   uvs.mid = cw_enter(base, $
                      value = '', $
@@ -584,27 +574,32 @@ function Graff_tlv, pdefs
   if (ev.exited eq -1) then return, 0
 
   nxy = n_elements(*uvs.x)
-  xydata = dblarr(([2, 3, 4, 3, 4, 4, 5, 5, 6])[uvs.type], $
-                  nxy > 2)
 
-  xydata(0, 0:nxy-1) = *uvs.x
-  xydata(1, 0:nxy-1) = *uvs.y
+  ptr_free, xydata.x, xydata.y, xydata.x_err, xydata.y_err
+  
+  xydata.x = ptr_new(*uvs.x)
+  xydata.y = ptr_new(*uvs.y)
+  if ptr_valid(uvs.xerr) then xydata.x_err = ptr_new(*uvs.xerr)
+  if ptr_valid(uvs.yerr) then xydata.y_err = ptr_new(*uvs.yerr)
+  
 
-  if (uvs.type ge 1) then begin
-     xydata(2, 0) = *uvs.err
-     ptr_free, uvs.err
+  if ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
+        (*(*pdefs.data)(pdefs.cset).xydata).x, $
+        (*(*pdefs.data)(pdefs.cset).xydata).y, $
+        (*(*pdefs.data)(pdefs.cset).xydata).z $
+     else if (*pdefs.data)[pdefs.cset].type ge 0 then $
+        ptr_free, (*(*pdefs.data)(pdefs.cset).xydata).x, $
+                  (*(*pdefs.data)(pdefs.cset).xydata).y, $
+                  (*(*pdefs.data)(pdefs.cset).xydata).x_err, $
+                  (*(*pdefs.data)(pdefs.cset).xydata).y_err
+
+     ptr_free, (*pdefs.data)[pdefs.cset].xydata
   endif
-
-  if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-     (*(*pdefs.data)(pdefs.cset).xydata).x, $
-     (*(*pdefs.data)(pdefs.cset).xydata).y, $
-     (*(*pdefs.data)(pdefs.cset).xydata).z
-
-  ptr_free, (*pdefs.data)[pdefs.cset].xydata
   (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
   (*pdefs.data)[pdefs.cset].ndata = n_elements(*uvs.x)
   (*pdefs.data)[pdefs.cset].type = uvs.type
-  ptr_free, uvs.x, uvs.y
+  ptr_free, uvs.x, uvs.y, uvs.xerr, uvs.yerr
 
   return, 1
 

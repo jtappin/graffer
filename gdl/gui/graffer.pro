@@ -34,8 +34,7 @@
 ;				used).
 ;	/tracking_events	Set explicitly to zero to prevent
 ;				widget tracking events when running in
-;				IDL. (Always disabled in GDL as
-;				they don't work properly).
+;				IDL.
 ;	/bitmaps	input	If set, then the plot symbol and
 ;				colour selection menus use bitmaps
 ;				rather than descriptions. 
@@ -283,7 +282,8 @@
 ;		      - Harmonization of IDL & Fortran versions
 ;		Version 5.00:
 ;		      - Mods to allow it to work in GDL as well as IDL.
-;		      - Add subirectory structure.
+;		      - Add subdirectory structure.
+;		      - Restructure XY dataset format.
 ;-
 
 
@@ -298,7 +298,7 @@ pro Graff_event, event
   if (sp eq 3) then begin
      base = widget_info(/child, pdefs)
      widget_control, base, get_uvalue = pdefs
-  end else if (sp ne 8) then begin
+  endif else if (sp ne 8) then begin
      message, /continue, "** O U C H ** Corrupted internal data - " + $
               "bailing out"
      widget_control, event.top, /destroy
@@ -317,9 +317,9 @@ pro Graff_event, event
      ichange = 0b
      
      if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.hlptxt, ''
+        graff_msg, pdefs.ids.hlptxt, '', /help
         case object of          ; Special actions for exit events
-           'AUTOSAVE': graff_msg, pdefs.ids.message, ''
+           'AUTOSAVE': graff_msg, pdefs.ids.message, '', /help
            Else:
         endcase
         goto, miss_case
@@ -329,7 +329,7 @@ pro Graff_event, event
   case object of
      'TEXT': if (track_flag) then begin
         graff_msg, pdefs.ids.hlptxt, 'Toggle between drawing and text ' + $
-                   'modes'
+                   'modes', /help
      endif else begin
         gr_td_mode, event.index, pdefs
         ichange = 0b
@@ -337,7 +337,7 @@ pro Graff_event, event
      end    
      
      'CROSS': if (track_flag) then begin
-        graff_msg, pdefs.ids.hlptxt, "Toggle display of crosshairs"
+        graff_msg, pdefs.ids.hlptxt, "Toggle display of crosshairs", /help
      endif else begin
         gr_cross_hair, pdefs
         pdefs.transient.hairs = event.select
@@ -346,7 +346,7 @@ pro Graff_event, event
 
      'QSAVE': if (track_flag) then $
         graff_msg, pdefs.ids.hlptxt, 'Save plot to currently selected ' + $
-                   'filename' $
+                   'filename', /help $
      else begin
         graff_save, pdefs
         ichange = 0b
@@ -375,7 +375,7 @@ pro Graff_event, event
      
      'TABS': if (track_flag) then $
         graff_msg, pdefs.ids.hlptxt, "Select global settings menus or " + $
-                   "dataset menus" $
+                   "dataset menus", /help $
      else begin
         ichange = 0b 
         if event.tab eq 1 then gr_show_colour, pdefs
@@ -383,11 +383,12 @@ pro Graff_event, event
 
      'YTABS': if (track_flag) then $
         graff_msg, pdefs.ids.hlptxt, "Select primary or secondary Y axis " + $
-                   "settings" $
+                   "settings", /help $
      else ichange = 0b          ; ignore
      
      'YRIGHT': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, "Enable/disable secondary Y-axis" $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   "Enable/disable secondary Y-axis" $
      else begin
         pdefs.y_right = event.select
         widget_control, pdefs.ids.ybase_r, sensitive = pdefs.y_right
@@ -395,6 +396,11 @@ pro Graff_event, event
         widget_control, pdefs.ids.y_axis, sensitive = pdefs.y_right
         widget_control, pdefs.ids.x_origin, sensitive = ~pdefs.y_right
      endelse
+
+     'RECALL': if track_flag then $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   "Recall past diagnostic messages." $
+     else graff_msg_recall, pdefs.ids.graffer
      
      Else: begin
         graff_msg, pdefs.ids.message, 'Unknown UVALUE: '+object
@@ -651,10 +657,10 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
   cbase = widget_base(cdbase, $
                       /column)
 
-  if (not keyword_set(xsize)) then xwsize = 800 $
+  if ~keyword_set(xsize) then xwsize = 800 $
   else xwsize = xsize > 800
 
-  if (not keyword_set(ysize)) then ywsize = 800 $
+  if ~keyword_set(ysize) then ywsize = 800 $
   else ywsize = ysize > 800
 
   if ((xwsize >  ywsize) gt 800 && ~keyword_set(noscroll)) then $
@@ -688,7 +694,7 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
                                 ; a timer event to control the autosave
   pdefs.ids.message = cw_enter(tjb, $
                                /display, $
-                               xsize = 78, $
+                               xsize = 70, $
                                ysize = 2, $
                                value = '', $
                                label = 'Messages:', $
@@ -698,6 +704,10 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
 
   pdefs.ids.hlptxt = pdefs.ids.message
 
+  junk = widget_button(tjb, $
+                       value = 'Recall', $
+                       uvalue = 'RECALL')
+  
                                 ; A box to show if the plot is changed
                                 ; since the last save.
 
@@ -716,7 +726,7 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
                        x_bitmap_extra = xbm)
   
   widget_control, pdefs.ids.graffer, /real
-  if (keyword_set(group)) then $
+  if keyword_set(group) then $
      widget_control, pdefs.ids.graffer, group = group
 
   widget_control, pdefs.ids.draw, get_value = windex

@@ -43,7 +43,7 @@ contains
 
     ! Define the dataset data modification panel
 
-    type(c_ptr) :: mnu, smnu, jmnu, junk
+    type(c_ptr) :: mnu, smnu, junk
     integer(kind=int16), dimension(4), target :: ftypes = &
          & [-1_int16, -2_int16, -3_int16, -4_int16]
 
@@ -69,20 +69,21 @@ contains
          & activate=c_funloc(gr_ds_copy_from), &
          & tooltip="Copy data from another dataset"//c_null_char)
 
-
-    jmnu = hl_gtk_menu_submenu_new(smnu, "2D Datasets"//c_null_char, &
+    ! 2D data
+    
+    smnu = hl_gtk_menu_submenu_new(mnu, "Z Data ▼"//c_null_char, &
          & tooltip="Data for 2-D datasets"//c_null_char)
 
-    junk = hl_gtk_menu_item_new(jmnu, "From file ..."//c_null_char, &
+    junk = hl_gtk_menu_item_new(smnu, "From file ..."//c_null_char, &
          & activate=c_funloc(gr_ds_file_2d), &
          & tooltip="Read data from a file"//c_null_char)
 
-    junk = hl_gtk_menu_item_new(jmnu, "Copy ..."//c_null_char, &
+    junk = hl_gtk_menu_item_new(smnu, "Copy ..."//c_null_char, &
          & activate=c_funloc(gr_ds_copy_from_2d), &
          & tooltip="Copy data from another dataset"//c_null_char)
 
 
-    ! Functions
+     ! Functions
 
     smnu = hl_gtk_menu_submenu_new(mnu, "Function ▼"//c_null_char, &
          & tooltip="Set/edit functions"//c_null_char)
@@ -114,6 +115,28 @@ contains
     junk = hl_gtk_menu_item_new(smnu, "Fit dataset ..."//c_null_char, &
          & activate=c_funloc(gr_ds_fit), &
          & tooltip="Make a fit to a dataset."//c_null_char)
+
+    ! Operators
+    
+    smnu = hl_gtk_menu_submenu_new(mnu, "Operators ▼"//c_null_char, &
+         & tooltip="Common dataset operations."//c_null_char)
+    ds_rescale_id = hl_gtk_menu_item_new(smnu, "Rescale Current"//c_null_char, &
+         & activate=c_funloc(gr_ds_rescale_cb), &
+         & tooltip="Scale and/or shift the current dataset"//c_null_char, &
+         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
+
+    ds_transpose_id =  hl_gtk_menu_item_new(smnu, "Transpose"//c_null_char, &
+         & activate=c_funloc(gr_ds_transpose_cb), &
+         & tooltip="Exchange X & Y axes of the current dataset"//c_null_char, &
+         & sensitive=f_c_logical(pdefs%data(pdefs%cset)%type >= 0))
+    
+    junk = hl_gtk_menu_item_new(smnu, "Erase"//c_null_char, &
+         & activate=c_funloc(gr_ds_erase_cb), tooltip=&
+         & "Erase the data of the current dataset"//c_null_char)
+
+    junk = hl_gtk_menu_item_new(smnu, "Erase all"//c_null_char, &
+         & activate=c_funloc(gr_ds_erase_all_cb), tooltip=&
+         & "Erase the contents of the current dataset"//c_null_char)
 
     ! Axis selection
 
@@ -300,6 +323,66 @@ contains
     call gr_ds_copy_from_menu(2)
 
   end subroutine gr_ds_copy_from_2d
+
+    subroutine gr_ds_erase_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Erase the current dataset
+
+    integer(kind=c_int) :: iresp
+
+    iresp = hl_gtk_message_dialog_show(&
+         & ["This will destroy all data in", &
+         &  "the current dataset          ",&
+         &  "Do you want to continue?     "],&
+         & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION, &
+         & parent=gr_window)
+
+    if (iresp /= GTK_RESPONSE_YES) return
+
+    call gr_ds_erase(data_only=.true.)
+    call gr_plot_draw(.true.)
+
+  end subroutine gr_ds_erase_cb
+  
+  subroutine gr_ds_erase_all_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Erase the current dataset
+
+    integer(kind=c_int) :: iresp
+
+    iresp = hl_gtk_message_dialog_show(&
+         & ["This will destroy all data and ", &
+         &  "settings in the current dataset", &
+         &  "Do you want to continue?       "],&
+         & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION, &
+         & parent=gr_window)
+
+    if (iresp /= GTK_RESPONSE_YES) return
+
+    call gr_ds_erase(data_only=.false.)
+    call gr_plot_draw(.true.)
+
+  end subroutine gr_ds_erase_all_cb
+
+   subroutine gr_ds_rescale_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Scale/shift data.
+
+    call gr_ds_rescale
+
+  end subroutine gr_ds_rescale_cb
+
+  subroutine gr_ds_transpose_cb(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Scale/shift data.
+
+    call gr_ds_transpose
+
+  end subroutine gr_ds_transpose_cb
 
   subroutine gr_ds_fun(widget, gdata) bind(c)
     type(c_ptr), value :: widget, gdata

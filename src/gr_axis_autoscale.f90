@@ -47,7 +47,7 @@ contains
     real(kind=real64) :: axmin, axmax
     type(graff_data), pointer :: data
     integer :: status
-    logical :: ishrink, vis_only, xy_only
+    logical :: ishrink, vis_only, xy_only, is_log
     character(len=32) :: text
     integer(kind=int16) :: i
 
@@ -90,7 +90,7 @@ contains
           if (status /= 0) cycle
        case(0:8)
           if (vis_only .and. data%colour == -1) cycle
-          if (.not. allocated(data%xydata)) cycle
+          if (.not. allocated(data%xydata%x)) cycle
        case(9)
           if (vis_only .and. data%zdata%format == 2) cycle
           if (.not. (allocated(data%zdata%x) .and. &
@@ -99,15 +99,15 @@ contains
 
        if (axis == 1) then
           if (data%mode == 0) then
-             call gr_autoscale_x_rect(data, axmin, axmax, vis_only)
+             call gr_autoscale_x_rect(i, axmin, axmax, vis_only)
           else
-             call gr_autoscale_x_polar(data, axmin, axmax, vis_only)
+             call gr_autoscale_x_polar(i, axmin, axmax, vis_only)
           end if
        else if (data%y_axis == axis-2 .or. .not. pdefs%y_right) then
           if (data%mode == 0) then
-             call gr_autoscale_y_rect(data, axmin, axmax, vis_only)
+             call gr_autoscale_y_rect(i, axmin, axmax, vis_only)
           else
-             call gr_autoscale_y_polar(data, axmin, axmax, vis_only)
+             call gr_autoscale_y_polar(i, axmin, axmax, vis_only)
           end if
        end if
     end do
@@ -157,15 +157,18 @@ contains
     call gr_plot_draw(.true.)
   end subroutine gr_autoscale
 
-  subroutine gr_autoscale_x_rect(data, axmin, axmax, visible)
-    type(graff_data), intent(in) :: data
+  subroutine gr_autoscale_x_rect(idx, axmin, axmax, visible)
+    integer(kind=int16), intent(in) :: idx
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
-    
+
     logical, dimension(:), allocatable :: mask, maske
     real(kind=real64), pointer, dimension(:) :: par
-    
+    type(graff_data), pointer :: data
+
     ! Auto scale the X axis for a rectangular coordinate DS
+
+    data => pdefs%data(idx)
 
     if ((data%type >= 0 .and. data%type <= 8) .or. &
          & data%type == -2 .or. data%type == -3) then
@@ -176,39 +179,47 @@ contains
        end if
        allocate(mask(data%ndata))
        if (visible) then
-          mask = ieee_is_finite(data%xydata(1,:)) .and. &
-               & data%xydata(2,:) <= maxval(par)  .and. &
-               & data%xydata(2,:) >= minval(par)
+          mask = ieee_is_finite(data%xydata%x) .and. &
+               & data%xydata%y <= maxval(par)  .and. &
+               & data%xydata%y >= minval(par)
        else
-          mask = ieee_is_finite(data%xydata(1,:))
+          mask = ieee_is_finite(data%xydata%x)
        end if
        if (pdefs%axtype(1) == 1) &
-            & mask = mask .and. data%xydata(1,:) > 0._real64
+            & mask = mask .and. data%xydata%x > 0._real64
        if (count(mask) == 0) return
 
-       axmin = min(axmin, minval(data%xydata(1,:), mask))
-       axmax = max(axmax, maxval(data%xydata(1,:), mask))
+       axmin = min(axmin, minval(data%xydata%x, mask))
+       axmax = max(axmax, maxval(data%xydata%x, mask))
 
     end if
 
     select case (data%type)
     case(3,5,6)
        allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata(3,:)) .and. mask
-       if (count(maske) > 0) then
-          axmin = min(axmin, minval(data%xydata(1,:)-data%xydata(3,:), maske))
-          axmax = max(axmax, maxval(data%xydata(1,:)+data%xydata(3,:), maske))
-       end if
+       maske = ieee_is_finite(data%xydata%x_err(1,:)) .and. mask
+       if (count(maske) > 0) &
+            & axmax = max(axmax, maxval(data%xydata%x+ &
+            & data%xydata%x_err(1,:), maske))
+       if (pdefs%axtype(1) == 1) &
+            maske = maske .and. data%xydata%x-data%xydata%x_err(1,:) > 0.
+       if (count(maske) > 0) &
+            & axmin = min(axmin, minval(data%xydata%x- &
+            & data%xydata%x_err(1,:), maske))
+
     case(4,7,8)
        allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata(3,:)) .and. mask
+       maske = ieee_is_finite(data%xydata%x_err(1,:)) .and. mask
+       if (pdefs%axtype(1) == 1) &
+            maske = maske .and. data%xydata%x-data%xydata%x_err(1,:) > 0.
        if (count(maske) > 0) &
-            & axmin = min(axmin, minval(data%xydata(1,:)-data%xydata(3,:), &
-            & maske))
-       maske = ieee_is_finite(data%xydata(4,:)) .and. mask
+            & axmin = min(axmin, minval(data%xydata%x- &
+            & data%xydata%x_err(1,:), maske))
+       maske = ieee_is_finite(data%xydata%x_err(2,:)) .and. mask
        if (count(maske) > 0) &
-            & axmax = max(axmax, maxval(data%xydata(1,:)+data%xydata(4,:), &
-            & maske))
+            & axmax = max(axmax, maxval(data%xydata%x + &
+            & data%xydata%x_err(2,:), maske))
+
     case(9)
        axmin = min(axmin, minval(data%zdata%x))
        axmax = max(axmax, maxval(data%zdata%x))
@@ -218,101 +229,77 @@ contains
           axmax = max(axmax, maxval(data%funct%range(:,1)))
        end if
     case(-2, -3)
-       axmin = min(axmin, minval(data%xydata(1,:), mask))
-       axmax = max(axmax, maxval(data%xydata(1,:), mask))
+       axmin = min(axmin, minval(data%xydata%x, mask))
+       axmax = max(axmax, maxval(data%xydata%x, mask))
     end select
   end subroutine gr_autoscale_x_rect
 
-  subroutine gr_autoscale_y_rect(data, axmin, axmax, visible)
-    type(graff_data), intent(in) :: data
+  subroutine gr_autoscale_y_rect(idx, axmin, axmax, visible)
+    integer(kind=int16), intent(in) :: idx
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
-    
+
     logical, dimension(:), allocatable :: mask, maske
     real(kind=real64), pointer, dimension(:) :: par
+    type(graff_data), pointer :: data
 
     ! Auto scale the Y axis for a rectangular coordinate DS
+
+    data => pdefs%data(idx)
 
     if ((data%type >= 0 .and. data%type <= 8) .or. &
          & data%type == -1 .or. data%type == -3) then
        par => pdefs%axrange(:,1)
        allocate(mask(data%ndata))
        if (visible) then
-          mask = ieee_is_finite(data%xydata(2,:)) .and. &
-               & data%xydata(1,:) <= maxval(par)  .and. &
-               & data%xydata(1,:) >= minval(par)
+          mask = ieee_is_finite(data%xydata%y) .and. &
+               & data%xydata%x <= maxval(par)  .and. &
+               & data%xydata%x >= minval(par)
        else
-          mask = ieee_is_finite(data%xydata(2,:))
+          mask = ieee_is_finite(data%xydata%y)
        end if
-       
+
        if (ieee_is_finite(data%min_val)) &
-            & mask = mask .and. data%xydata(2,:) >= data%min_val
+            & mask = mask .and. data%xydata%y >= data%min_val
        if (ieee_is_finite(data%max_val)) &
-            & mask =  mask .and. data%xydata(2,:) <= data%max_val
+            & mask =  mask .and. data%xydata%y <= data%max_val
        if (pdefs%axtype(data%y_axis+2) == 1) &
-            & mask = mask .and. data%xydata(2,:) > 0._real64
+            & mask = mask .and. data%xydata%y > 0._real64
 
        if (count(mask) == 0) return
 
-       axmin = min(axmin, minval(data%xydata(2,:), mask))
-       axmax = max(axmax, maxval(data%xydata(2,:), mask))
+       axmin = min(axmin, minval(data%xydata%y, mask))
+       axmax = max(axmax, maxval(data%xydata%y, mask))
     end if
-    
+
     select case (data%type)
-    case(1)
+    case(1,5,7)
        allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata(3,:)) .and. mask
-       if (count(maske) > 0) then 
-          axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:), maske))
-          axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(3,:), maske))
-       end if
-    case(5)
+       maske = ieee_is_finite(data%xydata%y_err(1,:))  .and. mask
+       if (count(maske) > 0) &
+            & axmax = max(axmax, maxval(data%xydata%y+ &
+            & data%xydata%y_err(1,:), maske))
+       if (pdefs%axtype(data%y_axis+2) == 1) &
+            & maske = maske .and. data%xydata%y-data%xydata%y_err(1,:) > 0.
+       if (count(maske) > 0) &
+            & axmin = min(axmin, minval(data%xydata%y- &
+            & data%xydata%y_err(1,:), maske))
+    case(2,6,8)
        allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata(4,:)) .and. mask
-       if (count(maske) > 0) then 
-          axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:), maske))
-          axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:), maske))
-       end if
-    case(7)
-       allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata(5,:)) .and. mask
-       if (count(maske) > 0) then 
-          axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:), maske))
-          axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:), maske))
-       end if
-    case(2)
-       allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata(3,:)) .and. mask
+       maske = ieee_is_finite(data%xydata%y_err(1,:)) .and. &
+            & data%xydata%y-data%xydata%y_err(1,:) > 0. .and. mask
        if (count(maske) > 0) &
-            & axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(3,:), &
-            & maske))
-       maske = ieee_is_finite(data%xydata(4,:)) .and. mask
+            & axmin = min(axmin, minval(data%xydata%y- &
+            & data%xydata%y_err(1,:), maske))
+       maske = ieee_is_finite(data%xydata%y_err(2,:)) .and. mask
        if (count(maske) > 0) &
-            & axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(4,:), &
-            & maske))
-    case(6)
-       allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata(4,:)) .and. mask
-       if (count(maske) > 0) &
-            & axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(4,:), &
-            & maske))
-       maske = ieee_is_finite(data%xydata(5,:)) .and. mask
-       if (count(maske) > 0) &
-            & axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(5,:), &
-            & maske))
-    case(8)
-       allocate(maske(data%ndata))
-       maske = ieee_is_finite(data%xydata(5,:)) .and. mask
-       if (count(maske) > 0) &
-            & axmin = min(axmin, minval(data%xydata(2,:)-data%xydata(5,:), &
-            & maske))
-       maske = ieee_is_finite(data%xydata(6,:)) .and. mask
-       if (count(maske) > 0) &
-            & axmax = max(axmax, maxval(data%xydata(2,:)+data%xydata(6,:), &
-            & maske))
+            & axmax = max(axmax, maxval(data%xydata%y + &
+            & data%xydata%y_err(2,:), maske))
+
     case(9)
        axmin = min(axmin, minval(data%zdata%y))
        axmax = max(axmax, maxval(data%zdata%y))
+
     case(-2)
        if (data%funct%range(1,1) /= data%funct%range(2,1)) then
           axmin = min(axmin, minval(data%funct%range(:,1)))
@@ -324,15 +311,15 @@ contains
           axmax = max(axmax, maxval(data%funct%range(:,2)))
        end if
     case(-1, -3) 
-       axmin = min(axmin, minval(data%xydata(2,:), mask))
-       axmax = max(axmax, maxval(data%xydata(2,:), mask))
+       axmin = min(axmin, minval(data%xydata%y, mask))
+       axmax = max(axmax, maxval(data%xydata%y, mask))
     end select
 
-     
+
   end subroutine gr_autoscale_y_rect
 
-  subroutine gr_autoscale_x_polar(data, axmin, axmax, visible)
-    type(graff_data), intent(in), target :: data
+  subroutine gr_autoscale_x_polar(idx, axmin, axmax, visible)
+    integer(kind=int16), intent(in) :: idx
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
 
@@ -340,10 +327,13 @@ contains
 
     real(kind=real64) :: scale
     real(kind=real64), dimension(:), allocatable :: r, th, x, y
-    real(kind=real64), dimension(:,:), pointer :: xydata
+    type(graff_xydata), pointer :: xydata
     logical, dimension (:), allocatable :: mask
     real(kind=real64), pointer, dimension(:) :: par
+    type(graff_data), pointer :: data
 
+    data => pdefs%data(idx)
+    
     if (data%mode == 2) then
        scale = pi/180._real64
     else
@@ -361,9 +351,9 @@ contains
          & mask(data%ndata))
     if (visible) allocate(y(data%ndata))
     select case (data%type)
-    case(:0)
-       r = xydata(1,:)
-       th = xydata(2,:)*scale
+    case(:0)     ! Question about -4
+       r = xydata%x
+       th = xydata%y*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -375,8 +365,8 @@ contains
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
     case(1)
-       r = xydata(1,:)
-       th = (xydata(2,:)-xydata(3,:))*scale
+       r = xydata%x
+       th = (xydata%y-xydata%y_err(1,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -387,7 +377,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       th = (xydata(2,:)+xydata(3,:))*scale
+       th = (xydata%y+xydata%y_err(1,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -398,9 +388,10 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
+       
     case(2)
-       r = xydata(1,:)
-       th = (xydata(2,:)+xydata(3,:))*scale
+       r = xydata%x
+       th = (xydata%y+xydata%y_err(1,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -418,13 +409,14 @@ contains
        else
           mask = ieee_is_finite(x)
        end if
-       th = (xydata(2,:)+xydata(4,:))*scale
+       th = (xydata%y+xydata%y_err(2,:))*scale
        x = r * cos(th)
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
+       
     case(3)
-       r = xydata(1,:)-xydata(3,:)
-       th = xydata(2,:)*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = xydata%y*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -435,7 +427,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)+xydata(3,:)
+       r = xydata%x+xydata%x_err(1,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -447,8 +439,8 @@ contains
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
     case(4)
-       r = xydata(1,:)-xydata(3,:)
-       th = xydata(2,:)*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = xydata%y*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -459,7 +451,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)+xydata(4,:)
+       r = xydata%x+xydata%x_err(1,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -470,9 +462,10 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
+       
     case(5)
-       r = xydata(1,:)-xydata(3,:)
-       th = (xydata(2,:)-xydata(4,:))*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = (xydata%y-xydata%y_err(1,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -483,7 +476,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)+xydata(3,:)
+       r = xydata%x+xydata%x_err(1,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -494,7 +487,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       th = (xydata(2,:)+xydata(4,:))*scale
+       th = (xydata%y+xydata%y_err(1,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -505,7 +498,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)-xydata(3,:)
+       r = xydata%x-xydata%x_err(1,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -516,9 +509,10 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
+       
     case(6)
-       r = xydata(1,:)-xydata(3,:)
-       th = (xydata(2,:)-xydata(4,:))*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = (xydata%y-xydata%y_err(1,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -529,7 +523,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)+xydata(3,:)
+       r = xydata%x+xydata%x_err(1,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -540,7 +534,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       th = (xydata(2,:)+xydata(5,:))*scale
+       th = (xydata%y+xydata%y_err(2,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -551,7 +545,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)-xydata(3,:)
+       r = xydata%x-xydata%x_err(1,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -562,9 +556,10 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
+       
     case(7)
-       r = xydata(1,:)-xydata(3,:)
-       th = (xydata(2,:)-xydata(5,:))*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = (xydata%y-xydata%y_err(1,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -575,7 +570,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)+xydata(4,:)
+       r = xydata%x+xydata%x_err(2,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -586,7 +581,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       th = (xydata(2,:)+xydata(5,:))*scale
+       th = (xydata%y+xydata%y_err(1,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -597,7 +592,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)-xydata(3,:)
+       r = xydata%x-xydata%x_err(1,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -608,9 +603,10 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
+       
     case(8)
-       r = xydata(1,:)-xydata(3,:)
-       th = (xydata(2,:)-xydata(5,:))*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = (xydata%y-xydata%y_err(1,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -621,7 +617,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)+xydata(4,:)
+       r = xydata%x+xydata%x_err(2,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -632,7 +628,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       th = (xydata(2,:)+xydata(6,:))*scale
+       th = (xydata%y+xydata%y_err(2,:))*scale
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -643,7 +639,7 @@ contains
        end if
        axmin = min(axmin, minval(x, mask))
        axmax = max(axmax, maxval(x, mask))
-       r = xydata(1,:)-xydata(3,:)
+       r = xydata%x-xydata%x_err(1,:)
        x = r * cos(th)
        if (visible) then
           y = r * sin(th)
@@ -658,8 +654,8 @@ contains
 
   end subroutine gr_autoscale_x_polar
 
-  subroutine gr_autoscale_y_polar(data, axmin, axmax, visible)
-    type(graff_data), intent(in), target :: data
+  subroutine gr_autoscale_y_polar(idx, axmin, axmax, visible)
+    integer(kind=int16), intent(in) :: idx
     real(kind=real64), intent(inout) :: axmin, axmax
     logical, intent(in) :: visible
 
@@ -667,9 +663,12 @@ contains
 
     real(kind=real64) :: scale
     real(kind=real64), dimension(:), allocatable :: r, th, y, x
-    real(kind=real64), dimension(:,:), pointer :: xydata
+    type(graff_xydata), pointer :: xydata
     logical, dimension(:), allocatable :: mask
     real(kind=real64), pointer, dimension(:) :: par
+    type(graff_data), pointer :: data
+
+    data => pdefs%data(idx)
 
     if (data%mode == 2) then
        scale = pi/180._real64
@@ -686,9 +685,9 @@ contains
     if (visible) allocate(x(data%ndata))
 
     select case (data%type)
-    case(:0)
-       r = xydata(1,:)
-       th = xydata(2,:)*scale
+    case(:0)     ! Question about -4
+       r = xydata%x
+       th = xydata%y*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -699,9 +698,10 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
+       
     case(1)
-       r = xydata(1,:)
-       th = (xydata(2,:)-xydata(3,:))*scale
+       r = xydata%x
+       th = (xydata%y-xydata%y_err(1,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -712,7 +712,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       th = (xydata(2,:)+xydata(3,:))*scale
+       th = (xydata%y+xydata%y_err(1,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -723,9 +723,10 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
+       
     case(2)
-       r = xydata(1,:)
-       th = (xydata(2,:)+xydata(3,:))*scale
+       r = xydata%x
+       th = (xydata%y+xydata%y_err(1,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -736,7 +737,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       th = (xydata(2,:)+xydata(4,:))*scale
+       th = (xydata%y+xydata%y_err(2,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -747,9 +748,10 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
+       
     case(3)
-       r = xydata(1,:)-xydata(3,:)
-       th = xydata(2,:)*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = xydata%y*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -760,7 +762,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)+xydata(3,:)
+       r = xydata%x+xydata%x_err(1,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -771,9 +773,10 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
+       
     case(4)
-       r = xydata(1,:)-xydata(3,:)
-       th = xydata(2,:)*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = xydata%y*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -784,7 +787,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)+xydata(4,:)
+       r = xydata%x+xydata%x_err(2,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -795,9 +798,10 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
+       
     case(5)
-       r = xydata(1,:)-xydata(3,:)
-       th = (xydata(2,:)-xydata(4,:))*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = (xydata%y-xydata%y_err(1,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -808,7 +812,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)+xydata(3,:)
+       r = xydata%x+xydata%x_err(1,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -819,7 +823,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       th = (xydata(2,:)+xydata(4,:))*scale
+       th = (xydata%y+xydata%y_err(1,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -830,7 +834,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)-xydata(3,:)
+       r = xydata%x-xydata%x_err(1,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -841,9 +845,10 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
+       
     case(6)
-       r = xydata(1,:)-xydata(3,:)
-       th = (xydata(2,:)-xydata(4,:))*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = (xydata%y-xydata%y_err(1,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -854,7 +859,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)+xydata(3,:)
+       r = xydata%x+xydata%x_err(1,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -865,7 +870,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       th = (xydata(2,:)+xydata(5,:))*scale
+       th = (xydata%y+xydata%y_err(2,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -876,7 +881,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)-xydata(3,:)
+       r = xydata%x-xydata%x_err(1,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -887,9 +892,10 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
+       
     case(7)
-       r = xydata(1,:)-xydata(3,:)
-       th = (xydata(2,:)-xydata(5,:))*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = (xydata%y-xydata%y_err(1,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -900,7 +906,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)+xydata(4,:)
+       r = xydata%x+xydata%x_err(2,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -911,7 +917,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       th = (xydata(2,:)+xydata(5,:))*scale
+       th = (xydata%y+xydata%y_err(1,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -922,7 +928,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)-xydata(3,:)
+       r = xydata%x-xydata%x_err(1,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -933,9 +939,10 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
+       
     case(8)
-       r = xydata(1,:)-xydata(3,:)
-       th = (xydata(2,:)-xydata(5,:))*scale
+       r = xydata%x-xydata%x_err(1,:)
+       th = (xydata%y-xydata%y_err(1,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -946,7 +953,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)+xydata(4,:)
+       r = xydata%x+xydata%x_err(2,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -957,7 +964,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       th = (xydata(2,:)+xydata(6,:))*scale
+       th = (xydata%y+xydata%y_err(2,:))*scale
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)
@@ -968,7 +975,7 @@ contains
        end if
        axmin = min(axmin, minval(y, mask))
        axmax = max(axmax, maxval(y, mask))
-       r = xydata(1,:)-xydata(3,:)
+       r = xydata%x-xydata%x_err(1,:)
        y = r * sin(th)
        if (visible) then
           x = r * cos(th)

@@ -46,7 +46,7 @@ pro Gr_pl_event, event
      ichange = 0b
      
      if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.hlptxt, ''
+        graff_msg, pdefs.ids.hlptxt, /help, ''
         if (object eq 'AUTOSAVE') then  $
            graff_msg, pdefs.ids.message, '' 
         goto, miss_case
@@ -55,33 +55,33 @@ pro Gr_pl_event, event
 
   case object of
      'TITLE': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter plot title (at top of plot)' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Enter plot title (at top of plot)' $
      else begin
         pdefs.title = event.value
      end
      
      'SUBTITLE': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter plot subtitle (below plot)' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Enter plot subtitle (below plot)' $
      else begin
         pdefs.subtitle = event.value
      end
      
      'CHARSIZE': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter character size for ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Enter character size for ' + $
                    'annotations (floating point value)' $
      else begin
         pdefs.charsize = event.value
      end
      
      'AXTHICK': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Enter line thickness for axes ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Enter line thickness for axes ' + $
                    '(real value 0.-99.)' $
      else begin
         pdefs.axthick = event.value
      end
      
      'POSITION': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set positions of plot corners' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Set positions of plot corners' $
      else begin
         ichange = gr_position(pdefs)
         idraw_flag = ichange
@@ -89,7 +89,7 @@ pro Gr_pl_event, event
      
      
      'KEY': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Control drawing of a key on the plot' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Control drawing of a key on the plot' $
      else begin
         ichange = gr_key_def(pdefs)
         idraw_flag = ichange
@@ -97,7 +97,7 @@ pro Gr_pl_event, event
      endelse
      
      'COMMENT': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Control addition of a general ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Control addition of a general ' + $
                    'comment to the plot' $
      else begin
         ichange = gr_comment(pdefs)
@@ -106,7 +106,7 @@ pro Gr_pl_event, event
      endelse
      
      'FONTS': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, "Select whether to use " + $
+        graff_msg, pdefs.ids.hlptxt, /help, "Select whether to use " + $
                    "Hershey/Hardware fonts or TT fonts" $
      else begin
         pdefs.fontopt = event.index

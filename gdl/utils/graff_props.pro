@@ -214,6 +214,9 @@ pro Graff_props, file, pdefs, title = title, subtitle = subtitle, $
 ;	Add some more hardcopy options: 16/2/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
 ;	Add options for plplot drivers: 29/11/13; SJT
+;	Add PDF keys: 21/9/16; SJT
+;	Add optional return argument: 8/1/18; SJT
+;	Reorder axis settings so autoscale nws about log: 27/9/19; SJT
 ;-
 
 ;	Check that the necessary inputs are present

@@ -48,7 +48,7 @@ contains
     character(len=120) :: iom
     character(len=200), dimension(:), allocatable :: inln
     character(len=20) :: errtag
-    integer :: tp, nte, nt, i
+    integer :: tp, nte, nt, i, nxe, nye
     real(kind=real64), dimension(:,:), allocatable :: xyvals
     logical :: ok
 
@@ -144,6 +144,9 @@ contains
        return
     end select
 
+    nxe = nx_errors(tp)
+    nye = ny_errors(tp)
+    
     if (nt /= nte) then
        write(err_string, "(A,I0,A/3a,i0,a)") &
             & "gr_ds_xy_read: number of columns(", nt, ") does not match", &
@@ -152,7 +155,11 @@ contains
        return
     end if
 
-    if (allocated(data%xydata)) deallocate(data%xydata)
+    if (allocated(data%xydata%x)) deallocate(data%xydata%x)
+    if (allocated(data%xydata%y)) deallocate(data%xydata%y)
+    if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
+    if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
+    
     if (allocated(data%zdata%x)) deallocate(data%zdata%x)
     if (allocated(data%zdata%y)) deallocate(data%zdata%y)
     if (allocated(data%zdata%z)) deallocate(data%zdata%z)
@@ -164,7 +171,16 @@ contains
 
     call  gtk_notebook_set_current_page(display_nb, 0)
 
-    call move_alloc(xyvals, data%xydata)
+    allocate(data%xydata%x(nlines), data%xydata%y(nlines))
+    if (nxe /= 0) allocate(data%xydata%x_err(nxe,nlines))
+    if (nye /= 0) allocate(data%xydata%y_err(nye,nlines))
+
+    data%xydata%x = xyvals(1,:)
+    data%xydata%y = xyvals(2,:)
+    if (nxe /= 0) data%xydata%x_err = xyvals(3:3+nxe-1,:)
+    if (nye /= 0) data%xydata%y_err = xyvals(3+nxe:,:)
+
+    deallocate(xyvals, inln)
 
     call gr_plot_draw(.true.)
     
@@ -255,7 +271,11 @@ contains
     if (allocated(data%zdata%x)) deallocate(data%zdata%x)
     if (allocated(data%zdata%y)) deallocate(data%zdata%y)
     if (allocated(data%zdata%z)) deallocate(data%zdata%z)
-    if (allocated(data%xydata)) deallocate(data%xydata)
+    
+    if (allocated(data%xydata%x)) deallocate(data%xydata%x)
+    if (allocated(data%xydata%y)) deallocate(data%xydata%y)
+    if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
+    if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
 
     data%type = 9
     data%ndata = nx
@@ -386,7 +406,11 @@ contains
 
     data => pdefs%data(pdefs%cset)
 
-    if (allocated(data%xydata)) deallocate(data%xydata)
+    if (allocated(data%xydata%x)) deallocate(data%xydata%x)
+    if (allocated(data%xydata%y)) deallocate(data%xydata%y)
+    if (allocated(data%xydata%x_err)) deallocate(data%xydata%x_err)
+    if (allocated(data%xydata%y_err)) deallocate(data%xydata%y_err)
+    
     if (allocated(data%zdata%x)) deallocate(data%zdata%x)
     if (allocated(data%zdata%y)) deallocate(data%zdata%y)
     if (allocated(data%zdata%z)) deallocate(data%zdata%z)
@@ -503,7 +527,7 @@ contains
     integer :: unit, ios, i
     character(len=120) :: iom
     type(graff_data), pointer :: data
-    integer :: nx, ny, etype, status
+    integer :: nx, ny, etype, status, nxe, nye
 
     data => pdefs%data(pdefs%cset)
 
@@ -517,9 +541,9 @@ contains
           end if
           status = gr_evaluate(pdefs%cset)
           if (status /= 0) then
-            call gr_message(&
-                 & "gr_ds_write: Failed to evaluate function to write as data", &
-                 & type=GTK_MESSAGE_ERROR)
+             call gr_message(&
+                  & "gr_ds_write: Failed to evaluate function to write as data", &
+                  & type=GTK_MESSAGE_ERROR)
              return
           end if
        end if
@@ -596,9 +620,28 @@ contains
           write(unit, "(A)") "#XXYY"
        end select
 
-       do i = 1, data%ndata
-          write(unit, "(6(1pg0,2x))") data%xydata(:,i)
-       end do
+       nxe = nx_errors(etype)
+       nye = ny_errors(etype)
+       if (nxe > 0 .and. nye > 0) then
+          do i = 1, data%ndata
+             write(unit, "(6(1pg0,2x))") data%xydata%x(i), data%xydata%y(i), &
+                  &  data%xydata%x_err(:,i), data%xydata%y_err(:,i)
+          end do
+       else if (nxe > 0) then
+          do i = 1, data%ndata
+             write(unit, "(6(1pg0,2x))") data%xydata%x(i), data%xydata%y(i), &
+                  &  data%xydata%x_err(:,i)
+          end do
+       else if (nye > 0) then
+          do i = 1, data%ndata
+             write(unit, "(6(1pg0,2x))") data%xydata%x(i), data%xydata%y(i), &
+                  & data%xydata%y_err(:,i)
+          end do
+       else
+          do i = 1, data%ndata
+             write(unit, "(6(1pg0,2x))") data%xydata%x(i), data%xydata%y(i)
+          end do
+       end if
     end if
 
     close(unit)
@@ -809,11 +852,28 @@ contains
     select case (data_to%type)
     case(0:8)
        if (realloc) then
-          call move_alloc(data_from%xydata, data_to%xydata)
-       else
-          nn2 = shape(data_from%xydata)
-          allocate(data_to%xydata(nn2(1),nn2(2)))
-          data_to%xydata(:,:) = data_from%xydata
+          call move_alloc(data_from%xydata%x, data_to%xydata%x)
+          call move_alloc(data_from%xydata%y, data_to%xydata%y)
+          if (allocated(data_from%xydata%x_err)) &
+               & call move_alloc(data_from%xydata%x_err, data_to%xydata%x_err)
+          if (allocated(data_from%xydata%y_err)) &
+               & call move_alloc(data_from%xydata%y_err, data_to%xydata%y_err)
+      else
+          nn = data_from%ndata
+          allocate(data_to%xydata%x(nn), data_to%xydata%y(nn))
+          
+          data_to%xydata%x = data_from%xydata%x
+          data_to%xydata%y = data_from%xydata%y
+
+          if (nx_errors(data_to%type) /= 0) then
+             allocate(data_to%xydata%x_err(nx_errors(data_to%type),nn))
+             data_to%xydata%x_err = data_from%xydata%x_err
+          end if
+          if (ny_errors(data_to%type) /= 0) then
+             allocate(data_to%xydata%y_err(ny_errors(data_to%type),nn))
+             data_to%xydata%y_err = data_from%xydata%y_err
+          end if
+          
        end if
     case(:-1)
        data_to%funct = data_from%funct
@@ -838,12 +898,14 @@ contains
              data_to%zdata%y_is_2d = data_from%zdata%y_is_2d
           else
              if (realloc) then
-                call move_alloc(data_from%xydata, data_to%xydata)
+                call move_alloc(data_from%xydata%x, data_to%xydata%x)
+                call move_alloc(data_from%xydata%y, data_to%xydata%y)
              else
-                nn2 = shape(data_from%xydata)
-                allocate(data_to%xydata(nn2(1),nn2(2)))
-                data_to%xydata(:,:) = data_from%xydata
-             end if
+                nn = data_from%ndata
+                allocate(data_to%xydata%x(nn), data_to%xydata%y(nn))
+                data_to%xydata%x = data_from%xydata%x
+                data_to%xydata%y = data_from%xydata%y
+            end if
           end if
        end if
     case(9)
@@ -885,8 +947,9 @@ contains
     ! Append one dataset to another.
 
     integer(kind=int16) :: dest
-    integer, dimension(2) :: xyshape1, xyshape2
-    real(kind=real64), allocatable, dimension(:,:) :: xyvals
+    integer :: ndata, ndata1, nxe, nye
+    real(kind=real64), allocatable, dimension(:,:) :: xyetmp
+    real(kind=real64), allocatable, dimension(:) :: xytmp
 
     if (present(append_to)) then
        dest = append_to
@@ -916,16 +979,39 @@ contains
        return
     end if
 
-    xyshape1 = shape(pdefs%data(dest)%xydata)
-    xyshape2 = shape(pdefs%data(index)%xydata)
+    ndata = pdefs%data(dest)%ndata + pdefs%data(index)%ndata
+    ndata1 = pdefs%data(dest)%ndata
+    nxe = nx_errors(pdefs%data(index)%type)
+    nye = ny_errors(pdefs%data(index)%type)
 
-    allocate(xyvals(xyshape1(1),xyshape1(2)+xyshape2(2)))
-    xyvals(:,:xyshape1(2)) = pdefs%data(dest)%xydata
-    xyvals(:,xyshape1(2)+1:) = pdefs%data(index)%xydata
+    allocate(xytmp(ndata))
+    xytmp(:ndata1) = pdefs%data(dest)%xydata%x
+    xytmp(ndata1+1:) = pdefs%data(index)%xydata%x
+    deallocate(pdefs%data(dest)%xydata%x)
+    call move_alloc(xytmp, pdefs%data(dest)%xydata%x)
 
-    pdefs%data(dest)%ndata = xyshape1(2)+xyshape2(2)
-    deallocate(pdefs%data(dest)%xydata)
-    call move_alloc(xyvals, pdefs%data(dest)%xydata)
+    allocate(xytmp(ndata))
+    xytmp(:ndata1) = pdefs%data(dest)%xydata%y
+    xytmp(ndata1+1:) = pdefs%data(index)%xydata%y
+    deallocate(pdefs%data(dest)%xydata%y)
+    call move_alloc(xytmp, pdefs%data(dest)%xydata%y)
+
+    if (nxe > 0) then
+       allocate(xyetmp(nxe, ndata))
+       xyetmp(:,:ndata1) = pdefs%data(dest)%xydata%x_err
+       xyetmp(:,ndata1+1:) = pdefs%data(index)%xydata%x_err
+       deallocate(pdefs%data(dest)%xydata%x_err)
+       call move_alloc(xyetmp, pdefs%data(dest)%xydata%x_err)
+    end if
+    if (nye > 0) then
+       allocate(xyetmp(nye, ndata))
+       xyetmp(:,:ndata1) = pdefs%data(dest)%xydata%y_err
+       xyetmp(:,ndata1+1:) = pdefs%data(index)%xydata%y_err
+       deallocate(pdefs%data(dest)%xydata%y_err)
+       call move_alloc(xyetmp, pdefs%data(dest)%xydata%y_err)
+    end if
+     
+    pdefs%data(dest)%ndata = ndata
 
   end subroutine gr_ds_append
 
@@ -952,10 +1038,10 @@ contains
 
     ! Delete a dataset.
 
-    integer(kind=int16) :: idx
+    integer(kind=int16) :: idx, nset0
     type(graff_data), dimension(:), allocatable :: datasets
-    integer(kind=int16) :: i, j, ikshift
-    integer :: nkey, nset0
+    integer(kind=int16) :: i, j
+    integer :: nkey
     logical, dimension(:), allocatable :: iskey
 
     if (present(index)) then
@@ -1007,13 +1093,13 @@ contains
           do i = 1, idx-1_int16
              if (iskey(i)) then
                 pdefs%key%list(j) = i-1
-                j = j+1
+                j = j+1_int16
              end if
           end do
           do i = idx+1_int16, nset0
              if (iskey(i)) then
                 pdefs%key%list(j) = i-2
-                j = j+1
+                j = j+1_int16
              end if
           end do
        end if
@@ -1074,9 +1160,9 @@ contains
 
   subroutine gr_ds_transpose
     type(graff_data), pointer :: data
-    real(kind=real64), allocatable, dimension(:,:) :: xyvals
+    real(kind=real64), allocatable, dimension(:,:) :: xyetmp
     real(kind=plflt), dimension(:,:), allocatable :: x,y,z
-    real(kind=real64), allocatable, dimension(:) :: x1, y1
+    real(kind=real64), allocatable, dimension(:) :: xytmp
     integer, dimension(2) :: sz
     logical(kind=int8) :: x2, y2
     integer :: nx, ny
@@ -1116,39 +1202,36 @@ contains
        call move_alloc(y, data%zdata%y)
        call move_alloc(z, data%zdata%z)
     else
+       call move_alloc(data%xydata%x, xytmp)
+       call move_alloc(data%xydata%y, data%xydata%x)
+       call move_alloc(xytmp, data%xydata%y)
+       
        select case (data%type)
        case(0)              ! No error bars
-          data%xydata = data%xydata([2,1],:)
+       case(1,2)              ! Y errors, become X
+          call move_alloc(data%xydata%y_err, data%xydata%x_err)
+          data%type = data%type + 2_int16
 
-       case(1)              ! Y errors, become X
-          data%xydata = data%xydata([2,1,3],:)
-          data%type = 3
+       case(3, 4)              ! X errors, become Y
+          call move_alloc(data%xydata%x_err, data%xydata%y_err)
+          data%type = data%type - 2_int16
 
-       case(2)              ! YY errors, become XX
-          data%xydata = data%xydata([2,1,3,4],:)
-          data%type = 4
-
-       case(3)              ! X errors, become Y
-          data%xydata = data%xydata([2,1,3],:)
-          data%type = 1
-
-       case(4)              ! XX errors, become YY
-          data%xydata = data%xydata([2,1,3,4],:)
-          data%type = 2
-
-       case(5)              ! XY errors exchange
-          data%xydata = data%xydata([2,1,4,3],:)
+       case(5,8)              ! XY errors exchange
+          call move_alloc(data%xydata%x_err, xyetmp)
+          call move_alloc(data%xydata%y_err, data%xydata%x_err)
+          call move_alloc(xyetmp, data%xydata%y_err)
 
        case(6)              ! XYY → XXY
-          data%xydata = data%xydata([2,1,4,5,3],:)
+          call move_alloc(data%xydata%x_err, xyetmp)
+          call move_alloc(data%xydata%y_err, data%xydata%x_err)
+          call move_alloc(xyetmp, data%xydata%y_err)
           data%type = 7
 
        case(7)              ! XXY → XYY
-          data%xydata = data%xydata([2,1,5,3,4],:)
+          call move_alloc(data%xydata%x_err, xyetmp)
+          call move_alloc(data%xydata%y_err, data%xydata%x_err)
+          call move_alloc(xyetmp, data%xydata%y_err)
           data%type = 6
-
-       case(8)
-          data%xydata = data%xydata([2,1,5,6,3,4],:)
 
        case default
           write(err_string, "(A,i0)") "gr_ds_transpose: Invalid type code: ", &

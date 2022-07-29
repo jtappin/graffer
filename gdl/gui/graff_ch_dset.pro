@@ -128,7 +128,6 @@ pro Graff_ch_dset, pdefs
                                 ; structure
      
      (*pdefs.data) = [(*pdefs.data), {graff_data}]
-;    (*pdefs.data)[pdefs.cset].Xydata =   ptr_new(dblarr(2, 2))
      (*pdefs.data)[pdefs.cset].Pline =    1
      (*pdefs.data)[pdefs.cset].Symsize =  1.
      (*pdefs.data)[pdefs.cset].Colour =   1
@@ -143,7 +142,7 @@ pro Graff_ch_dset, pdefs
      (*pdefs.data)[pdefs.cset].zopts.style = ptr_new(0)
      (*pdefs.data)[pdefs.cset].zopts.N_thick =   1
      (*pdefs.data)[pdefs.cset].zopts.Thick =     ptr_new(1.)
-     (*pdefs.data)[pdefs.cset].zopts.Pxsize =    0.5
+     (*pdefs.data)[pdefs.cset].zopts.Pxsize =    0.1
 
      pdefs.nsets = pdefs.nsets+1
   endif

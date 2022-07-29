@@ -39,11 +39,13 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
 ;	Y-time labelling: 12/1/12; SJT
 ;	Advanced axis style settings: 21/8/12; SJT
 ;	Don't plot annotations if overlay: 2/10/17; SJT
-;	Add /setup, and tidy up logical vs. bitwiase ops: 13/12/21; SJT
+;	Add /setup, and tidy up logical vs. bitwise ops: 13/12/21; SJT
 ;-
 
   lcolor = 0l
 
+  !p.position = 0               ; Clear at start
+  
   if ~keyword_set(setup) then begin ; Should be safe to leave
                                 ; undefined if not drawing.
      if pdefs.xsty.time and 1 then begin
@@ -110,15 +112,12 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
         yd = (1.-as/ah)/2.
         !p.region = [0., yd, 1., 1.-yd]
      endif else mflag = 0b
-     if pdefs.y_right then xmargin = [10, 10] $
-     else xmargin = [10, 3]
-
   endif else !p.region = 0.
 
   if ~isotropic then begin
      if (pdefs.aspect(0) gt 0.) then $
         !P.position = aspect(pdefs.aspect(0), margin = pdefs.aspect(1)) $
-     else if (pdefs.position(2) gt pdefs.position(0) and $
+     else if (pdefs.position(2) gt pdefs.position(0) && $
               pdefs.position(3) gt pdefs.position(1)) then begin
         !P.position = pdefs.position 
         if mflag then begin
@@ -127,11 +126,12 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
            !p.position *= [xr, yr, xr, yr]
            !p.position += !p.region[[0, 1, 0, 1]]
         endif
-     endif else if pdefs.y_right then xmargin = [10, 10] $
-     else xmargin = [10, 3]
-  endif
-
-  if pdefs.y_right then xmargin = [10, 10] $
+     endif else begin
+        if pdefs.y_right then xmargin = [10, 10] $
+        else xmargin = [10, 3]
+        !p.position = 0
+     endelse
+  endif else if pdefs.y_right then xmargin = [10, 10] $
   else xmargin = [10, 3]
 
   if (pdefs.xsty.idl and 4) ne 0 then $
@@ -208,6 +208,50 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
      subtitle = pdefs.subtitle
   endelse
 
+                                ; Experimental fake isotropic plot.
+
+  if isotropic then begin
+     plot, /nodata, dblarr(2), title = title, subtitle = $
+           subtitle, xrange = pdefs.xrange, xlog = pdefs.xtype, $
+           xsty = xsty or 4, $
+           yrange = yrange, ylog = $
+           ytype, ysty = ysty or 4, charsize = $
+           pdefs.charsize*csiz, /noerase, xmargin = $
+           xmargin, xticks = xmajor, yticks = ymajor, $
+           xtickv = xtvals, ytickv $
+           = ytvals
+
+     xsp = !x.crange[1]-!x.crange[0]
+     ysp = !y.crange[1]-!y.crange[0]
+
+     xyrat = xsp/ysp
+     
+     if pdefs.xtype ne 0 then xcr = 10.d^!x.crange $
+     else xcr = !x.crange
+     if pdefs.ytype ne 0 then ycr = 10.d^!y.crange $
+     else ycr = !y.crange
+     
+     cns = convert_coord(xcr, ycr, /data, /to_dev)
+     cns = cns[0:1, *]
+     prat = (cns[0, 1]-cns[0, 0])/(cns[1, 1]-cns[1, 0])
+     
+     if prat gt xyrat then begin
+        xc = (cns[0, 1]+cns[0, 0])/2.d
+        xcr = (cns[1, 1]-cns[1, 0])*xyrat
+        cns[0, *] = xc+xcr*[-.5, .5]
+        nns = convert_coord(cns, /dev, /to_norm)
+        !p.position = nns[0:1, *]
+     endif else if prat lt xyrat then begin
+        yc = (cns[1, 1]+cns[1, 0])/2.d
+        ycr = (cns[0, 1]-cns[0, 0])/xyrat
+        cns[1, *] = yc+ycr*[-.5, .5]
+        nns = convert_coord(cns, /dev, /to_norm)
+        !p.position = nns[0:1, *]
+     endif
+  endif
+
+                                ; End faking of ISO tropic.
+  
   plot, /nodata, dblarr(2), title = title, subtitle = $
         subtitle, xrange = pdefs.xrange, xtitle = $
         xtitle, xlog = pdefs.xtype, xsty = xsty, $
@@ -217,7 +261,9 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
         pdefs.axthick, xminor = pdefs.xsty.minor, yminor = $
         yminor, xtickformat = xtf, xticklen = $
         xtickl, xgridsty = xtickst, yticklen = ytickl, ygridsty = $ 
-        ytickst, noerase = noerase, isotropic = isotropic, xmargin = $
+        ytickst, noerase = noerase, $
+        ;;; isotropic = isotropic, $
+        xmargin = $
         xmargin, xtickname = xnames, ytickname = ynames, $
         ytickformat = ytf, xticks = xmajor, yticks = ymajor, $
         xtickv = xtvals, ytickv $

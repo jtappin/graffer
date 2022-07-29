@@ -5,7 +5,8 @@
 ; the Free Software Foundation; either version 2 of the License, or     
 ; (at your option) any later version.                                   
 
-pro Graff_add, file, a1, a2, a3, errors = errors, $ 
+pro Graff_add, file, a1, a2, a3, errors = errors, $
+               x_errors = x_errors, y_errors = y_errors, $ 
                x_func = x_func, y_func = y_func, z_func = z_func, $
                funcx = funcx, funcy = funcy, polar = polar, rescale = $
                rescale, $
@@ -32,6 +33,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;
 ; Usage:
 ;	graff_add, file, [[[z], x,] y, errors=errors, $
+;               x_errors = x_errors, y_errors = y_errors, $ 
 ;               x_func = x_func, y_func = y_func, z_func = z_func, 
 ;		errtype=errtype, $
 ;               polar=polar, rescale=rescale, /display, join=join, $
@@ -58,10 +60,15 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	y	double	input	The y values to add.
 ;
 ; Keywords:
-;	errors	double	input	Array with errors, 1-d or (m,n).
+;	errors	double	input	Array with errors, 1-d or
+;				(m,n). (deprecated) 
+;	x_errors dbl	inut	Array with X-axis errors.
+;	y_errors dbl	inut	Array with Y-axis errors.
 ;	errtype string	input	Specify error types as code
 ;				(e.g. "XXY" for asymmetrical errors in
-;				X and symmetric errors in Y)
+;				X and symmetric errors in Y). Should
+;				not be used when separate, x and y
+;				errors are specified.
 ;	x_func	string	input	Function specification for x = f(y) or
 ;				x = f(t)
 ;	y_func	string	input	Function specification for y = f(x) or
@@ -176,6 +183,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 ;	added: 29/1/21; SJT
 ;	Move top level options out of PDEFS: 21/5/20; SJT
 ;	Treat single 1×n array as 1-D: 8/5/21; SJT
+;	Add x_errors, y_errors: deprecate errors: 15/4/22; SJT
 ;-
 
 ;	Check that the necessary inputs are present
@@ -183,7 +191,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
   on_error, 2                   ; Return to caller on error
 
   common graffer_options, optblock
-  
+
   if keyword_set(funcx) then begin 
      if keyword_set(x_func) then $
         message, /continue, $
@@ -273,13 +281,13 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
         endelse
      end
      3: begin                   ; 1-D dataset
-        x = double(a1)
-        y = double(a2)
+        x = reform(double(a1))
+        y = reform(double(a2))
      end
      4: begin                   ; 2-D dataset
-        z = double(a1)
-        x = double(a2)
-        y = double(a3)
+        z = reform(double(a1))
+        x = reform(double(a2))
+        y = reform(double(a3))
      end
   endcase
 
@@ -373,61 +381,125 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
      nx = n_elements(x)
      ny = n_elements(y)
      if (nx ne ny) then message, 'X & Y must be the same size'
+
+     if keyword_set(x_errors) then begin
+        xerr = double(x_errors)
+        sxe = size(xerr)
+        if sxe[0] eq 1 then begin
+           if sxe[1] ne nx then message, 'X & X errors must be the ' + $
+                                         'same size'
+           xerr = reform(xerr, 1, nx, /over)
+           nxe = 1
+        endif else if sxe[0] eq 2 then begin
+           if sxe[1] eq nx then begin
+              xerr = transpose(xerr)
+              sxe = size(xerr)
+           endif else if sxe[2] ne nx then $
+              message, 'X & X errors must be the same length'
+           
+           if sxe[1] gt 2 then begin
+              message, /continue, $
+                       "Excess X-error columns ignored."
+              xerr = xerr[0:1, *]
+              nxe = 2
+           endif else nxe = sxe[1] 
+        endif else message, "X errors must have 1 or 2 dimensions."
+     endif else nxe = 0
      
-     if (keyword_set(errors)) then begin
-        se = size(errors)
-        if (se[0] eq 1) then begin
-           nt = 3
-           nerr = se[1]
-           errs = double(transpose(errors))
-        endif else if se[0] eq 2 then begin
-           if se[2] eq nx && se[1] le 4 then begin
-              nt = se[1]+2
-              nerr = se[2]
-              errs = errors
-           endif else if se[1] eq nx && se[2] le 4 then begin
-              nt = se[2]+2
+     if keyword_set(y_errors) then begin
+        yerr = double(y_errors)
+        sye = size(yerr)
+        if sye[0] eq 1 then begin
+           if sye[1] ne nx then message, 'Y & Y errors must be the ' + $
+                                         'same size'
+           yerr = reform(y_errors, 1, ny, /over)
+           nye = 1
+        endif else if sye[0] eq 2 then begin
+           if sye[1] eq ny then begin
+              yerr = transpose(yerr)
+              sye = size(yerr)
+           endif else if sye[2] ne ny then $
+              message, 'Y & Y errors must be the same length'
+           
+           if sye[1] gt 2 then begin
+              message, /continue, $
+                       "Excess y-error columns ignored."
+              yerr = yerr[0:1, *]
+              nye = 2
+           endif else nye = sye[1] 
+        endif else message, "Y errors must have 1 or 2 dimensions."
+     endif else nye = 0
+
+     ety = gr_err_type(nxe, nye)
+     
+     if keyword_set(errors) then begin
+        if ~(keyword_set(x_errors) || keyword_set(y_errors)) then begin
+           se = size(errors)
+           if (se[0] eq 1) then begin
+              nerc = 1
               nerr = se[1]
-              errs = double(transpose(errors))
-           endif else begin
-              message, 'Must have the same number of ' + $
-                       'errors as X-values, and 4 or fewer error ' + $
-                       'values.'
-           endelse
-        endif else message, "Invalid dimensions for ERRORS"
-        if (nerr ne nx) then message, 'Must have the same number of ' + $
-                                      'errors as X-values'
-     endif else nt = 2
+              errs = double(reform(errors, 1, nerr))
+           endif else if se[0] eq 2 then begin
+              if se[2] eq nx && se[1] le 4 then begin
+                 nerc = se[1]
+                 nerr = se[2]
+                 errs = errors
+              endif else if se[1] eq nx && se[2] le 4 then begin
+                 nerc = se[2]
+                 nerr = se[1]
+                 errs = double(transpose(errors))
+              endif else begin
+                 message, 'Must have the same number of ' + $
+                          'errors as X-values, and 4 or fewer error ' + $
+                          'values.'
+              endelse
+           endif else message, "Invalid dimensions for ERRORS"
+           if (nerr ne nx) then message, 'Must have the same number of ' + $
+                                         'errors as X-values'
+           
+           defety = [0, 1, 2, 6, 8]
+           
+           if (keyword_set(errtype)) then begin
+              set = size(errtype, /type)
+              if (set eq 7) then case strupcase(errtype) of
+                 '': ety = 0
+                 'Y': ety = 1
+                 'YY': ety = 2
+                 'X': ety = 3
+                 'XX': ety = 4
+                 'XY': ety = 5
+                 'XYY': ety = 6
+                 'XXY': ety = 7
+                 'XXYY': ety = 8
+              endcase else ety = fix(errtype)
+
+              nerv = gr_n_errors(ety)
+              if nerv ne nerc[0]+nerc[1] then begin
+                 print, "Requested error mapping does not match the number " + $
+                        "of error limits"
+                 print, "Using the default for ", nt-2, " errors"
+                 ety = defety[nerc]
+              endif
+
+           endif else ety = defety[nerc]
+           nerv = gr_n_errors(ety)
+
+           nxe = nerv[0]
+           nye = nerv[1]
+           
+           if nxe ne 0 then xerr = errs[0:nerv[0]-1, *]
+           if nye ne 0 then yerr = errs[nerv[0]:*, *]
+        endif else message, /cont, "ERRORS may not be specified " + $
+                            "alongside axis-specific errors, ignoring"
+     endif
      
-     xydata = dblarr(nt, nx)
-     xydata(0, *) = x
-     xydata(1, *) = y
-     if (nt ge 3) then xydata(2, 0) = errs
      
-     defety = [0, 1, 2, 6, 8]
-     if (keyword_set(errtype)) then begin
-        set = size(errtype, /type)
-        if (set eq 7) then case strupcase(errtype) of
-           '': ety = 0
-           'Y': ety = 1
-           'YY': ety = 2
-           'X': ety = 3
-           'XX': ety = 4
-           'XY': ety = 5
-           'XYY': ety = 6
-           'XXY': ety = 7
-           'XXYY': ety = 8
-        endcase else ety = fix(errtype)
-        
-        ntet = [2, 3, 4, 3, 4, 4, 5, 5, 6]
-        if (ntet(ety) ne nt) then begin
-           print, "Requested error mapping does not match the number " + $
-                  "of error limits"
-           print, "Using the default for ", nt-2, " errors"
-           ety = defety(nt-2)
-        endif
-     endif else ety = defety(nt-2)
+     xydata = {graff_xydata}
+     xydata.x = ptr_new(double(x))
+     xydata.y = ptr_new(double(y))
      
+     if nxe ne 0 then xydata.x_err = ptr_new(xerr)
+     if nye ne 0 then xydata.y_err = ptr_new(yerr)
      
      (*pdefs.data)[pdefs.cset].xydata = ptr_new(xydata)
      (*pdefs.data)[pdefs.cset].type = ety
@@ -513,11 +585,11 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
   if (n_elements(noclip)  ne 0) then (*pdefs.data)[pdefs.cset].noclip $
      = noclip
 
-  if n_elements(min_val) ne 0 then (*pdefs.data)[pdefs.cset].min_val = $
-     min_val $
+  if n_elements(min_val) ne 0 then $
+     (*pdefs.data)[pdefs.cset].min_val = min_val $
   else (*pdefs.data)[pdefs.cset].min_val = !values.d_nan
-  if n_elements(max_val) ne 0 then (*pdefs.data)[pdefs.cset].max_val = $
-     max_val $
+  if n_elements(max_val) ne 0 then $
+     (*pdefs.data)[pdefs.cset].max_val = max_val $
   else (*pdefs.data)[pdefs.cset].max_val = !values.d_nan
 
   if (n_elements(mouse) ne 0) then (*pdefs.data)[pdefs.cset].medit = mouse
@@ -617,7 +689,7 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
 
      if keyword_set(z_pxsize) then $
         (*pdefs.data)[pdefs.cset].zopts.pxsize = z_pxsize $
-     else (*pdefs.data)[pdefs.cset].zopts.Pxsize = 0.5
+     else (*pdefs.data)[pdefs.cset].zopts.Pxsize = 0.1
 
      (*pdefs.data)[pdefs.cset].zopts.invert = keyword_set(z_invert)
      if (n_elements(z_missing) ne 0) then $

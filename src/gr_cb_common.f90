@@ -528,8 +528,8 @@ contains
     allocate(x(data%ndata), y(data%ndata))
 
     if (data%mode == 0) then
-       x = data%xydata(1,:)
-       y = data%xydata(2,:)
+       x = data%xydata%x
+       y = data%xydata%y
     else
        if (data%mode == 1) then
           scale = 1._real64
@@ -537,8 +537,8 @@ contains
           scale = pi / 180._real64
        end if
 
-       x = data%xydata(1,:) * cos(data%xydata(2,:)*scale)
-       y = data%xydata(1,:) * sin(data%xydata(2,:)*scale)
+       x = data%xydata%x * cos(data%xydata%y*scale)
+       y = data%xydata%x * sin(data%xydata%y*scale)
     end if
 
     allocate(transient%x_dev(data%ndata), &
@@ -590,7 +590,7 @@ contains
                & //c_new_line// &
                & 'C-Left = insert point in closest segment,'//c_new_line//&
                & 'S-Left = add at nearer end,'//c_new_line//&
-               & 'C|S on any release = cancel.'//c_null_char)
+               & 'Change modifier on any release = cancel.'//c_null_char)
        end if
     end if
   end subroutine gr_draw_tips

@@ -1,5 +1,5 @@
 ; LICENCE:
-; Copyright (C) 1995-2021: SJT
+; Copyright (C) 1995-2022: SJT
 ; This program is free software; you can redistribute it and/or modify  
 ; it under the terms of the GNU General Public License as published by  
 ; the Free Software Foundation; either version 2 of the License, or     
@@ -45,14 +45,15 @@ function Hopts_event, event
 
   if (track_flag) then begin
      if (event.enter eq 0) then begin
-        graff_msg, settings.action, ''
+        graff_msg, settings.action, /help, ''
         goto, miss_case
      endif
   endif
 
   case but of
      'DO': if (track_flag) then $
-        graff_msg, settings.action, 'Save the settings & make the hardcopy' $
+        graff_msg, settings.action, /help, $
+                   'Save the settings & make the hardcopy' $
      else begin
         iexit = 1
         if settings.chflag then begin
@@ -66,16 +67,18 @@ function Hopts_event, event
            endfor
            widget_control, settings.fileid, get_value = file
            settings.opts.name = file
+           for j = 0, 2 do settings.opts.prompt[j] = $
+              widget_info(settings.promptid[j], /button_set)
         endif
      endelse
 
      'CANCEL': if (track_flag) then $
-        graff_msg, settings.action, "Forget new settings &" + $
+        graff_msg, settings.action, /help, "Forget new settings &" + $
                    " don't make a hardcopy" $
      else iexit = -1
      
      'COL': if (track_flag) then $
-        graff_msg, settings.action, 'Toggle use of colour PostScript' $
+        graff_msg, settings.action, /help, 'Toggle use of colour PostScript' $
      else begin
         settings.chflag or=  (settings.opts.colour ne event.index)
         settings.opts.colour = event.index
@@ -83,64 +86,16 @@ function Hopts_event, event
      endelse
 
      'CMYK': if (track_flag) then $
-        graff_msg, settings.action, 'Select RGB or CMYK colour model' $
+        graff_msg, settings.action, /help, 'Select RGB or CMYK colour model' $
      else begin
         settings.chflag or= (settings.opts.cmyk ne event.index)
         settings.opts.cmyk = event.index
      endelse
 
-     ;; 'EPS': if (track_flag) then $
-     ;;    graff_msg, settings.action, 'Toggle use of Encapsulated '+ $
-     ;;               'PostScript and PDF generation' $
-     ;; else begin
-     ;;    settings.chflag or= (settings.opts.eps ne event.index)
-     ;;    settings.opts.eps = event.index
-     ;;    widget_control, settings.fileid, get_value = name
-     ;;    dir = file_dirname(name, /mark)
-     ;;    if dir eq './' then dir = ''
-     ;;    fname = file_basename(name)
-     ;;    dp = strpos(fname, '.', /reverse_search)
-     ;;    if dp ne -1 then begin
-     ;;       ;; if settings.opts.eps and 1b then extn = '.eps' $
-     ;;       ;; else extn = '.ps'
-     ;;       case settings.opts.eps of
-     ;;          0: extn = '.ps'
-     ;;          1: extn = '.eps'
-     ;;          else: extn = '.pdf'
-     ;;       endcase
-     ;;       name = dir+strmid(fname, 0, dp)
-     ;;       widget_control, settings.fileid, set_value = name+extn
-     ;;       widget_control, settings.cmid[1], set_value = $
-     ;;                       'LABEL:'+file_basename(name+extn) 
-     ;;    endif
-     ;;    case settings.opts.eps of
-     ;;       1: begin
-     ;;          for j = 0, 1 do widget_control, settings.cmid[j], $
-     ;;                                          set_value = $
-     ;;                                          settings.opts.viewer[j]
-     ;;          widget_control, settings.cmid[0], set_value = "LABEL:View " + $
-     ;;                          "Command:"
-     ;;       end
-     ;;       0: begin
-     ;;          for j = 0, 1 do widget_control, settings.cmid[j], $
-     ;;                                          set_value = $
-     ;;                                          settings.opts.action[j]
-     ;;          widget_control, settings.cmid[0], set_value = "LABEL:Spool " + $
-     ;;                          "Command:"
-     ;;       end
-     ;;       else: begin
-     ;;          for j = 0, 1 do widget_control, settings.cmid[j], $
-     ;;                                          set_value = $
-     ;;                                          settings.opts.pdfviewer[j]
-     ;;          widget_control, settings.cmid[0], set_value = $
-     ;;                          "LABEL:PDF View " + $
-     ;;                          "Command:"
-     ;;       end
-     ;;    endcase
-     ;; endelse
      
      'ORI': if (track_flag) then $
-        graff_msg, settings.action, 'Toggle landscape/portrait orientation' $
+        graff_msg, settings.action, /help, $
+                   'Toggle landscape/portrait orientation' $
      else begin
         settings.chflag or= (settings.opts.orient ne event.index)
         settings.opts.orient = event.index
@@ -176,7 +131,7 @@ function Hopts_event, event
      end
      
      'PSIZE': if (track_flag) then $
-        graff_msg, settings.action, 'Toggle A4/Letter sized paper' $
+        graff_msg, settings.action, /help, 'Toggle A4/Letter sized paper' $
      else begin
         settings.chflag or= (settings.opts.psize ne event.index)
         settings.opts.psize = event.index
@@ -191,7 +146,7 @@ function Hopts_event, event
      end
      
      'CENTRE': if (track_flag) then $
-        graff_msg, settings.action, 'Centre the plot on the page' $
+        graff_msg, settings.action, /help, 'Centre the plot on the page' $
      else begin
         settings.chflag = 1
         xs = (settings.psize(0)-settings.opts.size(0))/2.
@@ -206,7 +161,8 @@ function Hopts_event, event
      end
      
      'XSI': if (track_flag) then $
-        graff_msg, settings.action, 'Set the X size of the plot (in cm)' $
+        graff_msg, settings.action, /help, $
+                   'Set the X size of the plot (in cm)' $
      else begin
         settings.chflag = 1
         widget_control, event.id, get_value = sx
@@ -215,7 +171,8 @@ function Hopts_event, event
         widget_control, settings.xleftid, set_value = xlft
      end
      'YSI': if (track_flag) then $
-        graff_msg, settings.action, 'Set the Y size of the plot (in cm)' $
+        graff_msg, settings.action, /help, $
+                   'Set the Y size of the plot (in cm)' $
      else begin
         settings.chflag = 1
         widget_control, event.id, get_value = sy
@@ -224,7 +181,8 @@ function Hopts_event, event
         widget_control, settings.yleftid, set_value = ylft
      end
      'XOFF': if (track_flag) then $
-        graff_msg, settings.action, 'Set the X offset of the plot (in cm)' $
+        graff_msg, settings.action, /help, $
+                   'Set the X offset of the plot (in cm)' $
      else begin
         settings.chflag = 1
         widget_control, event.id, get_value = sx
@@ -233,7 +191,8 @@ function Hopts_event, event
         widget_control, settings.xleftid, set_value = xlft
      end
      'YOFF': if (track_flag) then $
-        graff_msg, settings.action, 'Set the Y offset of the plot (in cm)' $
+        graff_msg, settings.action, /help, $
+                   'Set the Y offset of the plot (in cm)' $
      else begin
         settings.chflag = 1
         widget_control, event.id, get_value = sy
@@ -243,8 +202,8 @@ function Hopts_event, event
      end
      
      'FFAMILY': if (track_flag) then $
-        graff_msg, settings.action, 'Select the font family for plot ' + $
-                   'annotation' $
+        graff_msg, settings.action, /help, $
+                   'Select the font family for plot annotation' $
      else begin
         settings.chflag or= (settings.opts.font.family ne event.index)
         settings.opts.font.family = event.index
@@ -254,29 +213,29 @@ function Hopts_event, event
                                            event.index le 5
      end
      'FWS': if (track_flag) then $
-        graff_msg, settings.action, 'Select the weight & slant for plot ' + $
-                   'annotation' $
+        graff_msg, settings.action, /help, $
+                   'Select the weight & slant for plot annotation' $
      else begin
         settings.chflag or= (settings.opts.font.wg_sl ne event.value)
         settings.opts.font.wg_sl = event.value
      endelse
      
      'TIMEST': if (track_flag) then $
-        graff_msg, settings.action, 'Toggle printing of a timestamp on ' + $
-                   'the plot' $
+        graff_msg, settings.action, /help, $
+                   'Toggle printing of a timestamp on the plot' $
      else begin
         settings.chflag or= (settings.opts.timestamp ne event.index)
         settings.opts.timestamp = event.index
      endelse
      
      'FILE': if track_flag then $
-        graff_msg, settings.action, 'Set the output file name' $
+        graff_msg, settings.action, /help, 'Set the output file name' $
      else begin
         settings.chflag = 1
      endelse
 
      'PFILE': if track_flag then $
-        graff_msg, settings.action, 'Pick the output file name' $
+        graff_msg, settings.action, /help, 'Pick the output file name' $
      else begin
  
         filt = '*.ps;*.eps;*.pdf'
@@ -297,44 +256,44 @@ function Hopts_event, event
      endelse
 
      'DFILE': if track_flag then $
-        graff_msg, settings.action, 'Reset the output file name to the ' + $
-                   'default' $ 
+        graff_msg, settings.action, /help, $
+                   'Reset the output file name to the default' $ 
      else begin
         widget_control, settings.fileid, set_value = settings.tname
         settings.chflag = 1
      endelse
      
      'PSCMD':if (track_flag) then $
-        graff_msg, settings.action, 'Enter the command for spooling a ' + $
-                   'PS plot file' $ 
+        graff_msg, settings.action, /help, $
+                   'Enter the command for spooling a PS plot file' $ 
      else settings.chflag = 1
      'EPCMD':if (track_flag) then $
-        graff_msg, settings.action, 'Enter the command for viewing an ' + $
-                   'EPS plot file' $ 
+        graff_msg, settings.action, /help, $
+                   'Enter the command for viewing an EPS plot file' $ 
      else settings.chflag = 1
      'PDCMD':if (track_flag) then $
-        graff_msg, settings.action, 'Enter the command for viewing a ' + $
-                   'PDF plot file' $ 
+        graff_msg, settings.action, /help, $
+                   'Enter the command for viewing a PDF plot file' $ 
      else settings.chflag = 1
 
      'PSSFX':if (track_flag) then $
-        graff_msg, settings.action, 'Enter the part of the ' + $
-                   'command for spooling a PS plot thst comes after ' + $
+        graff_msg, settings.action, /help, 'Enter the part of the ' + $
+                   'command for spooling a PS plot that comes after ' + $
                    'the filename' $ 
      else settings.chflag = 1
      'EPSFX':if (track_flag) then $
-        graff_msg, settings.action, 'Enter the part of the ' + $
+        graff_msg, settings.action, /help, 'Enter the part of the ' + $
                    'command for viewing a EPS plot that comes after ' + $
                    'the filename' $ 
      else settings.chflag = 1
      'PDSFX':if (track_flag) then $
-        graff_msg, settings.action, 'Enter the part of the ' + $
+        graff_msg, settings.action, /help, 'Enter the part of the ' + $
                    'command for viewing a PDF plot that comes after ' + $
                    'the filename' $ 
      else settings.chflag = 1
     
      'PSFVIEW': if (track_flag) then $
-        graff_msg, settings.action, 'Set viewer to the default PS ' + $
+        graff_msg, settings.action, /help, 'Set viewer to the default PS ' + $
                    'viewer' $
      else begin
         widget_control, settings.cmid[0, 0], set_value = 'lp'
@@ -342,7 +301,7 @@ function Hopts_event, event
         settings.chflag = 1
      endelse
      'EPFVIEW': if (track_flag) then $
-        graff_msg, settings.action, 'Set viewer to the default EPS ' + $
+        graff_msg, settings.action, /help, 'Set viewer to the default EPS ' + $
                    'viewer' $
      else begin
         widget_control, settings.cmid[0, 1], set_value = $
@@ -351,7 +310,7 @@ function Hopts_event, event
         settings.chflag = 1
      endelse
      'PDFVIEW': if (track_flag) then $
-        graff_msg, settings.action, 'Set viewer to the default PDF ' + $
+        graff_msg, settings.action, /help, 'Set viewer to the default PDF ' + $
                    'viewer' $
      else begin
         widget_control, settings.cmid[0, 2], set_value = $
@@ -361,36 +320,42 @@ function Hopts_event, event
      endelse
 
      'PSNOVIEW': if (track_flag) then $
-        graff_msg, settings.action, 'Set viewer to "no viewer"' $
+        graff_msg, settings.action, /help, 'Set viewer to "no viewer"' $
      else begin
         widget_control, settings.cmid[0, 0], set_value = ''
         widget_control, settings.cmid[1, 0], set_value = ''
         settings.chflag = 1
      endelse
      'EPNOVIEW': if (track_flag) then $
-        graff_msg, settings.action, 'Set viewer to "no viewer"' $
+        graff_msg, settings.action, /help, 'Set viewer to "no viewer"' $
      else begin
         widget_control, settings.cmid[0, 1], set_value = ''
         widget_control, settings.cmid[1, 1], set_value = ''
         settings.chflag = 1
      endelse
      'PDNOVIEW': if (track_flag) then $
-        graff_msg, settings.action, 'Set viewer to "no viewer"' $
+        graff_msg, settings.action, /help, 'Set viewer to "no viewer"' $
      else begin
         widget_control, settings.cmid[0, 2], set_value = ''
         widget_control, settings.cmid[1, 2], set_value = ''
         settings.chflag = 1
      endelse
-     
+
+     'PSPROMPT': if track_flag then $
+        graff_msg, settings.action, /help, $
+                   'Choose whether to prompt before action' $
+     else settings.chflag = 1b
+     'EPPROMPT': if track_flag then $
+        graff_msg, settings.action, /help, $
+                   'Choose whether to prompt before action' $
+     else settings.chflag = 1b
+     'PDFPROMPT': if track_flag then $
+        graff_msg, settings.action, /help, $
+                   'Choose whether to prompt before action' $
+     else settings.chflag = 1b
+
      Else:     graff_msg, settings.action, "Whaat??????"       
   endcase
-
-  ;; widget_control, settings.xoffid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.yoffid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.xleftid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.yleftid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.ctrid, sensitive = ~(settings.opts.eps and 1)
-  ;; widget_control, settings.paperid, sensitive = ~(settings.opts.eps and 1)
 
 Miss_case:
 
@@ -409,13 +374,6 @@ function Gr_hardopts, pdefs
 
   h = pdefs.hardset
 
-  ;; output_types = ['Normal', 'Encapsulated', $
-  ;;                 'PDF (Print)', 'PDF (LaTeX)']
-  ;; if ~gr_find_program("gs") then begin
-  ;;    h.eps and= 1b
-  ;;    output_types = output_types[0:1]
-  ;; endif
-
   tname = pdefs.name
   dp = strpos(tname, '.', /reverse_search)
   if dp ne -1 then tname = strmid(tname, 0, dp) 
@@ -424,6 +382,7 @@ function Gr_hardopts, pdefs
   uvs = { $
         Opts:h, $
         Cmid:lonarr(2, 3), $
+        promptid: lonarr(3), $
         Wsid:0l, $
         Wsids:lonarr(4), $
         ctrid: 0l, $
@@ -460,12 +419,6 @@ function Gr_hardopts, pdefs
                          track = optblock.track)
   widget_control, junk, set_droplist_select = h.colour
 
-  ;; junk = widget_droplist(jb, $
-  ;;                        value = output_types, $
-  ;;                        uvalue = 'EPS', $
-  ;;                        track = optblock.track)
-  ;; widget_control, junk, set_droplist_select = h.eps
-
   junk = widget_droplist(jb, $
                          value = ['Landscape', 'Portrait'], $
                          uvalue = 'ORI', $
@@ -488,7 +441,6 @@ function Gr_hardopts, pdefs
                    /grid, $
                    /base_align_right)
 
-;  jb = widget_base(cl, /column)
   uvs.paperid = widget_droplist(cl, $
                                 value = ['A4', 'Letter'], $
                                 title = 'Paper size:', $
@@ -507,7 +459,6 @@ function Gr_hardopts, pdefs
                          track = optblock.track)
   widget_control, junk, set_droplist_select = h.timestamp
 
-;  jb = widget_base(cl, /column)
   uvs.xsid = cw_spin_box(cl, $
                          /double, $
                          /all, $
@@ -672,6 +623,16 @@ function Gr_hardopts, pdefs
                        value = 'None', $
                        uvalue = 'PSNOVIEW')
 
+  jbb = widget_base(jb, $
+                    /nonexclusive, $
+                    /row)
+  uvs.promptid[0] = widget_button(jbb, $
+                                  value = 'Prompt?', $
+                                  track = optblock.track, $
+                                  uvalue = 'PSPROMPT')
+  widget_control, uvs.promptid[0], set_button = h.prompt[0]
+  
+
   jb = widget_base(spbase, /row)
   uvs.cmid[0, 1] = cw_enter(jb, $
                          label = 'EPS View Command:', $
@@ -697,17 +658,26 @@ function Gr_hardopts, pdefs
                        value = 'None', $
                        uvalue = 'EPNOVIEW')
 
+  jbb = widget_base(jb, $
+                    /nonexclusive, $
+                    /row)
+  uvs.promptid[1] = widget_button(jbb, $
+                                  value = 'Prompt?', $
+                                  track = optblock.track, $
+                                  uvalue = 'EPPROMPT')
+  widget_control, uvs.promptid[1], set_button = h.prompt[1]
+  
   jb = widget_base(spbase, /row)
   uvs.cmid[0, 2] = cw_enter(jb, $
                          label = 'PDF View Command:', $
-                         value = h.viewer[0], $
+                         value = h.pdfviewer[0], $
                          uvalue = 'PDCMD', $
                          xsize = 12, $
                          track = optblock.track, $
                          /capture)
 
   uvs.cmid[1, 2]= cw_enter(jb, $
-                         value = h.viewer[1], $
+                         value = h.pdfviewer[1], $
                          uvalue = 'PDSFX', $
                          xsize = 8, $
                          label = '<file>', $
@@ -722,13 +692,15 @@ function Gr_hardopts, pdefs
                        value = 'None', $
                        uvalue = 'PDNOVIEW')
 
-  ;; widget_control, uvs.xoffid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.yoffid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.xleftid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.yleftid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.paperid, sensitive = ~(h.eps and 1)
-  ;; widget_control, uvs.ctrid, sensitive = ~(h.eps and 1)
-
+  jbb = widget_base(jb, $
+                    /nonexclusive, $
+                    /row)
+  uvs.promptid[2] = widget_button(jbb, $
+                                  value = 'Prompt?', $
+                                  track = optblock.track, $
+                                  uvalue = 'PDFPROMPT')
+  widget_control, uvs.promptid[2], set_button = h.prompt[2]
+  
   uvs.action = cw_enter(base, $
                         /text, $
                         /display, $
@@ -762,13 +734,13 @@ function Gr_hardopts, pdefs
   endrep until (ev.exited ne 0)
 
   widget_control, base, get_uvalue = uvs, /no_copy
-  pdefs.hardset = uvs.opts
+  if ev.exited eq 1 then pdefs.hardset = uvs.opts
 
   widget_control, tlb, /destroy
 
   widget_control, pdefs.ids.graffer, /sensitive
 
-  if ev.exited eq -1 then return, -1 $
+  if ev.exited eq -1 then return, 0 $
   else return, uvs.chflag
 
 end

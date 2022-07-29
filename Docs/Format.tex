@@ -24,19 +24,19 @@
 \setlength{\oddsidemargin}{5mm}
 \setlength{\evensidemargin}{5mm}
 \pagestyle{myheadings}
-\markboth{GRAFFER}{Version 4.13}
+\markboth{GRAFFER}{Version 5.00}
 
 \begin{document}
 
 \title{\includegraphics[width=0.80\textwidth]{logo} \\
 A Flexible Electronic Graph Paper\\
-Version 4.08\\
+Version 5.00\\
 File Format Description}
 
 \author{\textsf{\textbf{\Large James Tappin}}\\
 \texttt{\textbf{\Large jtappin at gmail dot com}}}
 
-\date{\textsf{\textbf{\large June 2020}}}
+\date{\textsf{\textbf{\large May 2022}}}
 
 \maketitle
 
@@ -130,6 +130,15 @@ whether the file needs to be byteswapped.
 For binary files, tags are always padded with spaces to a length
 of 3. 
 
+\subsubsection{Version 5}
+\label{sec:bin_v5}
+
+The one major structural change justifying a major version increments
+is the change in how the classic XY datasets are stored. Now the
+internal data structure uses a structure with pointers to the X and Y
+values and appropriate errors. This is reflected in the new \texttt{VX},
+\texttt{VY}, \texttt{VXE}, and \texttt{VYE} tags in binary files.
+
 \subsubsection{Version 4}
 \label{sec:bin_v4}
 
@@ -153,16 +162,28 @@ ordering).
     \hline
     TAG & Str*3 & 1 & The field identification tag \\
     TYPE & Long & 1 & The type code as returned by IDL's \texttt{SIZE}
-    function.\\
+    function. TYPE=11, implies a LIST object, any other sort of object
+    is an error.\\
     NDIMS & Long & 1 & How many dimensions, 0 for a scalar.\\
     DIMS & Long & NDIMS & The size of the dimensions (not present when
     NDIMS=0).\\
     LENS & Long & NVALS & The lengths of strings. NVALS = PRODUCT(DIMS)
     or 1 for a scalar. Not present if TYPE is not 7 (string).\\
-    DATA & TYPE & NVALS & The actual values.\\
+    DATA & TYPE & NVALS & The actual values. For list types (TYPE=11)
+    see below for the storage of list elements.\\
+    \hline
+    ETYPE & Long & 1 & The type of the list element. Note that lists of
+    lists are not allowed.\\
+    ENDIMS & Long & 1 & The number of dimensions  in the list
+    element.\\
+    EDIMS &  Long & ENDIMS & The size of the dimensions (not present if
+    ENDIMS=0).\\
+    ELENS & Long & ENVALS & The lengths of the strings if the element
+    is of string type. ENVALS=PRODUCT(EDIMS) or 1.\\
+    EDATA & TYPE & ENVALS & The actual values in the element.\\
     \hline
   \end{tabular}
-  \caption{The subfields of a Graffer~V4 record.}
+  \caption{The subfields of a Graffer~V4+ record.}
   \label{tab:graff_record}
 \end{table}
 
@@ -172,11 +193,17 @@ ordering).
 For versions~2 and~3, the format was much less robust.
 The size of the data field that follows is determined by the
 type and number of data required by the particular tag. For string quantities,
-the string is preceded by its length (a long). 
+the string is preceded by its length (a long). This became an issue if
+the type of a field was changed (e.g.\ from float to double or int to long).
 
 Version 2 and 3 files cannot be read directly by the Fortran version,
 but the gdl/idl procedure \texttt{graff\_convert} can be used to
 convert to the current format.
+
+\subsubsection{Version 1}
+\label{sec:vers1b}
+
+There were no binary files in version 1.
 
 \subsection{ASCII files.}
 
@@ -304,11 +331,14 @@ to the whole file.
   & Long+Strings& 1+n&
   For V3 and ASCII files.\\
   \hline
-  \multicolumn{4}{|c|}{The following tags define how hardcopy will be generated.}\\
+  \multicolumn{4}{|c|}{The following tags define how hardcopy will be
+    generated.}\\ 
   \hline HC& Byte& 1&
   Whether to use colour PostScript. (Fortran always uses colour)\\
   HE& Byte& 1&
-  Whether to generate Encapsulated PostScript. (Not applicable to Fortran)\\
+  Whether to generate Encapsulated PostScript or PDF. 0=Normal
+  PostScript, 1=Encapsulated PS, 2=PDF with page positioning, 3=PDF
+  suitable for inclusion in \LaTeX. (Obsolete)\\
   HO& Byte& 1&
   Whether to plot in landscape (0) or portrait (1) mode\\
   HY& Byte & 1 & Whether to use RGB (0) or CMYK (1) colour
@@ -330,6 +360,12 @@ to the whole file.
   The part of the view command before the filename\\
   HVA& String& 1&
   The part of the view command after the filename.\\
+  HPB & String & 1 &
+  The part of the PDF view command before the filename.\\
+  HPA & String & 1 &
+  The part of the PDF view command after the filename.\\
+  HPP & Byte & 3 &
+  Whether to prompt before spooling or viewing the output file.\\
   HFN& String & 1 & The filename for the hardcopy output.\\
   HPS & String & 1 & The device for producing PostScript output. This
   and the other devices are only used in Fortran.\\
@@ -401,7 +437,10 @@ These tags define a specific dataset within the plot.
   L& Int& 1&
   Line style (IDL linestyle values)\\
   C& Int& 1&
-  Colour (Table as in PGPLOT).\\
+  Colour (Table as in PGPLOT). -1 denotes omit this dataset, -2
+  denotes a custom colour.\\
+  CV & Byte & 3 & A colour triple (R,G,B), only present if the colour
+  index is -2.\\
   W& Float& 1&
   Line thickness\\
   O& Byte& 1&
@@ -434,16 +473,26 @@ These tags define a specific dataset within the plot.
   for automatic levels.\\
   ZL& Double& <ZNL>&
   The contour levels to use\\
+  ZLM & Int & 1 & Mapping mode for automatic contour levels. 0=linear,
+  1=log, 2=square root. \\
   ZLL & Null & 0 & Indicates that the contour levels follow on multiple
   lines. Only used in V4 ASCII files when ZNL is more than 5.\\
   ZNC& Int& 1&
-  Number of colours to use for coloured contouring (Not present in V4).\\
-  ZC& Int& <ZNC>&
-  The colour indices to use.\\
+  Number of colours to use for coloured contouring (Not present in V4
+  binary files).\\
+  ZC& List & <ZNC>&
+  The colour indices to use. List elements are either integers or
+  3-element byte arrays. From V4.09, this is not used in ASCII files,
+  but can still be read.\\
   ZCL & Null & 0 & Indicates that the colours follow on multiple
-  lines. Only used in V4 ASCII files when ZNC is more than 20.\\
+  lines. Only used in V4 ASCII files when ZNC is more than 20. No
+  longer used as of V4.09 but can still be read.\\
+  ZCX & Int & <ZNC> & In ASCII files in V4.09 and above, the value
+  gives the number of elements in each colour value. The values then
+  follow, one colour per line on the remainaing <ZNC> lines. \\
   ZNT& Int & 1&
-  The number of line thicknesses to use in contouring (Not present in V4).\\
+  The number of line thicknesses to use in contouring (Not present in
+  V4 binary files).\\
   ZT& Float& <ZNT>&
   The line thicknesses to use.\\
   ZTL & Null & 0 & Indicates that the thicknesses follow on multiple
@@ -464,7 +513,8 @@ These tags define a specific dataset within the plot.
   The range of Z values to display in gray/colour display\\
   ZP& Float& 1&
   The pixel size to use (in mm) for hardcopy.\\
-  ZIL & Byte & 1 & Whether the colour scaling is logarithmic.\\
+  ZIL & Byte & 1 & Whether the colour scaling is
+  logarithmic. 0=linear, 1=log, 2=square root.\\
   ZIN & Byte & 1 & Whether the colour map is inverted.\\
   ZSM & Byte & 1 & Whether to use a smooth (\texttt{plshades}) or
   ``blocky'' (\texttt{plimage}) image display. (only in Fortran)\\
@@ -488,18 +538,22 @@ These tags define a specific dataset within the plot.
   the other start data tags are not quite like other valued tags in that
   in an ASCII dataset the values must start on a new line and be in <N>
   rows with the number of columns
-  determined by the type setting.\\
+  determined by the type setting. Now only used in ASCII files.\\
   VE& Null& 0&
   End of data. For binary files this is just a verification. Not
   present in V4\\
+  VX & Double & <N> & The X-values for a 1-D dataset.\\
+  VY & Double & <N> & The Y-values for a 1-D dataset.\\
+  VXE & Double & 1 or 2 $\times$ <N> & The X-errors for a 1-D dataset.\\
+  VY & Double & 1 or 2 $\times$ <N> & The Y-errors for a 1-D dataset.\\
   ZX2 & Byte & 1 & Flag for 2-d X array (must precede the ZXS tag, not
-  present in V4).\\
+  present in V4+ binaries).\\
   ZY2 & Byte & 1 & Flag for 2-d Y array (must precede the ZYS tag, not
-  present in V4).\\
+  present in V4+ binaries).\\
   ZXS& Double& <N>&
   X values for a 2-D dataset (will be <N>$\times$<N2> if ZX2 flag is set) \\
   ZXE& Null& 0&
-  End of X-values. Not present in V4.\\
+  End of X-values. Not present in V4+ binaries.\\
   ZYS& Double& <N2>&
   Y values for a 2-D dataset (will be <N>$\times$<N2> if ZY2 flag is set)\\
   ZYE& Null& 0&
@@ -533,8 +587,11 @@ TS& Int& 1&
 Start text string, value is string index.\\
 TTS& Null& 0&
 Start text template (not all the following keys are used in a template).\\
-\hline C& Int& 1&
-Colour of text string.\\
+\hline 
+C& Int& 1&
+Colour of text string. -2 denotes a custom colour.\\
+CV & Byte & 3 &
+Colour triple for custom colours.\\
 S& Float& 1&
 Size of characters (relative to default)\\
 O& Float& 1&
@@ -565,7 +622,7 @@ TTE& Null& 0&
 End the template.\\
 \end{longtable}
 
-\section{Colour Table}
+\section{Fortran Colour Table}
 \label{sec:colour_table}
 
 The colour table file lists the colours for each colour table. 

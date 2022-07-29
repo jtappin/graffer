@@ -251,6 +251,7 @@ contains
     ! Define the viewport.
 
     real(kind=plflt) :: dx, dy, xoff, yoff, roff
+    real(kind=plflt) :: ch_raw, ch_scl
 
     if (pdefs%isotropic) then
        corners = 0._plflt
@@ -535,11 +536,13 @@ contains
           device = 'ps'
        end if
     case ('pdf')
-       if (gr_plot_has_device('pdfcairo')) then
-          device = 'pdfcairo'
-       else if (gr_plot_has_device('pdfqt')) then
+       ! We prefer the QT PDF driver as it makes better quality colour plots
+       ! (at the expense of bigger files).
+       if (gr_plot_has_device('pdfqt')) then
           device = 'pdfqt'
-       else
+       elseif (gr_plot_has_device('pdfcairo')) then
+          device = 'pdfcairo'
+       else 
           call gr_message("No PDF device found", GTK_MESSAGE_ERROR)
        end if
     case ('svg')    ! Prefer qt device over cairo here as the cairo device

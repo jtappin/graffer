@@ -123,62 +123,16 @@ pro Gr_as_yr, data, xrange, xtype, range, visible = visible, positive $
      end
      
      Else: begin
-        xx = (*data.xydata)[0, 0:data.ndata-1]
-        if (data.type eq 0 or $
-            data.type eq 3 or $
-            data.type eq 4) then begin
-           yp = (*data.xydata)[1, 0:data.ndata-1]
-           ym = (*data.xydata)[1, 0:data.ndata-1]
-           
-        endif else if (data.type eq 1) then begin
-           yp = (*data.xydata)[1, 0:data.ndata-1] + $
-                (finite((*data.xydata)[2, 0:data.ndata-1]) and $
-                 (*data.xydata)[2, 0:data.ndata-1])
-           ym = (*data.xydata)[1, 0:data.ndata-1] - $
-                (finite((*data.xydata)[2, 0:data.ndata-1]) and $
-                 (*data.xydata)[2, 0:data.ndata-1])
-           
-        endif else if (data.type eq 2) then begin
-           yp = (*data.xydata)[1, 0:data.ndata-1] + $
-                (finite((*data.xydata)[3, 0:data.ndata-1]) and $
-                 (*data.xydata)[3, 0:data.ndata-1])
-           ym = (*data.xydata)[1, 0:data.ndata-1] - $
-                (finite((*data.xydata)[2, 0:data.ndata-1]) and $
-                 (*data.xydata)[2, 0:data.ndata-1])
-           
-        endif else if (data.type eq 5) then begin
-           yp = (*data.xydata)(1, 0:data.ndata-1) + $
-                (finite((*data.xydata)(3, 0:data.ndata-1)) and $
-                 (*data.xydata)(3, 0:data.ndata-1))
-           ym = (*data.xydata)(1, 0:data.ndata-1) - $
-                (finite((*data.xydata)(3, 0:data.ndata-1)) and $
-                 (*data.xydata)(3, 0:data.ndata-1))
-           
-        endif else if (data.type eq 6) then begin
-           yp = (*data.xydata)(1, 0:data.ndata-1) + $
-                (finite((*data.xydata)(4, 0:data.ndata-1)) and $
-                 (*data.xydata)(4, 0:data.ndata-1))
-           ym = (*data.xydata)(1, 0:data.ndata-1) - $
-                (finite((*data.xydata)(3, 0:data.ndata-1)) and $
-                 (*data.xydata)(3, 0:data.ndata-1))
-           
-        endif else if (data.type eq 7) then begin
-           yp = (*data.xydata)(1, 0:data.ndata-1) + $
-                (finite((*data.xydata)(4, 0:data.ndata-1)) and $
-                 (*data.xydata)(4, 0:data.ndata-1))
-           ym = (*data.xydata)(1, 0:data.ndata-1) - $
-                (finite((*data.xydata)(4, 0:data.ndata-1)) and $
-                 (*data.xydata)(4, 0:data.ndata-1))
-           
-        endif else  begin
-           yp = (*data.xydata)(1, 0:data.ndata-1) + $
-                (finite((*data.xydata)(5, 0:data.ndata-1)) and $
-                 (*data.xydata)(5, 0:data.ndata-1))
-           ym = (*data.xydata)(1, 0:data.ndata-1) - $
-                (finite((*data.xydata)(4, 0:data.ndata-1)) and $
-                 (*data.xydata)(4, 0:data.ndata-1))
-        endelse
-        
+        xx = *(*data.xydata).x
+        ym = *(*data.xydata).y
+        yp = ym
+        if ptr_valid((*data.xydata).y_err) then begin
+           ye = *(*data.xydata).y_err
+           ye = finite(ye) and ye ; and= is the wrong way round
+           ym -= ye[0, *]
+           yp += ye[-1, *]
+        endif
+
         if finite(data.max_val) then yp <= data.max_val
         if finite(data.min_val) then ym >= data.min_val
 

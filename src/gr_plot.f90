@@ -55,7 +55,7 @@ module gr_plot
   logical, private :: gr_plot_is_open = .false., gr_is_widget
 
   real(kind=plflt) :: xprev, yprev
-  character(len=80) :: selected_device
+!!  character(len=80) :: selected_device
   character(len=160), private :: error_str
 
   character(len=120), private :: local_name
@@ -76,7 +76,7 @@ contains
     integer :: pdot
     real(kind=plflt) :: page_aspect
     type(graff_hard), pointer :: hardset
-    logical :: status, isd
+    logical :: isd
     integer :: plrc
 
     if (gr_plot_is_open) return
@@ -130,24 +130,34 @@ contains
           else
              driver = hardset%psdev
           end if
-          if (hardset%psize == 0) then     ! A4
-             page_aspect = 297._plflt/210._plflt
-          else
-             page_aspect = 11._plflt/8.5_plflt
-          end if
+!!$          if (hardset%psize == 0) then     ! A4
+!!$             page_aspect = 297._plflt/210._plflt
+!!$          else
+!!$             page_aspect = 11._plflt/8.5_plflt
+!!$          end if
           call plsdev(driver)
-          if (hardset%orient) then
-             call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
-          else
-             call plsdidev (0._plflt, 1./page_aspect, 0._plflt, 0._plflt)
-          end if
+!!$          if (hardset%orient) then
+!!$             call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
+!!$          else
+!!$             call plsdidev (0._plflt, 1./page_aspect, 0._plflt, 0._plflt)
+!!$          end if
+          page_aspect = hardset%size(1)/hardset%size(2)
+
+          call plsori(1)
+          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
+
+          ! Since the drivers seem to be ignoring the offset,
+          ! at least pro tem we will not use it.
+          
           call plspage(0._plflt, 0._plflt, &
-               & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
-               & int(hardset%off(1)*cm2pt), &
-               & int(hardset%off(2)*cm2pt))
+               & int(hardset%size(1)*cm2pt), &
+               & 0, 0)
+!!$               & int(hardset%off(2)*cm2pt), &
+!!$               & int(hardset%off(1)*cm2pt))
 
           call plsfnam(trim(local_name)//'.ps')
+          
        case('eps')
           if (hardset%epsdev == '') then
              call gr_default_device('eps', driver)
@@ -168,6 +178,7 @@ contains
                & int(hardset%size(1)*cm2pt), &
                & 0, 0)
           call plsfnam(trim(local_name)//'.eps')
+          
        case('pdf')
           if (hardset%pdfdev == '') then
              call gr_default_device('pdf', driver)
@@ -181,17 +192,23 @@ contains
              page_aspect = 11._plflt/8.5_plflt
           end if
           call plsdev(driver)
-          if (hardset%orient) then
-             call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
-          else
-             call plsdidev (0._plflt, 1./page_aspect, 0._plflt, 0._plflt)
-          end if
+!!$          if (hardset%orient) then
+!!$             call plsdidev (0._plflt, page_aspect, 0._plflt, 0._plflt)
+!!$          else
+!!$             call plsdidev (0._plflt, 1./page_aspect, 0._plflt, 0._plflt)
+!!$          end if
+
+          ! Since the drivers seem to be ignoring the offset,
+          ! at least pro tem we will not use it.
+           
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
-               & int(hardset%off(1)*cm2pt), &
-               & int(hardset%off(2)*cm2pt))
+               & 0, 0)
+!!$               & int(hardset%off(1)*cm2pt), &
+!!$               & int(hardset%off(2)*cm2pt))
           call plsfnam(trim(local_name)//'.pdf')
+
        case('epdf')
           if (hardset%pdfdev == '') then
              call gr_default_device('pdf', driver)
@@ -203,12 +220,13 @@ contains
 
           call plsdev(driver)
           call plsori(0)
-          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
+!!$          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
                & 0, 0)
           call plsfnam(trim(local_name)//'.pdf')
+          
        case('svg')
           if (hardset%svgdev == '') then
              call gr_default_device('svg', driver)
@@ -219,19 +237,19 @@ contains
 
           call plsdev(driver)
           call plsori(0)
-          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
+!!$          call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
                & 0, 0)
           call plsfnam(trim(local_name)//'.svg')
-
        end select
 
        call plscolor(f_c_logical(hardset%colour))
        call plinit()
 
        gr_is_widget = .false.
+       transient%selected_device = device
     else
        if (present(area)) then
           plotting_area = area
@@ -256,10 +274,11 @@ contains
        gr_is_widget = .true.
 !!$       call plxormod(.false., status)
 !!$       call gtk_widget_set_sensitive(xhair_but, f_c_logical(status))
+       transient%selected_device = 'widget'
     end if
     call plfontld(1)
     gr_plot_is_open = .true.
-    call plgdev(selected_device)
+
 !    call plsesc(ichar('!'))
 
   end subroutine gr_plot_open
@@ -297,7 +316,8 @@ contains
     ! Close a plplot stream and dispose of the output.
 
     type(graff_hard), pointer :: hardset
-
+    integer(kind=c_int) :: iresp
+    
     hardset => pdefs%hardset
 
 
@@ -308,19 +328,54 @@ contains
     call plend
     gr_plot_is_open = .false.
 
-    if (selected_device == 'pscairo' .and. hardset%action(1) /= '') then
-       call execute_command_line(trim(hardset%action(1))//' '//&
+    if (transient%selected_device == 'ps' .and. hardset%action(1) /= '') then
+       if (hardset%prompt(1)) then
+          iresp = hl_gtk_message_dialog_show( &
+               & ["Print or view file with " // &
+               &  trim(hardset%action(1))//"?"], &
+               & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION)
+       else
+          iresp = GTK_RESPONSE_YES
+       end if
+       if (iresp == GTK_RESPONSE_YES) &
+            & call execute_command_line(trim(hardset%action(1))//' '//&
             & trim(local_name)//'.ps '//trim(hardset%action(2)))
-    else if ((selected_device == 'epsqt' .or. &
-         & selected_device == 'epscairo') .and. &
+
+    else if (transient%selected_device == 'eps' .and. &
          & hardset%viewer(1) /= '') then
-       call execute_command_line(trim(hardset%viewer(1))//' '//&
+       if (hardset%prompt(2)) then
+          iresp = hl_gtk_message_dialog_show( &
+               & ["View file with "// &
+               &  trim(hardset%viewer(1))//"?"], &
+               & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION)
+       else
+          iresp = GTK_RESPONSE_YES
+       end if
+       if (iresp == GTK_RESPONSE_YES) &
+            & call execute_command_line(trim(hardset%viewer(1))//' '//&
             & trim(local_name)//'.eps '//&
             & trim(hardset%viewer(2)), &
             & wait=.false.)
+
+    else if ((transient%selected_device == 'pdf' .or. &
+         & transient%selected_device == 'epdf') .and. &
+         & hardset%pdfviewer(1) /= '') then
+       if (hardset%prompt(3)) then
+          iresp = hl_gtk_message_dialog_show( &
+               & ["View file with "// &
+               & trim(hardset%pdfviewer(1))//"?"], &
+               & GTK_BUTTONS_YES_NO, type=GTK_MESSAGE_QUESTION)
+       else
+          iresp = GTK_RESPONSE_YES
+       end if
+       if (iresp == GTK_RESPONSE_YES) &
+            & call execute_command_line(trim(hardset%pdfviewer(1))//' '//&
+            & trim(local_name)//'.pdf '//&
+            & trim(hardset%pdfviewer(2)), &
+            & wait=.false.)
     end if
 
-    selected_device = ''
+    transient%selected_device = ''
   end subroutine gr_plot_close
 
   subroutine gr_plot_draw(ichange)
@@ -513,13 +568,13 @@ contains
     ! Plot an X-Y dataset
 
     real(kind=plflt), allocatable, dimension(:) :: x, y
-    real(kind=plflt), pointer, dimension(:) :: r, th
     real(kind=plflt), allocatable, dimension(:) :: xh, yh
-    real(kind=real64), pointer, dimension(:,:) :: xydata
+    integer(kind=int32), allocatable, dimension(:) :: idx
+    
     type(graff_data), pointer :: data
 
     integer :: i
-    logical :: xlog, ylog, xyall
+    logical :: xlog, ylog, issort
     real(kind=plflt), parameter :: dtor = pl_pi/180._plflt
     real(kind=plflt) :: scale
     integer :: nseg, iseg
@@ -528,7 +583,7 @@ contains
     
     logical :: sflag
     data => pdefs%data(index)
-    if (.not. allocated(data%xydata)) return
+    if (.not. allocated(data%xydata%x)) return
 
     call gr_plot_transform(dataset=index, full=data%noclip)
 
@@ -540,25 +595,31 @@ contains
     end if
 
     if (data%sort) then
-       allocate(xydata(size(data%xydata,1), size(data%xydata,2)))
-       xyall = .true.
-       call sort(data%xydata, xydata)
+       allocate(x(data%ndata), idx(data%ndata))
+       call sort(data%xydata%x, x, idx)
+       deallocate(x)
+       issort = .true.
     else
-       xydata => data%xydata
-       xyall = .false.
+       issort = .false.
     end if
 
     nseg = 1     ! single segment
     
     allocate(x(data%ndata), y(data%ndata))
-
+    
     allocate(invalid(data%ndata))
     invalid(:) = .false.
     
     if (data%mode == 0) then
-       x = xydata(1,:)
+       if (issort) then
+          x = data%xydata%x(idx)
+          y = data%xydata%y(idx)
+       else
+          x = data%xydata%x(:)
+          y = data%xydata%y(:)
+       end if
+       
        if (xlog) x = log10(x)
-       y = xydata(2,:)
        
        if (ieee_is_finite(data%min_val)) &
             & invalid = invalid .or. y < data%min_val
@@ -602,13 +663,12 @@ contains
        isegb(1,1) = 1
        isegb(2,1) = data%ndata
        
-       r => xydata(1,:)
-       th => xydata(2,:)
-       x = r * cos(th*scale)
+       x = data%xydata%x * cos(data%xydata%y*scale)
        if (xlog) x = log10(x)
-       y = r * sin(th*scale)
+       y = data%xydata%x * sin(data%xydata%y*scale)
        if (ylog) y = log10(y)
     end if
+    
     if (data%colour == -1) return
 
     if (data%colour == -2) then
@@ -621,13 +681,12 @@ contains
     call gr_plot_linesty(data%line, scale=sqrt(data%thick))
 
     ! Moved error bars  before the line so that
-    ! isegb doesn't get changed
+    ! isegb doesn't get changed by histogram mode
     
     if (data%type > 0) then
        if (data%mode == 0) then
           do i = 1, nseg
-             call gr_plot_xy_errors(index, x(isegb(1,i):isegb(2,i)), &
-                  & y(isegb(1,i):isegb(2,i)), xydata(:,isegb(1,i):isegb(2,i)))
+             call gr_plot_xy_errors(index,isegb(:,i))
           end do
        else
           call gr_plot_rt_errors(index)
@@ -654,6 +713,7 @@ contains
        do i = 1, nseg
           call plline(xh(isegb(1,i):isegb(2,i)), yh(isegb(1,i):isegb(2,i)))
        end do
+       deallocate(xh,yh)
     end select
 
 
@@ -661,7 +721,8 @@ contains
          & call gr_plot_symbol(x, y, data%psym, &
          & data%symsize, use = .not. invalid) 
 
-    if (xyall) deallocate(xydata)
+    deallocate(x,y)
+        
   end subroutine gr_1dd_plot
 
   subroutine gr_1df_plot(index)

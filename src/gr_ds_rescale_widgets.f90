@@ -208,40 +208,21 @@ contains
           if (shifts(2) /= 0._real64) data%zdata%y = data%zdata%y + shifts(2)
           if (shifts(3) /= 0._real64) data%zdata%z = data%zdata%z + shifts(3)
        else
-          if (scales(1) /= 1._real64) data%xydata(1,:) = &
-               & data%xydata(1,:) * scales(1)
-          if (scales(2) /= 1._real64) data%xydata(2,:) = &
-               & data%xydata(2,:) * scales(2)
+          if (scales(1) /= 1._real64) data%xydata%x = &
+               & data%xydata%x * scales(1)
+          if (scales(2) /= 1._real64) data%xydata%y = &
+               & data%xydata%y * scales(2)
 
-          if (shifts(1) /= 0._real64) data%xydata(1,:) = &
-               & data%xydata(1,:) + shifts(1)
-          if (shifts(2) /= 0._real64) data%xydata(2,:) = &
-               & data%xydata(2,:) + shifts(2)
+          if (shifts(1) /= 0._real64) data%xydata%x = &
+               & data%xydata%x + shifts(1)
+          if (shifts(2) /= 0._real64) data%xydata%y = &
+               & data%xydata%y + shifts(2)
 
-          if (scales(1) /= 1._real64) then
-             select case (data%type)
-             case(3,5,6)
-                data%xydata(3,:) = data%xydata(3,:) * scales(1)
-             case(4,7,8)
-                data%xydata(3:4,:) = data%xydata(3:4,:) * scales(1)
-             end select
-          end if
-          if (scales(2) /= 1._real64) then
-             select case (data%type)
-             case(1)
-                data%xydata(3,:) = data%xydata(3,:) * scales(2)
-             case(2)
-                data%xydata(3:4,:) = data%xydata(3:4,:) * scales(2)
-             case(5)
-                data%xydata(4,:) = data%xydata(4,:) * scales(2)
-             case(6)
-                data%xydata(4:5,:) = data%xydata(4:5,:) * scales(2)
-             case(7)
-                data%xydata(5,:) = data%xydata(5,:) * scales(2)
-             case(8)
-                data%xydata(5:6,:) = data%xydata(5:6,:) * scales(2)
-             end select
-          end if
+          if (nx_errors(data%type) /= 0 .and. scales(1) /= 1._real64) &
+               & data%xydata%x_err = data%xydata%x_err * scales(1)
+          if (ny_errors(data%type) /= 0 .and. scales(2) /= 1._real64) &
+                data%xydata%y_err = data%xydata%y_err * scales(2)
+
        end if
        call gr_plot_draw(.true.)
     end if

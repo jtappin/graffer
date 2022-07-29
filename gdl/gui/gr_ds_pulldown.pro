@@ -43,17 +43,17 @@ pro Gr_dss_event, event
      ichange = 0b
      
      if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.hlptxt, ''
+        graff_msg, pdefs.ids.hlptxt, /help, ''
         goto, miss_case
      endif
   endif
 
   case event.value of
-     'Other': graff_msg, pdefs.ids.hlptxt, 'More complex dataset ' + $
+     'Other': graff_msg, pdefs.ids.hlptxt, /help, 'More complex dataset ' + $
                          'operations'
      
      'Other/Select...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Select current data set' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Select current data set' $
      else begin
         graff_ch_dset, pdefs
         ichange = 0b
@@ -61,21 +61,21 @@ pro Gr_dss_event, event
      end
      
      'Other/Merge...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Merge two data sets' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Merge two data sets' $
      else begin
         gr_app_w, pdefs
         nch = 15
      end
      
      'Other/Sort...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Change the order of the data sets' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Change the order of the data sets' $
      else begin
         graff_sort_dss, pdefs
         nch = 15
      end
      
      'Other/Write...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Save current dataset to a file' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Save current dataset to a file' $
      else begin
         dir = pdefs.ds_dir
         wname = strmid(pdefs.name, 0, strpos(pdefs.name, '.', $
@@ -96,7 +96,7 @@ pro Gr_dss_event, event
         idraw_flag = 0
      end
      'Other/Export': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Send data from current DS to ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Send data from current DS to ' + $
                    '$MAIN$ level' $
      else begin
         graff_to_tlv, pdefs
@@ -105,7 +105,7 @@ pro Gr_dss_event, event
      endelse
      
      'Next':if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Make next data set current' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Make next data set current' $
      else begin
         pdefs.cset = (pdefs.cset+1) mod pdefs.nsets
         graff_set_vals, pdefs, /set_only
@@ -114,7 +114,7 @@ pro Gr_dss_event, event
      end
      
      'Previous':if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Make previous data set current' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Make previous data set current' $
      else begin
         pdefs.cset = pdefs.cset-1
         if (pdefs.cset eq -1) then pdefs.cset = pdefs.nsets-1
@@ -124,7 +124,7 @@ pro Gr_dss_event, event
      end
      
      'New':if track_flag then $
-        graff_msg, pdefs.ids.hlptxt,  $
+        graff_msg, pdefs.ids.hlptxt, /help,  $
                    'Create a new data set and make it current' $
      else begin
         pdefs.cset = pdefs.nsets
@@ -137,27 +137,14 @@ pro Gr_dss_event, event
         idraw_flag = 0
      end
      
-     'Other/Erase': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Erase the values in the current ' + $
-                   'data set' $
-     else begin
-        if (*pdefs.data)[pdefs.cset].type eq 9 then ptr_free, $
-           (*(*pdefs.data)[pdefs.cset].xydata).x, $
-           (*(*pdefs.data)[pdefs.cset].xydata).y, $
-           (*(*pdefs.data)[pdefs.cset].xydata).z
-
-        (*pdefs.data)[pdefs.cset].ndata = 0
-        (*pdefs.data)[pdefs.cset].type = 0
-        ptr_free, (*pdefs.data)[pdefs.cset].xydata
-
-     end
      
      'Other/Delete': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Delete the current data set' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Delete the current data set' $
      else graff_dsdel, pdefs
 
      'Other/Copy': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, 'Copy the current dataset to a new ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Copy the current dataset to a new ' + $
                    'dataset' $ 
      else begin
         current = pdefs.cset
@@ -222,7 +209,6 @@ pro Gr_ds_pulldown, base, pdefs
            {ds_pd_opts, 0, 'Select...'}, $
            {ds_pd_opts, 0, 'Merge...'},  $
            {ds_pd_opts, 0, 'Sort...'},  $
-           {ds_pd_opts, 0, 'Erase'}, $
            {ds_pd_opts, 0, 'Delete'}, $
            {ds_pd_opts, 0, 'Write...'}, $
            {ds_pd_opts, 0, 'Copy'}, $
@@ -243,6 +229,6 @@ pro Gr_ds_pulldown, base, pdefs
                         /row, $
                         ids = pids)
 
-  pdefs.ids.export = pids[11]
+  pdefs.ids.export = pids[10]
 
 end

@@ -72,6 +72,7 @@ module gr_record
      procedure :: gr_get_long_a
      procedure :: gr_get_float_a
      procedure :: gr_get_double_a
+     procedure :: gr_get_logical_a
      procedure :: gr_get_string_a
 
      procedure :: gr_get_int_aa
@@ -90,6 +91,7 @@ module gr_record
      procedure :: gr_set_long_a
      procedure :: gr_set_float_a
      procedure :: gr_set_double_a
+     procedure :: gr_set_logical_a
      procedure :: gr_set_string_a
 
      procedure :: gr_set_double_aa
@@ -98,13 +100,14 @@ module gr_record
      generic, public :: get_value => gr_get_int, gr_get_long, &
           & gr_get_float, gr_get_double, gr_get_logical, gr_get_string, &
           & gr_get_int_a, gr_get_long_a, gr_get_float_a, gr_get_double_a, &
-          & gr_get_string_a, gr_get_double_aa, gr_get_int_aa, gr_get_byte
+          & gr_get_logical_a, gr_get_string_a, gr_get_double_aa, &
+          & gr_get_int_aa, gr_get_byte
 
      generic, public :: set_value => gr_set_int, gr_set_long, &
           & gr_set_float, gr_set_double, gr_set_logical, gr_set_string, &
           & gr_set_int_a, gr_set_long_a, gr_set_float_a, gr_set_double_a, &
-          & gr_set_string_a, gr_set_double_aa, gr_set_int_aa, &
-          & gr_set_byte, gr_set_null
+          & gr_set_logical_a, gr_set_string_a, gr_set_double_aa, &
+          & gr_set_int_aa, gr_set_byte, gr_set_null
 
      procedure, public :: get_dimensions => gr_get_dimensions
      procedure, public :: get_tag => gr_get_tag
@@ -129,7 +132,7 @@ contains
     integer :: i
 
     ! List elements
-    integer(kind=int32) :: etcode, endims, edims
+    integer(kind=int32) :: etcode, endims, edims, dim1
     integer(kind=int8) :: ebval
     integer(kind=int32) :: elval
     integer(kind=int8), dimension(3) :: ebaval
@@ -183,6 +186,7 @@ contains
           return
        end if
        if (swap_end) call byte_swap(this%dims)
+
     end if
 
     if (this%tcode == idl_string) then
@@ -913,10 +917,12 @@ contains
        call gr_get_int(this, sival, status)
        ival = sival
        return
-    else if (this%ndims == 2 .and. this%dims(2) > 1) then
-       call gr_message("GR_GET_INT_A: Try to read 1D array from 2-D")
-       status = 2
-       return
+    else if (this%ndims == 2) then
+       if (this%dims(2) > 1) then
+          call gr_message("GR_GET_INT_A: Try to read 1D array from 2-D")
+          status = 2
+          return
+       end if
     end if
 
     sz = size(ival)
@@ -965,10 +971,12 @@ contains
        call gr_get_long(this, slval, status)
        lval = slval
        return
-    else if (this%ndims == 2 .and. this%dims(2) > 1) then
-       call gr_message("GR_GET_LONG_A: Try to read 1D array from 2-D")
-       status = 2
-       return
+    else if (this%ndims == 2) then
+       if (this%dims(2) > 1) then
+          call gr_message("GR_GET_LONG_A: Try to read 1D array from 2-D")
+          status = 2
+          return
+       end if
     end if
 
     sz = size(lval)
@@ -1016,10 +1024,12 @@ contains
        call gr_get_float(this, srval, status)
        rval = srval
        return
-    else if (this%ndims == 2 .and. this%dims(2) > 1) then
-       call gr_message("GR_GET_FLOAT_A: Try to read 1D array from 2-D")
-       status = 2
-       return
+    else if (this%ndims == 2) then
+       if (this%dims(2) > 1) then
+          call gr_message("GR_GET_FLOAT_A: Try to read 1D array from 2-D")
+          status = 2
+          return
+       end if
     end if
 
     sz = size(rval)
@@ -1067,10 +1077,12 @@ contains
        call gr_get_double(this, sdval, status)
        dval = sdval
        return
-    else if (this%ndims == 2 .and. this%dims(2) > 1) then
-       call gr_message("GR_GET_DOUBLE_A: Try to read 1D array from 2-D")
-       status = 2
-       return
+    else if (this%ndims == 2) then
+       if (this%dims(2) > 1) then
+          call gr_message("GR_GET_DOUBLE_A: Try to read 1D array from 2-D")
+          status = 2
+          return
+       end if
     end if
 
     sz = size(dval)
@@ -1102,6 +1114,57 @@ contains
        status = 2
     end select
   end subroutine gr_get_double_a
+
+  subroutine gr_get_logical_a(this, tval, status)
+    class(graffer_record), intent(in) :: this
+    logical(kind=int8), intent(out), dimension(:) :: tval
+    integer, intent(out) :: status
+
+    logical(kind=int8) :: slval
+    integer :: mxi, sz
+
+    ! get a logical(1) value from a record.
+
+    status = 0
+
+    if (this%ndims == 0) then
+       call gr_get_logical(this, slval, status)
+       tval = slval
+       return
+    end if
+
+    sz = size(tval)
+    mxi = min(this%dims(1), sz)
+    if (sz /= this%dims(1)) then
+       write(error_str, "(A,i0,a,i0,a)") &
+            & "GR_GET_LOGICAL_A: output size (",sz,&
+            & ") not equal to data size (",this%dims(1),")"
+       call gr_message(error_str(1))
+       status = 4
+    end if
+
+    select case (this%tcode)
+    case(idl_byte)
+       tval(:mxi) = this%ba_val /= 0
+    case(idl_int)
+       tval(:mxi) = this%ia_val /= 0
+       status = 4
+    case(idl_long)
+       tval(:mxi) = this%la_val /= 0
+       status = 4
+    case(idl_float)
+       tval(:mxi) = this%ra_val /= 0
+       status = 4
+    case(idl_double) 
+       tval(:mxi) = this%da_val /= 0
+       status = 4
+    case default
+       write(error_str, "(A, I0)") "GR_GET_LOGICAL: Unknown type code: ", &
+            & this%tcode
+       call gr_message(error_str(1))
+       status = 2
+    end select
+  end subroutine gr_get_logical_a
 
   subroutine gr_get_string_a(this, sval, status)
     class(graffer_record), intent(in) :: this
@@ -1311,6 +1374,7 @@ contains
     this%i_val = ival
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_int
+  
   subroutine gr_set_long(this, tag, lval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
@@ -1328,6 +1392,7 @@ contains
     this%l_val = lval
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_long
+  
   subroutine gr_set_float(this, tag, rval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
@@ -1345,6 +1410,7 @@ contains
     this%r_val = rval
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_float
+  
   subroutine gr_set_double(this, tag, dval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
@@ -1362,6 +1428,7 @@ contains
     this%d_val = dval
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_double
+  
   subroutine gr_set_logical(this, tag, tval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
@@ -1379,6 +1446,7 @@ contains
     this%b_val = transfer(tval, this%b_val)
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_logical
+  
   subroutine gr_set_byte(this, tag, bval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
@@ -1396,6 +1464,7 @@ contains
     this%b_val = bval
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_byte
+  
   subroutine gr_set_string(this, tag, sval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag
@@ -1504,6 +1573,28 @@ contains
     if (present(unit)) call this%put(unit, status)
   end subroutine gr_set_double_a
   
+  subroutine gr_set_logical_a(this, tag, tval, unit)
+    class(graffer_record), intent(out) :: this
+    character(len=3), intent(in) :: tag
+    logical(kind=int8), intent(in), dimension(:) :: tval
+    integer, intent(in), optional :: unit
+
+    ! Set a logical(1) value for a record.
+
+    integer :: status
+
+    this%tcode = idl_byte
+    this%tag = tag
+    this%ndims = 1
+    allocate(this%dims(1))
+    this%dims(1) = size(tval)
+
+    allocate(this%ba_val(this%dims(1)))
+
+    this%ba_val = transfer(tval, this%ba_val)
+    if (present(unit)) call this%put(unit, status)
+  end subroutine gr_set_logical_a
+
   subroutine gr_set_string_a(this, tag, sval, unit)
     class(graffer_record), intent(out) :: this
     character(len=3), intent(in) :: tag

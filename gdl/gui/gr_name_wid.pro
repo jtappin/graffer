@@ -52,6 +52,9 @@ function grname_event, event
      end
      'NAME':
   endcase
+
+  return, evr
+  
 end
 
 function gr_name_wid, top

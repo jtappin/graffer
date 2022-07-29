@@ -54,7 +54,7 @@ contains
 
     ! Define the options panel for 1-D datasets.
 
-    type(c_ptr) :: junk, mnu, table, smnu, xtab
+    type(c_ptr) :: junk, table, xtab
     character(len=20), dimension(19) :: sym_list = [character(len=20) :: &
          & 'No symbol', 'Plus', 'Asterisk', 'Dot', 'Diamond', 'Triangle', &
          & 'Square', 'Cross', 'Circle', 'Filled Diamond', 'Filled Triangle', &
@@ -194,28 +194,6 @@ contains
     
     ! Extra settings
     
-!!$    mnu = hl_gtk_menu_new()
-!!$    call hl_gtk_table_attach(table, mnu, 0_c_int, 9_c_int, xspan=2_c_int,&
-!!$         & yopts=0_c_int)
-!!$
-!!$    smnu = hl_gtk_menu_submenu_new(mnu, "Extras ▼"//c_null_char, &
-!!$         & tooltip="Extra settings"//c_null_char)
-!!$
-!!$    xsort_id = hl_gtk_check_menu_item_new(smnu, &
-!!$         & "Sort X Axis?"//c_null_char, &
-!!$         & initial_state=f_c_logical(pdefs%data(pdefs%cset)%sort), &
-!!$         & toggled=c_funloc(gr_1d_set_sort), tooltip= &
-!!$         & "Select whether to sort the X axis before plotting"//c_null_char)
-!!$    clip_id = hl_gtk_check_menu_item_new(smnu, &
-!!$         & "Clip to box?"//c_null_char, &
-!!$         & initial_state=f_c_logical(.not. pdefs%data(pdefs%cset)%noclip), &
-!!$         & toggled=c_funloc(gr_1d_set_clip), tooltip= &
-!!$         & "Select whether to clip the data to the region"//c_null_char)
-!!$    mouse_id = hl_gtk_check_menu_item_new(smnu, &
-!!$         & "Mouse editing?"//c_null_char, &
-!!$         & initial_state=f_c_logical(pdefs%data(pdefs%cset)%medit), &
-!!$         & toggled=c_funloc(gr_1d_set_mouse), tooltip= &
-!!$         & "Select whether to allow editing with the mouse"//c_null_char)
 
     xtab = hl_gtk_table_new()
     call hl_gtk_table_attach(table, xtab, 0_c_int, 9_c_int, xspan=2_c_int, &

@@ -27,9 +27,11 @@ pro graff_get_data, file, idx, name = name, $
 ;	zval	double	A variable to contain the Z values.
 ;	xerr	double	A variable to contain the X errors.
 ;	yerr	double	A variable to contain the Y errors.
+;	/no_transpose	If set, then do not transpose the error values.
 ;
 ; History:
 ;	Original: 12/7/12
+;	Data restructure & add /no_tranpose: 16/4/22; SJT
 ;-
 
   on_error, 2                   ; Return to caller on error
@@ -87,36 +89,17 @@ pro graff_get_data, file, idx, name = name, $
      xval = *xydata.x
      yval = *xydata.y
   endif else begin 
-     xval = reform(xydata[0, *])
-     yval = reform(xydata[1, *])
+     xval = *xydata.x
+     yval = *xydata.y
 
-     case data.type of
-        1: yerr = reform(xydata[2, *])
-        3: xerr = reform(xydata[2, *])
-        2: yerr = transpose(xydata[2:3, *])
-        4: xerr = transpose(xydata[2:3, *])
-        5: begin
-           xerr = reform(xydata[2, *])
-           yerr = reform(xydata[3, *])
-        end
-
-        6: begin
-           xerr = reform(xydata[2, *])
-           yerr = transpose(xydata[3:4, *])
-        end
-
-        7: begin
-           xerr = transpose(xydata[2:3, *])
-           yerr = reform(xydata[4, *])
-        end
-
-        
-        8: begin
-           xerr = transpose(xydata[2:3, *])
-           yerr = transpose(xydata[4:5, *])
-        end
-        else:
-     endcase
+     if ptr_valid(xydata.x_err) then begin
+        xerr = *xydata.x_err
+        if ~keyword_set(no_transpose) then xerr = tranpose(xerr)
+     endif
+     if ptr_valid(xydata.y_err) then begin
+        yerr = *xydata.y_err
+        if ~keyword_set(no_transpose) then yerr = tranpose(yerr)
+     endif
   endelse
 
   graff_clear, pdefs

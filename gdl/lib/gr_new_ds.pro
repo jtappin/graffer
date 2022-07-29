@@ -51,7 +51,7 @@ function gr_new_ds, pdefs, nds
   ds[*].zopts.style = ptr_new(0)
   ds[*].zopts.n_thick =  1
   ds[*].zopts.thick = ptr_new(1.)
-  ds[*].zopts.pxsize =  0.5
+  ds[*].zopts.pxsize =  0.1
   ds[*].zopts.charsize = 1.0d0
   
   ds[*].medit = optblock.mouse

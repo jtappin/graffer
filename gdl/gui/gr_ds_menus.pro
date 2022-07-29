@@ -52,14 +52,14 @@ pro Gr_dsp_event, event
      ichange = 0b
      
      if (event.enter eq 0) then begin
-        graff_msg, pdefs.ids.hlptxt, ''
+        graff_msg, pdefs.ids.hlptxt, /help, ''
         goto, miss_case
      endif
   endif
 
   case object of
      'PSYM': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Select plotting symbol for current ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Select plotting symbol for current ' + $
                    'data set' $
      else if ~optblock.bitmaps then $
         (*pdefs.data)[pdefs.cset].psym = event.index $
@@ -67,7 +67,7 @@ pro Gr_dsp_event, event
         
      
      'PLINE': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Select joining style for current ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Select joining style for current ' + $
                    'data set' $
      else begin
         (*pdefs.data)[pdefs.cset].pline = event.index
@@ -75,13 +75,13 @@ pro Gr_dsp_event, event
      endelse
      
      'SSIZE': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set size for plot symbol ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Set size for plot symbol ' + $
                    'in current data set (floating point)' $
      else (*pdefs.data)[pdefs.cset].symsize = event.value
      
      
      'COLOUR': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Select colour for current data set' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Select colour for current data set' $
      else begin
         if event.value eq graff_colours(/max_index)+2 then begin ; Custom colour
            ci = (*pdefs.data)[pdefs.cset].colour
@@ -101,44 +101,44 @@ pro Gr_dsp_event, event
      endelse
 
      'STYLE': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Select line style for current data set' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Select line style for current data set' $
      else (*pdefs.data)[pdefs.cset].line = event.index
      
      'THICK': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Set line thickness for current ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Set line thickness for current ' + $
                    'data set (integer)' $
      else (*pdefs.data)[pdefs.cset].thick = event.value
      
      'POLAR': if (track_flag) then $
-        graff_msg, pdefs.ids.hlptxt, 'Select rectangular or polar mode' $
+        graff_msg, pdefs.ids.hlptxt, /help, 'Select rectangular or polar mode' $
      else (*pdefs.data)[pdefs.cset].mode = event.index
      
      'MINVAL': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, $
+        graff_msg, pdefs.ids.hlptxt, /help, $
                    'Set min value to plot for current dataset' $
      else (*pdefs.data)[pdefs.cset].min_val = event.value
      'MAXVAL': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, $
+        graff_msg, pdefs.ids.hlptxt, /help, $
                    'Set max value to plot for current dataset' $
      else (*pdefs.data)[pdefs.cset].max_val = event.value
 
      'XTRA': begin
         val = strsplit(event.value, '.', /extr)
-        if (n_elements(val) eq 1) then graff_msg, pdefs.ids.hlptxt, $
+        if (n_elements(val) eq 1) then graff_msg, pdefs.ids.hlptxt, /help, $
                                                   'Set other dataset options' $
         else case val[1] of
            'Sort X axis': if track_flag then $
-              graff_msg, pdefs.ids.hlptxt, 'Toggle sorting of X axis' + $
+              graff_msg, pdefs.ids.hlptxt, /help, 'Toggle sorting of X axis' + $
                          ' values before plotting current data set' $
            else (*pdefs.data)[pdefs.cset].sort = event.select
            
            'Clip to box': if (track_flag) then $
-              graff_msg, pdefs.ids.hlptxt, 'Toggle clipping of' + $
+              graff_msg, pdefs.ids.hlptxt, /help, 'Toggle clipping of' + $
                          ' current dataset to plot axes' $
            else   (*pdefs.data)[pdefs.cset].noclip = ~event.select
            
            'Mouse editing':  if track_flag then $
-              graff_msg, pdefs.ids.hlptxt, 'Toggle use of mouse to ' + $
+              graff_msg, pdefs.ids.hlptxt, /help, 'Toggle use of mouse to ' + $
                          'edit dataset' $
            else begin
               (*pdefs.data)[pdefs.cset].medit = event.select
@@ -342,7 +342,7 @@ pro Gr_ds_menus, optbb, pdefs
 
   pdefs.ids.mode = widget_droplist(jjb, $
                                    value = ['Rect', 'Polar', $
-                                            'Polar (°)'], $
+                                            'Polar (Â°)'], $
                                    uvalue = 'POLAR', $
                                    track = optblock.track, $
                                    title = 'Coords:')
