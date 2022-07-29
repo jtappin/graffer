@@ -143,7 +143,8 @@ contains
     hc_off_sb(1) = hl_gtk_spin_button_new(-100._c_double, 100._c_double, &
          & 0.1_c_double, initial_value=real(hardset%off(1), c_double), &
          & tooltip=&
-         & "Set the X offset of the page for hardcopies"//c_null_char)
+         & "Set the X offset of the page for hardcopies"//c_new_line//&
+         & "NOT CURRENTLY USED IN FORTRAN VERSION."//c_null_char)
     call hl_gtk_table_attach(jb, hc_off_sb(1), 2_c_int, 1_c_int)
 
     junk = gtk_label_new("Y (cm)"//c_null_char)
@@ -152,7 +153,8 @@ contains
     hc_off_sb(2) = hl_gtk_spin_button_new(-100._c_double, 100._c_double, &
          & 0.1_c_double, initial_value=real(hardset%off(2), c_double), &
          &  tooltip=&
-         & "Set the Y offset of the page for hardcopies"//c_null_char)
+         & "Set the Y offset of the page for hardcopies"//c_new_line//&
+         & "NOT CURRENTLY USED IN FORTRAN VERSION."//c_null_char)
     call hl_gtk_table_attach(jb, hc_off_sb(2), 4_c_int, 1_c_int)
 
     hc_ls_but = hl_gtk_check_button_new("Use landscape orientation"//&

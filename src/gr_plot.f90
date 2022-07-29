@@ -145,12 +145,16 @@ contains
 
           call plsori(1)
           call plsdidev(0._plflt, page_aspect, 0._plflt, 0._plflt)
+
+          ! Since the drivers seem to be ignoring the offset,
+          ! at least pro tem we will not use it.
           
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(2)*cm2pt), &
                & int(hardset%size(1)*cm2pt), &
-               & int(hardset%off(2)*cm2pt), &
-               & int(hardset%off(1)*cm2pt))
+               & 0, 0)
+!!$               & int(hardset%off(2)*cm2pt), &
+!!$               & int(hardset%off(1)*cm2pt))
 
           call plsfnam(trim(local_name)//'.ps')
           
@@ -193,11 +197,16 @@ contains
 !!$          else
 !!$             call plsdidev (0._plflt, 1./page_aspect, 0._plflt, 0._plflt)
 !!$          end if
+
+          ! Since the drivers seem to be ignoring the offset,
+          ! at least pro tem we will not use it.
+           
           call plspage(0._plflt, 0._plflt, &
                & int(hardset%size(1)*cm2pt), &
                & int(hardset%size(2)*cm2pt), &
-               & int(hardset%off(1)*cm2pt), &
-               & int(hardset%off(2)*cm2pt))
+               & 0, 0)
+!!$               & int(hardset%off(1)*cm2pt), &
+!!$               & int(hardset%off(2)*cm2pt))
           call plsfnam(trim(local_name)//'.pdf')
 
        case('epdf')
