@@ -52,7 +52,7 @@ contains
     logical, dimension(2), target :: iapply = [.false., .true.]
 
     if (pdefs%aspect(1) <= 0.) then
-       if (pdefs%position(1) == pdefs%position(3) .and. &
+       if (pdefs%position(1) == pdefs%position(3) .or. &
             &  pdefs%position(2) == pdefs%position(4)) then
           corn_method = 0_c_int
        else
