@@ -82,13 +82,13 @@ function Gr_pos_event, event
      end
   endcase
 
-  widget_control, uv.rbase, sensitive = uv.state ne 0 && ~uv.iso
-  widget_control, uv.pbase, sensitive = uv.state eq 0 && ~uv.iso
+  widget_control, uv.rbase, sensitive = uv.state eq 2 && ~uv.iso
+  widget_control, uv.pbase, sensitive = uv.state eq 1 && ~uv.iso
 
-  if (uv.state) then valid = uv.asp(0) gt 0 and (uv.asp(1) ge 0 and $
-                                                 uv.asp(1) lt 0.5) $
-  else valid = (max(uv.pos, min = mp) le 1.) and (mp ge 0.) and $
-               (uv.pos(2) gt uv.pos(0)) and (uv.pos(3) gt uv.pos(1))
+  if uv.state eq 2 then valid = uv.asp[0] gt 0 && (uv.asp[1] ge 0 and $
+                                                   uv.asp[1] lt 0.5) $
+  else valid = max(uv.pos, min = mp) le 1. && mp ge 0. && $
+               (uv.pos[2] gt uv.pos[0] && uv.pos[3] gt uv.pos[1])
   widget_control, uv.dobut, sensitive = valid || iflag
 
   widget_control, event.handler, set_uvalue = uv, /no_copy
@@ -102,7 +102,11 @@ end
 
 function Gr_position, pdefs
 
-  state = pdefs.aspect(0) gt 0
+  if pdefs.position[2] gt pdefs.position[0] && $
+     pdefs.position[3] gt pdefs.position[1] then state = 1 $
+     else if pdefs.aspect[0] gt 0 then state = 2 $
+  else state = 0
+  
   iso = pdefs.isotropic
 
   widget_control, pdefs.ids.graffer, sensitive = 0
@@ -114,7 +118,7 @@ function Gr_position, pdefs
                      /column)
 
   junk = widget_droplist(base, $
-                         value = ['Corners', 'Aspect Ratio'], $
+                         value = ['Automatic', 'Corners', 'Aspect Ratio'], $
                          title = 'Determine position by:', $
                          uvalue = 'MODE')
   widget_control, junk, set_droplist_select = state
@@ -266,9 +270,20 @@ function Gr_position, pdefs
   widget_control, pdefs.ids.graffer, sensitive = 1
 
   if (ev.exited eq 1) then begin
-     pdefs.aspect = uv.asp
-     if (uv.state eq 0) then pdefs.aspect(0) = 0.
-     pdefs.position = uv.pos
+     case uv.state of
+        0: begin
+           pdefs.aspect = 0.
+           pdefs.position = 0.
+        end
+        1: begin
+           pdefs.aspect = 0.
+           pdefs.position = uv.pos
+        end
+        2: begin
+           pdefs.aspect = uv.asp
+           pdefs.position = 0
+        end
+     endcase
      pdefs.isotropic = uv.iso
      pdefs.match = uv.match
   endif else if (ev.exited eq 2) then begin
