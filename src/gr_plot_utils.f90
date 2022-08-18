@@ -266,20 +266,35 @@ contains
           corners = 0._plflt
        end if
        aspect = real(pdefs%aspect(1), plflt)
-    else if (pdefs%position(1) /= pdefs%position(3) .and. &
-         &   pdefs%position(2) /= pdefs%position(4)) then
-       corners = real(pdefs%position([1,3,2,4]), plflt)
-       aspect = 0._plflt
     else
-       xoff = real(0.04 + 0.08*pdefs%charsize, plflt)
-       yoff = real(0.025 + 0.075*pdefs%charsize, plflt)
-       if (pdefs%y_right) then
-          roff = xoff
-       else
-          roff = 0.025_plflt
-       end if
 
-       corners = [xoff, 1._plflt-roff, yoff, 1._plflt-yoff]
+       ! N.B. pdefs%position uses IDL corner order (x1,y1,x2,y2)
+       ! while corners uses PLPLOT order (x1,x2,y1,y2)
+       
+       if (pdefs%position(1) /= pdefs%position(3)) then
+          corners(1) = pdefs%position(1)
+          corners(2) = pdefs%position(3)
+       else
+          xoff = real(0.04 + 0.08*pdefs%charsize, plflt)
+          if (pdefs%y_right) then
+             roff = xoff
+          else
+             roff = 0.025_plflt
+          end if
+ 
+          corners(1) = xoff
+          corners(2) = 1._plflt - roff
+       end if
+       
+       if (pdefs%position(2) /= pdefs%position(4)) then
+          corners(3) = pdefs%position(2)
+          corners(4) = pdefs%position(4)
+       else
+          yoff = real(0.025 + 0.075*pdefs%charsize, plflt)
+          
+          corners(3) = yoff
+          corners(4) = 1._plflt-yoff
+       end if
        aspect = 0._plflt
     end if
   end subroutine gr_viewport
