@@ -115,10 +115,10 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
   endif else !p.region = 0.
 
   if ~isotropic then begin
-     if (pdefs.aspect(0) gt 0.) then $
-        !P.position = aspect(pdefs.aspect(0), margin = pdefs.aspect(1)) $
-     else if (pdefs.position(2) gt pdefs.position(0) && $
-              pdefs.position(3) gt pdefs.position(1)) then begin
+     if (pdefs.aspect[0] gt 0.) then $
+        !P.position = aspect(pdefs.aspect[0], margin = pdefs.aspect[1]) $
+     else if (pdefs.position[2] gt pdefs.position[0] && $
+              pdefs.position[3] gt pdefs.position[1]) then begin
         !P.position = pdefs.position 
         if mflag then begin
            xr = !p.region[2]-!p.region[0]
@@ -322,7 +322,7 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
      if (pdefs.ysty.extra and 2) ne 0 || (pdefs.ysty_r.extra and 8) eq 0 $
      then ynames = replicate(' ', 30)
      if (pdefs.ysty_r.extra and 2) ne 0 then axis, yaxis = 1, 0., $
-        pdefs.yrange_r(0), yrange = yrange, $
+        pdefs.yrange_r[0], yrange = yrange, $
         ysty = pdefs.ysty_r.idl and (not 12), $
         ythick = pdefs.axthick, yminor = yminor, ytitle = $
         yzat, ytickname = ynames, ycharsize = pdefs.charsize*csiz, $
@@ -334,7 +334,7 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
         replicate(' ', 30)
      if (pdefs.xsty.extra and 8) eq 0 then xnames = replicate(' ', 30)
      if (pdefs.xsty.extra and 2) ne 0 && ~pdefs.y_right then $
-        axis, xaxis = 0, pdefs.xrange(0), $
+        axis, xaxis = 0, pdefs.xrange[0], $
               0., xminor = pdefs.xsty.minor, xtickformat = xtf, $
               xrange = $
               pdefs.xrange, xsty = pdefs.xsty.idl and (not 12), $
@@ -344,7 +344,7 @@ pro gr_pl_axes, pdefs, csiz, overlay = overlay, $
               = xtvals, $
               color = lcolour
      if (pdefs.ysty.extra and 2) ne 0 then axis, yaxis = 0, 0., $
-        pdefs.yrange(0), yrange = yrange, $
+        pdefs.yrange[0], yrange = yrange, $
         ysty = pdefs.ysty.idl and (not 12), $
         ythick = pdefs.axthick, yminor = yminor, ytitle = $
         yzat, ytickname = ynames, ytickformat = ytf, ycharsize = $
