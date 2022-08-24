@@ -239,8 +239,8 @@ function Gr_position, pdefs
                        value = '   Cancel   ', $
                        uvalue = 'CANCEL')
 
-  widget_control, rbase, sensitive = state ne 0 && ~iso 
-  widget_control, pbase, sensitive = state eq 0 && ~iso
+  widget_control, rbase, sensitive = state eq 2 && ~iso 
+  widget_control, pbase, sensitive = state eq 1 && ~iso
   widget_control, dobut, sensitive = 0
 
   uv = { $
