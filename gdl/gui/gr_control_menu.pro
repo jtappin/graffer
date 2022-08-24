@@ -131,11 +131,16 @@ pro Gr_ctl_event, event
                    'binary format' $
      else begin
         dir = pdefs.dir
-        fc = dialog_pickfile(file = pdefs.name, path = dir, $
-                             get_path = dir, dialog_parent = $
-                             pdefs.ids.graffer, title = 'Graffer ' + $
-                             'file', /overwrite_prompt, filter = $
-                             "*.grf", /write, resource = 'Graffer')
+        fc = dialog_pickfile(file = pdefs.name, $
+                             path = dir, $
+                             get_path = dir, $
+                             dialog_parent = pdefs.ids.graffer, $
+                             title = 'Graffer file', $
+                             /overwrite_prompt, $
+                             filter = "*.grf", $
+                             /write, $
+                             resource = 'Graffer')
+        
         if fc ne '' then begin
            pdefs.name = file_basename(fc)
            pdefs.dir = dir
@@ -150,11 +155,16 @@ pro Gr_ctl_event, event
                    'ascii format' $
      else begin
         dir = pdefs.dir
-        fc = dialog_pickfile(file = pdefs.name, path = dir, $
-                             get_path = dir, dialog_parent = $
-                             pdefs.ids.graffer, title = 'Graffer ' + $
-                             'file', /overwrite_prompt, filter = $
-                             "*.grf", /write, resource = 'Graffer')
+        fc = dialog_pickfile(file = pdefs.name, $
+                             path = dir, $
+                             get_path = dir, $
+                             dialog_parent = pdefs.ids.graffer, $
+                             title = 'Graffer file', $
+                             /overwrite_prompt, $
+                             filter = "*.grf", $
+                             /write, $
+                             resource = 'Graffer')
+        
         if fc ne '' then begin
            pdefs.name = file_basename(fc)
            pdefs.dir = dir
@@ -231,7 +241,9 @@ pro Gr_ctl_event, event
                                 dialog_parent = pdefs.ids.graffer, $
                                 title = 'Graffer file', $
                                 filter = "*.grf", $
-                                resource = 'Graffer')
+                                resource = 'Graffer', $
+                                /write)
+           
            if (fc eq '') then begin
               graff_msg, pdefs.ids.message, 'New file not given'
            endif else if ~file_test(fc) then begin

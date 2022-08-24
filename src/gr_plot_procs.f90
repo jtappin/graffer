@@ -908,9 +908,16 @@ contains
        ymax = log10(ymax)
     end if
 
-    call gr_ct_get(int(data%zdata%ctable), .true., invert=data%zdata%invert, &
-         & gamma=data%zdata%gamma)
-
+    if (data%zdata%ctable > 0) then
+       call gr_ct_get(int(data%zdata%ctable)-1, .true.,&
+            & invert=data%zdata%invert, &
+            & gamma=data%zdata%gamma)
+    else
+       call gr_ct_get(int(pdefs%ctable), .true.,&
+            & invert=data%zdata%invert, &
+            & gamma=data%zdata%gamma)
+    end if
+    
     if (c2d) then
        call plimagefr(z, xmin, xmax, ymin, ymax, minval(z), maxval(z), &
             & zmin, zmax, x2, y2)
@@ -1057,9 +1064,16 @@ contains
        ymax = log10(ymax)
     end if
 
-    call gr_ct_get(int(data%zdata%ctable), .true., invert=data%zdata%invert, &
-         & gamma=data%zdata%gamma)
-
+    if (data%zdata%ctable > 0) then
+       call gr_ct_get(int(data%zdata%ctable)-1, .true., &
+            & invert=data%zdata%invert, &
+            & gamma=data%zdata%gamma)
+    else
+       call gr_ct_get(int(pdefs%ctable), .true., &
+            & invert=data%zdata%invert, &
+            & gamma=data%zdata%gamma)
+    end if
+    
     if (c2d) then
        call gr_plshades(z, xmin, xmax, ymin, ymax, clevels, x2, y2)
     else

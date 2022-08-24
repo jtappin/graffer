@@ -53,11 +53,14 @@ function Gr_fun_read, pdefs, file, force = force
      if (file_dirname(f) ne '.') then pdefs.ds_dir = file_dirname(f)
   endif else begin
      widget_control, pdefs.ids.graffer, sensitive = 0
-     f = dialog_pickfile(filter = '*.dat', title = 'Graffer function ' + $
-                         'data', $
-                         /must, path = path, dialog_parent = $
-                         pdefs.ids.graffer, $
-                         get_path = newpath, resource = 'Graffer')
+     f = dialog_pickfile(filter = '*.dat', $
+                         title = 'Graffer function data', $
+                         /must, $
+                         path = path, $
+                         dialog_parent =  pdefs.ids.graffer, $
+                         get_path = newpath, $
+                         resource = 'Graffer')
+     
      widget_control, pdefs.ids.graffer, sensitive = 1
 
      if (f eq '') then return, 0

@@ -456,9 +456,14 @@ contains
     call hl_gtk_spin_button_set_value(cchsize_entry, &
          & real(data%zdata%charsize, c_double))
 
-    call hl_gtk_listn_set_selection(cg_table_pick, &
-         & int(data%zdata%ctable, c_int))
-
+    if (data%zdata%ctable > 0) then
+       call hl_gtk_listn_set_selection(cg_table_pick, &
+            & int(data%zdata%ctable-1, c_int))
+    else
+       call hl_gtk_listn_set_selection(cg_table_pick, &
+            & int(pdefs%ctable, c_int))
+    end if
+    
     write(stext, "(1pg0.5)") data%zdata%missing
     call gtk_entry_set_text(cg_missing_entry, trim(stext)//c_null_char)
 

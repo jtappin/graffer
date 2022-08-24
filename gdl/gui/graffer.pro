@@ -473,24 +473,24 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
   else !P.font = -1
   
   if (n_elements(file) eq 0) then $
-     file = dialog_pickfile(/read, $
-                            filter = '*.grf', $
+     file = dialog_pickfile(filter = '*.grf', $
                             title = 'Graffer '+vstring+' Select', $
-                            resource = 'Graffer') $
+                            resource = 'Graffer', $
+                            /write) $
   else if (file_test(file, /dir)) then begin
-     file = dialog_pickfile(/read, $
-                            filter = '*.grf', $
+     file = dialog_pickfile(filter = '*.grf', $
                             title = 'Graffer '+vstring+' Select', $
                             path = file, $
-                            resource = 'Graffer')
+                            resource = 'Graffer', $
+                            /write)
   endif else if ((strpos(file, '*') > strpos(file, '?')) ne -1) then begin
      f = file
      gr_split_dir, f, dir
-     file = dialog_pickfile(/read, $
-                            filter = f, $
+     file = dialog_pickfile(filter = f, $
                             title = 'Graffer '+vstring+' Select', $
                             path = dir, $
-                            resource = 'Graffer')
+                            resource = 'Graffer', $
+                            /write)
   endif
 
   if (file eq '') then return

@@ -72,11 +72,11 @@ pro Img_event, event
      'TAB': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, /help, "Select colour table" $
      else if localct then zopts.ctable = event.index+1 $
-     else pdefs.table = event.index
+     else pdefs.ctable = event.index
 
      'GAM': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, /help, "Set the gamma value for the colour " + $
-                   "map" $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   "Set the gamma value for the colour map" $
      else begin
         widget_control, event.id, get_value = g
         if localct then zopts.gamma = g $

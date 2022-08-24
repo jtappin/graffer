@@ -217,7 +217,7 @@ contains
             & int(i, c_int), 0_c_int, &
             & svalue = trim(gr_ct_get_name(i))//c_null_char)
     end do
-    call hl_gtk_listn_set_selection(cg_table_pick, int(zdata%ctable, c_int))
+    call hl_gtk_listn_set_selection(cg_table_pick, int(zdata%ctable-1, c_int))
 
     junk = gtk_label_new("Range"//c_null_char)
     call hl_gtk_table_attach(table, junk, 0_c_int, 1_c_int, &
@@ -679,7 +679,7 @@ contains
     nsel = hl_gtk_listn_get_selections(C_NULL_PTR, selected, selection=widget)
     if (nsel == 0) return
 
-    pdefs%data(pdefs%cset)%zdata%ctable = int(selected(1), int16)
+    pdefs%data(pdefs%cset)%zdata%ctable = int(selected(1), int16)+1
 
     if (c_associated(gr_drawing_area)) call gr_plot_draw(.true.)
   end subroutine gr_2d_set_table
