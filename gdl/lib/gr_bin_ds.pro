@@ -55,8 +55,8 @@ pro Gr_bin_ds, data, nset, ilu, msgid
 
   while (not eof(ilu)) do begin
      
-     graff_get_rec, ilu, tag, value, tcode, nvals = nvals, ndims = ndims, $
-                    dims = dims
+     graff_get_rec, ilu, tag, value, tcode, nvals = nvals, $
+                    ndims = ndims, dims = dims
      
                                 ; Recognised tags:
                                 ; J - Joining option
@@ -206,20 +206,20 @@ pro Gr_bin_ds, data, nset, ilu, msgid
            if sv[1] ne 2+nerr[0]+nerr[1] then begin
               graff_msg, msgid, $
                          "Number of data columns does not match DS type."
-              continue
-           endif
+           endif else begin
 
 ; Handle the old practice of adding a dummy point to 1-element datasets
-           
-           if sv[2] eq 2 && data[nset].ndata eq 1 then $
-              xyvals = xyvals[*, 0]
-           
-           xydata.x = ptr_new(reform(xyvals[0, *]))
-           xydata.y = ptr_new(reform(xyvals[1, *]))
-           if nerr[0] ne 0 then $
-              xydata.x_err = ptr_new(xyvals[2:1+nerr[0], *])
-           if nerr[1] ne 0 then $
-              xydata.y_err = ptr_new(xyvals[2+nerr[0]:*, *])
+              
+              if sv[2] eq 2 && data[nset].ndata eq 1 then $
+                 xyvals = xyvals[*, 0]
+              
+              xydata.x = ptr_new(reform(xyvals[0, *]))
+              xydata.y = ptr_new(reform(xyvals[1, *]))
+              if nerr[0] ne 0 then $
+                 xydata.x_err = ptr_new(xyvals[2:1+nerr[0], *])
+              if nerr[1] ne 0 then $
+                 xydata.y_err = ptr_new(xyvals[2+nerr[0]:*, *])
+           endelse
         end
 
         'VX': begin
