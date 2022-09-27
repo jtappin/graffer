@@ -190,7 +190,12 @@ pro gr_get_bin, pdefs, ilu, no_set = no_set
            data = gr_new_ds(pdefs, nds) ;replicate({graff_data}, nds)
            dflag = 1b
         end
-        'DC ': pdefs.cset = value
+        'DC ': begin
+           pdefs.cset = value
+           if pdefs.cset lt 0 then pdefs.cset = 0 ; There was a bug
+                                ; that allowed pdefs.cset to be
+                                ; negative if the first DS was deleted.
+        end
         
                                 ; TN - The total number of text
                                 ;      strings in the file. This must

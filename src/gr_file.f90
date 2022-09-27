@@ -479,8 +479,14 @@ contains
 
        case ('DC ')
           call rec%get_value(pdefs%cset, status)
-          pdefs%cset = pdefs%cset+1_int16
-
+          ! There was a bug that allowed pdefs%cset to be zero if the
+          ! first datset was deleted.
+          if (pdefs%cset < 0) then
+             pdefs%cset = 1_int16
+          else
+             pdefs%cset = pdefs%cset+1_int16
+          end if
+          
           ! TN - The total number of text
           !      strings in the file. This must
           !      come before any strings are

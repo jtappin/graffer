@@ -51,7 +51,6 @@ contains
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(fr, jb, expand=FALSE)
 
-
     junk = hl_gtk_button_new("Next"//c_null_char, &
          & clicked=c_funloc(gr_ds_advance), data=c_loc(direct(2)), &
          & tooltip="Go to the next dataset"//c_null_char)
