@@ -94,7 +94,8 @@ pro gr_image_write, image, r, g, b, name = name, group = group
         'jpeg': write_jpeg, ev.value, image, true = sz[0] eq 3
 
         'tiff': if n_params() eq 4 then $
-           write_tiff, ev.value, reverse(image, 2), r, g, b $
+           write_tiff, ev.value, reverse(image, 2), $
+                       red = r, green = g, blue = b $
         else write_tiff, ev.value, reverse(image, 3)
 
         'bmp': if n_params() eq 4 then $
