@@ -31,6 +31,7 @@ function truth, val
 ;
 ; History:
 ;	Original: 3/8/15; SJT
+;	Strip leading & trailing spaces: 14/11/22; SJT
 ;-
 
   type = size(val, /type)
@@ -42,7 +43,7 @@ function truth, val
                                 ; invalid
 
      7: begin
-        switch strupcase(val) of
+        switch strupcase(strtrim(val, 2)) of
            'TRUE':
            'T':
            '.TRUE.':
