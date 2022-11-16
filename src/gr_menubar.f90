@@ -296,11 +296,15 @@ contains
     character(len=4) :: filetype
     type(c_ptr) :: pixb
     integer :: pdot
-    character(len=120) :: local_name
+    character(len=120) :: local_name, dname
+    type(graff_hard), pointer :: hardset
+    logical :: isd
     
     call c_f_string(data, filetype)
+    hardset => pdefs%hardset
 
     pixb = hl_gtk_drawing_area_get_gdk_pixbuf(gr_drawing_area)
+    
     if (pdefs%hardset%name == '') then
        pdot = index(pdefs%name, '.', back=.true.)
        if (pdot == 0) then
@@ -309,10 +313,34 @@ contains
           local_name = pdefs%name(:pdot-1)
        end if
     else
-       local_name  =pdefs%hardset%name
+       pdot = index(hardset%name, '.', back=.true.)
+       if (pdot == 0) then
+          local_name = hardset%name
+       else
+          local_name = hardset%name(:pdot-1)
+       end if
+
+       pdot = index(local_name, '/', back=.true.)
+       
+       ! If the name has a directory, check that is exists and if
+       ! not then strip it.
+       if (pdot /= 0) then
+          dname = local_name(:pdot)
+          inquire(file=dname, exist=isd)
+          if (.not. isd) then
+             local_name = local_name(pdot+1:)
+             hardset%name = local_name
+             if (index(pdefs%dir, '/', back=.true.) == &
+                  & len_trim(pdefs%dir)) then
+                local_name = trim(pdefs%dir) // trim(local_name)
+             else
+                local_name = trim(pdefs%dir) // '/' // trim(local_name)
+             end if
+          end if
+       end if
     end if
-    call hl_gdk_pixbuf_save(pixb, trim(pdefs%dir)//'/'//&
-         & trim(local_name)//'.'//&
+    
+    call hl_gdk_pixbuf_save(pixb, trim(local_name)//'.'//&
          & trim(filetype)//c_null_char)
 
   end subroutine gr_dump
