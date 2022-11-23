@@ -281,8 +281,8 @@ pro Graff_add, file, a1, a2, a3, errors = errors, $
         endelse
      end
      3: begin                   ; 1-D dataset
-        x = reform(double(a1))
-        y = reform(double(a2))
+        x = reform(double(a1), n_elements(a1))
+        y = reform(double(a2), n_elements(a2))
      end
      4: begin                   ; 2-D dataset
         z = reform(double(a1))
