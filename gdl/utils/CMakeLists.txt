@@ -12,6 +12,7 @@ install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_export.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_get_data.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_info.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/graff_key.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_print.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_props.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/graff_show.pro"

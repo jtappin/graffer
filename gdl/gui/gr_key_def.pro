@@ -51,22 +51,22 @@ case but of
     end
     
     'X0': begin
-        uv.key.x(0) = event.value
+        uv.key.x[0] = event.value
         if (event.cr) then cw_enter_focus, uv.yid0
     end
     
     'Y0': begin
-        uv.key.y(0) = event.value
+        uv.key.y[0] = event.value
         if (event.cr) then cw_enter_focus, uv.xid1
     end
     
     'X1': begin
-        uv.key.x(1) = event.value
+        uv.key.x[0] = event.value
         if (event.cr) then cw_enter_focus, uv.yid1
     end
     
     'Y1': begin
-        uv.key.y(1) = event.value
+        uv.key.y[0] = event.value
         if (event.cr) then cw_spin_box_focus_enter, uv.csid
     end
     
@@ -97,10 +97,10 @@ case but of
         
         uv.key.x = xt
         uv.key.y = yt
-        widget_control, uv.xid0, set_value = uv.key.x(0)
-        widget_control, uv.xid1, set_value = uv.key.x(1)
-        widget_control, uv.yid0, set_value = uv.key.y(0)
-        widget_control, uv.yid1, set_value = uv.key.y(1)
+        widget_control, uv.xid0, set_value = uv.key.x[0]
+        widget_control, uv.xid1, set_value = uv.key.x[0]
+        widget_control, uv.yid0, set_value = uv.key.y[0]
+        widget_control, uv.yid1, set_value = uv.key.y[0]
     end
     
     'FRAME': uv.key.frame = event.index
@@ -111,7 +111,7 @@ case but of
 
     'ALL': begin
         widget_control, uv.listid, get_value = iuse
-        iuse(*) = 1
+        iuse[*] = 1
         widget_control, uv.listid, set_value = iuse
     end
     
@@ -141,6 +141,20 @@ function Gr_key_def, pdefs
                             "can be included in a key"], $
                            dialog_parent = pdefs.ids.graffer)
      return, 0
+  endif
+
+  nflag = ~ptr_valid(pdefs.key.list) && ~pdefs.key.use && $
+     pdefs.key.x[0] eq pdefs.key.x[1] && $ 
+     pdefs.key.y[0] eq pdefs.key.y[1] ; Reasonable to assume that this
+                                ; implies that no key has ever been
+                                ; defined, so set non-null defaults
+                                ; accordingly. 
+
+  if nflag then begin
+     pdefs.key.csize = 1.0d
+     pdefs.key.norm = 2
+     pdefs.key.cols = 1
+     pdefs.key.one_point = 1b
   endif
 
   widget_control, pdefs.ids.graffer, sensitive = 0
@@ -184,18 +198,18 @@ function Gr_key_def, pdefs
 
   jjb = widget_base(jb, /row)
   bub.xid0 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Lower left: X:', value = pdefs.key.x(0), $
+                      'Lower left: X:', value = pdefs.key.x[0], $
                       uvalue = 'X0', /capture)
   bub.yid0 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Y:', value = pdefs.key.y(0), uvalue = 'Y0', $
+                      'Y:', value = pdefs.key.y[0], uvalue = 'Y0', $
                       /capture)
 
   jjb = widget_base(jb, /row)
   bub.xid1 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Upper right: X:', value = pdefs.key.x(1), $
+                      'Upper right: X:', value = pdefs.key.x[0], $
                       uvalue = 'X1', /capture)
   bub.yid1 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Y:', value = pdefs.key.y(1), uvalue = 'Y1', $
+                      'Y:', value = pdefs.key.y[0], uvalue = 'Y1', $
                       /capture)
   jjb = widget_base(jb, /row)
   bub.csid = cw_spin_box(jjb, $
