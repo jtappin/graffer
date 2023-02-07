@@ -61,12 +61,12 @@ case but of
     end
     
     'X1': begin
-        uv.key.x[0] = event.value
+        uv.key.x[1] = event.value
         if (event.cr) then cw_enter_focus, uv.yid1
     end
     
     'Y1': begin
-        uv.key.y[0] = event.value
+        uv.key.y[1] = event.value
         if (event.cr) then cw_spin_box_focus_enter, uv.csid
     end
     
@@ -98,9 +98,9 @@ case but of
         uv.key.x = xt
         uv.key.y = yt
         widget_control, uv.xid0, set_value = uv.key.x[0]
-        widget_control, uv.xid1, set_value = uv.key.x[0]
+        widget_control, uv.xid1, set_value = uv.key.x[1]
         widget_control, uv.yid0, set_value = uv.key.y[0]
-        widget_control, uv.yid1, set_value = uv.key.y[0]
+        widget_control, uv.yid1, set_value = uv.key.y[1]
     end
     
     'FRAME': uv.key.frame = event.index
@@ -206,10 +206,10 @@ function Gr_key_def, pdefs
 
   jjb = widget_base(jb, /row)
   bub.xid1 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Upper right: X:', value = pdefs.key.x[0], $
+                      'Upper right: X:', value = pdefs.key.x[1], $
                       uvalue = 'X1', /capture)
   bub.yid1 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Y:', value = pdefs.key.y[0], uvalue = 'Y1', $
+                      'Y:', value = pdefs.key.y[1], uvalue = 'Y1', $
                       /capture)
   jjb = widget_base(jb, /row)
   bub.csid = cw_spin_box(jjb, $
