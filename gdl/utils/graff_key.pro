@@ -114,7 +114,8 @@ pro graff_key, file, show_key = show_key, list = list, all = all, $
         iuse = *(pdefs.key.list)
         ptr_free, pdefs.key.list
      endif else iuse = bytarr(pdefs.nsets)
-
+     usable = (*pdefs.data).type ge -3 and (*pdefs.data).type lt 8
+     
      if keyword_set(all) then iuse[*] = 1b $
      else if n_elements(list) ne 0 then begin
         iuse[*] = 0b
@@ -122,7 +123,12 @@ pro graff_key, file, show_key = show_key, list = list, all = all, $
         if nv ne 0 then $
            iuse[list[locs]-1] = 1b
      endif else if n_elements(all) ne 0 then iuse[*] = 0b
-     if total(iuse) gt 0 then pdefs.key.list = ptr_new(iuse)
+     iuse and= usable
+     
+     if total(iuse) gt 0 then begin
+        locs = where(iuse)
+        pdefs.key.list = ptr_new(locs)
+     endif
   endif
 
   if n_elements(columns) ne 0 then pdefs.key.cols = columns
