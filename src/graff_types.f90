@@ -120,7 +120,7 @@ module graff_types
      real(kind=real64) :: csize=1._real64
      integer(kind=int16) :: norm=2_int16, cols=1_int16
      integer(kind=int32), dimension(:), allocatable :: list
-     logical(kind=int8) :: frame=.false., one_point=.false., &
+     logical(kind=int8) :: frame=.false., one_point=.true., &
           & use=.false., side=.false., reverse=.false.
      character(len=120) :: title=''
   end type graff_key
