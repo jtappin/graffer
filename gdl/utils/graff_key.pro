@@ -144,7 +144,7 @@ pro graff_key, file, show_key = show_key, list = list, all = all, $
 
   if n_elements(title) ne 0 then pdefs.key.title = title
 
-  if ~ptr_valid(*(pdefs.key.list)) || $
+  if ~ptr_valid(pdefs.key.list) || $
      pdefs.key.x[0] eq pdefs.key.x[1] || $
      pdefs.key.y[0] eq pdefs.key.y[1] then pdefs.key.use = 0b $
   else if n_elements(show_key) ne 0 then $
