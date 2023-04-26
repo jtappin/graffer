@@ -1,5 +1,5 @@
 ; LICENCE:
-; Copyright (C) 1995-2021: SJT
+; Copyright (C) 1995-2023: SJT
 ; This program is free software; you can redistribute it and/or modify  
 ; it under the terms of the GNU General Public License as published by  
 ; the Free Software Foundation; either version 2 of the License, or     
@@ -24,6 +24,7 @@
 ;	(allows cancel to work): 20/5/10; SJT
 ;	Replace cw_pdtmenu wth cw_pdmenu_plus: 28/9/16; SJT
 ;	Select device by menu, not in options: 3/11/21; SJT
+;	Move dump screen to hard copy: 26/4/23; SJT
 ;-
 
 pro Gr_ctl_event, event
@@ -75,11 +76,13 @@ pro Gr_ctl_event, event
         ichange = 0b
      end
      
-     'Hard Copy': graff_msg, pdefs.ids.hlptxt, /help, 'Make PostScript version ' + $
+     'Hard Copy': graff_msg, pdefs.ids.hlptxt, /help, $
+                             'Make PostScript version ' + $
                              'of plot'
      
      'Hard Copy.Options ...': if track_flag then $
-        graff_msg, pdefs.ids.hlptxt, /help, 'Define hardcopy parameters and ' + $
+        graff_msg, pdefs.ids.hlptxt, /help, $
+                   'Define hardcopy parameters and ' + $
                    'make copy' $
      else begin
         ichange = gr_hardopts(pdefs)
@@ -175,10 +178,10 @@ pro Gr_ctl_event, event
         endif
      end
      
-     'File.Dump screen': graff_msg, pdefs.ids.hlptxt, /help, 'Make a screen ' + $
+     'Hard Copy.Dump screen': graff_msg, pdefs.ids.hlptxt, /help, 'Make a screen ' + $
                                     'dump to an image file'
      
-     'File.Dump screen.PNG': if track_flag then $
+     'Hard Copy.Dump screen.PNG': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, /help, 'Dump to PNG (Portable Network ' + $
                    'Graphics) file' $ 
      else begin
@@ -186,7 +189,7 @@ pro Gr_ctl_event, event
         ichange = 0b
         idraw_flag = 0
      end
-     'File.Dump screen.TIFF': if track_flag then $
+     'Hard Copy.Dump screen.TIFF': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, /help, 'Dump to TIFF (Tagged Image File ' + $
                    'Format) file' $
      else begin
@@ -194,7 +197,7 @@ pro Gr_ctl_event, event
         ichange = 0b
         idraw_flag = 0
      end
-     'File.Dump screen.Variable': if track_flag then $
+     'Hard Copy.Dump screen.Variable': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, /help, 'Save to a variable at the ' + $
                    '$MAIN$ level.' $
      else begin
@@ -204,7 +207,7 @@ pro Gr_ctl_event, event
         ichange = 0b
         idraw_flag = 0
      end
-     'File.Dump screen.Choose ...': if track_flag then $
+     'Hard Copy.Dump screen.Choose ...': if track_flag then $
         graff_msg, pdefs.ids.hlptxt, /help, 'Dump to any image format' $
      else begin
         graff_dump, pdefs, /dialogue
@@ -333,11 +336,6 @@ pro Gr_control_menu, base
              {control_opts, 0, 'Save', 'Ctrl+S'}, $
              {control_opts, 0, 'Save as ...', 'Ctrl+Shift+S'}, $ 
              {control_opts, 0, 'Save ascii as ...', 'Ctrl+Alt+S'}, $
-             {control_opts, 1, 'Dump screen', ''}, $
-             {control_opts, 0, 'PNG', 'Ctrl+Alt+P'}, $
-             {control_opts, 0, 'TIFF', 'Ctrl+Alt+T'}, $
-             {control_opts, 0, 'Variable', 'Ctrl+Alt+V'}, $
-             {control_opts, 2, 'Choose ...', ''}, $
              {control_opts, 0, 'Open ...', 'Ctrl+O'}, $
              {control_opts, 2, 'Exit', 'Ctrl+Q'}, $
              {control_opts, 1, 'Hard Copy', ''}, $
@@ -345,7 +343,12 @@ pro Gr_control_menu, base
              {control_opts, 0, 'PostScript', 'Ctrl+P'}, $
              {control_opts, 0, 'EPS', 'Ctrl+E'}, $
              {control_opts, 0, 'PDF', 'Ctrl+Shift+P'}, $
-             {control_opts, 2, 'PDF (LaTeX)', 'Ctrl+Shift+E'}, $
+             {control_opts, 0, 'PDF (LaTeX)', 'Ctrl+Shift+E'}, $
+             {control_opts, 3, 'Dump screen', ''}, $
+             {control_opts, 0, 'PNG', 'Ctrl+Alt+P'}, $
+             {control_opts, 0, 'TIFF', 'Ctrl+Alt+T'}, $
+             {control_opts, 0, 'Variable', 'Ctrl+Alt+V'}, $
+             {control_opts, 2, 'Choose ...', ''}, $
              {control_opts, 0, 'Options...', ''}, $
              {control_opts, 3, 'Help', ''}, $
              {control_opts, 0, 'User Guide...', 'Ctrl+H'}, $

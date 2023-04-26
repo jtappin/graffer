@@ -84,7 +84,6 @@ pro gr_image_write, image, r, g, b, name = name, group = group
      ev = widget_event(base)
   endrep until (ev.done ne 0)
 
-  help, /str, ev
   if ev.done eq 1 then begin
      case ev.label of
         'png': if n_params() eq 4 then $

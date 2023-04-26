@@ -34,6 +34,7 @@ pro graff_dump, pdefs, png = png, tiff = tiff, nrif = nrif, $
 ;	Original: 8/9/95; SJT
 ;	Replace GIF with PNG: 23/6/05; SJT
 ;	Add dialogue: 10/1/12; SJT
+;	Remove commented out code: 26/4/23
 ;-
 
   nkey = (keyword_set(png) + $
@@ -67,19 +68,6 @@ pro graff_dump, pdefs, png = png, tiff = tiff, nrif = nrif, $
         (scope_varfetch(variable, level = 1, /enter)) =  image
 
      endif else if keyword_set(dialogue) then begin
-        ;; if is_gdl() then graff_msg, pdefs.ids.message, $
-        ;;                             "Image dialogue not " + $
-        ;;                             "implemented in GDL." $
-        ;; else begin
-        ;;    if widget_info(pdefs.ids.graffer,  /valid) then $
-        ;;       parent = pdefs.ids.graffer
-        
-        ;;    junk = dialog_write_image(image, $
-        ;;                              dialog_parent = parent, $
-        ;;                              file = tname+'.png', $
-        ;;                              type = 'PNG', $
-        ;;                              /warn_exist, $
-        ;;                              title = 'Dump Graffer screen')
         gr_image_write, image, name = tname, group = pdefs.ids.graffer
      endif
   endif else begin              ; 8-bit display--False colour only
@@ -103,19 +91,6 @@ pro graff_dump, pdefs, png = png, tiff = tiff, nrif = nrif, $
      endif else if (keyword_set(dialogue)) then begin
         gr_image_write, image, r, g, b, $
                         name = tname, group = pdefs.ids.graffer
-        ;; if is_gdl() then graff_msg, pdefs.ids.message, $
-        ;;                             "Image dialogue not " + $
-        ;;                             "implemented in GDL." $
-        ;; else begin
-        ;;    if widget_info(pdefs.ids.graffer,  /valid) then $
-        ;;       parent = pdefs.ids.graffer
-
-        ;;    junk = dialog_write_image(image, r, g, b, $
-        ;;                              dialog_parent = parent, $
-        ;;                              file = tname+'.png', $
-        ;;                              type = 'PNG', $
-        ;;                              /warn_exist, $
-        ;;                              title = 'Dump Graffer screen')
      endif
   endelse
 end
