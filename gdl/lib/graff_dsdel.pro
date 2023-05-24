@@ -101,6 +101,7 @@ pro Graff_dsdel, pdefs, index, noprompt = noprompt
   pdefs.nsets = pdefs.nsets-1
   if pdefs.cset ge index && pdefs.cset gt 0 then pdefs.cset--
 
-  graff_set_vals, pdefs, /set_only
+  if widget_info(/valid, pdefs.ids.graffer) then $
+     graff_set_vals, pdefs, /set_only
 
 end
