@@ -118,7 +118,7 @@ contains
 
     if (allocated(pdefs%key%list)) deallocate(pdefs%key%list)
     pdefs%key%frame = .false.
-    pdefs%key%one_point = .false.
+    pdefs%key%one_point = .true.
     pdefs%key%use = .false.
     pdefs%key%side = .false.
     pdefs%key%title = ''
