@@ -95,6 +95,7 @@ pro Graff_init, pdefs, file, version = version, ttype = ttype
   pdefs.key.Norm =     2
   pdefs.key.cols =     1
   pdefs.key.csize = 1.d
+  pdefs.key.one_point = 1b
   
   pdefs.transient.Imove =   -1l
   pdefs.transient.hairs = ~is_gdl()
