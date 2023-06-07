@@ -132,8 +132,8 @@ function Gr_key_def, pdefs
 
 
   ku = bytarr(pdefs.nsets)
-  if ptr_valid(pdefs.key.list) then ku(*pdefs.key.list) = 1
-  ds1 = where((*pdefs.data).type ge -3 and (*pdefs.data).type lt 8, n1d)
+  if ptr_valid(pdefs.key.list) then ku[*pdefs.key.list] = 1
+  ds1 = where((*pdefs.data).type ge -3 and (*pdefs.data).type le 8, n1d)
 
   if n1d eq 0 then begin
      junk = dialog_message(["The current GRAFFER environment", $
@@ -278,12 +278,13 @@ function Gr_key_def, pdefs
 
   junk = widget_label(jb, value = 'Datasets to include')
 
+  print,  ceil(n1d/10.)
   bub.listid = cw_bgroup(jb, $
                          (*pdefs.data)[ds1].descript, $
                          column = ceil(n1d/10.), $ 
                          /nonexclusive, $
                          uvalue = 'PICK', $
-                         set_value = ku(ds1), $
+                         set_value = ku[ds1], $
                          ids = buts)
   junk = widget_button(jb, $
                        value = 'All', $
