@@ -250,7 +250,7 @@ function Grf_tlv_event, event
                                  'Errors and data must be same length'
                  iexit = 0
                  goto, donefor
-              endif else yerrs[2, *] = errtmp
+              endif else yerrs[1, *] = errtmp
            endif
         endif
      endif else iexit = -1
