@@ -114,6 +114,11 @@ case but of
         iuse[*] = 1
         widget_control, uv.listid, set_value = iuse
     end
+    'CLEAR': begin
+        widget_control, uv.listid, get_value = iuse
+        iuse[*] = 0
+        widget_control, uv.listid, set_value = iuse
+    end
     
     'PICK':                     ; Ignore it's easier to use GET_VALUE
 endcase
@@ -288,6 +293,9 @@ function Gr_key_def, pdefs
   junk = widget_button(jb, $
                        value = 'All', $
                        uvalue = 'ALL')
+  junk = widget_button(jb, $
+                       value = 'Clear', $
+                       uvalue = 'CLEAR')
 
   jb = widget_base(base, $
                    /row)

@@ -264,6 +264,12 @@ contains
          & clicked=c_funloc(gr_key_all), tooltip=&
          & "Select all eligable datasets"//c_null_char)
     call hl_gtk_table_attach(stab, junk, 0_c_int, iy, xspan=ix)
+    
+    junk = hl_gtk_button_new("Clear"//c_null_char, &
+         & clicked=c_funloc(gr_key_clr), tooltip=&
+         & "Deselect all eligable datasets"//c_null_char)
+    call hl_gtk_table_attach(stab, junk, 0_c_int, iy+1, xspan=ix)
+
 
     jb = hl_gtk_box_new(horizontal=TRUE)
     call hl_gtk_box_pack(base, jb)
@@ -475,5 +481,18 @@ contains
        key_use(key_indices(i)) = .true.
     end do
   end subroutine gr_key_all
+  
+  subroutine gr_key_clr(widget, data) bind(c)
+    type(c_ptr), value :: widget, data
+
+    ! Remove all suitable datasets from the key.
+
+    integer :: i
+
+    do i = 1, size(key_indices)
+       call gtk_toggle_button_set_active(key_ds_but(i), FALSE)
+       key_use(key_indices(i)) = .false.
+    end do
+  end subroutine gr_key_clr
 
 end module gr_general_key_widgets
