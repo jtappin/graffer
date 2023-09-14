@@ -278,7 +278,6 @@ function Gr_key_def, pdefs
 
   junk = widget_label(jb, value = 'Datasets to include')
 
-  print,  ceil(n1d/10.)
   bub.listid = cw_bgroup(jb, $
                          (*pdefs.data)[ds1].descript, $
                          column = ceil(n1d/10.), $ 
