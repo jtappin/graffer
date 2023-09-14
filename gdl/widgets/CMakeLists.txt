@@ -10,6 +10,5 @@ install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/cw_pdmenu_plus.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/cw_spin_box.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/gr_cw_filesel.pro"
-  "${CMAKE_CURRENT_SOURCE_DIR}/gr_cw_bgroup.pro"
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/graffer/lib/widgets
-)
+  )
