@@ -621,8 +621,8 @@ pro Graffer, file, group = group, xsize = xsize, ysize = ysize, $
                        value = 'Cross Hairs', $
                        uvalue = 'CROSS', $
                        track = optblock.track)
-  widget_control, junk, set_button = pdefs.transient.hairs, $
-                  sensitive = ~is_gdl()
+  widget_control, junk, set_button = pdefs.transient.hairs ;, $
+                                ; sensitive = ~is_gdl()
 
 
                                 ; Current cursor position

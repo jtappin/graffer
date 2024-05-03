@@ -28,14 +28,16 @@ pro gr_cross_hair, pdefs, xy
 ;	Disable cross hairs in GDL: 31/3/22; SJT
 ;-
 
-  if is_gdl() then return       ; GDL does not (currently)
-                                ; support xor and invert modes due to
-                                ; a cairo limitation. Should not get
-                                ; called but this is a safety lock.
+  ;; if is_gdl() then return       ; GDL does not (currently)
+  ;;                               ; support xor and invert modes due to
+  ;;                               ; a cairo limitation. Should not get
+  ;;                               ; called but this is a safety lock.
   
-  device, set_graphics_function = 10 ; Set graphics function to
+  device, set_graphics_function = 6 ; Set graphics function to
                                 ; Invert mode
-
+  oldc = !p.color
+  !p.color = graff_colours(0)
+  
   case pdefs.transient.mode of
      0: begin                   ; Normal mode, draw solid
                                 ; cross hairs out to the axes
@@ -294,6 +296,8 @@ pro gr_cross_hair, pdefs, xy
 
   endcase
 
+  !p.color = oldc
+  
   device, set_graphics_function = 3 ; Set graphics function
                                 ; back to Source mode (normal)
 

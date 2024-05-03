@@ -98,7 +98,7 @@ pro Graff_init, pdefs, file, version = version, ttype = ttype
   pdefs.key.one_point = 1b
   
   pdefs.transient.Imove =   -1l
-  pdefs.transient.hairs = ~is_gdl()
+  pdefs.transient.hairs = 1b    ;~is_gdl()
 
   pdefs.ds_dir =       ds_dir
 
