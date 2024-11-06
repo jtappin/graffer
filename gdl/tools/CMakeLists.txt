@@ -15,6 +15,7 @@ install(FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/is_gdl.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/match_in.pro"
   "${CMAKE_CURRENT_SOURCE_DIR}/truth.pro"
+  "${CMAKE_CURRENT_SOURCE_DIR}/has_tag.pro"
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/graffer/lib/tools
   )
 
