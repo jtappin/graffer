@@ -301,7 +301,7 @@ function Gr_tlv_z, pdefs
 
   repeat begin
      ev = widget_event(base)
-  endrep until has_tag(ev,  'EXITED') && ev.exited ne 0
+  endrep until has_tag(ev,  'EXITED' && ev.exited ne 0
 
   widget_control, base, get_uvalue = uvs, /no_copy
   widget_control, tlb, /destroy
