@@ -361,16 +361,16 @@ function Graff_tlv, pdefs
   flag2 = (dstype ge 9)
   if (fflag) then begin
      if dialog_message(['CURRENT DATA SET IS A FUNCTION', $
-                        'OR A 2-D DATASET ENTERING DATA', $
-                        'WILL OVERWRITE IT', $
+                        'ENTERING DATA WILL OVERWRITE IT', $
                         'DO YOU REALLY WANT TO DO THIS?'], $
                        /question, title = 'Overwriting ' + $
                        'function', dialog_parent = $
                        pdefs.ids.graffer, resource = 'Graffer') eq 'No' then $
                           return, 0
+
+     xydata = {graff_xydata} 
      dstype = 0
-  endif
-  if flag2 then begin
+  endif else if flag2 then begin
      if dialog_message(['CURRENT DATA SET IS A 2-D DATASET', $
                         'ENTERING 1-D DATA WILL OVERWRITE IT', $
                         'DO YOU REALLY WANT TO DO THIS?'], $
@@ -378,8 +378,22 @@ function Graff_tlv, pdefs
                        'function', dialog_parent = $
                        pdefs.ids.graffer, resource = 'Graffer') eq 'No' then $
                           return, 0
+     
+     xydata = {graff_xydata} 
      dstype = 0
-  endif
+  endif else  if dstype ge 0 && dstype le 8 && $
+     ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
+     xydata = *(*pdefs.data)[pdefs.cset].xydata
+     if ptr_valid(xydata.x) then begin
+        uvs.x = ptr_new(*xydata.x)
+        uvs.y = ptr_new(*xydata.y)
+        if ptr_valid(xydata.x_err) then $
+           uvs.xerr = ptr_new(*xydata.x_err)
+        if ptr_valid(xydata.y_err) then $
+           uvs.xerr = ptr_new(*xydata.y_err)
+     endif
+  endif else xydata = {graff_xydata} 
+
 
   uvs = { $
         Xid:    0l, $
@@ -404,19 +418,7 @@ function Graff_tlv, pdefs
         Type:   dstype $
         }
 
-  if dstype ge 0 && dstype le 8 && $
-     ptr_valid((*pdefs.data)[pdefs.cset].xydata) then begin
-     xydata = *(*pdefs.data)[pdefs.cset].xydata
-     if ptr_valid(xydata.x) then begin
-        uvs.x = ptr_new(*xydata.x)
-        uvs.y = ptr_new(*xydata.y)
-        if ptr_valid(xydata.x_err) then $
-           uvs.xerr = ptr_new(*xydata.x_err)
-        if ptr_valid(xydata.y_err) then $
-           uvs.xerr = ptr_new(*xydata.y_err)
-     endif
-  endif else xydata = {graff_xydata} 
-
+ 
 ;	Check out the type of the current ds
 
   
