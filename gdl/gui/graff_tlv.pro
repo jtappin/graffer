@@ -41,6 +41,8 @@ function Grf_tlv_event, event
 
   widget_control, event.id, get_uvalue = object
 
+  help,  event
+  
   iexit = 0
   case object of
      'ACTION': if (event.value eq 1) then begin
@@ -331,6 +333,7 @@ function Grf_tlv_event, event
 
 Donefor:
 
+  print, iexit
   if (iexit eq 1) then begin
      ptr_free, uvs.x, uvs.y, uvs.xerr, uvs.yerr
      uvs.x = ptr_new(x)
@@ -359,6 +362,30 @@ function Graff_tlv, pdefs
   dstype = (*pdefs.data)[pdefs.cset].type
   fflag = (dstype lt 0)
   flag2 = (dstype ge 9)
+
+  uvs = { $
+        Xid:    0l, $
+        Yid:    0l, $
+        Eloxid: 0l, $
+        Ehixid: 0l, $
+        Eloyid: 0l, $
+        Ehiyid: 0l, $
+        Xbid:   0l, $
+        Ybid:   0l, $
+        Eloxbid:0l, $
+        Ehixbid:0l, $
+        Eloybid:0l, $
+        Ehiybid:0l, $
+        Errid:  0l, $
+        Errids: 0l, $
+        Mid:    0l, $
+        X:      ptr_new(), $
+        Y:      ptr_new(), $
+        xerr:    ptr_new(), $
+        yerr:    ptr_new(), $
+        Type:   dstype $
+        }
+
   if (fflag) then begin
      if dialog_message(['CURRENT DATA SET IS A FUNCTION', $
                         'ENTERING DATA WILL OVERWRITE IT', $
@@ -395,28 +422,6 @@ function Graff_tlv, pdefs
   endif else xydata = {graff_xydata} 
 
 
-  uvs = { $
-        Xid:    0l, $
-        Yid:    0l, $
-        Eloxid: 0l, $
-        Ehixid: 0l, $
-        Eloyid: 0l, $
-        Ehiyid: 0l, $
-        Xbid:   0l, $
-        Ybid:   0l, $
-        Eloxbid:0l, $
-        Ehixbid:0l, $
-        Eloybid:0l, $
-        Ehiybid:0l, $
-        Errid:  0l, $
-        Errids: 0l, $
-        Mid:    0l, $
-        X:      ptr_new(), $
-        Y:      ptr_new(), $
-        xerr:    ptr_new(), $
-        yerr:    ptr_new(), $
-        Type:   dstype $
-        }
 
  
 ;	Check out the type of the current ds
@@ -447,7 +452,8 @@ function Graff_tlv, pdefs
                      uvalue = 'X', $
                      label = 'X Variable:', $
                      xsize = 12, $
-                     /capture)
+                     /capture, $
+                     /all_events)
   junk = widget_button(uvs.xbid, $
                        value = 'Pick...', $
                        uvalue = 'XP')
@@ -460,7 +466,8 @@ function Graff_tlv, pdefs
                      uvalue = 'Y', $
                      label = 'Y Variable:', $
                      xsize = 12, $
-                     /capture)
+                     /capture, $
+                     /all_events)
   junk = widget_button(uvs.ybid, $
                        value = 'Pick...', $
                        uvalue = 'YP')
@@ -473,7 +480,8 @@ function Graff_tlv, pdefs
                         uvalue = 'ELOX', $
                         label = 'Lower X error:', $
                         xsize = 12, $
-                        /capture)
+                        /capture, $
+                        /all_events)
   junk = widget_button(uvs.eloxbid, $
                        value = 'Pick...', $
                        uvalue = 'ELOXP')
@@ -488,7 +496,8 @@ function Graff_tlv, pdefs
                         uvalue = 'EHIX', $
                         label = 'Upper X error:', $
                         xsize = 12, $
-                        /capture)
+                        /capture, $
+                        /all_events)
   junk = widget_button(uvs.ehixbid, $
                        value = 'Pick...', $
                        uvalue = 'EHIXP')
@@ -503,7 +512,8 @@ function Graff_tlv, pdefs
                         uvalue = 'ELOY', $
                         label = 'Lower Y error:', $
                         xsize = 12, $
-                        /capture)
+                        /capture, $
+                        /all_events)
   junk = widget_button(uvs.eloybid, $
                        value = 'Pick...', $
                        uvalue = 'ELOYP')
@@ -517,7 +527,8 @@ function Graff_tlv, pdefs
                         uvalue = 'EHIY', $
                         label = 'Upper Y error:', $
                         xsize = 12, $
-                        /capture)
+                        /capture, $
+                        /all_events)
   junk = widget_button(uvs.ehiybid, $
                        value = 'Pick...', $
                        uvalue = 'EHIYP')
@@ -564,12 +575,12 @@ function Graff_tlv, pdefs
 
                                 ; Realise and do RYO event handling
 
-  widget_control, tlb, /real
-
   cw_enter_focus, uvs.xid
 
   widget_control, base, event_func = 'grf_tlv_event', set_uvalue = $
                   uvs, /no_copy
+
+  widget_control, tlb, /real
 
   repeat begin
      ev = widget_event(base)

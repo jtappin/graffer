@@ -242,7 +242,8 @@ function Gr_tlv_z, pdefs
                      uvalue = 'Z', $
                      label = 'Z Variable:', $
                      xsize = 12, $
-                     /capture)
+                     /capture, $
+                     /all_events)
   junk = widget_button(jb, $
                        value = 'Pick...', $
                        uvalue = 'ZP')
@@ -255,7 +256,8 @@ function Gr_tlv_z, pdefs
                      uvalue = 'X', $
                      label = 'X Variable:', $
                      xsize = 12, $
-                     /capture)
+                     /capture, $
+                     /all_events)
   junk = widget_button(jb, $
                        value = 'Pick...', $
                        uvalue = 'XP')
@@ -268,7 +270,8 @@ function Gr_tlv_z, pdefs
                      uvalue = 'Y', $
                      label = 'Y Variable:', $
                      xsize = 12, $
-                     /capture)
+                     /capture, $
+                     /all_events)
   junk = widget_button(jb, $
                        value = 'Pick...', $
                        uvalue = 'YP')
