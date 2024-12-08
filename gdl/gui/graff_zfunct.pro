@@ -41,24 +41,24 @@ function Zfunct_event, event
         if (event.value eq 1) then begin
            widget_control, uvs.fid, get_value = funct
            for j = 0, 1 do begin
-              widget_control, uvs.nid(j), get_value = np
-              numpts(j) = np
+              widget_control, uvs.nid[j], get_value = np
+              numpts[j] = np
               for k = 0, 1 do begin
-                 widget_control, uvs.rgid(j, k), get_value = rng
-                 range(j, k) = rng
+                 widget_control, uvs.rgid[j, k], get_value = rng
+                 range[j, k] = rng
               endfor
            endfor
         endif
         iexit = event.value
      end
      
-     'XMIN': cw_enter_focus, uvs.rgid(1, 0)
-     'XMAX': cw_enter_focus, uvs.rgid(0, 1)
-     'YMIN': cw_enter_focus, uvs.rgid(1, 1)
-     'YMAX': cw_enter_focus, uvs.nid(0)
-     'NUM1': cw_enter_focus, uvs.nid(1)
+     'XMIN': cw_enter_focus, uvs.rgid[1, 0]
+     'XMAX': cw_enter_focus, uvs.rgid[0, 1]
+     'YMIN': cw_enter_focus, uvs.rgid[1, 1]
+     'YMAX': cw_enter_focus, uvs.nid[0]
+     'NUM1': cw_enter_focus, uvs.nid[1]
      'NUM2': cw_enter_focus, uvs.fid
-     'FUNC': cw_enter_focus, uvs.rgid(0, 0)
+     'FUNC': cw_enter_focus, uvs.rgid[0, 0]
      
   endcase
   widget_control, event.handler, set_uvalue = uvs, /no_copy
@@ -96,7 +96,8 @@ function Graff_zfunct, pdefs
                            'FUNCTION, ENTERING A 2-D FUNCTION', $
                            'WILL OVERWRITE IT', $
                            'DO YOU REALLY WANT TO DO THIS?'], $ $
-                          /question, dialog_parent = pdefs.ids.graffer, $
+                          /question, $
+                          dialog_parent = pdefs.ids.graffer, $
                           resource = 'Graffer') eq $
         'No' then return, 0
 
@@ -119,66 +120,74 @@ function Graff_zfunct, pdefs
                      value = funct, $
                      label = 'Function:', $
                      uvalue = 'FUNC', $
-                     /capture)
+                     /capture, $
+                     /all_events)
 
                                 ; X axis range
 
   rgb = widget_base(base, /row)
-  uvs.rgid(0, 0) = cw_enter(rgb, $
+  uvs.rgid[0, 0] = cw_enter(rgb, $
                             /double, $
                             xsize = 10, $
                             uvalue = 'XMIN', $
                             value = range[0, 0], $
                             format = "(g10.3)", $
                             label = 'X axis range: Min:', $
-                            /capture)
-  uvs.rgid(1, 0) = cw_enter(rgb, $
+                            /capture, $
+                            /all_events)
+  uvs.rgid[1, 0] = cw_enter(rgb, $
                             /double, $
                             xsize = 10, $
                             uvalue = 'XMAX', $
                             value = range[1, 0], $
                             format = "(g10.3)", $
                             label = ' Max:', $
-                            /capture)
+                            /capture, $
+                            /all_events)
 
                                 ; Y axis range
 
   rgb = widget_base(base, /row)
-  uvs.rgid(0, 1) = cw_enter(rgb, $
+  uvs.rgid[0, 1] = cw_enter(rgb, $
                             /double, $
                             xsize = 10, $
                             uvalue = 'YMIN', $
                             value = range[0, 1], $
                             format = "(g10.3)", $
                             label = 'Y axis range: Min:', $
-                            /capture)
-  uvs.rgid(1, 1) = cw_enter(rgb, $
+                            /capture, $
+                            /all_events)
+  uvs.rgid[1, 1] = cw_enter(rgb, $
                             /double, $
                             xsize = 10, $
                             uvalue = 'YMAX', $
                             value = range[1, 1], $
                             format = "(g10.3)", $
                             label = ' Max:', $
-                            /capture)
+                            /capture, $
+                            /all_events)
 
                                 ; Number of points
 
   njb = widget_base(base, /row)
-  uvs.nid(0) = cw_enter(njb, $
+  uvs.nid[0] = cw_enter(njb, $
                         /int, $
                         xsize = 5, $
                         uvalue = 'NUM1', $
                         value = numpts[0], $
                         format = "(I0)", $
                         label = 'Number of function evaluations X:', $
-                        /capture)
-  uvs.nid(1) = cw_enter(njb, $
+                        /capture, $
+                        /all_events)
+  uvs.nid[1] = cw_enter(njb, $
                         /int, $
                         xsize = 5, $
                         uvalue = 'NUM2', $
                         value = numpts[1], $
                         format = "(I0)", $
-                        label = 'Y:', /capture)
+                        label = 'Y:', $
+                        /capture, $
+                        /all_events)
 
                                 ; Control
 

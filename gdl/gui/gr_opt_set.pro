@@ -97,10 +97,12 @@ pro Gr_opt_set, pdefs
   
   widget_control, pdefs.ids.graffer, sensitive = 0
 
-  base = widget_base(resource = 'Graffer', title = 'Graffer Options', $
+  base = widget_base(resource = 'Graffer', $
+                     title = 'Graffer Options', $
                      /column)
 
-  junk = widget_label(base, value = 'Graffer special options')
+  junk = widget_label(base, $
+                      value = 'Graffer special options')
 
   junk = widget_droplist(base, $
                          value = ['Display', 'Suppress'],  $
@@ -115,10 +117,15 @@ pro Gr_opt_set, pdefs
                          uvalue = 'MOUSE')
   widget_control, junk, set_droplist_select = optblock.mouse
 
-  junk = cw_enter(base, label = 'Autosave interval:', value = $
-                  optblock.auto_delay, /float, /all_events, $
-                  /capture, format = "(F6.1)", xsize = 7, uvalue = $
-                  'TIME')
+  junk = cw_enter(base, $
+                  label = 'Autosave interval:', $
+                  value = optblock.auto_delay, $
+                  /float, $
+                  /all_events, $
+                  /capture, $
+                  format = "(F6.1)", $
+                  xsize = 7, $
+                  uvalue = 'TIME')
   jb = widget_base(base, $
                    /row)
 

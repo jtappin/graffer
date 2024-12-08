@@ -179,10 +179,12 @@ function Gr_key_def, pdefs
 
   bub.ds1 = ptr_new(ds1)
   
-  tlb = widget_base(title = 'Graffer Key Define', group_leader = $
-                    pdefs.ids.graffer, resource = 'Graffer')
+  tlb = widget_base(title = 'Graffer Key Define', $
+                    group_leader = pdefs.ids.graffer, $
+                    resource = 'Graffer')
 
-  base = widget_base(tlb, /column)
+  base = widget_base(tlb, $
+                     /column)
 
   jb = widget_base(base, $
                    /row, $
@@ -192,8 +194,10 @@ function Gr_key_def, pdefs
                        uvalue = 'USE')
   widget_control, junk, set_button = pdefs.key.use
 
-  bub.allid = widget_base(base, /row)
-  jb = widget_base(bub.allid, /column)
+  bub.allid = widget_base(base, $
+                          /row)
+  jb = widget_base(bub.allid, $
+                   /column)
 
   junk = widget_droplist(jb, $
                          value = ['Data', 'Normal', '"Frame"'], $
@@ -202,21 +206,43 @@ function Gr_key_def, pdefs
   widget_control, junk, set_droplist_select = pdefs.key.norm
 
   jjb = widget_base(jb, /row)
-  bub.xid0 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Lower left: X:', value = pdefs.key.x[0], $
-                      uvalue = 'X0', /capture)
-  bub.yid0 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Y:', value = pdefs.key.y[0], uvalue = 'Y0', $
+  bub.xid0 = cw_enter(jjb, $
+                      /double, $
+                      xsize = 11, $
+                      /all_event, $
+                      label = 'Lower left: X:', $
+                      value = pdefs.key.x[0], $
+                      uvalue = 'X0', $
+                      /capture)
+  bub.yid0 = cw_enter(jjb, $
+                      /double, $
+                      xsize = 11, $
+                      /all_event, $
+                      label = 'Y:', $
+                      value = pdefs.key.y[0], $
+                      uvalue = 'Y0', $
                       /capture)
 
   jjb = widget_base(jb, /row)
-  bub.xid1 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Upper right: X:', value = pdefs.key.x[1], $
-                      uvalue = 'X1', /capture)
-  bub.yid1 = cw_enter(jjb, /double, xsize = 11, /all_event, label = $
-                      'Y:', value = pdefs.key.y[1], uvalue = 'Y1', $
+  bub.xid1 = cw_enter(jjb, $
+                      /double, $
+                      xsize = 11, $
+                      /all_event, $
+                      label = 'Upper right: X:', $
+                      value = pdefs.key.x[1], $
+                      uvalue = 'X1', $
                       /capture)
-  jjb = widget_base(jb, /row)
+  bub.yid1 = cw_enter(jjb, $
+                      /double, $
+                      xsize = 11, $
+                      /all_event, $
+                      label = 'Y:', $
+                      value = pdefs.key.y[1], $
+                      uvalue = 'Y1', $
+                      /capture)
+  
+  jjb = widget_base(jb, $
+                    /row)
   bub.csid = cw_spin_box(jjb, $
                          /double, $
                          xsize = 8, $
@@ -239,7 +265,8 @@ function Gr_key_def, pdefs
      widget_control, junk, set_button = pdefs.key.side
   endif
 
-  jjb = widget_base(jb, /row)
+  jjb = widget_base(jb, $
+                    /row)
   bub.cid = cw_spin_box(jjb, $
                         /int, $
                         xsize = 3, $
@@ -258,7 +285,8 @@ function Gr_key_def, pdefs
                          uvalue = 'POINT')
   widget_control, junk, set_droplist_select = pdefs.key.one_point
 
-  jjb = widget_base(jb, /row)
+  jjb = widget_base(jb, $
+                    /row)
   junk = widget_droplist(jb, $
                          value = ['No', 'Yes'], $
                          title = 'Draw a frame round the key?:', $
@@ -279,9 +307,11 @@ function Gr_key_def, pdefs
                      uvalue = 'TITLE', $
                      /capture)
 
-  jb = widget_base(bub.allid, /column)
+  jb = widget_base(bub.allid, $
+                   /column)
 
-  junk = widget_label(jb, value = 'Datasets to include')
+  junk = widget_label(jb, $
+                      value = 'Datasets to include')
 
   bub.listid = cw_bgroup(jb, $
                          (*pdefs.data)[ds1].descript, $

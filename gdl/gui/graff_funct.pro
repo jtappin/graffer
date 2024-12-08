@@ -45,9 +45,9 @@ function Funct_event, event
            widget_control, uvs.fid, get_value = funct
            widget_control, uvs.nid, get_value = numpts
            widget_control, uvs.minid, get_value = rng
-           range(0) = rng
+           range[0] = rng
            widget_control, uvs.maxid, get_value = rng
-           range(1) = rng
+           range[1] = rng
         endif
         iexit = event.value
      end
@@ -119,7 +119,8 @@ function Graff_funct, pdefs, y_funct = y_funct
                      value = funct, $
                      label = 'Function:', $
                      /capture, $
-                     uvalue = 'FUN')
+                     uvalue = 'FUN', $
+                     /all_events)
 
                                 ; X axis range
   if (keyword_set(y_funct)) then ax = 'Y' $
@@ -132,7 +133,8 @@ function Graff_funct, pdefs, y_funct = y_funct
                        value = range[0], $
                        format = "(g12.5)", $
                        label = ax+' axis range: Min:', $
-                       /capture)
+                       /capture, $
+                       /all_events)
   uvs.maxid = cw_enter(rgb, $
                        /double, $
                        xsize = 12, $
@@ -140,7 +142,8 @@ function Graff_funct, pdefs, y_funct = y_funct
                        value = range[1], $
                        format = "(g12.5)",  $
                        label = ' Max:', $
-                       /capture)
+                       /capture, $
+                       /all_events)
 
                                 ; Number of points
 
@@ -151,7 +154,8 @@ function Graff_funct, pdefs, y_funct = y_funct
                      value = numpts, $
                      format = "(I0)",  $
                      label = 'Number of function evaluations:', $
-                     /capture)
+                     /capture, $
+                     /all_events)
 
                                 ; Control
 

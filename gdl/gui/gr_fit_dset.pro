@@ -148,20 +148,33 @@ function Gr_fit_dset, pdefs
   widget_control, pdefs.ids.graffer, sensitive = 0
 
 
-  tlb = widget_base(title = 'Graffer data set select', group = $
-                    pdefs.ids.graffer, resource = 'Graffer')
-  base = widget_base(tlb, /column)
+  tlb = widget_base(title = 'Graffer data set select', $
+                    group = pdefs.ids.graffer, $
+                    resource = 'Graffer')
+  base = widget_base(tlb, $
+                     /column)
 
-  b1 = widget_base(base, /row)
+  b1 = widget_base(base, $
+                   /row)
 
-  jb = widget_base(b1, /column)
-  curr = widget_label(jb, value = 'Data Sets')
-  junk = widget_list(jb, value = dlist, uvalue = 'CHOOSE', $
+  jb = widget_base(b1, $
+                   /column)
+  curr = widget_label(jb, $
+                      value = 'Data Sets')
+  junk = widget_list(jb, $
+                     value = dlist, $
+                     uvalue = 'CHOOSE', $
                      ysize = (8 < n_elements(dlist)))
 
-  choice = cw_enter(jb, value = '', /text, /no_event, /display, $
-                    xsize = max(strlen(dlist)), label = 'Current ' + $
-                    'Selection', /column)
+  choice = cw_enter(jb, $
+                    value = '', $
+                    /text, $
+                    /no_event, $
+                    /display, $
+                    xsize = max(strlen(dlist)), $
+                    label = 'Current ' + $
+                    'Selection', $
+                    /column)
 
 
   jb = widget_base(b1, $
@@ -213,7 +226,8 @@ function Gr_fit_dset, pdefs
                   xsize = 15, $
                   label = 'Slice:', $
                   /capture, $
-                  uvalue = 'SLICE')
+                  uvalue = 'SLICE', $
+                  /all_events)
 
   jbb = widget_base(jb, $
                     /nonexclusive)
@@ -223,16 +237,36 @@ function Gr_fit_dset, pdefs
                        uvalue = "NAN")
   widget_control, junk, /set_button
 
-  jb = widget_base(base, /column, /align_center, /base_align_center)
-  resid = cw_enter(jb, /text, value = '', /no_event, /display, $
-                   xsize = 40, label = 'Fit', /column)
-  csqid = cw_enter(jb, /double, value = 0., /no_event, /display, $
-                   xsize = 14, label = 'Prob chance:')
+  jb = widget_base(base, $
+                   /column, $
+                   /align_center, $
+                   /base_align_center)
+  resid = cw_enter(jb, $
+                   /text, $
+                   value = '', $
+                   /no_event, $
+                   /display, $
+                   xsize = 40, $
+                   label = 'Fit', $
+                   /column)
+  csqid = cw_enter(jb, $
+                   /double, $
+                   value = 0., $
+                   /no_event, $
+                   /display, $
+                   xsize = 14, $
+                   label = 'Prob chance:')
 
   jb = widget_base(base, /row, /align_center)
-  dobid = widget_button(jb, value = '    Apply    ', uvalue = 'DO')
-  upid = widget_button(jb, value = '   Update   ', uvalue = 'UPDATE')
-  junk = widget_button(jb, value = '   Cancel   ', uvalue = 'DONT')
+  dobid = widget_button(jb, $
+                        value = '    Apply    ', $
+                        uvalue = 'DO')
+  upid = widget_button(jb, $
+                       value = '   Update   ', $
+                       uvalue = 'UPDATE')
+  junk = widget_button(jb, $
+                       value = '   Cancel   ', $
+                       uvalue = 'DONT')
   widget_control, dobid, sensitive = 0
   widget_control, upid, sensitive = 0
 

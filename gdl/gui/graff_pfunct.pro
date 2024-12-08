@@ -41,22 +41,22 @@ function Pfunct_event, event
      'ACTION': begin
         if (event.value eq 1) then begin
            for j = 0, 1 do begin
-              widget_control, uvs.fid(j), get_value = f
-              funct(j) = f
+              widget_control, uvs.fid[j], get_value = f
+              funct[j] = f
            endfor
            widget_control, uvs.nid, get_value = numpts
            widget_control, uvs.minid, get_value = rng
-           range(0) = rng
+           range[0] = rng
            widget_control, uvs.maxid, get_value = rng
-           range(1) = rng
+           range[1] = rng
         endif
         iexit = event.value
      end
      
      'MIN': cw_enter_focus, uvs.minid
      'MAX': cw_enter_focus, uvs.nid
-     'NUM': cw_enter_focus, uvs.fid(0)
-     'FUNX': cw_enter_focus, uvs.fid(1)
+     'NUM': cw_enter_focus, uvs.fid[0]
+     'FUNX': cw_enter_focus, uvs.fid[1]
      'FUNY': cw_enter_focus, uvs.maxid
      
   endcase
@@ -115,18 +115,20 @@ function Graff_pfunct, pdefs
                                 ; The actual function definition
 
 
-  uvs.fid(0) = cw_enter(base, $
+  uvs.fid[0] = cw_enter(base, $
                         xsize = 40, $
                         value = funct[0], $
                         uvalue = 'FUNX', $
                         label = 'X = ', $
-                        /capture) 
-  uvs.fid(1) = cw_enter(base, $
+                        /capture, $
+                        /all_events) 
+  uvs.fid[1] = cw_enter(base, $
                         xsize = 40, $
                         value = funct[1], $
                         uvalue = 'FUNY', $
                         label = 'Y = ', $
-                        /capture) 
+                        /capture, $
+                        /all_events) 
 
                                 ; Parameter range
 
@@ -138,7 +140,8 @@ function Graff_pfunct, pdefs
                        value = range[0], $
                        format = "(g10.3)", $
                        label = 'T range: Min:', $
-                       /capture)
+                       /capture, $
+                       /all_events)
   uvs.maxid = cw_enter(rgb, $
                        /double, $
                        xsize = 10, $
@@ -146,7 +149,8 @@ function Graff_pfunct, pdefs
                        value = range[1], $
                        format = "(g10.3)",  $
                        label = ' Max:', $
-                       /capture)
+                       /capture, $
+                       /all_events)
 
                                 ; Number of points
 
@@ -157,7 +161,8 @@ function Graff_pfunct, pdefs
                      value = numpts, $
                      format = "(I0)",  $
                      label = 'Number of function evaluations:', $
-                     /capture)
+                     /capture, $
+                     /all_events)
 
                                 ; Control
 
