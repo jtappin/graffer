@@ -51,7 +51,7 @@ function Gr_pwfit, x, y, w, nsg, c2
                                 ; Note thet the weights in CURVEFIT
                                 ; are Sigma^2 (c.f. SVDFIT)
 
-  junk = curvefit(x, y, w^2, a, chi = c2, funct = 'gr_cf_pieces', /noderiv)
+  junk = curvefit(x, y, w^2, a, chi2 = c2, funct = 'gr_cf_pieces', /noderiv)
 
   c2 = c2*(n_elements(x)-n_elements(a)) ; Make it the same type of CHI^2
                                 ; as in SVDFIT
